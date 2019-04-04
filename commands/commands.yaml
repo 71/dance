@@ -1,0 +1,260 @@
+
+# Most commands defined below come from Kakoune:
+# - https://github.com/mawww/kakoune/blob/master/src/normal.cc
+# - https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc
+
+toggle:
+  title: Toggle
+  descr: Toggles Dance key bindings.
+
+set.normal:
+  title: Set mode to Normal
+  descr: Set Dance mode to Normal.
+  keys: escape (insert)
+
+set.insert:
+  title: Set mode to Insert
+  descr: Set Dance mode to Insert.
+
+tmp.normal:
+  title: Temporary normal mode
+  descr: Switches to normal mode temporarily.
+  keys: c-v (insert)
+
+tmp.insert:
+  title: Temporary insert mode
+  descr: Switches to insert mode temporarily.
+  keys: c-v (normal)
+
+
+insert.before:
+  title: Insert before
+  descr: Start insert before the current selections.
+  keys: i (normal)
+
+insert.after:
+  title: Insert after
+  descr: Start insert after the current selections.
+  keys: a (normal)
+
+insert.lineStart:
+  title: Insert at line start
+  descr: Start insert at line start of each selection.
+  keys: s-i (normal)
+
+insert.lineEnd:
+  title: Insert at line end
+  descr: Start insert at line end of each selection.
+  keys: s-a (normal)
+
+insert.newLine.below:
+  title: Insert new line below
+  descr: Create new line and start insert below.
+  keys: o (normal)
+
+insert.newLine.above:
+  title: Insert new line above
+  descr: Create new line and start insert above.
+  keys: s-o (normal)
+
+newLine.below:
+  title: Add new line below
+  descr: Add a new line below, without entering insert mode.
+
+newLine.above:
+  title: Add new line above
+  descr: Add a new line above, without entering insert mode.
+
+
+left:
+  title: Move left
+  keys: left (normal), left (insert), h (normal)
+  add: extend
+right:
+  title: Move right
+  keys: right (normal), right (insert), l (normal)
+  add: extend
+up:
+  title: Move up
+  keys: up (normal), up (insert), k (normal)
+  add: extend
+down:
+  title: Move down
+  keys: down (normal), down (insert), j (normal)
+  add: extend
+
+
+select.to.included:
+  title: Select to
+  descr: Select to the next character pressed, including it.
+  keys: f (normal)
+  add: extend back
+
+select.to.excluded:
+  title: Select until
+  descr: Select until the next character pressed, excluding it.
+  keys: t (normal)
+  add: extend back
+
+select.buffer:
+  title: Select whole buffer
+  keys: s-5 (normal)
+
+select.line:
+  title: Select line
+  descr: Select line on which the end of each selection lies (or next line when end lies on an end-of-line).
+  keys: x (normal)
+  add: extend
+
+expandLines:
+  title: Extend lines
+  descr: Extend selections to contain full lines (including end-of-lines).
+  keys: a-x (normal)
+
+trimLines:
+  title: Trim lines
+  descr: Trim selections to only contain full lines (not including last end-of-line).
+  keys: s-a-x (normal)
+
+
+select.word:
+  title: Select to next word start
+  descr: Select the word and following whitespaces on the right of the end of each selection.
+  keys: w (normal)
+  add: extend
+
+select.word.previous:
+  title: Select to previous word start
+  descr: Select preceding whitespaces and the word on the left of the end of each selection.
+  keys: b (normal)
+  add: extend
+
+select.word.end:
+  title: Select to next word end
+  descr: Select preceding whitespaces and the word on the right of the end of each selection.
+  keys: e (normal)
+  add: extend
+
+select.word.alt:
+  title: Select to next non-whitespace word start
+  descr: Select the non-whitespace word and following whitespaces on the right of the end of each selection.
+  keys: a-w (normal)
+  add: extend
+
+select.word.alt.previous:
+  title: Select to previous non-whitespace word start
+  descr: Select preceding whitespaces and the non-whitespace word on the left of the end of each selection.
+  keys: a-b (normal)
+  add: extend
+
+select.word.alt.end:
+  title: Select to next non-whitespace word end
+  descr: Select preceding whitespaces and the non-whitespace word on the right of the end of each selection.
+  keys: a-e (normal)
+  add: extend
+
+
+select:
+  title: Select
+  descr: Select within current selections according to a RegExp.
+  keys: s (normal)
+
+split:
+  title: Split
+  descr: Split within current selections according to a RegExp.
+  keys: s-s (normal)
+
+split.lines:
+  title: Split lines
+  descr: Split selections into lines.
+  keys: a-s (normal)
+
+select.firstLast:
+  title: Select first and last characters
+  descr: Select first and last characters of each selection.
+  keys: s-a-s (normal)
+
+
+selections.clear:
+  title: Clear selections
+  descr: Clear selections (except main)
+  keys: space (normal)
+
+selections.clearMain:
+  title: Clear main selection
+  keys: a-space (normal)
+
+selections.keepMatching:
+  title: Keep matching selections
+  descr: Keep selections that match a RegExp.
+  keys: a-k (normal)
+
+selections.clearMatching:
+  title: Clear matching selections
+  descr: Clear selections that match a RegExp.
+  keys: s-a-k (normal)
+
+
+pipe.filter:
+  title: Filter through pipe
+  descr: Pipe each selection to a program, and keeps it if the program returns 0.
+  keys: s-4 (normal)
+
+pipe.replace:
+  title: Pipe and replace
+  descr: Pipe each selection to a command, and replaces it with its output.
+  keys: s-\ (normal)
+
+pipe.ignore:
+  title: Pipe
+  descr: Pipe each selection to a command, ignoring their results.
+  keys: s-a-\ (normal)
+
+pipe.append:
+  title: Pipe and append
+  descr: Pipe each selection to a command, appending the output after the selection.
+  keys: s-1 (normal)
+
+pipe.prepend:
+  title: Pipe and prepend
+  descr: Pipe each selection to a command, prepending the output before the selection.
+  keys: s-a-1 (normal)
+
+
+rotate:
+  title: Rotate
+  descr: Rotate each selection clockwise.
+  keys: a-
+
+rotate.backwards:
+  title: Rotate backwards
+  descr: Rotate each selection counter-clockwise.
+
+rotate.content:
+  title: Rotate content
+  descr: Rotate content of each selection clockwise.
+
+rotate.content.backwards:
+  title: Rotate content backwards
+  descr: Rotate content of each selection counter-clockwise.
+
+
+search:
+  title: Search
+  descr: Search for the given input string.
+  keys: slash (normal)
+  add: extend
+
+search.backwards:
+  title: Search backwards
+  descr: Search for the given input string before the current selections.
+  keys: a-slash (normal)
+  add: extend
+
+search.selection.smart:
+  title: Search current selections (smart)
+  keys: s-8 (normal)
+
+search.selection:
+  title: Search current selections
+  keys: s-a-8 (normal)

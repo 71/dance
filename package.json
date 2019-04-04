@@ -1,0 +1,922 @@
+{
+  "name": "dance",
+  "displayName": "Dance",
+  "description": "Make those cursors dance.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "publisher": "gregoire",
+  "author": {
+    "name": "Grégoire Geis",
+    "email": "git@gregoirege.is"
+  },
+  "readme": "README.md",
+  "categories": [
+    "Keymaps",
+    "Other"
+  ],
+  "main": "./out/src/extension.js",
+  "engines": {
+    "vscode": "^1.32.0"
+  },
+  "scripts": {
+    "generate": "ts-node commands/generate.ts && ts-node package.ts",
+    "vscode:prepublish": "yarn run generate && yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "postinstall": "node ./node_modules/vscode/bin/install",
+    "test": "yarn run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/execa": "^0.9.0",
+    "@types/js-yaml": "^3.12.1",
+    "@types/mocha": "^2.2.42",
+    "@types/node": "^10.12.21",
+    "@types/shelljs": "^0.8.4",
+    "execa": "^1.0.0",
+    "js-yaml": "^3.13.0",
+    "shelljs": "^0.8.3",
+    "ts-node": "^8.0.3",
+    "tslint": "^5.12.1",
+    "typescript": "^3.3.1",
+    "vscode": "^1.1.28"
+  },
+  "activationEvents": [
+    "*"
+  ],
+  "contributes": {
+    "configuration": {
+      "type": "object",
+      "title": "Dance configuration",
+      "properties": {
+        "dance.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enables or disables the Dance key bindings."
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "dance.toggle",
+        "title": "Toggle",
+        "description": "Toggles Dance key bindings.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.set.normal",
+        "title": "Set mode to Normal",
+        "description": "Set Dance mode to Normal.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.set.insert",
+        "title": "Set mode to Insert",
+        "description": "Set Dance mode to Insert.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.tmp.normal",
+        "title": "Temporary normal mode",
+        "description": "Switches to normal mode temporarily.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.tmp.insert",
+        "title": "Temporary insert mode",
+        "description": "Switches to insert mode temporarily.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.insert.before",
+        "title": "Insert before",
+        "description": "Start insert before the current selections.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.insert.after",
+        "title": "Insert after",
+        "description": "Start insert after the current selections.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.insert.lineStart",
+        "title": "Insert at line start",
+        "description": "Start insert at line start of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.insert.lineEnd",
+        "title": "Insert at line end",
+        "description": "Start insert at line end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.insert.newLine.below",
+        "title": "Insert new line below",
+        "description": "Create new line and start insert below.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.insert.newLine.above",
+        "title": "Insert new line above",
+        "description": "Create new line and start insert above.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.newLine.below",
+        "title": "Add new line below",
+        "description": "Add a new line below, without entering insert mode.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.newLine.above",
+        "title": "Add new line above",
+        "description": "Add a new line above, without entering insert mode.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.left",
+        "title": "Move left",
+        "description": "Move left.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.right",
+        "title": "Move right",
+        "description": "Move right.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.up",
+        "title": "Move up",
+        "description": "Move up.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.down",
+        "title": "Move down",
+        "description": "Move down.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.included",
+        "title": "Select to",
+        "description": "Select to the next character pressed, including it.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.excluded",
+        "title": "Select until",
+        "description": "Select until the next character pressed, excluding it.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.buffer",
+        "title": "Select whole buffer",
+        "description": "Select whole buffer.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.line",
+        "title": "Select line",
+        "description": "Select line on which the end of each selection lies (or next line when end lies on an end-of-line).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.expandLines",
+        "title": "Extend lines",
+        "description": "Extend selections to contain full lines (including end-of-lines).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.trimLines",
+        "title": "Trim lines",
+        "description": "Trim selections to only contain full lines (not including last end-of-line).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word",
+        "title": "Select to next word start",
+        "description": "Select the word and following whitespaces on the right of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.previous",
+        "title": "Select to previous word start",
+        "description": "Select preceding whitespaces and the word on the left of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.end",
+        "title": "Select to next word end",
+        "description": "Select preceding whitespaces and the word on the right of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.alt",
+        "title": "Select to next non-whitespace word start",
+        "description": "Select the non-whitespace word and following whitespaces on the right of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.alt.previous",
+        "title": "Select to previous non-whitespace word start",
+        "description": "Select preceding whitespaces and the non-whitespace word on the left of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.alt.end",
+        "title": "Select to next non-whitespace word end",
+        "description": "Select preceding whitespaces and the non-whitespace word on the right of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select",
+        "title": "Select",
+        "description": "Select within current selections according to a RegExp.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.split",
+        "title": "Split",
+        "description": "Split within current selections according to a RegExp.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.split.lines",
+        "title": "Split lines",
+        "description": "Split selections into lines.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.firstLast",
+        "title": "Select first and last characters",
+        "description": "Select first and last characters of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.clear",
+        "title": "Clear selections",
+        "description": "Clear selections (except main)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.clearMain",
+        "title": "Clear main selection",
+        "description": "Clear main selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.keepMatching",
+        "title": "Keep matching selections",
+        "description": "Keep selections that match a RegExp.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.clearMatching",
+        "title": "Clear matching selections",
+        "description": "Clear selections that match a RegExp.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.pipe.filter",
+        "title": "Filter through pipe",
+        "description": "Pipe each selection to a program, and keeps it if the program returns 0.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.pipe.replace",
+        "title": "Pipe and replace",
+        "description": "Pipe each selection to a command, and replaces it with its output.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.pipe.ignore",
+        "title": "Pipe",
+        "description": "Pipe each selection to a command, ignoring their results.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.pipe.append",
+        "title": "Pipe and append",
+        "description": "Pipe each selection to a command, appending the output after the selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.pipe.prepend",
+        "title": "Pipe and prepend",
+        "description": "Pipe each selection to a command, prepending the output before the selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.rotate",
+        "title": "Rotate",
+        "description": "Rotate each selection clockwise.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.rotate.backwards",
+        "title": "Rotate backwards",
+        "description": "Rotate each selection counter-clockwise.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.rotate.content",
+        "title": "Rotate content",
+        "description": "Rotate content of each selection clockwise.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.rotate.content.backwards",
+        "title": "Rotate content backwards",
+        "description": "Rotate content of each selection counter-clockwise.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search",
+        "title": "Search",
+        "description": "Search for the given input string.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.backwards",
+        "title": "Search backwards",
+        "description": "Search for the given input string before the current selections.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.selection.smart",
+        "title": "Search current selections (smart)",
+        "description": "Search current selections (smart).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.selection",
+        "title": "Search current selections",
+        "description": "Search current selections.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.left.extend",
+        "title": "Move left (extend)",
+        "description": "Move left (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.right.extend",
+        "title": "Move right (extend)",
+        "description": "Move right (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.up.extend",
+        "title": "Move up (extend)",
+        "description": "Move up (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.down.extend",
+        "title": "Move down (extend)",
+        "description": "Move down (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.included.extend",
+        "title": "Extend to",
+        "description": "Extend to the next character pressed, including it.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.excluded.extend",
+        "title": "Extend until",
+        "description": "Extend with until the next character pressed, excluding it.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.line.extend",
+        "title": "Extend with line",
+        "description": "Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.extend",
+        "title": "Extend to next word start",
+        "description": "Extend with the word and following whitespaces on the right of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.previous.extend",
+        "title": "Extend to previous word start",
+        "description": "Extend with preceding whitespaces and the word on the left of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.end.extend",
+        "title": "Extend to next word end",
+        "description": "Extend with preceding whitespaces and the word on the right of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.alt.extend",
+        "title": "Extend to next non-whitespace word start",
+        "description": "Extend with the non-whitespace word and following whitespaces on the right of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.alt.previous.extend",
+        "title": "Extend to previous non-whitespace word start",
+        "description": "Extend with preceding whitespaces and the non-whitespace word on the left of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.word.alt.end.extend",
+        "title": "Extend to next non-whitespace word end",
+        "description": "Extend with preceding whitespaces and the non-whitespace word on the right of the end of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.extend",
+        "title": "Search (extend)",
+        "description": "Search for the given input string (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.backwards.extend",
+        "title": "Search backwards (extend)",
+        "description": "Search for the given input string before the current selections (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.included.backwards",
+        "title": "Select to (backwards)",
+        "description": "Select to the next character pressed, including it. (backwards)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.excluded.backwards",
+        "title": "Select until (backwards)",
+        "description": "Select until the next character pressed, excluding it. (backwards)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.included.extend.backwards",
+        "title": "Extend to (backwards)",
+        "description": "Extend to the next character pressed, including it. (backwards)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.excluded.extend.backwards",
+        "title": "Extend until (backwards)",
+        "description": "Extend with until the next character pressed, excluding it. (backwards)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.0",
+        "title": "Count 0",
+        "description": "Adds 0 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.1",
+        "title": "Count 1",
+        "description": "Adds 1 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.2",
+        "title": "Count 2",
+        "description": "Adds 2 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.3",
+        "title": "Count 3",
+        "description": "Adds 3 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.4",
+        "title": "Count 4",
+        "description": "Adds 4 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.5",
+        "title": "Count 5",
+        "description": "Adds 5 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.6",
+        "title": "Count 6",
+        "description": "Adds 6 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.7",
+        "title": "Count 7",
+        "description": "Adds 7 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.8",
+        "title": "Count 8",
+        "description": "Adds 8 to the current counter for the next operation.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.count.9",
+        "title": "Count 9",
+        "description": "Adds 9 to the current counter for the next operation.",
+        "category": "Dance"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "dance.set.normal",
+        "key": "escape",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.tmp.normal",
+        "key": "Ctrl+v",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.tmp.insert",
+        "key": "Ctrl+v",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.insert.before",
+        "key": "i",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.insert.after",
+        "key": "a",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.insert.lineStart",
+        "key": "Shift+i",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.insert.lineEnd",
+        "key": "Shift+a",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.insert.newLine.below",
+        "key": "o",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.insert.newLine.above",
+        "key": "Shift+o",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.left",
+        "key": "left",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.left",
+        "key": "left",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.left",
+        "key": "h",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.right",
+        "key": "right",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.right",
+        "key": "right",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.right",
+        "key": "l",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.up",
+        "key": "up",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.up",
+        "key": "up",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.up",
+        "key": "k",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.down",
+        "key": "down",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.down",
+        "key": "down",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.down",
+        "key": "j",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.to.included",
+        "key": "f",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.to.excluded",
+        "key": "t",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.buffer",
+        "key": "Shift+5",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.line",
+        "key": "x",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.expandLines",
+        "key": "Alt+x",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.trimLines",
+        "key": "Shift+Alt+x",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word",
+        "key": "w",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.previous",
+        "key": "b",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.end",
+        "key": "e",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.alt",
+        "key": "Alt+w",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.alt.previous",
+        "key": "Alt+b",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.alt.end",
+        "key": "Alt+e",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select",
+        "key": "s",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.split",
+        "key": "Shift+s",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.split.lines",
+        "key": "Alt+s",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.firstLast",
+        "key": "Shift+Alt+s",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.selections.clear",
+        "key": "space",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.selections.clearMain",
+        "key": "Alt+space",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.selections.keepMatching",
+        "key": "Alt+k",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.selections.clearMatching",
+        "key": "Shift+Alt+k",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.pipe.filter",
+        "key": "Shift+4",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.pipe.replace",
+        "key": "Shift+\\",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.pipe.ignore",
+        "key": "Shift+Alt+\\",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.pipe.append",
+        "key": "Shift+1",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.pipe.prepend",
+        "key": "Shift+Alt+1",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search",
+        "key": "slash",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.backwards",
+        "key": "Alt+slash",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.selection.smart",
+        "key": "Shift+8",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.selection",
+        "key": "Shift+Alt+8",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.left.extend",
+        "key": "Shift+left",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.left.extend",
+        "key": "left",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.left.extend",
+        "key": "h",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.right.extend",
+        "key": "Shift+right",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.right.extend",
+        "key": "right",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.right.extend",
+        "key": "l",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.up.extend",
+        "key": "Shift+up",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.up.extend",
+        "key": "up",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.up.extend",
+        "key": "k",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.down.extend",
+        "key": "Shift+down",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.down.extend",
+        "key": "down",
+        "when": "dance.mode == 'insert'"
+      },
+      {
+        "command": "dance.down.extend",
+        "key": "j",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.to.included.extend",
+        "key": "Shift+f",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.to.excluded.extend",
+        "key": "Shift+t",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.line.extend",
+        "key": "Shift+x",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.extend",
+        "key": "Shift+w",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.previous.extend",
+        "key": "Shift+b",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.end.extend",
+        "key": "Shift+e",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.alt.extend",
+        "key": "Shift+Alt+w",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.alt.previous.extend",
+        "key": "Shift+Alt+b",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.word.alt.end.extend",
+        "key": "Shift+Alt+e",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.extend",
+        "key": "Shift+slash",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.backwards.extend",
+        "key": "Shift+Alt+slash",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.to.included.backwards",
+        "key": "Alt+f",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.to.excluded.backwards",
+        "key": "Alt+t",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.to.included.extend.backwards",
+        "key": "Alt+Shift+f",
+        "when": "dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.to.excluded.extend.backwards",
+        "key": "Alt+Shift+t",
+        "when": "dance.mode == 'normal'"
+      }
+    ]
+  }
+}
