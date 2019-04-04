@@ -25,7 +25,7 @@ to [Visual Studio Code][VSC], rather than an emulation layer on top of it.
   VS Code-native [commands] and [key bindings][keybindings] that are inspired by [Kakoune].
 - Kakoune, Vim and VS Code are all fully-fledged text editors; therefore, they have overlapping
   features. For instance, where [VSCodeVim] provides its own multi-cursor and command engines
-  to feel more familiar to existing Vim users, Bullet Dance leaves multi-cursor mode and editor
+  to feel more familiar to existing Vim users, Dance leaves multi-cursor mode and editor
   commands to VS Code entirely.
 
 
