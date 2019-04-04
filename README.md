@@ -21,7 +21,7 @@ to [Visual Studio Code][VSC], rather than an emulation layer on top of it.
 - Vim's key bindings are [already available to VS Code users][VSCodeVim].
 
 #### Why is it merely 'inspired' by [Kakoune]?
-- Unlike [VSCodeVim] which attempts to emulate Vim, Cursor Dance's only goal is to provide
+- Unlike [VSCodeVim] which attempts to emulate Vim, Dance's only goal is to provide
   VS Code-native [commands] and [key bindings][keybindings] that are inspired by [Kakoune].
 - Kakoune, Vim and VS Code are all fully-fledged text editors; therefore, they have overlapping
   features. For instance, where [VSCodeVim] provides its own multi-cursor and command engines
@@ -71,6 +71,7 @@ focusing much on unit tests for now.
 Contributions are welcome.
 
 
+[Vim]: https://www.vim.org
 [Kakoune]: https://github.com/mawww/kakoune
 [VSC]: https://github.com/Microsoft/vscode
 [VSCodeVim]: https://github.com/VSCodeVim/Vim
