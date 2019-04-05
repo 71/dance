@@ -3,6 +3,7 @@ Dance
 
 [Kakoune]-inspired key bindings for [Visual Studio Code][VSC].
 
+
 ## Huh?
 
 Dance provides [Kakoune]-inspired commands and key bindings for [Visual Studio Code][VSC].
@@ -22,11 +23,38 @@ to [Visual Studio Code][VSC], rather than an emulation layer on top of it.
 
 #### Why is it merely 'inspired' by [Kakoune]?
 - Unlike [VSCodeVim] which attempts to emulate Vim, Dance's only goal is to provide
-  VS Code-native [commands] and [key bindings][keybindings] that are inspired by [Kakoune].
+  VS Code-native [commands][VSCCommands] and [key bindings][VSCKeyBindings] that are inspired by [Kakoune].
 - Kakoune, Vim and VS Code are all fully-fledged text editors; therefore, they have overlapping
   features. For instance, where [VSCodeVim] provides its own multi-cursor and command engines
   to feel more familiar to existing Vim users, Dance leaves multi-cursor mode and editor
   commands to VS Code entirely.
+
+
+## User Guide
+
+For most [commands], the usage is the same as in [Kakoune]. However, the following changes have been made:
+
+### Pipes
+- Pipes no longer accept shell commands, but instead accept 'expressions', those being:
+  - `#<shell command>`: Pipes each selection into a shell command (the shell is taken from the `terminal.external.exec` value).
+  - `/<pattern>[/<replacement>[/<flags>]`: A RegExp literal, as [defined in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions). Do note the addition of a `replacement`, for commands that add or replace text.
+  - `<JS expression>`: A JavaScript expression in which the following variables are available:
+    - `$`: Text of the current selection.
+    - `$$`: Array of the text of all the selections.
+    - `i`: Index of the current selection.
+
+    Depending on the result of the expression, it will be inserted differently:
+    - `string`: Inserted directly.
+    - `number`: Inserted in its string representation.
+    - `boolean`: Inserted as `true` or `false`.
+    - `null`: Inserted as `null`.
+    - `undefined`: Inserted as an empty string.
+    - `object`: Inserted as JSON.
+    - Any other type: Leads to an error.
+
+#### Examples
+- `/(\d+),(\d+)/$1.$2/g` replaces `12,34` into `12.34`.
+- `i + 1` replaces `1,1,1,1,1` into `1,2,3,4,5`, assuming that each selection is on a different character.
 
 
 ## Progress
@@ -36,7 +64,7 @@ This project is a WIP. It's brand new, and far from complete.
 In the following list, if a command is implemented, then its extending equivalent
 (activated while pressing `Shift`) then likely is implemented as well.
 
-Most (but not all) commands defined in [`commands`](./commands) are implemented.
+Most (but not all) commands defined in [`commands`][commands] are implemented.
 
 - [X] Basic movements:
   - [X] Arrows, hjkl.
@@ -71,9 +99,10 @@ focusing much on unit tests for now.
 Contributions are welcome.
 
 
+[commands]: ./commands
 [Vim]: https://www.vim.org
 [Kakoune]: https://github.com/mawww/kakoune
 [VSC]: https://github.com/Microsoft/vscode
 [VSCodeVim]: https://github.com/VSCodeVim/Vim
-[commands]: https://code.visualstudio.com/api/extension-guides/command
-[keybindings]: https://code.visualstudio.com/docs/getstarted/keybindings
+[VSCCommands]: https://code.visualstudio.com/api/extension-guides/command
+[VSCKeyBindings]: https://code.visualstudio.com/docs/getstarted/keybindings
