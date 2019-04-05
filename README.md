@@ -54,7 +54,7 @@ For most [commands], the usage is the same as in [Kakoune]. However, the followi
 
 #### Examples
 - `/(\d+),(\d+)/$1.$2/g` replaces `12,34` into `12.34`.
-- `i + 1` replaces `1,1,1,1,1` into `1,2,3,4,5`, assuming that each selection is on a different character.
+- `i + 1` replaces `1,1,1,1,1` into `1,2,3,4,5`, assuming that each selection is on a different digit.
 
 
 ## Progress
