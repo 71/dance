@@ -42,11 +42,9 @@ const pkg = {
   },
 
   devDependencies: {
-    '@types/execa'  : '^0.9.0',
     '@types/mocha'  : '^2.2.42',
     '@types/node'   : '^10.12.21',
     '@types/js-yaml': '^3.12.1',
-    'execa'     : '^1.0.0',
     'js-yaml'   : '^3.13.0',
     'ts-node'   : '^8.0.3',
     'tslint'    : '^5.12.1',
