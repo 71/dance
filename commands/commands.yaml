@@ -3,6 +3,10 @@
 # - https://github.com/mawww/kakoune/blob/master/src/normal.cc
 # - https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc
 
+
+# Meta
+# ================================================================================================
+
 toggle:
   title: Toggle
   descr: Toggles Dance key bindings.
@@ -26,6 +30,9 @@ tmp.insert:
   descr: Switches to insert mode temporarily.
   keys: c-v (normal)
 
+
+# Insert
+# ================================================================================================
 
 insert.before:
   title: Insert before
@@ -66,6 +73,9 @@ newLine.above:
   descr: Add a new line above, without entering insert mode.
 
 
+# Move around
+# ================================================================================================
+
 left:
   title: Move left
   keys: left (normal), left (insert), h (normal)
@@ -83,6 +93,9 @@ down:
   keys: down (normal), down (insert), j (normal)
   add: extend
 
+
+# Select to / until / buffer / line
+# ================================================================================================
 
 select.to.included:
   title: Select to
@@ -116,6 +129,9 @@ trimLines:
   descr: Trim selections to only contain full lines (not including last end-of-line).
   keys: s-a-x (normal)
 
+
+# Select word
+# ================================================================================================
 
 select.word:
   title: Select to next word start
@@ -154,6 +170,9 @@ select.word.alt.end:
   add: extend
 
 
+# Select within current selections
+# ================================================================================================
+
 select:
   title: Select
   descr: Select within current selections according to a RegExp.
@@ -175,6 +194,9 @@ select.firstLast:
   keys: s-a-s (normal)
 
 
+# Switch current selections
+# ================================================================================================
+
 selections.clear:
   title: Clear selections
   descr: Clear selections (except main)
@@ -194,6 +216,9 @@ selections.clearMatching:
   descr: Clear selections that match a RegExp.
   keys: s-a-k (normal)
 
+
+# Pipes
+# ================================================================================================
 
 pipe.filter:
   title: Filter through pipe
@@ -221,6 +246,9 @@ pipe.prepend:
   keys: s-a-1 (normal)
 
 
+# Rotate
+# ================================================================================================
+
 rotate:
   title: Rotate
   descr: Rotate each selection clockwise.
@@ -238,6 +266,9 @@ rotate.content.backwards:
   title: Rotate content backwards
   descr: Rotate content of each selection counter-clockwise.
 
+
+# Search
+# ================================================================================================
 
 search:
   title: Search
@@ -258,3 +289,58 @@ search.selection.smart:
 search.selection:
   title: Search current selections
   keys: s-a-8 (normal)
+
+
+# Registers and marks
+# ================================================================================================
+
+objects.select:
+  title: Select whole object
+  keys: a-a (normal), a-a (insert)
+
+objects.select.inner:
+  title: Select inner object
+  keys: a-i (normal), a-i (insert)
+
+objects.selectToStart:
+  title: Select to the whole object start
+  keys: "[BracketLeft] (normal)"
+  add: extend inner
+
+objects.selectToEnd:
+  title: Select to the whole object end
+  keys: "[BracketRight] (normal)"
+  add: extend inner
+
+objects.select.repeat:
+  title: Repeat object select
+  keys: a-. (normal)
+
+
+# Registers and marks
+# ================================================================================================
+
+registers.insert:
+  title: Insert value in register
+  keys: c-r (normal), c-r (insert)
+
+registers.select:
+  title: Select register for next command
+  keys: "[Quote] (normal)"
+
+
+marks.saveSelections:
+  title: Save selections
+  keys: s-z (normal)
+
+marks.restoreSelections:
+  title: Restore selections
+  keys: z (normal)
+
+marks.combineSelections.fromCurrent:
+  title: Combine current selections with ones from register
+  keys: s-a-z (normal)
+
+marks.combineSelections.fromRegister:
+  title: Combine register selections with current ones
+  keys: a-z (normal)

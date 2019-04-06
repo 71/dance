@@ -3,14 +3,15 @@ import * as vscode               from 'vscode'
 import { Selection, TextEditor } from 'vscode'
 
 import { keypress, registerCommand, Command } from '.'
+import { Extension } from '../extension'
 
 
 // Yes, this looks like a decorator. Yes, it's supposed to be one.
 // Yes, I'm hoping that TypeScript will one day consider this a bug,
 // and fix the current behavior, which causes an error.
-function registerMovement(cmd: Command, modifier: (selection: Selection, editor: TextEditor) => Selection) {
-  registerCommand(cmd, editor => {
-    editor.selections = editor.selections.map(s => modifier(s, editor))
+function registerMovement(cmd: Command, modifier: (selection: Selection, editor: TextEditor, state: Extension) => Selection) {
+  registerCommand(cmd, (editor, state) => {
+    editor.selections = editor.selections.map(s => modifier(s, editor, state))
   })
 }
 
@@ -39,16 +40,20 @@ const simpleMovements: [Command, number, number][] = [
 
 for (const [command, lineDelta, charDelta] of simpleMovements) {
   // Move left / down / up / right
-  registerMovement(command, (selection, editor) => {
-    const anchor = translate(lineDelta, charDelta, selection.anchor, editor)
-    const active = translate(lineDelta, charDelta, selection.active, editor)
+  registerMovement(command, (selection, editor, state) => {
+    const mult = state.currentCount || 1
+
+    const anchor = translate(lineDelta * mult, charDelta * mult, selection.anchor, editor)
+    const active = translate(lineDelta * mult, charDelta * mult, selection.active, editor)
 
     return new Selection(anchor, active)
   })
 
   // Extend left / down / up / right
-  registerMovement(command + '.extend' as Command, (selection, editor) => {
-    return new Selection(selection.anchor, translate(lineDelta, charDelta, selection.active, editor))
+  registerMovement(command + '.extend' as Command, (selection, editor, state) => {
+    const mult = state.currentCount || 1
+
+    return new Selection(selection.anchor, translate(lineDelta * mult, charDelta * mult, selection.active, editor))
   })
 }
 
@@ -57,40 +62,42 @@ for (const [command, lineDelta, charDelta] of simpleMovements) {
 // ===============================================================================================
 
 function registerSelectTo(commandName: Command, diff: number, extend: boolean, backwards: boolean) {
-  registerCommand(commandName, async editor => {
+  registerCommand(commandName, async (editor, state) => {
     const key = await keypress()
 
     editor.selections = editor.selections.map(selection => {
       let line = selection.active.line
       let idx = backwards
-        ? editor.document.lineAt(line).text.lastIndexOf(key, selection.active.character)
-        : editor.document.lineAt(line).text.indexOf(key, selection.active.character)
+        ? editor.document.lineAt(line).text.lastIndexOf(key, selection.active.character - 1 - diff)
+        : editor.document.lineAt(line).text.indexOf(key, selection.active.character + 1 - diff)
 
-      while (idx === -1) {
-        // There is no initial match, so we check the surrounding lines
+      for (let i = state.currentCount || 1; i > 0; i--) {
+        while (idx === -1) {
+          // There is no initial match, so we check the surrounding lines
 
-        if (backwards) {
-          if (--line === -1)
-            return selection // No match
-        } else {
-          if (++line === editor.document.lineCount)
-            return selection // No match
+          if (backwards) {
+            if (--line === -1)
+              return selection // No match
+          } else {
+            if (++line === editor.document.lineCount)
+              return selection // No match
+          }
+
+          const { text } = editor.document.lineAt(line)
+
+          idx = backwards ? text.lastIndexOf(key) : text.indexOf(key)
         }
-
-        const { text } = editor.document.lineAt(line)
-
-        idx = backwards ? text.lastIndexOf(key) : text.indexOf(key)
       }
 
-      return new Selection(extend ? selection.anchor : selection.active, new vscode.Position(line, idx))
+      return new Selection(extend ? selection.anchor : selection.active, new vscode.Position(line, idx + diff))
     })
   })
 }
 
-registerSelectTo(Command.selectToIncluded      , 0, false, false)
-registerSelectTo(Command.selectToIncludedExtend, 0, true , false)
-registerSelectTo(Command.selectToExcluded      , 1, false, false)
-registerSelectTo(Command.selectToExcludedExtend, 1, true , false)
+registerSelectTo(Command.selectToIncluded      , 1, false, false)
+registerSelectTo(Command.selectToIncludedExtend, 1, true , false)
+registerSelectTo(Command.selectToExcluded      , 0, false, false)
+registerSelectTo(Command.selectToExcludedExtend, 0, true , false)
 
 registerSelectTo(Command.selectToIncludedBackwards      , 0, false, true )
 registerSelectTo(Command.selectToIncludedExtendBackwards, 0, true , true )
@@ -124,7 +131,9 @@ function skipWhile(document: vscode.TextDocument, pos: vscode.Position, backward
 
   while (line >= 0 && line < document.lineCount) {
     let { text } = document.lineAt(line)
-    let character = line === pos.line ? pos.character : backwards ? text.length - 1 : 0
+    let character = line === pos.line
+      ? (backwards ? pos.character - 1 : pos.character)
+      : (backwards ? text.length - 1   : 0)
 
     while (character >= 0 && character < text.length) {
       if (!cond(text[character]))
@@ -145,7 +154,9 @@ function skipEmptyLines(document: vscode.TextDocument, pos: vscode.Position, bac
   if (!document.lineAt(line).isEmptyOrWhitespace)
     return pos
 
-  while (document.lineAt(line).isEmptyOrWhitespace) {
+  let lineInfo: vscode.TextLine
+
+  while ((lineInfo = document.lineAt(line)).isEmptyOrWhitespace) {
     if (backwards) {
       if (line-- === 0)
         return undefined
@@ -155,71 +166,83 @@ function skipEmptyLines(document: vscode.TextDocument, pos: vscode.Position, bac
     }
   }
 
-  return backwards ? document.lineAt(line).range.end : new vscode.Position(line, 0)
+  return backwards ? lineInfo.range.end : lineInfo.range.start
 }
 
 
 function registerToNextWord(commandName: Command, extend: boolean, end: boolean, isWord: (c: string) => boolean) {
-  registerCommand(commandName, editor => {
+  registerCommand(commandName, (editor, state) => {
     editor.selections = editor.selections.map(selection => {
-      let pos = skipEmptyLines(editor.document, selection.active, false)
+      const anchor = extend ? selection.anchor : selection.active
 
-      if (pos === undefined)
-        return selection
-
-      if (end) {
-        pos = skipWhile(editor.document, pos, false, isBlank)
+      for (let i = state.currentCount || 1; i > 0; i--) {
+        let pos = skipEmptyLines(editor.document, selection.active, false)
 
         if (pos === undefined)
           return selection
-      }
 
-      let ch = editor.document.lineAt(pos).text[pos.character]
+        if (end) {
+          pos = skipWhile(editor.document, pos, false, isBlank)
 
-      if (isWord(ch))
-        pos = skipWhile(editor.document, pos, false, isWord)
-      else if (isPunctuation(ch))
-        pos = skipWhile(editor.document, pos, false, isPunctuation)
+          if (pos === undefined)
+            return selection
+        }
 
-      if (pos === undefined)
-        return selection
+        let ch = editor.document.lineAt(pos).text[pos.character]
 
-      if (!end) {
-        pos = skipWhile(editor.document, pos, false, isBlank)
+        if (isWord(ch))
+          pos = skipWhile(editor.document, pos, false, isWord)
+        else if (isPunctuation(ch))
+          pos = skipWhile(editor.document, pos, false, isPunctuation)
 
         if (pos === undefined)
           return selection
+
+        if (!end) {
+          pos = skipWhile(editor.document, pos, false, isBlank)
+
+          if (pos === undefined)
+            return selection
+        }
+
+        selection = new vscode.Selection(anchor, pos)
       }
 
-      return new vscode.Selection(extend ? selection.anchor : selection.active, pos)
+      return selection
     })
   })
 }
 
 function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (c: string) => boolean) {
-  registerCommand(commandName, editor => {
+  registerCommand(commandName, (editor, state) => {
     editor.selections = editor.selections.map(selection => {
-      let pos = skipEmptyLines(editor.document, selection.active, false)
+      const anchor = extend ? selection.anchor : selection.active
 
-      if (pos === undefined)
-        return selection
+      for (let i = state.currentCount || 1; i > 0; i--) {
+        let pos = skipEmptyLines(editor.document, selection.active, true)
 
-      pos = skipWhile(editor.document, pos, true, isBlank)
+        if (pos === undefined)
+          return selection
 
-      if (pos === undefined)
-        return selection
+        pos = skipWhile(editor.document, pos, true, isBlank)
 
-      let ch = editor.document.lineAt(pos).text[pos.character]
+        if (pos === undefined)
+          return selection
 
-      if (isWord(ch))
-        pos = skipWhile(editor.document, pos, true, isWord)
-      else if (isPunctuation(ch))
-        pos = skipWhile(editor.document, pos, true, isPunctuation)
+        let ch = editor.document.lineAt(pos).text[pos.character]
 
-      if (pos === undefined)
-        return selection
+        if (isWord(ch))
+          pos = skipWhile(editor.document, pos, true, isWord)
+        else if (isPunctuation(ch))
+          pos = skipWhile(editor.document, pos, true, isPunctuation)
 
-      return new vscode.Selection(extend ? selection.anchor : selection.active, pos)
+        if (pos === undefined)
+          return selection
+
+        selection = new vscode.Selection(anchor, pos.translate(0, 1))
+      }
+
+      return selection
     })
   })
 }

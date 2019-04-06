@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 
-import { commands, Mode } from './commands/index'
+import { commands, Mode }      from './commands/index'
+import { Register, Registers } from './registers'
 
 
 /** Name of the extension, used in commands and settings. */
@@ -16,9 +17,12 @@ export class Extension implements vscode.Disposable {
   changeEditorCommand: vscode.Disposable | undefined = undefined
 
   currentCount: number = 0
+  currentRegister: Register | undefined = undefined
 
   readonly modeMap = new Map<vscode.TextEditor, Mode>()
   readonly subscriptions: vscode.Disposable[] = []
+
+  readonly registers = new Registers()
 
   readonly normalModeLineDecoration = vscode.window.createTextEditorDecorationType({
     borderColor: new vscode.ThemeColor('editor.background'),
