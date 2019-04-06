@@ -21,7 +21,7 @@ export const setNormal: ICommand & { readonly id: 'dance.set.normal' } = {
   title      : 'Set mode to Normal',
   description: 'Set Dance mode to Normal.',
   keybindings: [
-    { key: 'escape', when: 'dance.mode == \'insert\'' },
+    { key: 'escape', when: 'editorTextFocus && dance.mode == \'insert\'' },
   ],
 }
 /** Set Dance mode to Insert. */
@@ -37,7 +37,7 @@ export const tmpNormal: ICommand & { readonly id: 'dance.tmp.normal' } = {
   title      : 'Temporary normal mode',
   description: 'Switches to normal mode temporarily.',
   keybindings: [
-    { key: 'Ctrl+v', when: 'dance.mode == \'insert\'' },
+    { key: 'Ctrl+v', when: 'editorTextFocus && dance.mode == \'insert\'' },
   ],
 }
 /** Switches to insert mode temporarily. */
@@ -46,7 +46,7 @@ export const tmpInsert: ICommand & { readonly id: 'dance.tmp.insert' } = {
   title      : 'Temporary insert mode',
   description: 'Switches to insert mode temporarily.',
   keybindings: [
-    { key: 'Ctrl+v', when: 'dance.mode == \'normal\'' },
+    { key: 'Ctrl+v', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Start insert before the current selections. */
@@ -55,7 +55,7 @@ export const insertBefore: ICommand & { readonly id: 'dance.insert.before' } = {
   title      : 'Insert before',
   description: 'Start insert before the current selections.',
   keybindings: [
-    { key: 'i', when: 'dance.mode == \'normal\'' },
+    { key: 'i', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Start insert after the current selections. */
@@ -64,7 +64,7 @@ export const insertAfter: ICommand & { readonly id: 'dance.insert.after' } = {
   title      : 'Insert after',
   description: 'Start insert after the current selections.',
   keybindings: [
-    { key: 'a', when: 'dance.mode == \'normal\'' },
+    { key: 'a', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Start insert at line start of each selection. */
@@ -73,7 +73,7 @@ export const insertLineStart: ICommand & { readonly id: 'dance.insert.lineStart'
   title      : 'Insert at line start',
   description: 'Start insert at line start of each selection.',
   keybindings: [
-    { key: 'Shift+i', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+i', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Start insert at line end of each selection. */
@@ -82,7 +82,7 @@ export const insertLineEnd: ICommand & { readonly id: 'dance.insert.lineEnd' } =
   title      : 'Insert at line end',
   description: 'Start insert at line end of each selection.',
   keybindings: [
-    { key: 'Shift+a', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+a', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Create new line and start insert below. */
@@ -91,7 +91,7 @@ export const insertNewLineBelow: ICommand & { readonly id: 'dance.insert.newLine
   title      : 'Insert new line below',
   description: 'Create new line and start insert below.',
   keybindings: [
-    { key: 'o', when: 'dance.mode == \'normal\'' },
+    { key: 'o', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Create new line and start insert above. */
@@ -100,7 +100,7 @@ export const insertNewLineAbove: ICommand & { readonly id: 'dance.insert.newLine
   title      : 'Insert new line above',
   description: 'Create new line and start insert above.',
   keybindings: [
-    { key: 'Shift+o', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+o', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Add a new line below, without entering insert mode. */
@@ -123,9 +123,9 @@ export const left: ICommand & { readonly id: 'dance.left' } = {
   title      : 'Move left',
   description: 'Move left.',
   keybindings: [
-    { key: 'left', when: 'dance.mode == \'normal\'' },
-    { key: 'left', when: 'dance.mode == \'insert\'' },
-    { key: 'h', when: 'dance.mode == \'normal\'' },
+    { key: 'left', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'left', when: 'editorTextFocus && dance.mode == \'insert\'' },
+    { key: 'h', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move right. */
@@ -134,9 +134,9 @@ export const right: ICommand & { readonly id: 'dance.right' } = {
   title      : 'Move right',
   description: 'Move right.',
   keybindings: [
-    { key: 'right', when: 'dance.mode == \'normal\'' },
-    { key: 'right', when: 'dance.mode == \'insert\'' },
-    { key: 'l', when: 'dance.mode == \'normal\'' },
+    { key: 'right', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'right', when: 'editorTextFocus && dance.mode == \'insert\'' },
+    { key: 'l', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move up. */
@@ -145,9 +145,9 @@ export const up: ICommand & { readonly id: 'dance.up' } = {
   title      : 'Move up',
   description: 'Move up.',
   keybindings: [
-    { key: 'up', when: 'dance.mode == \'normal\'' },
-    { key: 'up', when: 'dance.mode == \'insert\'' },
-    { key: 'k', when: 'dance.mode == \'normal\'' },
+    { key: 'up', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'up', when: 'editorTextFocus && dance.mode == \'insert\'' },
+    { key: 'k', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move down. */
@@ -156,9 +156,9 @@ export const down: ICommand & { readonly id: 'dance.down' } = {
   title      : 'Move down',
   description: 'Move down.',
   keybindings: [
-    { key: 'down', when: 'dance.mode == \'normal\'' },
-    { key: 'down', when: 'dance.mode == \'insert\'' },
-    { key: 'j', when: 'dance.mode == \'normal\'' },
+    { key: 'down', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'down', when: 'editorTextFocus && dance.mode == \'insert\'' },
+    { key: 'j', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select to the next character pressed, including it. */
@@ -167,7 +167,7 @@ export const selectToIncluded: ICommand & { readonly id: 'dance.select.to.includ
   title      : 'Select to',
   description: 'Select to the next character pressed, including it.',
   keybindings: [
-    { key: 'f', when: 'dance.mode == \'normal\'' },
+    { key: 'f', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select until the next character pressed, excluding it. */
@@ -176,7 +176,7 @@ export const selectToExcluded: ICommand & { readonly id: 'dance.select.to.exclud
   title      : 'Select until',
   description: 'Select until the next character pressed, excluding it.',
   keybindings: [
-    { key: 't', when: 'dance.mode == \'normal\'' },
+    { key: 't', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select whole buffer. */
@@ -185,7 +185,7 @@ export const selectBuffer: ICommand & { readonly id: 'dance.select.buffer' } = {
   title      : 'Select whole buffer',
   description: 'Select whole buffer.',
   keybindings: [
-    { key: 'Shift+5', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+5', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select line on which the end of each selection lies (or next line when end lies on an end-of-line). */
@@ -194,7 +194,7 @@ export const selectLine: ICommand & { readonly id: 'dance.select.line' } = {
   title      : 'Select line',
   description: 'Select line on which the end of each selection lies (or next line when end lies on an end-of-line).',
   keybindings: [
-    { key: 'x', when: 'dance.mode == \'normal\'' },
+    { key: 'x', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend selections to contain full lines (including end-of-lines). */
@@ -203,7 +203,7 @@ export const expandLines: ICommand & { readonly id: 'dance.expandLines' } = {
   title      : 'Extend lines',
   description: 'Extend selections to contain full lines (including end-of-lines).',
   keybindings: [
-    { key: 'Alt+x', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+x', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Trim selections to only contain full lines (not including last end-of-line). */
@@ -212,7 +212,7 @@ export const trimLines: ICommand & { readonly id: 'dance.trimLines' } = {
   title      : 'Trim lines',
   description: 'Trim selections to only contain full lines (not including last end-of-line).',
   keybindings: [
-    { key: 'Shift+Alt+x', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+x', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select the word and following whitespaces on the right of the end of each selection. */
@@ -221,7 +221,7 @@ export const selectWord: ICommand & { readonly id: 'dance.select.word' } = {
   title      : 'Select to next word start',
   description: 'Select the word and following whitespaces on the right of the end of each selection.',
   keybindings: [
-    { key: 'w', when: 'dance.mode == \'normal\'' },
+    { key: 'w', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select preceding whitespaces and the word on the left of the end of each selection. */
@@ -230,7 +230,7 @@ export const selectWordPrevious: ICommand & { readonly id: 'dance.select.word.pr
   title      : 'Select to previous word start',
   description: 'Select preceding whitespaces and the word on the left of the end of each selection.',
   keybindings: [
-    { key: 'b', when: 'dance.mode == \'normal\'' },
+    { key: 'b', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select preceding whitespaces and the word on the right of the end of each selection. */
@@ -239,7 +239,7 @@ export const selectWordEnd: ICommand & { readonly id: 'dance.select.word.end' } 
   title      : 'Select to next word end',
   description: 'Select preceding whitespaces and the word on the right of the end of each selection.',
   keybindings: [
-    { key: 'e', when: 'dance.mode == \'normal\'' },
+    { key: 'e', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select the non-whitespace word and following whitespaces on the right of the end of each selection. */
@@ -248,7 +248,7 @@ export const selectWordAlt: ICommand & { readonly id: 'dance.select.word.alt' } 
   title      : 'Select to next non-whitespace word start',
   description: 'Select the non-whitespace word and following whitespaces on the right of the end of each selection.',
   keybindings: [
-    { key: 'Alt+w', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+w', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select preceding whitespaces and the non-whitespace word on the left of the end of each selection. */
@@ -257,7 +257,7 @@ export const selectWordAltPrevious: ICommand & { readonly id: 'dance.select.word
   title      : 'Select to previous non-whitespace word start',
   description: 'Select preceding whitespaces and the non-whitespace word on the left of the end of each selection.',
   keybindings: [
-    { key: 'Alt+b', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+b', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select preceding whitespaces and the non-whitespace word on the right of the end of each selection. */
@@ -266,7 +266,7 @@ export const selectWordAltEnd: ICommand & { readonly id: 'dance.select.word.alt.
   title      : 'Select to next non-whitespace word end',
   description: 'Select preceding whitespaces and the non-whitespace word on the right of the end of each selection.',
   keybindings: [
-    { key: 'Alt+e', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+e', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select within current selections according to a RegExp. */
@@ -275,7 +275,7 @@ export const select: ICommand & { readonly id: 'dance.select' } = {
   title      : 'Select',
   description: 'Select within current selections according to a RegExp.',
   keybindings: [
-    { key: 's', when: 'dance.mode == \'normal\'' },
+    { key: 's', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Split within current selections according to a RegExp. */
@@ -284,7 +284,7 @@ export const split: ICommand & { readonly id: 'dance.split' } = {
   title      : 'Split',
   description: 'Split within current selections according to a RegExp.',
   keybindings: [
-    { key: 'Shift+s', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+s', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Split selections into lines. */
@@ -293,7 +293,7 @@ export const splitLines: ICommand & { readonly id: 'dance.split.lines' } = {
   title      : 'Split lines',
   description: 'Split selections into lines.',
   keybindings: [
-    { key: 'Alt+s', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+s', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select first and last characters of each selection. */
@@ -302,7 +302,7 @@ export const selectFirstLast: ICommand & { readonly id: 'dance.select.firstLast'
   title      : 'Select first and last characters',
   description: 'Select first and last characters of each selection.',
   keybindings: [
-    { key: 'Shift+Alt+s', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+s', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Clear selections (except main) */
@@ -311,7 +311,7 @@ export const selectionsClear: ICommand & { readonly id: 'dance.selections.clear'
   title      : 'Clear selections',
   description: 'Clear selections (except main)',
   keybindings: [
-    { key: 'space', when: 'dance.mode == \'normal\'' },
+    { key: 'space', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Clear main selection. */
@@ -320,7 +320,7 @@ export const selectionsClearMain: ICommand & { readonly id: 'dance.selections.cl
   title      : 'Clear main selection',
   description: 'Clear main selection.',
   keybindings: [
-    { key: 'Alt+space', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+space', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Keep selections that match a RegExp. */
@@ -329,7 +329,7 @@ export const selectionsKeepMatching: ICommand & { readonly id: 'dance.selections
   title      : 'Keep matching selections',
   description: 'Keep selections that match a RegExp.',
   keybindings: [
-    { key: 'Alt+k', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+k', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Clear selections that match a RegExp. */
@@ -338,7 +338,7 @@ export const selectionsClearMatching: ICommand & { readonly id: 'dance.selection
   title      : 'Clear matching selections',
   description: 'Clear selections that match a RegExp.',
   keybindings: [
-    { key: 'Shift+Alt+k', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+k', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Pipe each selection to a program, and keeps it if the program returns 0. */
@@ -347,7 +347,7 @@ export const pipeFilter: ICommand & { readonly id: 'dance.pipe.filter' } = {
   title      : 'Filter through pipe',
   description: 'Pipe each selection to a program, and keeps it if the program returns 0.',
   keybindings: [
-    { key: 'Shift+4', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+4', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Pipe each selection to a command, and replaces it with its output. */
@@ -356,7 +356,7 @@ export const pipeReplace: ICommand & { readonly id: 'dance.pipe.replace' } = {
   title      : 'Pipe and replace',
   description: 'Pipe each selection to a command, and replaces it with its output.',
   keybindings: [
-    { key: 'Shift+\\', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+\\', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Pipe each selection to a command, ignoring their results. */
@@ -365,7 +365,7 @@ export const pipeIgnore: ICommand & { readonly id: 'dance.pipe.ignore' } = {
   title      : 'Pipe',
   description: 'Pipe each selection to a command, ignoring their results.',
   keybindings: [
-    { key: 'Shift+Alt+\\', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+\\', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Pipe each selection to a command, appending the output after the selection. */
@@ -374,7 +374,7 @@ export const pipeAppend: ICommand & { readonly id: 'dance.pipe.append' } = {
   title      : 'Pipe and append',
   description: 'Pipe each selection to a command, appending the output after the selection.',
   keybindings: [
-    { key: 'Shift+1', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+1', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Pipe each selection to a command, prepending the output before the selection. */
@@ -383,7 +383,7 @@ export const pipePrepend: ICommand & { readonly id: 'dance.pipe.prepend' } = {
   title      : 'Pipe and prepend',
   description: 'Pipe each selection to a command, prepending the output before the selection.',
   keybindings: [
-    { key: 'Shift+Alt+1', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+1', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Rotate each selection clockwise. */
@@ -421,7 +421,7 @@ export const search: ICommand & { readonly id: 'dance.search' } = {
   title      : 'Search',
   description: 'Search for the given input string.',
   keybindings: [
-    { key: 'slash', when: 'dance.mode == \'normal\'' },
+    { key: 'slash', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Search for the given input string before the current selections. */
@@ -430,7 +430,7 @@ export const searchBackwards: ICommand & { readonly id: 'dance.search.backwards'
   title      : 'Search backwards',
   description: 'Search for the given input string before the current selections.',
   keybindings: [
-    { key: 'Alt+slash', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+slash', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Search current selections (smart). */
@@ -439,7 +439,7 @@ export const searchSelectionSmart: ICommand & { readonly id: 'dance.search.selec
   title      : 'Search current selections (smart)',
   description: 'Search current selections (smart).',
   keybindings: [
-    { key: 'Shift+8', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+8', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Search current selections. */
@@ -448,7 +448,109 @@ export const searchSelection: ICommand & { readonly id: 'dance.search.selection'
   title      : 'Search current selections',
   description: 'Search current selections.',
   keybindings: [
-    { key: 'Shift+Alt+8', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+8', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Select whole object. */
+export const objectsSelect: ICommand & { readonly id: 'dance.objects.select' } = {
+  id         : 'dance.objects.select',
+  title      : 'Select whole object',
+  description: 'Select whole object.',
+  keybindings: [
+    { key: 'Alt+a', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Alt+a', when: 'editorTextFocus && dance.mode == \'insert\'' },
+  ],
+}
+/** Select inner object. */
+export const objectsSelectInner: ICommand & { readonly id: 'dance.objects.select.inner' } = {
+  id         : 'dance.objects.select.inner',
+  title      : 'Select inner object',
+  description: 'Select inner object.',
+  keybindings: [
+    { key: 'Alt+i', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Alt+i', when: 'editorTextFocus && dance.mode == \'insert\'' },
+  ],
+}
+/** Select to the whole object start. */
+export const objectsSelectToStart: ICommand & { readonly id: 'dance.objects.selectToStart' } = {
+  id         : 'dance.objects.selectToStart',
+  title      : 'Select to the whole object start',
+  description: 'Select to the whole object start.',
+  keybindings: [
+    { key: '[BracketLeft]', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Select to the whole object end. */
+export const objectsSelectToEnd: ICommand & { readonly id: 'dance.objects.selectToEnd' } = {
+  id         : 'dance.objects.selectToEnd',
+  title      : 'Select to the whole object end',
+  description: 'Select to the whole object end.',
+  keybindings: [
+    { key: '[BracketRight]', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Repeat object select. */
+export const objectsSelectRepeat: ICommand & { readonly id: 'dance.objects.select.repeat' } = {
+  id         : 'dance.objects.select.repeat',
+  title      : 'Repeat object select',
+  description: 'Repeat object select.',
+  keybindings: [
+    { key: 'Alt+.', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Insert value in register. */
+export const registersInsert: ICommand & { readonly id: 'dance.registers.insert' } = {
+  id         : 'dance.registers.insert',
+  title      : 'Insert value in register',
+  description: 'Insert value in register.',
+  keybindings: [
+    { key: 'Ctrl+r', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Ctrl+r', when: 'editorTextFocus && dance.mode == \'insert\'' },
+  ],
+}
+/** Select register for next command. */
+export const registersSelect: ICommand & { readonly id: 'dance.registers.select' } = {
+  id         : 'dance.registers.select',
+  title      : 'Select register for next command',
+  description: 'Select register for next command.',
+  keybindings: [
+    { key: '[Quote]', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Save selections. */
+export const marksSaveSelections: ICommand & { readonly id: 'dance.marks.saveSelections' } = {
+  id         : 'dance.marks.saveSelections',
+  title      : 'Save selections',
+  description: 'Save selections.',
+  keybindings: [
+    { key: 'Shift+z', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Restore selections. */
+export const marksRestoreSelections: ICommand & { readonly id: 'dance.marks.restoreSelections' } = {
+  id         : 'dance.marks.restoreSelections',
+  title      : 'Restore selections',
+  description: 'Restore selections.',
+  keybindings: [
+    { key: 'z', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Combine current selections with ones from register. */
+export const marksCombineSelectionsFromCurrent: ICommand & { readonly id: 'dance.marks.combineSelections.fromCurrent' } = {
+  id         : 'dance.marks.combineSelections.fromCurrent',
+  title      : 'Combine current selections with ones from register',
+  description: 'Combine current selections with ones from register.',
+  keybindings: [
+    { key: 'Shift+Alt+z', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Combine register selections with current ones. */
+export const marksCombineSelectionsFromRegister: ICommand & { readonly id: 'dance.marks.combineSelections.fromRegister' } = {
+  id         : 'dance.marks.combineSelections.fromRegister',
+  title      : 'Combine register selections with current ones',
+  description: 'Combine register selections with current ones.',
+  keybindings: [
+    { key: 'Alt+z', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move left (extend). */
@@ -457,9 +559,9 @@ export const leftExtend: ICommand & { readonly id: 'dance.left.extend' } = {
   title      : 'Move left (extend)',
   description: 'Move left (extend).',
   keybindings: [
-    { key: 'Shift+left', when: 'dance.mode == \'normal\'' },
-    { key: 'left', when: 'dance.mode == \'insert\'' },
-    { key: 'h', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+left', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'left', when: 'editorTextFocus && dance.mode == \'insert\'' },
+    { key: 'h', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move right (extend). */
@@ -468,9 +570,9 @@ export const rightExtend: ICommand & { readonly id: 'dance.right.extend' } = {
   title      : 'Move right (extend)',
   description: 'Move right (extend).',
   keybindings: [
-    { key: 'Shift+right', when: 'dance.mode == \'normal\'' },
-    { key: 'right', when: 'dance.mode == \'insert\'' },
-    { key: 'l', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+right', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'right', when: 'editorTextFocus && dance.mode == \'insert\'' },
+    { key: 'l', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move up (extend). */
@@ -479,9 +581,9 @@ export const upExtend: ICommand & { readonly id: 'dance.up.extend' } = {
   title      : 'Move up (extend)',
   description: 'Move up (extend).',
   keybindings: [
-    { key: 'Shift+up', when: 'dance.mode == \'normal\'' },
-    { key: 'up', when: 'dance.mode == \'insert\'' },
-    { key: 'k', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+up', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'up', when: 'editorTextFocus && dance.mode == \'insert\'' },
+    { key: 'k', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move down (extend). */
@@ -490,9 +592,9 @@ export const downExtend: ICommand & { readonly id: 'dance.down.extend' } = {
   title      : 'Move down (extend)',
   description: 'Move down (extend).',
   keybindings: [
-    { key: 'Shift+down', when: 'dance.mode == \'normal\'' },
-    { key: 'down', when: 'dance.mode == \'insert\'' },
-    { key: 'j', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+down', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'down', when: 'editorTextFocus && dance.mode == \'insert\'' },
+    { key: 'j', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend to the next character pressed, including it. */
@@ -501,7 +603,7 @@ export const selectToIncludedExtend: ICommand & { readonly id: 'dance.select.to.
   title      : 'Extend to',
   description: 'Extend to the next character pressed, including it.',
   keybindings: [
-    { key: 'Shift+f', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+f', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with until the next character pressed, excluding it. */
@@ -510,7 +612,7 @@ export const selectToExcludedExtend: ICommand & { readonly id: 'dance.select.to.
   title      : 'Extend until',
   description: 'Extend with until the next character pressed, excluding it.',
   keybindings: [
-    { key: 'Shift+t', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+t', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line). */
@@ -519,7 +621,7 @@ export const selectLineExtend: ICommand & { readonly id: 'dance.select.line.exte
   title      : 'Extend with line',
   description: 'Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line).',
   keybindings: [
-    { key: 'Shift+x', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+x', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with the word and following whitespaces on the right of the end of each selection. */
@@ -528,7 +630,7 @@ export const selectWordExtend: ICommand & { readonly id: 'dance.select.word.exte
   title      : 'Extend to next word start',
   description: 'Extend with the word and following whitespaces on the right of the end of each selection.',
   keybindings: [
-    { key: 'Shift+w', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+w', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with preceding whitespaces and the word on the left of the end of each selection. */
@@ -537,7 +639,7 @@ export const selectWordPreviousExtend: ICommand & { readonly id: 'dance.select.w
   title      : 'Extend to previous word start',
   description: 'Extend with preceding whitespaces and the word on the left of the end of each selection.',
   keybindings: [
-    { key: 'Shift+b', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+b', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with preceding whitespaces and the word on the right of the end of each selection. */
@@ -546,7 +648,7 @@ export const selectWordEndExtend: ICommand & { readonly id: 'dance.select.word.e
   title      : 'Extend to next word end',
   description: 'Extend with preceding whitespaces and the word on the right of the end of each selection.',
   keybindings: [
-    { key: 'Shift+e', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+e', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with the non-whitespace word and following whitespaces on the right of the end of each selection. */
@@ -555,7 +657,7 @@ export const selectWordAltExtend: ICommand & { readonly id: 'dance.select.word.a
   title      : 'Extend to next non-whitespace word start',
   description: 'Extend with the non-whitespace word and following whitespaces on the right of the end of each selection.',
   keybindings: [
-    { key: 'Shift+Alt+w', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+w', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with preceding whitespaces and the non-whitespace word on the left of the end of each selection. */
@@ -564,7 +666,7 @@ export const selectWordAltPreviousExtend: ICommand & { readonly id: 'dance.selec
   title      : 'Extend to previous non-whitespace word start',
   description: 'Extend with preceding whitespaces and the non-whitespace word on the left of the end of each selection.',
   keybindings: [
-    { key: 'Shift+Alt+b', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+b', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with preceding whitespaces and the non-whitespace word on the right of the end of each selection. */
@@ -573,7 +675,7 @@ export const selectWordAltEndExtend: ICommand & { readonly id: 'dance.select.wor
   title      : 'Extend to next non-whitespace word end',
   description: 'Extend with preceding whitespaces and the non-whitespace word on the right of the end of each selection.',
   keybindings: [
-    { key: 'Shift+Alt+e', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+e', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Search for the given input string (extend). */
@@ -582,7 +684,7 @@ export const searchExtend: ICommand & { readonly id: 'dance.search.extend' } = {
   title      : 'Search (extend)',
   description: 'Search for the given input string (extend).',
   keybindings: [
-    { key: 'Shift+slash', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+slash', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Search for the given input string before the current selections (extend). */
@@ -591,7 +693,25 @@ export const searchBackwardsExtend: ICommand & { readonly id: 'dance.search.back
   title      : 'Search backwards (extend)',
   description: 'Search for the given input string before the current selections (extend).',
   keybindings: [
-    { key: 'Shift+Alt+slash', when: 'dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+slash', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Extend to the whole object start. */
+export const objectsSelectToStartExtend: ICommand & { readonly id: 'dance.objects.selectToStart.extend' } = {
+  id         : 'dance.objects.selectToStart.extend',
+  title      : 'Extend to the whole object start',
+  description: 'Extend to the whole object start.',
+  keybindings: [
+    { key: 'Shift+[BracketLeft]', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Extend to the whole object end. */
+export const objectsSelectToEndExtend: ICommand & { readonly id: 'dance.objects.selectToEnd.extend' } = {
+  id         : 'dance.objects.selectToEnd.extend',
+  title      : 'Extend to the whole object end',
+  description: 'Extend to the whole object end.',
+  keybindings: [
+    { key: 'Shift+[BracketRight]', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select to the next character pressed, including it. (backwards) */
@@ -600,7 +720,7 @@ export const selectToIncludedBackwards: ICommand & { readonly id: 'dance.select.
   title      : 'Select to (backwards)',
   description: 'Select to the next character pressed, including it. (backwards)',
   keybindings: [
-    { key: 'Alt+f', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+f', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select until the next character pressed, excluding it. (backwards) */
@@ -609,7 +729,7 @@ export const selectToExcludedBackwards: ICommand & { readonly id: 'dance.select.
   title      : 'Select until (backwards)',
   description: 'Select until the next character pressed, excluding it. (backwards)',
   keybindings: [
-    { key: 'Alt+t', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+t', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend to the next character pressed, including it. (backwards) */
@@ -618,7 +738,7 @@ export const selectToIncludedExtendBackwards: ICommand & { readonly id: 'dance.s
   title      : 'Extend to (backwards)',
   description: 'Extend to the next character pressed, including it. (backwards)',
   keybindings: [
-    { key: 'Alt+Shift+f', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+Shift+f', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with until the next character pressed, excluding it. (backwards) */
@@ -627,7 +747,43 @@ export const selectToExcludedExtendBackwards: ICommand & { readonly id: 'dance.s
   title      : 'Extend until (backwards)',
   description: 'Extend with until the next character pressed, excluding it. (backwards)',
   keybindings: [
-    { key: 'Alt+Shift+t', when: 'dance.mode == \'normal\'' },
+    { key: 'Alt+Shift+t', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Select to the inner object start. */
+export const objectsSelectToStartInner: ICommand & { readonly id: 'dance.objects.selectToStart.inner' } = {
+  id         : 'dance.objects.selectToStart.inner',
+  title      : 'Select to the inner object start',
+  description: 'Select to the inner object start.',
+  keybindings: [
+    { key: 'Alt+[BracketLeft]', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Select to the inner object end. */
+export const objectsSelectToEndInner: ICommand & { readonly id: 'dance.objects.selectToEnd.inner' } = {
+  id         : 'dance.objects.selectToEnd.inner',
+  title      : 'Select to the inner object end',
+  description: 'Select to the inner object end.',
+  keybindings: [
+    { key: 'Alt+[BracketRight]', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Extend to the inner object start. */
+export const objectsSelectToStartExtendInner: ICommand & { readonly id: 'dance.objects.selectToStart.extend.inner' } = {
+  id         : 'dance.objects.selectToStart.extend.inner',
+  title      : 'Extend to the inner object start',
+  description: 'Extend to the inner object start.',
+  keybindings: [
+    { key: 'Alt+Shift+[BracketLeft]', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Extend to the inner object end. */
+export const objectsSelectToEndExtendInner: ICommand & { readonly id: 'dance.objects.selectToEnd.extend.inner' } = {
+  id         : 'dance.objects.selectToEnd.extend.inner',
+  title      : 'Extend to the inner object end',
+  description: 'Extend to the inner object end.',
+  keybindings: [
+    { key: 'Alt+Shift+[BracketRight]', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 0 to the current counter for the next operation. */
@@ -636,6 +792,7 @@ export const count0: ICommand & { readonly id: 'dance.count.0' } = {
   title      : 'Count 0',
   description: 'Adds 0 to the current counter for the next operation.',
   keybindings: [
+    { key: '0', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 1 to the current counter for the next operation. */
@@ -644,6 +801,7 @@ export const count1: ICommand & { readonly id: 'dance.count.1' } = {
   title      : 'Count 1',
   description: 'Adds 1 to the current counter for the next operation.',
   keybindings: [
+    { key: '1', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 2 to the current counter for the next operation. */
@@ -652,6 +810,7 @@ export const count2: ICommand & { readonly id: 'dance.count.2' } = {
   title      : 'Count 2',
   description: 'Adds 2 to the current counter for the next operation.',
   keybindings: [
+    { key: '2', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 3 to the current counter for the next operation. */
@@ -660,6 +819,7 @@ export const count3: ICommand & { readonly id: 'dance.count.3' } = {
   title      : 'Count 3',
   description: 'Adds 3 to the current counter for the next operation.',
   keybindings: [
+    { key: '3', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 4 to the current counter for the next operation. */
@@ -668,6 +828,7 @@ export const count4: ICommand & { readonly id: 'dance.count.4' } = {
   title      : 'Count 4',
   description: 'Adds 4 to the current counter for the next operation.',
   keybindings: [
+    { key: '4', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 5 to the current counter for the next operation. */
@@ -676,6 +837,7 @@ export const count5: ICommand & { readonly id: 'dance.count.5' } = {
   title      : 'Count 5',
   description: 'Adds 5 to the current counter for the next operation.',
   keybindings: [
+    { key: '5', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 6 to the current counter for the next operation. */
@@ -684,6 +846,7 @@ export const count6: ICommand & { readonly id: 'dance.count.6' } = {
   title      : 'Count 6',
   description: 'Adds 6 to the current counter for the next operation.',
   keybindings: [
+    { key: '6', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 7 to the current counter for the next operation. */
@@ -692,6 +855,7 @@ export const count7: ICommand & { readonly id: 'dance.count.7' } = {
   title      : 'Count 7',
   description: 'Adds 7 to the current counter for the next operation.',
   keybindings: [
+    { key: '7', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 8 to the current counter for the next operation. */
@@ -700,6 +864,7 @@ export const count8: ICommand & { readonly id: 'dance.count.8' } = {
   title      : 'Count 8',
   description: 'Adds 8 to the current counter for the next operation.',
   keybindings: [
+    { key: '8', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Adds 9 to the current counter for the next operation. */
@@ -708,6 +873,7 @@ export const count9: ICommand & { readonly id: 'dance.count.9' } = {
   title      : 'Count 9',
   description: 'Adds 9 to the current counter for the next operation.',
   keybindings: [
+    { key: '9', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 
@@ -813,6 +979,28 @@ export const commands = {
   searchSelectionSmart,
   /** Search current selections. */
   searchSelection,
+  /** Select whole object. */
+  objectsSelect,
+  /** Select inner object. */
+  objectsSelectInner,
+  /** Select to the whole object start. */
+  objectsSelectToStart,
+  /** Select to the whole object end. */
+  objectsSelectToEnd,
+  /** Repeat object select. */
+  objectsSelectRepeat,
+  /** Insert value in register. */
+  registersInsert,
+  /** Select register for next command. */
+  registersSelect,
+  /** Save selections. */
+  marksSaveSelections,
+  /** Restore selections. */
+  marksRestoreSelections,
+  /** Combine current selections with ones from register. */
+  marksCombineSelectionsFromCurrent,
+  /** Combine register selections with current ones. */
+  marksCombineSelectionsFromRegister,
   /** Move left (extend). */
   leftExtend,
   /** Move right (extend). */
@@ -843,6 +1031,10 @@ export const commands = {
   searchExtend,
   /** Search for the given input string before the current selections (extend). */
   searchBackwardsExtend,
+  /** Extend to the whole object start. */
+  objectsSelectToStartExtend,
+  /** Extend to the whole object end. */
+  objectsSelectToEndExtend,
   /** Select to the next character pressed, including it. (backwards) */
   selectToIncludedBackwards,
   /** Select until the next character pressed, excluding it. (backwards) */
@@ -851,6 +1043,14 @@ export const commands = {
   selectToIncludedExtendBackwards,
   /** Extend with until the next character pressed, excluding it. (backwards) */
   selectToExcludedExtendBackwards,
+  /** Select to the inner object start. */
+  objectsSelectToStartInner,
+  /** Select to the inner object end. */
+  objectsSelectToEndInner,
+  /** Extend to the inner object start. */
+  objectsSelectToStartExtendInner,
+  /** Extend to the inner object end. */
+  objectsSelectToEndExtendInner,
   /** Adds 0 to the current counter for the next operation. */
   count0,
   /** Adds 1 to the current counter for the next operation. */
@@ -975,6 +1175,28 @@ export const enum Command {
   searchSelectionSmart = 'dance.search.selection.smart',
   /** Search current selections. */
   searchSelection = 'dance.search.selection',
+  /** Select whole object. */
+  objectsSelect = 'dance.objects.select',
+  /** Select inner object. */
+  objectsSelectInner = 'dance.objects.select.inner',
+  /** Select to the whole object start. */
+  objectsSelectToStart = 'dance.objects.selectToStart',
+  /** Select to the whole object end. */
+  objectsSelectToEnd = 'dance.objects.selectToEnd',
+  /** Repeat object select. */
+  objectsSelectRepeat = 'dance.objects.select.repeat',
+  /** Insert value in register. */
+  registersInsert = 'dance.registers.insert',
+  /** Select register for next command. */
+  registersSelect = 'dance.registers.select',
+  /** Save selections. */
+  marksSaveSelections = 'dance.marks.saveSelections',
+  /** Restore selections. */
+  marksRestoreSelections = 'dance.marks.restoreSelections',
+  /** Combine current selections with ones from register. */
+  marksCombineSelectionsFromCurrent = 'dance.marks.combineSelections.fromCurrent',
+  /** Combine register selections with current ones. */
+  marksCombineSelectionsFromRegister = 'dance.marks.combineSelections.fromRegister',
   /** Move left (extend). */
   leftExtend = 'dance.left.extend',
   /** Move right (extend). */
@@ -1005,6 +1227,10 @@ export const enum Command {
   searchExtend = 'dance.search.extend',
   /** Search for the given input string before the current selections (extend). */
   searchBackwardsExtend = 'dance.search.backwards.extend',
+  /** Extend to the whole object start. */
+  objectsSelectToStartExtend = 'dance.objects.selectToStart.extend',
+  /** Extend to the whole object end. */
+  objectsSelectToEndExtend = 'dance.objects.selectToEnd.extend',
   /** Select to the next character pressed, including it. (backwards) */
   selectToIncludedBackwards = 'dance.select.to.included.backwards',
   /** Select until the next character pressed, excluding it. (backwards) */
@@ -1013,6 +1239,14 @@ export const enum Command {
   selectToIncludedExtendBackwards = 'dance.select.to.included.extend.backwards',
   /** Extend with until the next character pressed, excluding it. (backwards) */
   selectToExcludedExtendBackwards = 'dance.select.to.excluded.extend.backwards',
+  /** Select to the inner object start. */
+  objectsSelectToStartInner = 'dance.objects.selectToStart.inner',
+  /** Select to the inner object end. */
+  objectsSelectToEndInner = 'dance.objects.selectToEnd.inner',
+  /** Extend to the inner object start. */
+  objectsSelectToStartExtendInner = 'dance.objects.selectToStart.extend.inner',
+  /** Extend to the inner object end. */
+  objectsSelectToEndExtendInner = 'dance.objects.selectToEnd.extend.inner',
   /** Adds 0 to the current counter for the next operation. */
   count0 = 'dance.count.0',
   /** Adds 1 to the current counter for the next operation. */

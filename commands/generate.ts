@@ -90,11 +90,24 @@ for (const id in yaml) {
   }
 }
 
+for (const id in yaml) {
+  const command = yaml[id]
+
+  if (command.add && command.add.includes('inner')) {
+    yaml[id + '.inner'] = {
+      ...command,
+      title: command.title.replace('whole', 'inner'),
+      descr: command.descr.replace('whole', 'inner'),
+      keys: `a-${command.keys}`,
+    }
+  }
+}
+
 for (let i = 0; i < 10; i++) {
   yaml[`count.${i}`] = {
     title: `Count ${i}`,
     descr: `Adds ${i} to the current counter for the next operation.`,
-    keys : `${i}`,
+    keys : `${i} (normal)`,
   }
 }
 
@@ -141,7 +154,7 @@ for (const id in yaml) {
     stream.write(`  keybindings: [\n`)
 
     for (const key of keys) {
-      stream.write(`    { key: '${key.key.replace('\\', '\\\\')}', when: '${key.when.replace(/'/g, '\\\'')}' },\n`)
+      stream.write(`    { key: '${key.key.replace('\\', '\\\\')}', when: 'editorTextFocus && ${key.when.replace(/'/g, '\\\'')}' },\n`)
     }
 
     stream.write(`  ],\n`)

@@ -4,10 +4,8 @@ import { Mode }      from '../commands'
 import { Extension } from '../extension'
 
 
-export async function prompt(state: Extension, opts: vscode.InputBoxOptions, cancellationToken?: vscode.CancellationToken) {
-  await state.setMode(Mode.Awaiting)
-  const result = await vscode.window.showInputBox(opts, cancellationToken)
-  await state.setMode(Mode.Normal)
-
-  return result
+export function prompt(state: Extension, opts: vscode.InputBoxOptions, cancellationToken?: vscode.CancellationToken) {
+  return state.setMode(Mode.Awaiting)
+              .then(() => vscode.window.showInputBox(opts, cancellationToken))
+              .then(result => state.setMode(Mode.Normal).then(() => result))
 }

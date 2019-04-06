@@ -3,10 +3,6 @@ import * as vscode from 'vscode'
 import { Command, Mode, registerCommand } from '.'
 
 
-registerCommand(Command.setInsert, (_, state) => state.setMode(Mode.Insert))
-
-registerCommand(Command.setNormal, (_, state) => state.setMode(Mode.Normal))
-
 registerCommand(Command.insertBefore, (editor, state) => {
   editor.selections = editor.selections.map(x => new vscode.Selection(x.anchor, x.anchor))
 

@@ -62,6 +62,17 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.search.backwards` | Search backwards | Search for the given input string before the current selections. | `Alt+Slash` (`dance.mode == 'normal'`) |
 | `dance.search.selection.smart` | Search current selections (smart) | Search current selections (smart). | `Shift+8` (`dance.mode == 'normal'`) |
 | `dance.search.selection` | Search current selections | Search current selections. | `Shift+Alt+8` (`dance.mode == 'normal'`) |
+| `dance.objects.select` | Select whole object | Select whole object. | `Alt+A` (`dance.mode == 'normal'`), `Alt+A` (`dance.mode == 'insert'`) |
+| `dance.objects.select.inner` | Select inner object | Select inner object. | `Alt+I` (`dance.mode == 'normal'`), `Alt+I` (`dance.mode == 'insert'`) |
+| `dance.objects.selectToStart` | Select to the whole object start | Select to the whole object start. | `[BracketLeft]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToEnd` | Select to the whole object end | Select to the whole object end. | `[BracketRight]` (`dance.mode == 'normal'`) |
+| `dance.objects.select.repeat` | Repeat object select | Repeat object select. | `Alt+.` (`dance.mode == 'normal'`) |
+| `dance.registers.insert` | Insert value in register | Insert value in register. | `Ctrl+R` (`dance.mode == 'normal'`), `Ctrl+R` (`dance.mode == 'insert'`) |
+| `dance.registers.select` | Select register for next command | Select register for next command. | `[Quote]` (`dance.mode == 'normal'`) |
+| `dance.marks.saveSelections` | Save selections | Save selections. | `Shift+Z` (`dance.mode == 'normal'`) |
+| `dance.marks.restoreSelections` | Restore selections | Restore selections. | `Z` (`dance.mode == 'normal'`) |
+| `dance.marks.combineSelections.fromCurrent` | Combine current selections with ones from register | Combine current selections with ones from register. | `Shift+Alt+Z` (`dance.mode == 'normal'`) |
+| `dance.marks.combineSelections.fromRegister` | Combine register selections with current ones | Combine register selections with current ones. | `Alt+Z` (`dance.mode == 'normal'`) |
 | `dance.left.extend` | Move left (extend) | Move left (extend). | `Shift+Left` (`dance.mode == 'normal'`), `Left` (`dance.mode == 'insert'`), `H` (`dance.mode == 'normal'`) |
 | `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `Right` (`dance.mode == 'insert'`), `L` (`dance.mode == 'normal'`) |
 | `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `Up` (`dance.mode == 'insert'`), `K` (`dance.mode == 'normal'`) |
@@ -77,18 +88,24 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.select.word.alt.end.extend` | Extend to next non-whitespace word end | Extend with preceding whitespaces and the non-whitespace word on the right of the end of each selection. | `Shift+Alt+E` (`dance.mode == 'normal'`) |
 | `dance.search.extend` | Search (extend) | Search for the given input string (extend). | `Shift+Slash` (`dance.mode == 'normal'`) |
 | `dance.search.backwards.extend` | Search backwards (extend) | Search for the given input string before the current selections (extend). | `Shift+Alt+Slash` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToStart.extend` | Extend to the whole object start | Extend to the whole object start. | `Shift+[BracketLeft]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToEnd.extend` | Extend to the whole object end | Extend to the whole object end. | `Shift+[BracketRight]` (`dance.mode == 'normal'`) |
 | `dance.select.to.included.backwards` | Select to (backwards) | Select to the next character pressed, including it. (backwards) | `Alt+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.backwards` | Select until (backwards) | Select until the next character pressed, excluding it. (backwards) | `Alt+T` (`dance.mode == 'normal'`) |
 | `dance.select.to.included.extend.backwards` | Extend to (backwards) | Extend to the next character pressed, including it. (backwards) | `Alt+Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend.backwards` | Extend until (backwards) | Extend with until the next character pressed, excluding it. (backwards) | `Alt+Shift+T` (`dance.mode == 'normal'`) |
-| `dance.count.0` | Count 0 | Adds 0 to the current counter for the next operation. |  |
-| `dance.count.1` | Count 1 | Adds 1 to the current counter for the next operation. |  |
-| `dance.count.2` | Count 2 | Adds 2 to the current counter for the next operation. |  |
-| `dance.count.3` | Count 3 | Adds 3 to the current counter for the next operation. |  |
-| `dance.count.4` | Count 4 | Adds 4 to the current counter for the next operation. |  |
-| `dance.count.5` | Count 5 | Adds 5 to the current counter for the next operation. |  |
-| `dance.count.6` | Count 6 | Adds 6 to the current counter for the next operation. |  |
-| `dance.count.7` | Count 7 | Adds 7 to the current counter for the next operation. |  |
-| `dance.count.8` | Count 8 | Adds 8 to the current counter for the next operation. |  |
-| `dance.count.9` | Count 9 | Adds 9 to the current counter for the next operation. |  |
+| `dance.objects.selectToStart.inner` | Select to the inner object start | Select to the inner object start. | `Alt+[BracketLeft]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToEnd.inner` | Select to the inner object end | Select to the inner object end. | `Alt+[BracketRight]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToStart.extend.inner` | Extend to the inner object start | Extend to the inner object start. | `Alt+Shift+[BracketLeft]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToEnd.extend.inner` | Extend to the inner object end | Extend to the inner object end. | `Alt+Shift+[BracketRight]` (`dance.mode == 'normal'`) |
+| `dance.count.0` | Count 0 | Adds 0 to the current counter for the next operation. | `0` (`dance.mode == 'normal'`) |
+| `dance.count.1` | Count 1 | Adds 1 to the current counter for the next operation. | `1` (`dance.mode == 'normal'`) |
+| `dance.count.2` | Count 2 | Adds 2 to the current counter for the next operation. | `2` (`dance.mode == 'normal'`) |
+| `dance.count.3` | Count 3 | Adds 3 to the current counter for the next operation. | `3` (`dance.mode == 'normal'`) |
+| `dance.count.4` | Count 4 | Adds 4 to the current counter for the next operation. | `4` (`dance.mode == 'normal'`) |
+| `dance.count.5` | Count 5 | Adds 5 to the current counter for the next operation. | `5` (`dance.mode == 'normal'`) |
+| `dance.count.6` | Count 6 | Adds 6 to the current counter for the next operation. | `6` (`dance.mode == 'normal'`) |
+| `dance.count.7` | Count 7 | Adds 7 to the current counter for the next operation. | `7` (`dance.mode == 'normal'`) |
+| `dance.count.8` | Count 8 | Adds 8 to the current counter for the next operation. | `8` (`dance.mode == 'normal'`) |
+| `dance.count.9` | Count 9 | Adds 9 to the current counter for the next operation. | `9` (`dance.mode == 'normal'`) |
 
