@@ -8,13 +8,13 @@ export class TextBuffer {
   private lineOffset: number
   private lineEnd: number
 
-  private line: vscode.TextLine
+  line: vscode.TextLine
 
   /**
    * Creates a new `TextBuffer` that operates on the given document and with
    * the given origin.
    */
-  constructor(readonly doc: vscode.TextDocument, origin: vscode.Position) {
+  constructor(readonly doc: vscode.TextDocument, readonly origin: vscode.Position) {
     this.line = doc.lineAt(origin.line)
     this.lineOffset = -origin.character
     this.lineEnd = this.line.text.length + 1 - origin.character
@@ -43,7 +43,7 @@ export class TextBuffer {
         this.lineOffset -= this.line.text.length + 1
         this.lineEnd = this.lineOffset + this.line.text.length + 1
       }
-    } else if (offset > this.lineEnd) {
+    } else if (offset >= this.lineEnd) {
       // Character is after current line
       let line = this.line.lineNumber
       let lastLine = this.doc.lineCount
