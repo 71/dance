@@ -80,6 +80,7 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
   - [X] Extend selections by taking lines.
   - [X] Trim selections.
 - [X] Pipes.
+- [X] Object selection.
 - [ ] Yanking:
   - [ ] Yank.
   - [ ] Paste.
