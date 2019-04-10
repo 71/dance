@@ -84,7 +84,7 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
 - [ ] Yanking:
   - [ ] Yank.
   - [ ] Paste.
-- [ ] Edits:
+- [ ] Changes:
   - [ ] Remove word.
   - [ ] Indent / Dedent.
 - [ ] Macros.
