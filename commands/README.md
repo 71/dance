@@ -25,6 +25,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.insert.newLine.above` | Insert new line above | Create new line and start insert above. | `Shift+O` (`dance.mode == 'normal'`) |
 | `dance.newLine.below` | Add new line below | Add a new line below, without entering insert mode. |  |
 | `dance.newLine.above` | Add new line above | Add a new line above, without entering insert mode. |  |
+| `dance.repeat.insert` | Repeat last insert-mode change | Repeat last insert-mode change. | `.` (`dance.mode == 'normal'`) |
 | `dance.left` | Move left | Move left. | `Left` (`dance.mode == 'normal'`), `Left` (`dance.mode == 'insert'`), `H` (`dance.mode == 'normal'`) |
 | `dance.right` | Move right | Move right. | `Right` (`dance.mode == 'normal'`), `Right` (`dance.mode == 'insert'`), `L` (`dance.mode == 'normal'`) |
 | `dance.up` | Move up | Move up. | `Up` (`dance.mode == 'normal'`), `Up` (`dance.mode == 'insert'`), `K` (`dance.mode == 'normal'`) |
@@ -45,19 +46,51 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.split` | Split | Split within current selections according to a RegExp. | `Shift+S` (`dance.mode == 'normal'`) |
 | `dance.split.lines` | Split lines | Split selections into lines. | `Alt+S` (`dance.mode == 'normal'`) |
 | `dance.select.firstLast` | Select first and last characters | Select first and last characters of each selection. | `Shift+Alt+S` (`dance.mode == 'normal'`) |
+| `dance.selections.reduce` | Reduce selections | Reduce selections to their cursor. | `;` (`dance.mode == 'normal'`) |
+| `dance.selections.flip` | Flip selections | Flip the direction of each selection. | `Alt+;` (`dance.mode == 'normal'`) |
+| `dance.selections.forward` | Forward selections | Ensure selections are in forward direction (the active cursor is after the anchor). | `Shift+Alt+;` (`dance.mode == 'normal'`) |
+| `dance.selections.backward` | Backward selections | Ensure selections are in backward direction (the active cursor is before the anchor). |  |
 | `dance.selections.clear` | Clear selections | Clear selections (except main) | `Space` (`dance.mode == 'normal'`) |
 | `dance.selections.clearMain` | Clear main selection | Clear main selection. | `Alt+Space` (`dance.mode == 'normal'`) |
 | `dance.selections.keepMatching` | Keep matching selections | Keep selections that match a RegExp. | `Alt+K` (`dance.mode == 'normal'`) |
 | `dance.selections.clearMatching` | Clear matching selections | Clear selections that match a RegExp. | `Shift+Alt+K` (`dance.mode == 'normal'`) |
+| `dance.selections.merge` | Merge contiguous selections | Merge contiguous selections together (works across lines). | `Alt+_` (`dance.mode == 'normal'`) |
+| `dance.selections.align` | Align selections | Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. | `&` (`dance.mode == 'normal'`) |
+| `dance.selections.align.copy` | Copy indentation | Copy the indentation of the main selection (or the count one if a count is given) to all other ones. | `Alt+&` (`dance.mode == 'normal'`) |
+| `dance.delete.yank` | Yank and delete | Yank and delete selections. | `D` (`dance.mode == 'normal'`) |
+| `dance.delete.insert.yank` | Yank, delete and insert | Yank, delete and enter insert mode. | `C` (`dance.mode == 'normal'`) |
+| `dance.delete.noYank` | Delete without yank | Delete selections without yanking. | `Alt+D` (`dance.mode == 'normal'`) |
+| `dance.delete.noYank.insert` | Delete and insert without yank | Delete selections without yanking and enter insert mode. | `Alt+C` (`dance.mode == 'normal'`) |
+| `dance.yank` | Yank | Yank selections. | `Y` (`dance.mode == 'normal'`) |
+| `dance.paste.after` | Paste after | Paste after the end of each selection. | `P` (`dance.mode == 'normal'`) |
+| `dance.paste.before` | Paste before | Paste before the start of each selection. | `Shift+P` (`dance.mode == 'normal'`) |
+| `dance.paste.select.after` | Paste after and select | Paste after the end of each selection and select pasted text. | `Alt+P` (`dance.mode == 'normal'`) |
+| `dance.paste.select.before` | Paste before and select | Paste before the start of each selection and select pasted text. | `Shift+Alt+P` (`dance.mode == 'normal'`) |
+| `dance.paste.replace` | Replace | Replace selections with yanked text. | `Shift+R` (`dance.mode == 'normal'`) |
+| `dance.paste.replace.every` | Replace with every | Replace selections with every yanked text. | `Shift+Alt+R` (`dance.mode == 'normal'`) |
+| `dance.replace.characters` | Replace character | Replace each selected character with the next entered one. | `R` (`dance.mode == 'normal'`) |
+| `dance.join` | Join lines | Join selected lines. | `Alt+J` (`dance.mode == 'normal'`) |
+| `dance.join.select` | Join lines and select spaces | Join selected lines and select spaces inserted in place of line breaks. | `Shift+Alt+J` (`dance.mode == 'normal'`) |
+| `dance.indent` | Indent | Indent selected lines. | `>` (`dance.mode == 'normal'`) |
+| `dance.indent.withEmpty` | Indent (including empty) | Indent selected lines (including empty lines). | `Alt+>` (`dance.mode == 'normal'`) |
+| `dance.deindent` | Deindent | Deindent selected lines. | `<` (`dance.mode == 'normal'`) |
+| `dance.deindent.withEmpty` | Deindent (no incomplete indent removal) | Deindent selected lines (do not remove incomplete indent). | `Alt+<` (`dance.mode == 'normal'`) |
+| `dance.toLowerCase` | Transform to lowercase | Transform to lowercase. | ``` (`dance.mode == 'normal'`) |
+| `dance.toUpperCase` | Transform to uppercase | Transform to uppercase. | `~` (`dance.mode == 'normal'`) |
+| `dance.swapCase` | Swap case | Swap case. | `Alt+`` (`dance.mode == 'normal'`) |
 | `dance.pipe.filter` | Filter through pipe | Pipe each selection to a program, and keeps it if the program returns 0. | `Shift+4` (`dance.mode == 'normal'`) |
 | `dance.pipe.replace` | Pipe and replace | Pipe each selection to a command, and replaces it with its output. | `Shift+\` (`dance.mode == 'normal'`) |
 | `dance.pipe.ignore` | Pipe | Pipe each selection to a command, ignoring their results. | `Shift+Alt+\` (`dance.mode == 'normal'`) |
 | `dance.pipe.append` | Pipe and append | Pipe each selection to a command, appending the output after the selection. | `Shift+1` (`dance.mode == 'normal'`) |
 | `dance.pipe.prepend` | Pipe and prepend | Pipe each selection to a command, prepending the output before the selection. | `Shift+Alt+1` (`dance.mode == 'normal'`) |
-| `dance.rotate` | Rotate | Rotate each selection clockwise. |  |
-| `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. |  |
-| `dance.rotate.content` | Rotate content | Rotate content of each selection clockwise. |  |
-| `dance.rotate.content.backwards` | Rotate content backwards | Rotate content of each selection counter-clockwise. |  |
+| `dance.history.undo` | Undo | Undo. | `U` (`dance.mode == 'normal'`) |
+| `dance.history.backward` | Move backward in history | Move backward in history. | `Alt+U` (`dance.mode == 'normal'`) |
+| `dance.history.redo` | Redo | Redo. | `Shift+U` (`dance.mode == 'normal'`) |
+| `dance.history.forward` | Move forward in history | Move forward in history. | `Shift+Alt+U` (`dance.mode == 'normal'`) |
+| `dance.rotate` | Rotate | Rotate each selection clockwise. | `)` (`dance.mode == 'normal'`) |
+| `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. | `(` (`dance.mode == 'normal'`) |
+| `dance.rotate.content` | Rotate content | Rotate content of each selection clockwise. | `Alt+)` (`dance.mode == 'normal'`) |
+| `dance.rotate.content.backwards` | Rotate content backwards | Rotate content of each selection counter-clockwise. | `Alt+(` (`dance.mode == 'normal'`) |
 | `dance.search` | Search | Search for the given input string. | `Slash` (`dance.mode == 'normal'`) |
 | `dance.search.backwards` | Search backwards | Search for the given input string before the current selections. | `Alt+Slash` (`dance.mode == 'normal'`) |
 | `dance.search.selection.smart` | Search current selections (smart) | Search current selections (smart). | `Shift+8` (`dance.mode == 'normal'`) |

@@ -117,6 +117,15 @@ export const newLineAbove: ICommand & { readonly id: 'dance.newLine.above' } = {
   description: 'Add a new line above, without entering insert mode.',
   keybindings: [],
 }
+/** Repeat last insert-mode change. */
+export const repeatInsert: ICommand & { readonly id: 'dance.repeat.insert' } = {
+  id         : 'dance.repeat.insert',
+  title      : 'Repeat last insert-mode change',
+  description: 'Repeat last insert-mode change.',
+  keybindings: [
+    { key: '.', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
 /** Move left. */
 export const left: ICommand & { readonly id: 'dance.left' } = {
   id         : 'dance.left',
@@ -305,6 +314,40 @@ export const selectFirstLast: ICommand & { readonly id: 'dance.select.firstLast'
     { key: 'Shift+Alt+s', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
+/** Reduce selections to their cursor. */
+export const selectionsReduce: ICommand & { readonly id: 'dance.selections.reduce' } = {
+  id         : 'dance.selections.reduce',
+  title      : 'Reduce selections',
+  description: 'Reduce selections to their cursor.',
+  keybindings: [
+    { key: ';', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Flip the direction of each selection. */
+export const selectionsFlip: ICommand & { readonly id: 'dance.selections.flip' } = {
+  id         : 'dance.selections.flip',
+  title      : 'Flip selections',
+  description: 'Flip the direction of each selection.',
+  keybindings: [
+    { key: 'Alt+;', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Ensure selections are in forward direction (the active cursor is after the anchor). */
+export const selectionsForward: ICommand & { readonly id: 'dance.selections.forward' } = {
+  id         : 'dance.selections.forward',
+  title      : 'Forward selections',
+  description: 'Ensure selections are in forward direction (the active cursor is after the anchor).',
+  keybindings: [
+    { key: 'Shift+Alt+;', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Ensure selections are in backward direction (the active cursor is before the anchor). */
+export const selectionsBackward: ICommand & { readonly id: 'dance.selections.backward' } = {
+  id         : 'dance.selections.backward',
+  title      : 'Backward selections',
+  description: 'Ensure selections are in backward direction (the active cursor is before the anchor).',
+  keybindings: [],
+}
 /** Clear selections (except main) */
 export const selectionsClear: ICommand & { readonly id: 'dance.selections.clear' } = {
   id         : 'dance.selections.clear',
@@ -339,6 +382,222 @@ export const selectionsClearMatching: ICommand & { readonly id: 'dance.selection
   description: 'Clear selections that match a RegExp.',
   keybindings: [
     { key: 'Shift+Alt+k', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Merge contiguous selections together (works across lines). */
+export const selectionsMerge: ICommand & { readonly id: 'dance.selections.merge' } = {
+  id         : 'dance.selections.merge',
+  title      : 'Merge contiguous selections',
+  description: 'Merge contiguous selections together (works across lines).',
+  keybindings: [
+    { key: 'Alt+_', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. */
+export const selectionsAlign: ICommand & { readonly id: 'dance.selections.align' } = {
+  id         : 'dance.selections.align',
+  title      : 'Align selections',
+  description: 'Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection.',
+  keybindings: [
+    { key: '&', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Copy the indentation of the main selection (or the count one if a count is given) to all other ones. */
+export const selectionsAlignCopy: ICommand & { readonly id: 'dance.selections.align.copy' } = {
+  id         : 'dance.selections.align.copy',
+  title      : 'Copy indentation',
+  description: 'Copy the indentation of the main selection (or the count one if a count is given) to all other ones.',
+  keybindings: [
+    { key: 'Alt+&', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Yank and delete selections. */
+export const deleteYank: ICommand & { readonly id: 'dance.delete.yank' } = {
+  id         : 'dance.delete.yank',
+  title      : 'Yank and delete',
+  description: 'Yank and delete selections.',
+  keybindings: [
+    { key: 'd', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Yank, delete and enter insert mode. */
+export const deleteInsertYank: ICommand & { readonly id: 'dance.delete.insert.yank' } = {
+  id         : 'dance.delete.insert.yank',
+  title      : 'Yank, delete and insert',
+  description: 'Yank, delete and enter insert mode.',
+  keybindings: [
+    { key: 'c', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Delete selections without yanking. */
+export const deleteNoYank: ICommand & { readonly id: 'dance.delete.noYank' } = {
+  id         : 'dance.delete.noYank',
+  title      : 'Delete without yank',
+  description: 'Delete selections without yanking.',
+  keybindings: [
+    { key: 'Alt+d', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Delete selections without yanking and enter insert mode. */
+export const deleteNoYankInsert: ICommand & { readonly id: 'dance.delete.noYank.insert' } = {
+  id         : 'dance.delete.noYank.insert',
+  title      : 'Delete and insert without yank',
+  description: 'Delete selections without yanking and enter insert mode.',
+  keybindings: [
+    { key: 'Alt+c', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Yank selections. */
+export const yank: ICommand & { readonly id: 'dance.yank' } = {
+  id         : 'dance.yank',
+  title      : 'Yank',
+  description: 'Yank selections.',
+  keybindings: [
+    { key: 'y', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Paste after the end of each selection. */
+export const pasteAfter: ICommand & { readonly id: 'dance.paste.after' } = {
+  id         : 'dance.paste.after',
+  title      : 'Paste after',
+  description: 'Paste after the end of each selection.',
+  keybindings: [
+    { key: 'p', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Paste before the start of each selection. */
+export const pasteBefore: ICommand & { readonly id: 'dance.paste.before' } = {
+  id         : 'dance.paste.before',
+  title      : 'Paste before',
+  description: 'Paste before the start of each selection.',
+  keybindings: [
+    { key: 'Shift+p', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Paste after the end of each selection and select pasted text. */
+export const pasteSelectAfter: ICommand & { readonly id: 'dance.paste.select.after' } = {
+  id         : 'dance.paste.select.after',
+  title      : 'Paste after and select',
+  description: 'Paste after the end of each selection and select pasted text.',
+  keybindings: [
+    { key: 'Alt+p', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Paste before the start of each selection and select pasted text. */
+export const pasteSelectBefore: ICommand & { readonly id: 'dance.paste.select.before' } = {
+  id         : 'dance.paste.select.before',
+  title      : 'Paste before and select',
+  description: 'Paste before the start of each selection and select pasted text.',
+  keybindings: [
+    { key: 'Shift+Alt+p', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Replace selections with yanked text. */
+export const pasteReplace: ICommand & { readonly id: 'dance.paste.replace' } = {
+  id         : 'dance.paste.replace',
+  title      : 'Replace',
+  description: 'Replace selections with yanked text.',
+  keybindings: [
+    { key: 'Shift+r', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Replace selections with every yanked text. */
+export const pasteReplaceEvery: ICommand & { readonly id: 'dance.paste.replace.every' } = {
+  id         : 'dance.paste.replace.every',
+  title      : 'Replace with every',
+  description: 'Replace selections with every yanked text.',
+  keybindings: [
+    { key: 'Shift+Alt+r', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Replace each selected character with the next entered one. */
+export const replaceCharacters: ICommand & { readonly id: 'dance.replace.characters' } = {
+  id         : 'dance.replace.characters',
+  title      : 'Replace character',
+  description: 'Replace each selected character with the next entered one.',
+  keybindings: [
+    { key: 'r', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Join selected lines. */
+export const join: ICommand & { readonly id: 'dance.join' } = {
+  id         : 'dance.join',
+  title      : 'Join lines',
+  description: 'Join selected lines.',
+  keybindings: [
+    { key: 'Alt+j', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Join selected lines and select spaces inserted in place of line breaks. */
+export const joinSelect: ICommand & { readonly id: 'dance.join.select' } = {
+  id         : 'dance.join.select',
+  title      : 'Join lines and select spaces',
+  description: 'Join selected lines and select spaces inserted in place of line breaks.',
+  keybindings: [
+    { key: 'Shift+Alt+j', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Indent selected lines. */
+export const indent: ICommand & { readonly id: 'dance.indent' } = {
+  id         : 'dance.indent',
+  title      : 'Indent',
+  description: 'Indent selected lines.',
+  keybindings: [
+    { key: '>', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Indent selected lines (including empty lines). */
+export const indentWithEmpty: ICommand & { readonly id: 'dance.indent.withEmpty' } = {
+  id         : 'dance.indent.withEmpty',
+  title      : 'Indent (including empty)',
+  description: 'Indent selected lines (including empty lines).',
+  keybindings: [
+    { key: 'Alt+>', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Deindent selected lines. */
+export const deindent: ICommand & { readonly id: 'dance.deindent' } = {
+  id         : 'dance.deindent',
+  title      : 'Deindent',
+  description: 'Deindent selected lines.',
+  keybindings: [
+    { key: '<', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Deindent selected lines (do not remove incomplete indent). */
+export const deindentWithEmpty: ICommand & { readonly id: 'dance.deindent.withEmpty' } = {
+  id         : 'dance.deindent.withEmpty',
+  title      : 'Deindent (no incomplete indent removal)',
+  description: 'Deindent selected lines (do not remove incomplete indent).',
+  keybindings: [
+    { key: 'Alt+<', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Transform to lowercase. */
+export const toLowerCase: ICommand & { readonly id: 'dance.toLowerCase' } = {
+  id         : 'dance.toLowerCase',
+  title      : 'Transform to lowercase',
+  description: 'Transform to lowercase.',
+  keybindings: [
+    { key: '`', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Transform to uppercase. */
+export const toUpperCase: ICommand & { readonly id: 'dance.toUpperCase' } = {
+  id         : 'dance.toUpperCase',
+  title      : 'Transform to uppercase',
+  description: 'Transform to uppercase.',
+  keybindings: [
+    { key: '~', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Swap case. */
+export const swapCase: ICommand & { readonly id: 'dance.swapCase' } = {
+  id         : 'dance.swapCase',
+  title      : 'Swap case',
+  description: 'Swap case.',
+  keybindings: [
+    { key: 'Alt+`', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Pipe each selection to a program, and keeps it if the program returns 0. */
@@ -386,12 +645,49 @@ export const pipePrepend: ICommand & { readonly id: 'dance.pipe.prepend' } = {
     { key: 'Shift+Alt+1', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
+/** Undo. */
+export const historyUndo: ICommand & { readonly id: 'dance.history.undo' } = {
+  id         : 'dance.history.undo',
+  title      : 'Undo',
+  description: 'Undo.',
+  keybindings: [
+    { key: 'u', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Move backward in history. */
+export const historyBackward: ICommand & { readonly id: 'dance.history.backward' } = {
+  id         : 'dance.history.backward',
+  title      : 'Move backward in history',
+  description: 'Move backward in history.',
+  keybindings: [
+    { key: 'Alt+u', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Redo. */
+export const historyRedo: ICommand & { readonly id: 'dance.history.redo' } = {
+  id         : 'dance.history.redo',
+  title      : 'Redo',
+  description: 'Redo.',
+  keybindings: [
+    { key: 'Shift+u', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Move forward in history. */
+export const historyForward: ICommand & { readonly id: 'dance.history.forward' } = {
+  id         : 'dance.history.forward',
+  title      : 'Move forward in history',
+  description: 'Move forward in history.',
+  keybindings: [
+    { key: 'Shift+Alt+u', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
 /** Rotate each selection clockwise. */
 export const rotate: ICommand & { readonly id: 'dance.rotate' } = {
   id         : 'dance.rotate',
   title      : 'Rotate',
   description: 'Rotate each selection clockwise.',
   keybindings: [
+    { key: ')', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Rotate each selection counter-clockwise. */
@@ -399,21 +695,27 @@ export const rotateBackwards: ICommand & { readonly id: 'dance.rotate.backwards'
   id         : 'dance.rotate.backwards',
   title      : 'Rotate backwards',
   description: 'Rotate each selection counter-clockwise.',
-  keybindings: [],
+  keybindings: [
+    { key: '(', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
 }
 /** Rotate content of each selection clockwise. */
 export const rotateContent: ICommand & { readonly id: 'dance.rotate.content' } = {
   id         : 'dance.rotate.content',
   title      : 'Rotate content',
   description: 'Rotate content of each selection clockwise.',
-  keybindings: [],
+  keybindings: [
+    { key: 'Alt+)', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
 }
 /** Rotate content of each selection counter-clockwise. */
 export const rotateContentBackwards: ICommand & { readonly id: 'dance.rotate.content.backwards' } = {
   id         : 'dance.rotate.content.backwards',
   title      : 'Rotate content backwards',
   description: 'Rotate content of each selection counter-clockwise.',
-  keybindings: [],
+  keybindings: [
+    { key: 'Alt+(', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
 }
 /** Search for the given input string. */
 export const search: ICommand & { readonly id: 'dance.search' } = {
@@ -905,6 +1207,8 @@ export const commands = {
   newLineBelow,
   /** Add a new line above, without entering insert mode. */
   newLineAbove,
+  /** Repeat last insert-mode change. */
+  repeatInsert,
   /** Move left. */
   left,
   /** Move right. */
@@ -945,6 +1249,14 @@ export const commands = {
   splitLines,
   /** Select first and last characters of each selection. */
   selectFirstLast,
+  /** Reduce selections to their cursor. */
+  selectionsReduce,
+  /** Flip the direction of each selection. */
+  selectionsFlip,
+  /** Ensure selections are in forward direction (the active cursor is after the anchor). */
+  selectionsForward,
+  /** Ensure selections are in backward direction (the active cursor is before the anchor). */
+  selectionsBackward,
   /** Clear selections (except main) */
   selectionsClear,
   /** Clear main selection. */
@@ -953,6 +1265,54 @@ export const commands = {
   selectionsKeepMatching,
   /** Clear selections that match a RegExp. */
   selectionsClearMatching,
+  /** Merge contiguous selections together (works across lines). */
+  selectionsMerge,
+  /** Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. */
+  selectionsAlign,
+  /** Copy the indentation of the main selection (or the count one if a count is given) to all other ones. */
+  selectionsAlignCopy,
+  /** Yank and delete selections. */
+  deleteYank,
+  /** Yank, delete and enter insert mode. */
+  deleteInsertYank,
+  /** Delete selections without yanking. */
+  deleteNoYank,
+  /** Delete selections without yanking and enter insert mode. */
+  deleteNoYankInsert,
+  /** Yank selections. */
+  yank,
+  /** Paste after the end of each selection. */
+  pasteAfter,
+  /** Paste before the start of each selection. */
+  pasteBefore,
+  /** Paste after the end of each selection and select pasted text. */
+  pasteSelectAfter,
+  /** Paste before the start of each selection and select pasted text. */
+  pasteSelectBefore,
+  /** Replace selections with yanked text. */
+  pasteReplace,
+  /** Replace selections with every yanked text. */
+  pasteReplaceEvery,
+  /** Replace each selected character with the next entered one. */
+  replaceCharacters,
+  /** Join selected lines. */
+  join,
+  /** Join selected lines and select spaces inserted in place of line breaks. */
+  joinSelect,
+  /** Indent selected lines. */
+  indent,
+  /** Indent selected lines (including empty lines). */
+  indentWithEmpty,
+  /** Deindent selected lines. */
+  deindent,
+  /** Deindent selected lines (do not remove incomplete indent). */
+  deindentWithEmpty,
+  /** Transform to lowercase. */
+  toLowerCase,
+  /** Transform to uppercase. */
+  toUpperCase,
+  /** Swap case. */
+  swapCase,
   /** Pipe each selection to a program, and keeps it if the program returns 0. */
   pipeFilter,
   /** Pipe each selection to a command, and replaces it with its output. */
@@ -963,6 +1323,14 @@ export const commands = {
   pipeAppend,
   /** Pipe each selection to a command, prepending the output before the selection. */
   pipePrepend,
+  /** Undo. */
+  historyUndo,
+  /** Move backward in history. */
+  historyBackward,
+  /** Redo. */
+  historyRedo,
+  /** Move forward in history. */
+  historyForward,
   /** Rotate each selection clockwise. */
   rotate,
   /** Rotate each selection counter-clockwise. */
@@ -1101,6 +1469,8 @@ export const enum Command {
   newLineBelow = 'dance.newLine.below',
   /** Add a new line above, without entering insert mode. */
   newLineAbove = 'dance.newLine.above',
+  /** Repeat last insert-mode change. */
+  repeatInsert = 'dance.repeat.insert',
   /** Move left. */
   left = 'dance.left',
   /** Move right. */
@@ -1141,6 +1511,14 @@ export const enum Command {
   splitLines = 'dance.split.lines',
   /** Select first and last characters of each selection. */
   selectFirstLast = 'dance.select.firstLast',
+  /** Reduce selections to their cursor. */
+  selectionsReduce = 'dance.selections.reduce',
+  /** Flip the direction of each selection. */
+  selectionsFlip = 'dance.selections.flip',
+  /** Ensure selections are in forward direction (the active cursor is after the anchor). */
+  selectionsForward = 'dance.selections.forward',
+  /** Ensure selections are in backward direction (the active cursor is before the anchor). */
+  selectionsBackward = 'dance.selections.backward',
   /** Clear selections (except main) */
   selectionsClear = 'dance.selections.clear',
   /** Clear main selection. */
@@ -1149,6 +1527,54 @@ export const enum Command {
   selectionsKeepMatching = 'dance.selections.keepMatching',
   /** Clear selections that match a RegExp. */
   selectionsClearMatching = 'dance.selections.clearMatching',
+  /** Merge contiguous selections together (works across lines). */
+  selectionsMerge = 'dance.selections.merge',
+  /** Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. */
+  selectionsAlign = 'dance.selections.align',
+  /** Copy the indentation of the main selection (or the count one if a count is given) to all other ones. */
+  selectionsAlignCopy = 'dance.selections.align.copy',
+  /** Yank and delete selections. */
+  deleteYank = 'dance.delete.yank',
+  /** Yank, delete and enter insert mode. */
+  deleteInsertYank = 'dance.delete.insert.yank',
+  /** Delete selections without yanking. */
+  deleteNoYank = 'dance.delete.noYank',
+  /** Delete selections without yanking and enter insert mode. */
+  deleteNoYankInsert = 'dance.delete.noYank.insert',
+  /** Yank selections. */
+  yank = 'dance.yank',
+  /** Paste after the end of each selection. */
+  pasteAfter = 'dance.paste.after',
+  /** Paste before the start of each selection. */
+  pasteBefore = 'dance.paste.before',
+  /** Paste after the end of each selection and select pasted text. */
+  pasteSelectAfter = 'dance.paste.select.after',
+  /** Paste before the start of each selection and select pasted text. */
+  pasteSelectBefore = 'dance.paste.select.before',
+  /** Replace selections with yanked text. */
+  pasteReplace = 'dance.paste.replace',
+  /** Replace selections with every yanked text. */
+  pasteReplaceEvery = 'dance.paste.replace.every',
+  /** Replace each selected character with the next entered one. */
+  replaceCharacters = 'dance.replace.characters',
+  /** Join selected lines. */
+  join = 'dance.join',
+  /** Join selected lines and select spaces inserted in place of line breaks. */
+  joinSelect = 'dance.join.select',
+  /** Indent selected lines. */
+  indent = 'dance.indent',
+  /** Indent selected lines (including empty lines). */
+  indentWithEmpty = 'dance.indent.withEmpty',
+  /** Deindent selected lines. */
+  deindent = 'dance.deindent',
+  /** Deindent selected lines (do not remove incomplete indent). */
+  deindentWithEmpty = 'dance.deindent.withEmpty',
+  /** Transform to lowercase. */
+  toLowerCase = 'dance.toLowerCase',
+  /** Transform to uppercase. */
+  toUpperCase = 'dance.toUpperCase',
+  /** Swap case. */
+  swapCase = 'dance.swapCase',
   /** Pipe each selection to a program, and keeps it if the program returns 0. */
   pipeFilter = 'dance.pipe.filter',
   /** Pipe each selection to a command, and replaces it with its output. */
@@ -1159,6 +1585,14 @@ export const enum Command {
   pipeAppend = 'dance.pipe.append',
   /** Pipe each selection to a command, prepending the output before the selection. */
   pipePrepend = 'dance.pipe.prepend',
+  /** Undo. */
+  historyUndo = 'dance.history.undo',
+  /** Move backward in history. */
+  historyBackward = 'dance.history.backward',
+  /** Redo. */
+  historyRedo = 'dance.history.redo',
+  /** Move forward in history. */
+  historyForward = 'dance.history.forward',
   /** Rotate each selection clockwise. */
   rotate = 'dance.rotate',
   /** Rotate each selection counter-clockwise. */

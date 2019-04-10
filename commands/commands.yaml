@@ -72,6 +72,10 @@ newLine.above:
   title: Add new line above
   descr: Add a new line above, without entering insert mode.
 
+repeat.insert:
+  title: Repeat last insert-mode change
+  keys: . (normal)
+
 
 # Move around
 # ================================================================================================
@@ -194,8 +198,27 @@ select.firstLast:
   keys: s-a-s (normal)
 
 
-# Switch current selections
+# Switch current selections and modify selections
 # ================================================================================================
+
+selections.reduce:
+  title: Reduce selections
+  descr: Reduce selections to their cursor.
+  keys: ; (normal)
+
+selections.flip:
+  title: Flip selections
+  descr: Flip the direction of each selection.
+  keys: a-; (normal)
+
+selections.forward:
+  title: Forward selections
+  descr: Ensure selections are in forward direction (the active cursor is after the anchor).
+  keys: s-a-; (normal)
+
+selections.backward:
+  title: Backward selections
+  descr: Ensure selections are in backward direction (the active cursor is before the anchor).
 
 selections.clear:
   title: Clear selections
@@ -215,6 +238,127 @@ selections.clearMatching:
   title: Clear matching selections
   descr: Clear selections that match a RegExp.
   keys: s-a-k (normal)
+
+selections.merge:
+  title: Merge contiguous selections
+  descr: Merge contiguous selections together, including across lines.
+  keys: a-_ (normal)
+
+selections.align:
+  title: Align selections
+  descr: Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection.
+  keys: '& (normal)'
+
+selections.align.copy:
+  title: Copy indentation
+  descr: Copy the indentation of the main selection (or the count one if a count is given) to all other ones.
+  keys: 'a-& (normal)'
+
+
+# Changes
+# ================================================================================================
+
+delete.yank:
+  title: Yank and delete
+  descr: Yank and delete selections.
+  keys: d (normal)
+
+delete.insert.yank:
+  title: Yank, delete and insert
+  descr: Yank, delete and enter insert mode.
+  keys: c (normal)
+
+delete.noYank:
+  title: Delete without yank
+  descr: Delete selections without yanking.
+  keys: a-d (normal)
+
+delete.noYank.insert:
+  title: Delete and insert without yank
+  descr: Delete selections without yanking and enter insert mode.
+  keys: a-c (normal)
+
+yank:
+  title: Yank
+  descr: Yank selections.
+  keys: y (normal)
+
+paste.after:
+  title: Paste after
+  descr: Paste after the end of each selection.
+  keys: p (normal)
+
+paste.before:
+  title: Paste before
+  descr: Paste before the start of each selection.
+  keys: s-p (normal)
+
+paste.select.after:
+  title: Paste after and select
+  descr: Paste after the end of each selection and select pasted text.
+  keys: a-p (normal)
+
+paste.select.before:
+  title: Paste before and select
+  descr: Paste before the start of each selection and select pasted text.
+  keys: s-a-p (normal)
+
+paste.replace:
+  title: Replace
+  descr: Replace selections with yanked text.
+  keys: s-r (normal)
+
+paste.replace.every:
+  title: Replace with every
+  descr: Replace selections with every yanked text.
+  keys: s-a-r (normal)
+
+replace.characters:
+  title: Replace character
+  descr: Replace each selected character with the next entered one.
+  keys: r (normal)
+
+join:
+  title: Join lines
+  descr: Join selected lines.
+  keys: a-j (normal)
+
+join.select:
+  title: Join lines and select spaces
+  descr: Join selected lines and select spaces inserted in place of line breaks.
+  keys: s-a-j (normal)
+
+indent:
+  title: Indent
+  descr: Indent selected lines.
+  keys: '> (normal)'
+
+indent.withEmpty:
+  title: Indent (including empty)
+  descr: Indent selected lines (including empty lines).
+  keys: 'a-> (normal)'
+
+deindent:
+  title: Deindent
+  descr: Deindent selected lines.
+  keys: '< (normal)'
+
+deindent.withEmpty:
+  title: Deindent (no incomplete indent removal)
+  descr: Deindent selected lines (do not remove incomplete indent).
+  keys: 'a-< (normal)'
+
+toLowerCase:
+  title: Transform to lowercase
+  keys: '` (normal)'
+
+toUpperCase:
+  title: Transform to uppercase
+  keys: '~ (normal)'
+
+swapCase:
+  title: Swap case
+  keys: 'a-` (normal)'
 
 
 # Pipes
@@ -246,25 +390,48 @@ pipe.prepend:
   keys: s-a-1 (normal)
 
 
+# Undo
+# ================================================================================================
+
+history.undo:
+  title: Undo
+  keys: u (normal)
+
+history.backward:
+  title: Move backward in history
+  keys: a-u (normal)
+
+history.redo:
+  title: Redo
+  keys: s-u (normal)
+
+history.forward:
+  title: Move forward in history
+  keys: s-a-u (normal)
+
+
 # Rotate
 # ================================================================================================
 
 rotate:
   title: Rotate
   descr: Rotate each selection clockwise.
-  keys: a-
+  keys: ) (normal)
 
 rotate.backwards:
   title: Rotate backwards
   descr: Rotate each selection counter-clockwise.
+  keys: ( (normal)
 
 rotate.content:
   title: Rotate content
   descr: Rotate content of each selection clockwise.
+  keys: a-) (normal)
 
 rotate.content.backwards:
   title: Rotate content backwards
   descr: Rotate content of each selection counter-clockwise.
+  keys: a-( (normal)
 
 
 # Search
@@ -291,7 +458,7 @@ search.selection:
   keys: s-a-8 (normal)
 
 
-# Registers and marks
+# Objects
 # ================================================================================================
 
 objects.select:
