@@ -57,6 +57,14 @@ For most [commands], the usage is the same as in [Kakoune]. However, the followi
 - `i + 1` replaces `1,1,1,1,1` into `1,2,3,4,5`, assuming that each selection is on a different digit.
 
 
+### Troubleshooting
+
+Dance uses the built-in VS Code key bindings, and therefore does not override the `type` command.
+**However**, it sometimes needs access to the `type` command, in dialogs and register selection,
+for instance. Consequently, it is not compatible with extensions that always override the `type`
+command, such as [VSCodeVim]; these extensions must therefore be disabled.
+
+
 ## Progress
 
 This project is a WIP. It's brand new, and far from complete.
