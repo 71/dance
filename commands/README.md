@@ -54,13 +54,13 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.selections.clearMain` | Clear main selection | Clear main selection. | `Alt+Space` (`dance.mode == 'normal'`) |
 | `dance.selections.keepMatching` | Keep matching selections | Keep selections that match a RegExp. | `Alt+K` (`dance.mode == 'normal'`) |
 | `dance.selections.clearMatching` | Clear matching selections | Clear selections that match a RegExp. | `Shift+Alt+K` (`dance.mode == 'normal'`) |
-| `dance.selections.merge` | Merge contiguous selections | Merge contiguous selections together (works across lines). | `Alt+_` (`dance.mode == 'normal'`) |
+| `dance.selections.merge` | Merge contiguous selections | Merge contiguous selections together, including across lines. | `Alt+_` (`dance.mode == 'normal'`) |
 | `dance.selections.align` | Align selections | Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. | `&` (`dance.mode == 'normal'`) |
 | `dance.selections.align.copy` | Copy indentation | Copy the indentation of the main selection (or the count one if a count is given) to all other ones. | `Alt+&` (`dance.mode == 'normal'`) |
 | `dance.delete.yank` | Yank and delete | Yank and delete selections. | `D` (`dance.mode == 'normal'`) |
 | `dance.delete.insert.yank` | Yank, delete and insert | Yank, delete and enter insert mode. | `C` (`dance.mode == 'normal'`) |
 | `dance.delete.noYank` | Delete without yank | Delete selections without yanking. | `Alt+D` (`dance.mode == 'normal'`) |
-| `dance.delete.noYank.insert` | Delete and insert without yank | Delete selections without yanking and enter insert mode. | `Alt+C` (`dance.mode == 'normal'`) |
+| `dance.delete.insert.noYank` | Delete and insert without yank | Delete selections without yanking and enter insert mode. | `Alt+C` (`dance.mode == 'normal'`) |
 | `dance.yank` | Yank | Yank selections. | `Y` (`dance.mode == 'normal'`) |
 | `dance.paste.after` | Paste after | Paste after the end of each selection. | `P` (`dance.mode == 'normal'`) |
 | `dance.paste.before` | Paste before | Paste before the start of each selection. | `Shift+P` (`dance.mode == 'normal'`) |

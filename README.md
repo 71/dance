@@ -81,12 +81,16 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
   - [X] Trim selections.
 - [X] Pipes.
 - [X] Object selection.
-- [ ] Yanking:
-  - [ ] Yank.
-  - [ ] Paste.
+- [X] Yanking:
+  - [X] Yank.
+  - [X] Paste.
 - [ ] Changes:
-  - [ ] Remove word.
-  - [ ] Indent / Dedent.
+  - [X] Join.
+  - [X] Replace.
+  - [ ] Delete.
+  - [X] Indent.
+  - [ ] Dedent.
+  - [ ] Swap case.
 - [ ] Macros.
 - [ ] Registers.
 
