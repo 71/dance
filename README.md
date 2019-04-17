@@ -57,6 +57,13 @@ For most [commands], the usage is the same as in [Kakoune]. However, the followi
 - `i + 1` replaces `1,1,1,1,1` into `1,2,3,4,5`, assuming that each selection is on a different digit.
 
 
+### Miscellaneous changes
+- Changing the mode will also change the `editor.lineNumbers` configuration value to `on` in `insert`
+  mode, and `relative` in normal mode. This behavior cannot be disabled, but if you'd like to
+  submit a PR to make this optional, please do!^(This feature is implemented in [`src/extension.ts`](./src/extention.ts),
+  in function `onActiveModeChanged`).
+
+
 ### Troubleshooting
 
 Dance uses the built-in VS Code key bindings, and therefore does not override the `type` command.
