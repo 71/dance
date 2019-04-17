@@ -273,7 +273,7 @@ delete.noYank:
   descr: Delete selections without yanking.
   keys: a-d (normal)
 
-delete.noYank.insert:
+delete.insert.noYank:
   title: Delete and insert without yank
   descr: Delete selections without yanking and enter insert mode.
   keys: a-c (normal)

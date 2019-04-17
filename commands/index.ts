@@ -384,11 +384,11 @@ export const selectionsClearMatching: ICommand & { readonly id: 'dance.selection
     { key: 'Shift+Alt+k', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
-/** Merge contiguous selections together (works across lines). */
+/** Merge contiguous selections together, including across lines. */
 export const selectionsMerge: ICommand & { readonly id: 'dance.selections.merge' } = {
   id         : 'dance.selections.merge',
   title      : 'Merge contiguous selections',
-  description: 'Merge contiguous selections together (works across lines).',
+  description: 'Merge contiguous selections together, including across lines.',
   keybindings: [
     { key: 'Alt+_', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
@@ -439,8 +439,8 @@ export const deleteNoYank: ICommand & { readonly id: 'dance.delete.noYank' } = {
   ],
 }
 /** Delete selections without yanking and enter insert mode. */
-export const deleteNoYankInsert: ICommand & { readonly id: 'dance.delete.noYank.insert' } = {
-  id         : 'dance.delete.noYank.insert',
+export const deleteInsertNoYank: ICommand & { readonly id: 'dance.delete.insert.noYank' } = {
+  id         : 'dance.delete.insert.noYank',
   title      : 'Delete and insert without yank',
   description: 'Delete selections without yanking and enter insert mode.',
   keybindings: [
@@ -1265,7 +1265,7 @@ export const commands = {
   selectionsKeepMatching,
   /** Clear selections that match a RegExp. */
   selectionsClearMatching,
-  /** Merge contiguous selections together (works across lines). */
+  /** Merge contiguous selections together, including across lines. */
   selectionsMerge,
   /** Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. */
   selectionsAlign,
@@ -1278,7 +1278,7 @@ export const commands = {
   /** Delete selections without yanking. */
   deleteNoYank,
   /** Delete selections without yanking and enter insert mode. */
-  deleteNoYankInsert,
+  deleteInsertNoYank,
   /** Yank selections. */
   yank,
   /** Paste after the end of each selection. */
@@ -1527,7 +1527,7 @@ export const enum Command {
   selectionsKeepMatching = 'dance.selections.keepMatching',
   /** Clear selections that match a RegExp. */
   selectionsClearMatching = 'dance.selections.clearMatching',
-  /** Merge contiguous selections together (works across lines). */
+  /** Merge contiguous selections together, including across lines. */
   selectionsMerge = 'dance.selections.merge',
   /** Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. */
   selectionsAlign = 'dance.selections.align',
@@ -1540,7 +1540,7 @@ export const enum Command {
   /** Delete selections without yanking. */
   deleteNoYank = 'dance.delete.noYank',
   /** Delete selections without yanking and enter insert mode. */
-  deleteNoYankInsert = 'dance.delete.noYank.insert',
+  deleteInsertNoYank = 'dance.delete.insert.noYank',
   /** Yank selections. */
   yank = 'dance.yank',
   /** Paste after the end of each selection. */

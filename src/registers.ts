@@ -3,13 +3,18 @@ import * as vscode from 'vscode'
 
 export interface Register {
   readonly name: string
-  readonly readonly: boolean
 
+  canWrite(): this is WritableRegister
   get(editor: vscode.TextEditor): string[] | undefined
+}
+
+export interface WritableRegister extends Register {
+  set(values: string[]): void
 }
 
 export class GeneralPurposeRegister implements Register {
   values: string[] | undefined
+  canWrite() { return !this.readonly }
 
   constructor(readonly name: string, readonly readonly = false) {}
 
@@ -23,11 +28,11 @@ export class GeneralPurposeRegister implements Register {
 }
 
 export class SpecialRegister implements Register {
-  constructor(readonly name: string, readonly f: (editor: vscode.TextEditor) => string[]) {}
-
-  get readonly() {
-    return true
+  canWrite() {
+    return false
   }
+
+  constructor(readonly name: string, readonly f: (editor: vscode.TextEditor) => string[]) {}
 
   get(editor: vscode.TextEditor) {
     return this.f(editor)

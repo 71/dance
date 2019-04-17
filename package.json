@@ -307,7 +307,7 @@
       {
         "command": "dance.selections.merge",
         "title": "Merge contiguous selections",
-        "description": "Merge contiguous selections together (works across lines).",
+        "description": "Merge contiguous selections together, including across lines.",
         "category": "Dance"
       },
       {
@@ -341,7 +341,7 @@
         "category": "Dance"
       },
       {
-        "command": "dance.delete.noYank.insert",
+        "command": "dance.delete.insert.noYank",
         "title": "Delete and insert without yank",
         "description": "Delete selections without yanking and enter insert mode.",
         "category": "Dance"
@@ -1084,7 +1084,7 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.delete.noYank.insert",
+        "command": "dance.delete.insert.noYank",
         "key": "Alt+c",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
