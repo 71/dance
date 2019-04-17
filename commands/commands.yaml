@@ -82,19 +82,19 @@ repeat.insert:
 
 left:
   title: Move left
-  keys: left (normal), left (insert), h (normal)
+  keys: left (normal), h (normal)
   add: extend
 right:
   title: Move right
-  keys: right (normal), right (insert), l (normal)
+  keys: right (normal), l (normal)
   add: extend
 up:
   title: Move up
-  keys: up (normal), up (insert), k (normal)
+  keys: up (normal), k (normal)
   add: extend
 down:
   title: Move down
-  keys: down (normal), down (insert), j (normal)
+  keys: down (normal), j (normal)
   add: extend
 
 

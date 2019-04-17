@@ -133,7 +133,6 @@ export const left: ICommand & { readonly id: 'dance.left' } = {
   description: 'Move left.',
   keybindings: [
     { key: 'left', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'left', when: 'editorTextFocus && dance.mode == \'insert\'' },
     { key: 'h', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
@@ -144,7 +143,6 @@ export const right: ICommand & { readonly id: 'dance.right' } = {
   description: 'Move right.',
   keybindings: [
     { key: 'right', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'right', when: 'editorTextFocus && dance.mode == \'insert\'' },
     { key: 'l', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
@@ -155,7 +153,6 @@ export const up: ICommand & { readonly id: 'dance.up' } = {
   description: 'Move up.',
   keybindings: [
     { key: 'up', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'up', when: 'editorTextFocus && dance.mode == \'insert\'' },
     { key: 'k', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
@@ -166,7 +163,6 @@ export const down: ICommand & { readonly id: 'dance.down' } = {
   description: 'Move down.',
   keybindings: [
     { key: 'down', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'down', when: 'editorTextFocus && dance.mode == \'insert\'' },
     { key: 'j', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
@@ -862,7 +858,6 @@ export const leftExtend: ICommand & { readonly id: 'dance.left.extend' } = {
   description: 'Move left (extend).',
   keybindings: [
     { key: 'Shift+left', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'left', when: 'editorTextFocus && dance.mode == \'insert\'' },
     { key: 'h', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
@@ -873,7 +868,6 @@ export const rightExtend: ICommand & { readonly id: 'dance.right.extend' } = {
   description: 'Move right (extend).',
   keybindings: [
     { key: 'Shift+right', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'right', when: 'editorTextFocus && dance.mode == \'insert\'' },
     { key: 'l', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
@@ -884,7 +878,6 @@ export const upExtend: ICommand & { readonly id: 'dance.up.extend' } = {
   description: 'Move up (extend).',
   keybindings: [
     { key: 'Shift+up', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'up', when: 'editorTextFocus && dance.mode == \'insert\'' },
     { key: 'k', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
@@ -895,7 +888,6 @@ export const downExtend: ICommand & { readonly id: 'dance.down.extend' } = {
   description: 'Move down (extend).',
   keybindings: [
     { key: 'Shift+down', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'down', when: 'editorTextFocus && dance.mode == \'insert\'' },
     { key: 'j', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }

@@ -26,10 +26,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.newLine.below` | Add new line below | Add a new line below, without entering insert mode. |  |
 | `dance.newLine.above` | Add new line above | Add a new line above, without entering insert mode. |  |
 | `dance.repeat.insert` | Repeat last insert-mode change | Repeat last insert-mode change. | `.` (`dance.mode == 'normal'`) |
-| `dance.left` | Move left | Move left. | `Left` (`dance.mode == 'normal'`), `Left` (`dance.mode == 'insert'`), `H` (`dance.mode == 'normal'`) |
-| `dance.right` | Move right | Move right. | `Right` (`dance.mode == 'normal'`), `Right` (`dance.mode == 'insert'`), `L` (`dance.mode == 'normal'`) |
-| `dance.up` | Move up | Move up. | `Up` (`dance.mode == 'normal'`), `Up` (`dance.mode == 'insert'`), `K` (`dance.mode == 'normal'`) |
-| `dance.down` | Move down | Move down. | `Down` (`dance.mode == 'normal'`), `Down` (`dance.mode == 'insert'`), `J` (`dance.mode == 'normal'`) |
+| `dance.left` | Move left | Move left. | `Left` (`dance.mode == 'normal'`), `H` (`dance.mode == 'normal'`) |
+| `dance.right` | Move right | Move right. | `Right` (`dance.mode == 'normal'`), `L` (`dance.mode == 'normal'`) |
+| `dance.up` | Move up | Move up. | `Up` (`dance.mode == 'normal'`), `K` (`dance.mode == 'normal'`) |
+| `dance.down` | Move down | Move down. | `Down` (`dance.mode == 'normal'`), `J` (`dance.mode == 'normal'`) |
 | `dance.select.to.included` | Select to | Select to the next character pressed, including it. | `F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded` | Select until | Select until the next character pressed, excluding it. | `T` (`dance.mode == 'normal'`) |
 | `dance.select.buffer` | Select whole buffer | Select whole buffer. | `Shift+5` (`dance.mode == 'normal'`) |
@@ -106,10 +106,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.marks.restoreSelections` | Restore selections | Restore selections. | `Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromCurrent` | Combine current selections with ones from register | Combine current selections with ones from register. | `Shift+Alt+Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromRegister` | Combine register selections with current ones | Combine register selections with current ones. | `Alt+Z` (`dance.mode == 'normal'`) |
-| `dance.left.extend` | Move left (extend) | Move left (extend). | `Shift+Left` (`dance.mode == 'normal'`), `Left` (`dance.mode == 'insert'`), `H` (`dance.mode == 'normal'`) |
-| `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `Right` (`dance.mode == 'insert'`), `L` (`dance.mode == 'normal'`) |
-| `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `Up` (`dance.mode == 'insert'`), `K` (`dance.mode == 'normal'`) |
-| `dance.down.extend` | Move down (extend) | Move down (extend). | `Shift+Down` (`dance.mode == 'normal'`), `Down` (`dance.mode == 'insert'`), `J` (`dance.mode == 'normal'`) |
+| `dance.left.extend` | Move left (extend) | Move left (extend). | `Shift+Left` (`dance.mode == 'normal'`), `H` (`dance.mode == 'normal'`) |
+| `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `L` (`dance.mode == 'normal'`) |
+| `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `K` (`dance.mode == 'normal'`) |
+| `dance.down.extend` | Move down (extend) | Move down (extend). | `Shift+Down` (`dance.mode == 'normal'`), `J` (`dance.mode == 'normal'`) |
 | `dance.select.to.included.extend` | Extend to | Extend to the next character pressed, including it. | `Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend` | Extend until | Extend with until the next character pressed, excluding it. | `Shift+T` (`dance.mode == 'normal'`) |
 | `dance.select.line.extend` | Extend with line | Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line). | `Shift+X` (`dance.mode == 'normal'`) |

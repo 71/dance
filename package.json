@@ -885,11 +885,6 @@
       },
       {
         "command": "dance.left",
-        "key": "left",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.left",
         "key": "h",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
@@ -897,11 +892,6 @@
         "command": "dance.right",
         "key": "right",
         "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.right",
-        "key": "right",
-        "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
         "command": "dance.right",
@@ -915,11 +905,6 @@
       },
       {
         "command": "dance.up",
-        "key": "up",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.up",
         "key": "k",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
@@ -927,11 +912,6 @@
         "command": "dance.down",
         "key": "down",
         "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down",
-        "key": "down",
-        "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
         "command": "dance.down",
@@ -1335,11 +1315,6 @@
       },
       {
         "command": "dance.left.extend",
-        "key": "left",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.left.extend",
         "key": "h",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
@@ -1347,11 +1322,6 @@
         "command": "dance.right.extend",
         "key": "Shift+right",
         "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.right.extend",
-        "key": "right",
-        "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
         "command": "dance.right.extend",
@@ -1365,11 +1335,6 @@
       },
       {
         "command": "dance.up.extend",
-        "key": "up",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.up.extend",
         "key": "k",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
@@ -1377,11 +1342,6 @@
         "command": "dance.down.extend",
         "key": "Shift+down",
         "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down.extend",
-        "key": "down",
-        "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
         "command": "dance.down.extend",

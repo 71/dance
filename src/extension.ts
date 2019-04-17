@@ -68,7 +68,7 @@ export class Extension implements vscode.Disposable {
     return state
   }
 
-  setEditorMode(editor: vscode.TextEditor, mode: Mode): Thenable<void> {
+  setEditorMode(editor: vscode.TextEditor, mode: Mode) {
     if (this.modeMap.get(editor) === mode)
       return Promise.resolve()
 
@@ -87,15 +87,27 @@ export class Extension implements vscode.Disposable {
       editor.setDecorations(this.normalModeLineDecoration, editor.selections)
     }
 
-    return vscode.commands.executeCommand('setContext', extensionName + '.mode', mode)
+    if (vscode.window.activeTextEditor === editor)
+      return this.onActiveModeChanged(mode)
+
+    return Promise.resolve()
   }
 
-  setMode(mode: Mode): Thenable<void> {
+  setMode(mode: Mode) {
     const editor = vscode.window.activeTextEditor
 
     return editor === undefined
       ? Promise.resolve()
       : this.setEditorMode(editor, mode)
+  }
+
+  private async onActiveModeChanged(mode: Mode) {
+    if (mode === Mode.Insert)
+      await vscode.workspace.getConfiguration('editor').update('lineNumbers', 'on')
+    else if (mode === Mode.Normal)
+      await vscode.workspace.getConfiguration('editor').update('lineNumbers', 'relative')
+
+    await vscode.commands.executeCommand('setContext', extensionName + '.mode', mode)
   }
 
   setEnabled(enabled: boolean) {
