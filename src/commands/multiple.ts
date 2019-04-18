@@ -2,22 +2,8 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, Mode } from '.'
+import { promptRegex }                    from '../utils/prompt'
 
-
-function promptRegex(flags?: string) {
-  return vscode.window.showInputBox({
-    prompt: 'Selection RegExp',
-    validateInput(input) {
-      try {
-        new RegExp(input)
-
-        return undefined
-      } catch {
-        return 'The given RegExp is not a valid ECMA RegExp.'
-      }
-    }
-  }).then(x => x === undefined ? undefined : new RegExp(x, flags))
-}
 
 registerCommand(Command.select, async (editor, state) => {
   await state.setMode(Mode.Awaiting)
@@ -138,49 +124,4 @@ registerCommand(Command.selectFirstLast, editor => {
   }
 
   editor.selections = newSelections
-})
-
-registerCommand(Command.selectionsClear, editor => {
-  editor.selections = [editor.selection]
-})
-
-registerCommand(Command.selectionsClearMain, editor => {
-  if (editor.selections.length > 1)
-    editor.selections = editor.selections.splice(editor.selections.indexOf(editor.selection), 1)
-})
-
-registerCommand(Command.selectionsKeepMatching, async (editor, state) => {
-  await state.setMode(Mode.Awaiting)
-
-  const regex = await promptRegex()
-
-  await state.setMode(Mode.Normal)
-
-  if (regex === undefined)
-    return
-
-  const newSelections = editor.selections.filter(x => regex.test(editor.document.getText(x)))
-
-  if (newSelections.length === 0)
-    editor.selections = [editor.selection]
-  else
-    editor.selections = newSelections
-})
-
-registerCommand(Command.selectionsClearMatching, async (editor, state) => {
-  await state.setMode(Mode.Awaiting)
-
-  const regex = await promptRegex()
-
-  await state.setMode(Mode.Normal)
-
-  if (regex === undefined)
-    return
-
-  const newSelections = editor.selections.filter(x => !regex.test(editor.document.getText(x)))
-
-  if (newSelections.length === 0)
-    editor.selections = [editor.selection]
-  else
-    editor.selections = newSelections
 })

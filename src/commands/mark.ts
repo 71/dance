@@ -28,18 +28,26 @@ function promptCombine() {
   )
 }
 
-function saveSelections(combine: boolean) {
+// function saveSelections(combine: boolean) {
 
-}
+// }
 
-function restoreSelections(combine: boolean) {
+// function restoreSelections(combine: boolean) {
 
-}
+// }
 
-registerCommand(Command.marksSaveSelections, async (editor, state) => {
-  const register = state.currentRegister || state.registers.caret
-})
+// registerCommand(Command.marksSaveSelections, async (editor, state) => {
+//   const register = state.currentRegister || state.registers.caret
+// })
 
-registerCommand(Command.marksRestoreSelections, async (editor, state) => {
-  const register = state.currentRegister || state.registers.caret
-})
+// registerCommand(Command.marksRestoreSelections, async (editor, state) => {
+//   const register = state.currentRegister || state.registers.caret
+// })
+
+// registerCommand(Command.marksCombineSelectionsFromCurrent, async (editor, state) => {
+
+// })
+
+// registerCommand(Command.marksCombineSelectionsFromRegister, async (editor, state) => {
+
+// })

@@ -4,7 +4,7 @@
 # - https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc
 
 
-# Meta
+# Meta (extension.ts & modes.ts)
 # ================================================================================================
 
 toggle:
@@ -31,7 +31,7 @@ tmp.insert:
   keys: c-v (normal)
 
 
-# Insert
+# Insert (insert.ts)
 # ================================================================================================
 
 insert.before:
@@ -77,7 +77,7 @@ repeat.insert:
   keys: . (normal)
 
 
-# Move around
+# Move around (move.ts)
 # ================================================================================================
 
 left:
@@ -98,7 +98,7 @@ down:
   add: extend
 
 
-# Select to / until / buffer / line
+# Select to / until / buffer / line (move.ts)
 # ================================================================================================
 
 select.to.included:
@@ -134,7 +134,7 @@ trimLines:
   keys: s-a-x (normal)
 
 
-# Select word
+# Select word (move.ts)
 # ================================================================================================
 
 select.word:
@@ -174,7 +174,7 @@ select.word.alt.end:
   add: extend
 
 
-# Select within current selections
+# Select within current selections (multiple.ts)
 # ================================================================================================
 
 select:
@@ -198,7 +198,7 @@ select.firstLast:
   keys: s-a-s (normal)
 
 
-# Switch current selections and modify selections
+# Switch current selections and modify selections (select.ts)
 # ================================================================================================
 
 selections.reduce:
@@ -255,7 +255,7 @@ selections.align.copy:
   keys: 'a-& (normal)'
 
 
-# Changes
+# Changes (changes.ts)
 # ================================================================================================
 
 delete.yank:
@@ -361,7 +361,7 @@ swapCase:
   keys: 'a-` (normal)'
 
 
-# Pipes
+# Pipes (pipe.ts)
 # ================================================================================================
 
 pipe.filter:
@@ -390,7 +390,7 @@ pipe.prepend:
   keys: s-a-1 (normal)
 
 
-# Undo
+# Undo (history.ts)
 # ================================================================================================
 
 history.undo:
@@ -410,7 +410,7 @@ history.forward:
   keys: s-a-u (normal)
 
 
-# Rotate
+# Rotate (rotate.ts)
 # ================================================================================================
 
 rotate:
@@ -434,7 +434,7 @@ rotate.content.backwards:
   keys: a-( (normal)
 
 
-# Search
+# Search (search.ts)
 # ================================================================================================
 
 search:
@@ -458,7 +458,7 @@ search.selection:
   keys: s-a-8 (normal)
 
 
-# Objects
+# Objects (selectObject.ts)
 # ================================================================================================
 
 objects.select:
@@ -484,7 +484,7 @@ objects.select.repeat:
   keys: a-. (normal)
 
 
-# Registers and marks
+# Registers and marks (mark.ts)
 # ================================================================================================
 
 registers.insert:
