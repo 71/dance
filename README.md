@@ -58,10 +58,16 @@ For most [commands], the usage is the same as in [Kakoune]. However, the followi
 
 
 ### Miscellaneous changes
+A few changes were made from Kakoune, mostly out of personal preference, and to make the
+extension integrate better in VS Code. If you disagree with any of these changes,
+you're welcome to open an issue to discuss it, or to add an option for it by submitting a PR.
+
+- The cursor is not a block, but a line: Dance focuses on selections, and using a line instead of
+  a block makes it obvious whether zero or one characters are selected. Besides, the line-shaped
+  cursor is the default in VS Code.
 - Changing the mode will also change the `editor.lineNumbers` configuration value to `on` in `insert`
-  mode, and `relative` in normal mode. This behavior cannot be disabled, but if you'd like to
-  submit a PR to make this optional, please do!^(This feature is implemented in [`src/extension.ts`](./src/extention.ts),
-  in function `onActiveModeChanged`).
+  mode, and `relative` in normal mode.
+- The default yank register `"` maps to the system clipboard.
 
 
 ### Troubleshooting
@@ -102,7 +108,7 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
 - [ ] Changes:
   - [X] Join.
   - [X] Replace.
-  - [ ] Delete.
+  - [X] Delete.
   - [X] Indent.
   - [ ] Dedent.
   - [ ] Swap case.

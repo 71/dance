@@ -236,10 +236,10 @@ registerCommand(Command.indentWithEmpty, (editor, state) => {
   })
 })
 
-registerCommand(Command.deindent, (editor, state) => {
+// registerCommand(Command.deindent, (editor, state) => {
 
-})
+// })
 
-registerCommand(Command.deindentWithEmpty, (editor, state) => {
+// registerCommand(Command.deindentWithEmpty, (editor, state) => {
 
-})
+// })

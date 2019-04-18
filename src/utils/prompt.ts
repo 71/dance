@@ -9,3 +9,18 @@ export function prompt(state: Extension, opts: vscode.InputBoxOptions, cancellat
               .then(() => vscode.window.showInputBox(opts, cancellationToken))
               .then(result => state.setMode(Mode.Normal).then(() => result))
 }
+
+export function promptRegex(flags?: string) {
+  return vscode.window.showInputBox({
+    prompt: 'Selection RegExp',
+    validateInput(input) {
+      try {
+        new RegExp(input)
+
+        return undefined
+      } catch {
+        return 'The given RegExp is not a valid ECMA RegExp.'
+      }
+    }
+  }).then(x => x === undefined ? undefined : new RegExp(x, flags))
+}
