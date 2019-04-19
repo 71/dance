@@ -425,9 +425,9 @@
         "category": "Dance"
       },
       {
-        "command": "dance.deindent.withEmpty",
-        "title": "Deindent (no incomplete indent removal)",
-        "description": "Deindent selected lines (do not remove incomplete indent).",
+        "command": "dance.deindent.further",
+        "title": "Deindent (including incomplete indent)",
+        "description": "Deindent selected lines (and remove additional incomplete indent).",
         "category": "Dance"
       },
       {
@@ -1146,7 +1146,7 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.deindent.withEmpty",
+        "command": "dance.deindent.further",
         "key": "Alt+<",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },

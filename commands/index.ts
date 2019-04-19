@@ -560,11 +560,11 @@ export const deindent: ICommand & { readonly id: 'dance.deindent' } = {
     { key: '<', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
-/** Deindent selected lines (do not remove incomplete indent). */
-export const deindentWithEmpty: ICommand & { readonly id: 'dance.deindent.withEmpty' } = {
-  id         : 'dance.deindent.withEmpty',
-  title      : 'Deindent (no incomplete indent removal)',
-  description: 'Deindent selected lines (do not remove incomplete indent).',
+/** Deindent selected lines (and remove additional incomplete indent). */
+export const deindentFurther: ICommand & { readonly id: 'dance.deindent.further' } = {
+  id         : 'dance.deindent.further',
+  title      : 'Deindent (including incomplete indent)',
+  description: 'Deindent selected lines (and remove additional incomplete indent).',
   keybindings: [
     { key: 'Alt+<', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
@@ -1311,8 +1311,8 @@ export const commands = {
   indentWithEmpty,
   /** Deindent selected lines. */
   deindent,
-  /** Deindent selected lines (do not remove incomplete indent). */
-  deindentWithEmpty,
+  /** Deindent selected lines (and remove additional incomplete indent). */
+  deindentFurther,
   /** Transform to lowercase. */
   toLowerCase,
   /** Transform to uppercase. */
@@ -1577,8 +1577,8 @@ export const enum Command {
   indentWithEmpty = 'dance.indent.withEmpty',
   /** Deindent selected lines. */
   deindent = 'dance.deindent',
-  /** Deindent selected lines (do not remove incomplete indent). */
-  deindentWithEmpty = 'dance.deindent.withEmpty',
+  /** Deindent selected lines (and remove additional incomplete indent). */
+  deindentFurther = 'dance.deindent.further',
   /** Transform to lowercase. */
   toLowerCase = 'dance.toLowerCase',
   /** Transform to uppercase. */

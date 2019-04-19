@@ -74,7 +74,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.indent` | Indent | Indent selected lines. | `>` (`dance.mode == 'normal'`) |
 | `dance.indent.withEmpty` | Indent (including empty) | Indent selected lines (including empty lines). | `Alt+>` (`dance.mode == 'normal'`) |
 | `dance.deindent` | Deindent | Deindent selected lines. | `<` (`dance.mode == 'normal'`) |
-| `dance.deindent.withEmpty` | Deindent (no incomplete indent removal) | Deindent selected lines (do not remove incomplete indent). | `Alt+<` (`dance.mode == 'normal'`) |
+| `dance.deindent.further` | Deindent (including incomplete indent) | Deindent selected lines (and remove additional incomplete indent). | `Alt+<` (`dance.mode == 'normal'`) |
 | `dance.toLowerCase` | Transform to lowercase | Transform to lowercase. | ``` (`dance.mode == 'normal'`) |
 | `dance.toUpperCase` | Transform to uppercase | Transform to uppercase. | `~` (`dance.mode == 'normal'`) |
 | `dance.swapCase` | Swap case | Swap case. | `Alt+`` (`dance.mode == 'normal'`) |
