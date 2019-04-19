@@ -18,11 +18,11 @@ export class GeneralPurposeRegister implements Register {
 
   constructor(readonly name: string, readonly readonly = false) {}
 
-  set(editor: vscode.TextEditor, values: string[]) {
+  set(_: vscode.TextEditor, values: string[]) {
     this.values = values
   }
 
-  get(editor: vscode.TextEditor) {
+  get() {
     return Promise.resolve(this.values)
   }
 }
@@ -50,12 +50,36 @@ export class SpecialRegister implements Register {
   }
 }
 
+export class ClipboardRegister implements Register {
+  private lastSelections!: string[]
+  private lastText!: string
+
+  readonly name = '"'
+
+  canWrite() {
+    return true
+  }
+
+  async get() {
+    const text = await vscode.env.clipboard.readText()
+
+    return this.lastText === text
+      ? this.lastSelections
+      : [text]
+  }
+
+  set(editor: vscode.TextEditor, values: string[]) {
+    this.lastSelections = values
+    this.lastText = values.join(editor.document.eol === 1 ? '\n' : '\r\n')
+
+    return vscode.env.clipboard.writeText(this.lastText)
+  }
+}
+
 export class Registers {
   readonly alpha: Record<string, GeneralPurposeRegister> = {}
 
-  readonly dquote  = new SpecialRegister('"', () => vscode.env.clipboard.readText().then(x => [x]),
-                                              (_, v) => vscode.env.clipboard.writeText(v[0]))
-
+  readonly dquote  = new ClipboardRegister()
   readonly slash   = new GeneralPurposeRegister('/')
   readonly arobase = new GeneralPurposeRegister('@')
   readonly caret   = new GeneralPurposeRegister('^')
