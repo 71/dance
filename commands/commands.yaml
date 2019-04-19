@@ -343,9 +343,9 @@ deindent:
   descr: Deindent selected lines.
   keys: '< (normal)'
 
-deindent.withEmpty:
-  title: Deindent (no incomplete indent removal)
-  descr: Deindent selected lines (do not remove incomplete indent).
+deindent.further:
+  title: Deindent (including incomplete indent)
+  descr: Deindent selected lines (and remove additional incomplete indent).
   keys: 'a-< (normal)'
 
 toLowerCase:

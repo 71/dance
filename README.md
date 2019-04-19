@@ -109,13 +109,15 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
   - [X] Rotate selections only.
   - [X] Rotate selections content only.
   - [X] Rotate selections and content.
-- [ ] Changes:
+- [X] Changes:
   - [X] Join.
   - [X] Replace.
   - [X] Delete.
   - [X] Indent.
-  - [ ] Dedent.
-  - [ ] Swap case.
+  - [X] Dedent.
+  - [X] Change case.
+- [ ] Search.
+- [ ] History.
 - [ ] Macros.
 - [ ] Registers.
 

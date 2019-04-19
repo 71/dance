@@ -211,35 +211,115 @@ registerCommand(Command.joinSelect, async editor => {
 })
 
 
-registerCommand(Command.indent, (editor, state) => {
-  editor.edit(builder => {
-    const indent = editor.options.insertSpaces === true ? ' '.repeat(editor.options.tabSize as number) : '\t'
+function getSelectionsLines(selections: vscode.Selection[]) {
+  const lines: number[] = []
 
-    for (const selection of editor.selections) {
-      for (let i = selection.start.line; i <= selection.end.line; i++) {
-        if (editor.document.lineAt(i).isEmptyOrWhitespace)
-          continue
+  for (const selection of selections) {
+    const startLine = selection.start.line,
+          endLine = selection.end.line
 
-        builder.insert(new vscode.Position(i, 0), indent)
-      }
+    // The first and last lines of the selection may contain other selections,
+    // so we check for duplicates with them. However, the intermediate
+    // lines are known to belong to one selection only, so there's no need
+    // for that with them.
+    if (lines.indexOf(startLine) === -1) lines.push(startLine)
+
+    for (let i = startLine + 1; i < endLine; i++)
+      lines.push(i)
+
+    if (lines.indexOf(endLine) === -1) lines.push(endLine)
+  }
+
+  return lines
+}
+
+function indent(editor: vscode.TextEditor, ignoreEmpty: boolean) {
+  return editor.edit(builder => {
+    const indent = editor.options.insertSpaces === true
+                    ? ' '.repeat(editor.options.tabSize as number)
+                    : '\t'
+
+    for (const i of getSelectionsLines(editor.selections)) {
+      if (ignoreEmpty && editor.document.lineAt(i).isEmptyOrWhitespace)
+        continue
+
+      builder.insert(new vscode.Position(i, 0), indent)
     }
   })
-})
+}
 
-registerCommand(Command.indentWithEmpty, (editor, state) => {
-  editor.edit(builder => {
-    const indent = editor.options.insertSpaces === true ? ' '.repeat(editor.options.tabSize as number) : '\t'
+registerCommand(Command.indent, editor => indent(editor, true))
+registerCommand(Command.indentWithEmpty, editor => indent(editor, false))
 
-    for (const selection of editor.selections)
-      for (let i = selection.start.line; i <= selection.end.line; i++)
-        builder.insert(new vscode.Position(i, 0), indent)
+function deindent(editor: vscode.TextEditor, state: Extension, further: boolean) {
+  return editor.edit(builder => {
+    const doc = editor.document
+    const tabSize = editor.options.tabSize as number
+
+    // Number of blank characters needed to deindent:
+    const needed = (state.currentCount || 1) * tabSize
+
+    for (const i of getSelectionsLines(editor.selections)) {
+      const line = doc.lineAt(i),
+            text = line.text
+
+      let column = 0,   // Column, accounting for tab size
+          j      = 0    // Index in source line, and number of characters to remove
+
+      for (; column < needed; j++) {
+        const char = text[j]
+
+        if (char === '\t') {
+          column += tabSize
+        } else if (char === ' ') {
+          column++
+        } else {
+          break
+        }
+      }
+
+      if (further && column === needed && j < text.length) {
+        // TODO
+      }
+
+      if (j !== 0)
+        builder.delete(line.range.with(undefined, line.range.start.translate(0, j)))
+    }
   })
-})
+}
 
-// registerCommand(Command.deindent, (editor, state) => {
+registerCommand(Command.deindent, (editor, state) => deindent(editor, state, false))
+registerCommand(Command.deindentFurther, (editor, state) => deindent(editor, state, true))
 
-// })
 
-// registerCommand(Command.deindentWithEmpty, (editor, state) => {
+registerCommand(Command.toLowerCase, editor => editor.edit(builder => {
+  const doc = editor.document
 
-// })
+  for (const selection of editor.selections)
+    builder.replace(selection, doc.getText(selection).toLocaleLowerCase())
+}))
+
+registerCommand(Command.toUpperCase, editor => editor.edit(builder => {
+  const doc = editor.document
+
+  for (const selection of editor.selections)
+    builder.replace(selection, doc.getText(selection).toLocaleUpperCase())
+}))
+
+registerCommand(Command.swapCase, editor => editor.edit(builder => {
+  const doc = editor.document
+
+  for (const selection of editor.selections) {
+    const text = doc
+      .getText(selection)
+      .split('')
+      .map(x => {
+        const loCase = x.toLocaleLowerCase()
+
+        return loCase === x ? x.toLocaleUpperCase() : loCase
+      })
+      .join('')
+
+    builder.replace(selection, text)
+  }
+}))
