@@ -105,6 +105,10 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
 - [X] Yanking:
   - [X] Yank.
   - [X] Paste.
+- [X] Rotate:
+  - [X] Rotate selections only.
+  - [X] Rotate selections content only.
+  - [X] Rotate selections and content.
 - [ ] Changes:
   - [X] Join.
   - [X] Replace.

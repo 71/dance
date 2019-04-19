@@ -695,23 +695,37 @@ export const rotateBackwards: ICommand & { readonly id: 'dance.rotate.backwards'
     { key: '(', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
-/** Rotate content of each selection clockwise. */
+/** Rotate each selection (as well as its content) clockwise. */
 export const rotateContent: ICommand & { readonly id: 'dance.rotate.content' } = {
   id         : 'dance.rotate.content',
-  title      : 'Rotate content',
-  description: 'Rotate content of each selection clockwise.',
+  title      : 'Rotate selection content',
+  description: 'Rotate each selection (as well as its content) clockwise.',
   keybindings: [
     { key: 'Alt+)', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
-/** Rotate content of each selection counter-clockwise. */
+/** Rotate each selection (as well as its content) counter-clockwise. */
 export const rotateContentBackwards: ICommand & { readonly id: 'dance.rotate.content.backwards' } = {
   id         : 'dance.rotate.content.backwards',
-  title      : 'Rotate content backwards',
-  description: 'Rotate content of each selection counter-clockwise.',
+  title      : 'Rotate selection content backwards',
+  description: 'Rotate each selection (as well as its content) counter-clockwise.',
   keybindings: [
     { key: 'Alt+(', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
+}
+/** Rotate each selection content clockwise, without changing selections. */
+export const rotateContentOnly: ICommand & { readonly id: 'dance.rotate.contentOnly' } = {
+  id         : 'dance.rotate.contentOnly',
+  title      : 'Rotate content only',
+  description: 'Rotate each selection content clockwise, without changing selections.',
+  keybindings: [],
+}
+/** Rotate each selection content counter-clockwise, without changing selections. */
+export const rotateContentOnlyBackwards: ICommand & { readonly id: 'dance.rotate.contentOnly.backwards' } = {
+  id         : 'dance.rotate.contentOnly.backwards',
+  title      : 'Rotate content only backwards',
+  description: 'Rotate each selection content counter-clockwise, without changing selections.',
+  keybindings: [],
 }
 /** Search for the given input string. */
 export const search: ICommand & { readonly id: 'dance.search' } = {
@@ -1327,10 +1341,14 @@ export const commands = {
   rotate,
   /** Rotate each selection counter-clockwise. */
   rotateBackwards,
-  /** Rotate content of each selection clockwise. */
+  /** Rotate each selection (as well as its content) clockwise. */
   rotateContent,
-  /** Rotate content of each selection counter-clockwise. */
+  /** Rotate each selection (as well as its content) counter-clockwise. */
   rotateContentBackwards,
+  /** Rotate each selection content clockwise, without changing selections. */
+  rotateContentOnly,
+  /** Rotate each selection content counter-clockwise, without changing selections. */
+  rotateContentOnlyBackwards,
   /** Search for the given input string. */
   search,
   /** Search for the given input string before the current selections. */
@@ -1589,10 +1607,14 @@ export const enum Command {
   rotate = 'dance.rotate',
   /** Rotate each selection counter-clockwise. */
   rotateBackwards = 'dance.rotate.backwards',
-  /** Rotate content of each selection clockwise. */
+  /** Rotate each selection (as well as its content) clockwise. */
   rotateContent = 'dance.rotate.content',
-  /** Rotate content of each selection counter-clockwise. */
+  /** Rotate each selection (as well as its content) counter-clockwise. */
   rotateContentBackwards = 'dance.rotate.content.backwards',
+  /** Rotate each selection content clockwise, without changing selections. */
+  rotateContentOnly = 'dance.rotate.contentOnly',
+  /** Rotate each selection content counter-clockwise, without changing selections. */
+  rotateContentOnlyBackwards = 'dance.rotate.contentOnly.backwards',
   /** Search for the given input string. */
   search = 'dance.search',
   /** Search for the given input string before the current selections. */

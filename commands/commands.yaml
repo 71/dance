@@ -424,14 +424,22 @@ rotate.backwards:
   keys: ( (normal)
 
 rotate.content:
-  title: Rotate content
-  descr: Rotate content of each selection clockwise.
+  title: Rotate selection content
+  descr: Rotate each selection (as well as its content) clockwise.
   keys: a-) (normal)
 
 rotate.content.backwards:
-  title: Rotate content backwards
-  descr: Rotate content of each selection counter-clockwise.
+  title: Rotate selection content backwards
+  descr: Rotate each selection (as well as its content) counter-clockwise.
   keys: a-( (normal)
+
+rotate.contentOnly:
+  title: Rotate content only
+  descr: Rotate each selection content clockwise, without changing selections.
+
+rotate.contentOnly.backwards:
+  title: Rotate content only backwards
+  descr: Rotate each selection content counter-clockwise, without changing selections.
 
 
 # Search (search.ts)
