@@ -270,7 +270,7 @@ registerCommand(Command.selectLine, editor => {
   editor.selections = editor.selections.map(x => {
     const line = editor.document.lineAt(x.active)
 
-    return new vscode.Selection(line.range.start, line.range.end)
+    return new vscode.Selection(line.rangeIncludingLineBreak.start, line.rangeIncludingLineBreak.end)
   })
 })
 
@@ -278,7 +278,7 @@ registerCommand(Command.selectLineExtend, editor => {
   editor.selections = editor.selections.map(x => {
     const line = editor.document.lineAt(x.active)
 
-    return new vscode.Selection(x.anchor, line.range.end)
+    return new vscode.Selection(x.anchor, line.rangeIncludingLineBreak.end)
   })
 })
 
@@ -287,7 +287,7 @@ registerCommand(Command.expandLines, editor => {
     const anchorLine = editor.document.lineAt(x.anchor)
     const activeLine = editor.document.lineAt(x.active)
 
-    return new vscode.Selection(anchorLine.range.start, activeLine.range.end)
+    return new vscode.Selection(anchorLine.range.start, activeLine.rangeIncludingLineBreak.end)
   })
 })
 

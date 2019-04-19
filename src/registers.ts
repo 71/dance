@@ -5,11 +5,11 @@ export interface Register {
   readonly name: string
 
   canWrite(): this is WritableRegister
-  get(editor: vscode.TextEditor): string[] | undefined
+  get(editor: vscode.TextEditor): Thenable<string[] | undefined>
 }
 
 export interface WritableRegister extends Register {
-  set(values: string[]): void
+  set(editor: vscode.TextEditor, values: string[]): Thenable<void>
 }
 
 export class GeneralPurposeRegister implements Register {
@@ -18,41 +18,54 @@ export class GeneralPurposeRegister implements Register {
 
   constructor(readonly name: string, readonly readonly = false) {}
 
-  set(values: string[]) {
+  set(editor: vscode.TextEditor, values: string[]) {
     this.values = values
   }
 
   get(editor: vscode.TextEditor) {
-    return this.values
+    return Promise.resolve(this.values)
   }
 }
 
 export class SpecialRegister implements Register {
   canWrite() {
-    return false
+    return this.setter !== undefined
   }
 
-  constructor(readonly name: string, readonly f: (editor: vscode.TextEditor) => string[]) {}
+  constructor(
+    readonly name: string,
+    readonly getter : (editor: vscode.TextEditor) => Thenable<string[]>,
+    readonly setter?: (editor: vscode.TextEditor, values: string[]) => Thenable<void>,
+  ) {}
 
   get(editor: vscode.TextEditor) {
-    return this.f(editor)
+    return this.getter(editor)
+  }
+
+  set(editor: vscode.TextEditor, values: string[]) {
+    if (this.setter === undefined)
+      throw new Error('Cannot set read-only register.')
+
+    return this.setter(editor, values)
   }
 }
 
 export class Registers {
   readonly alpha: Record<string, GeneralPurposeRegister> = {}
 
-  readonly dquote  = new GeneralPurposeRegister('"')
+  readonly dquote  = new SpecialRegister('"', () => vscode.env.clipboard.readText().then(x => [x]),
+                                              (_, v) => vscode.env.clipboard.writeText(v[0]))
+
   readonly slash   = new GeneralPurposeRegister('/')
   readonly arobase = new GeneralPurposeRegister('@')
   readonly caret   = new GeneralPurposeRegister('^')
   readonly pipe    = new GeneralPurposeRegister('|')
 
-  readonly percent   = new SpecialRegister('%', editor => [editor.document.fileName])
-  readonly dot       = new SpecialRegister('.', editor => editor.selections.map(editor.document.getText))
-  readonly hash      = new SpecialRegister('#', editor => editor.selections.map((_, i) => i.toString()))
-  readonly undersoce = new SpecialRegister('_', editor => [''])
-  readonly colon     = new GeneralPurposeRegister(':', true)
+  readonly percent    = new SpecialRegister('%', async editor => [editor.document.fileName])
+  readonly dot        = new SpecialRegister('.', async editor => editor.selections.map(editor.document.getText))
+  readonly hash       = new SpecialRegister('#', async editor => editor.selections.map((_, i) => i.toString()))
+  readonly underscore = new SpecialRegister('_', async ______ => [''])
+  readonly colon      = new GeneralPurposeRegister(':', true)
 
   get(key: string) {
     switch (key) {
@@ -65,7 +78,7 @@ export class Registers {
       case '%': return this.percent
       case '.': return this.dot
       case '#': return this.hash
-      case '_': return this.undersoce
+      case '_': return this.underscore
       case ':': return this.colon
 
       default:

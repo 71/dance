@@ -10,39 +10,41 @@ function getRegister(state: Extension) {
   return state.currentRegister || state.registers.dquote
 }
 
-registerCommand(Command.deleteYank, (editor, state) => {
-  editor.edit(builder => {
-    const reg = getRegister(state)
+registerCommand(Command.deleteYank, async (editor, state) => {
+  const reg = getRegister(state)
 
-    if (reg.canWrite())
-      reg.set(editor.selections.map(x => editor.document.getText(x)))
+  if (reg.canWrite())
+    await reg.set(editor, editor.selections.map(x => editor.document.getText(x)))
 
+  await editor.edit(builder => {
     for (const selection of editor.selections)
       builder.delete(selection)
   })
 })
 
-registerCommand(Command.deleteInsertYank, (editor, state) => {
-  editor.edit(builder => {
-    const reg = getRegister(state)
+registerCommand(Command.deleteInsertYank, async (editor, state) => {
+  const reg = getRegister(state)
 
-    if (reg.canWrite())
-      reg.set(editor.selections.map(x => editor.document.getText(x)))
+  if (reg.canWrite())
+    await reg.set(editor, editor.selections.map(x => editor.document.getText(x)))
 
+  await editor.edit(builder => {
     for (const selection of editor.selections)
       builder.delete(selection)
-  }).then(() => state.setEditorMode(editor, Mode.Insert))
+  })
+
+  await state.setEditorMode(editor, Mode.Insert)
 })
 
 registerCommand(Command.deleteNoYank, editor => {
-  editor.edit(builder => {
+  return editor.edit(builder => {
     for (const selection of editor.selections)
       builder.delete(selection)
   })
 })
 
 registerCommand(Command.deleteInsertNoYank, (editor, state) => {
-  editor.edit(builder => {
+  return editor.edit(builder => {
     for (const selection of editor.selections)
       builder.delete(selection)
   }).then(() => state.setEditorMode(editor, Mode.Insert))
@@ -52,42 +54,42 @@ registerCommand(Command.yank, (editor, state) => {
   const reg = getRegister(state)
 
   if (reg.canWrite())
-    reg.set(editor.selections.map(x => editor.document.getText(x)))
+    return reg.set(editor, editor.selections.map(x => editor.document.getText(x)))
 })
 
 
 function getContentToPaste(editor: vscode.TextEditor, state: Extension) {
-  const reg = getRegister(state).get(editor)
-
-  return reg && reg[0] ? reg[0] : undefined
+  return getRegister(state)
+    .get(editor)
+    .then(reg => reg && reg[0] ? reg[0] : undefined)
 }
 
-registerCommand(Command.pasteAfter, (editor, state) => {
-  const content = getContentToPaste(editor, state)
+registerCommand(Command.pasteAfter, async (editor, state) => {
+  const content = await getContentToPaste(editor, state)
 
   if (content === undefined)
     return
 
-  editor.edit(builder => {
+  await editor.edit(builder => {
     for (const selection of editor.selections)
       builder.insert(selection.end, content)
   })
 })
 
-registerCommand(Command.pasteBefore, (editor, state) => {
-  const content = getContentToPaste(editor, state)
+registerCommand(Command.pasteBefore, async (editor, state) => {
+  const content = await getContentToPaste(editor, state)
 
   if (content === undefined)
     return
 
-  editor.edit(builder => {
+  await editor.edit(builder => {
     for (const selection of editor.selections)
       builder.insert(selection.start, content)
   })
 })
 
 registerCommand(Command.pasteSelectAfter, async (editor, state) => {
-  const content = getContentToPaste(editor, state)
+  const content = await getContentToPaste(editor, state)
 
   if (content === undefined)
     return
@@ -105,7 +107,7 @@ registerCommand(Command.pasteSelectAfter, async (editor, state) => {
 })
 
 registerCommand(Command.pasteSelectBefore, async (editor, state) => {
-  const content = getContentToPaste(editor, state)
+  const content = await getContentToPaste(editor, state)
 
   if (content === undefined)
     return
@@ -122,25 +124,25 @@ registerCommand(Command.pasteSelectBefore, async (editor, state) => {
   editor.selections = newSelections
 })
 
-registerCommand(Command.pasteReplace, (editor, state) => {
-  const content = getContentToPaste(editor, state)
+registerCommand(Command.pasteReplace, async (editor, state) => {
+  const content = await getContentToPaste(editor, state)
 
   if (content === undefined)
     return
 
-  editor.edit(builder => {
+  await editor.edit(builder => {
     for (const selection of editor.selections)
       builder.replace(selection, content)
   })
 })
 
-registerCommand(Command.pasteReplaceEvery, (editor, state) => {
-  const contents = getRegister(state).get(editor)
+registerCommand(Command.pasteReplaceEvery, async (editor, state) => {
+  const contents = await getRegister(state).get(editor)
 
   if (contents === undefined || contents.length !== editor.selections.length)
     return
 
-  editor.edit(builder => {
+  await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++)
       builder.replace(editor.selections[i], contents[i])
   })
@@ -151,7 +153,7 @@ registerCommand(Command.replaceCharacters, async (editor, state) => {
   const key = await keypress()
   const string = key.repeat(state.currentCount || 1)
 
-  editor.edit(builder => {
+  await editor.edit(builder => {
     for (const selection of editor.selections) {
       let i = selection.start.line
 

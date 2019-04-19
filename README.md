@@ -119,7 +119,7 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
 - [X] Search.
 - [ ] History:
   - [X] Undo / redo.
-  - [X] Forward / backward.
+  - [ ] Forward / backward.
 - [ ] Macros.
 - [ ] Registers.
 
