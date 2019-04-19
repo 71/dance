@@ -116,8 +116,10 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
   - [X] Indent.
   - [X] Dedent.
   - [X] Change case.
-- [ ] Search.
-- [ ] History.
+- [X] Search.
+- [ ] History:
+  - [X] Undo / redo.
+  - [X] Forward / backward.
 - [ ] Macros.
 - [ ] Registers.
 

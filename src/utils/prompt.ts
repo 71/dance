@@ -19,7 +19,7 @@ export function promptRegex(flags?: string) {
 
         return undefined
       } catch {
-        return 'The given RegExp is not a valid ECMA RegExp.'
+        return 'Invalid ECMA RegExp.'
       }
     }
   }).then(x => x === undefined ? undefined : new RegExp(x, flags))
