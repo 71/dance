@@ -55,6 +55,8 @@ registerCommand(Command.yank, (editor, state) => {
 
   if (reg.canWrite())
     return reg.set(editor, editor.selections.map(x => editor.document.getText(x)))
+
+  return undefined
 })
 
 
