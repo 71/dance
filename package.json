@@ -516,14 +516,26 @@
       },
       {
         "command": "dance.rotate.content",
-        "title": "Rotate content",
-        "description": "Rotate content of each selection clockwise.",
+        "title": "Rotate selection content",
+        "description": "Rotate each selection (as well as its content) clockwise.",
         "category": "Dance"
       },
       {
         "command": "dance.rotate.content.backwards",
-        "title": "Rotate content backwards",
-        "description": "Rotate content of each selection counter-clockwise.",
+        "title": "Rotate selection content backwards",
+        "description": "Rotate each selection (as well as its content) counter-clockwise.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.rotate.contentOnly",
+        "title": "Rotate content only",
+        "description": "Rotate each selection content clockwise, without changing selections.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.rotate.contentOnly.backwards",
+        "title": "Rotate content only backwards",
+        "description": "Rotate each selection content counter-clockwise, without changing selections.",
         "category": "Dance"
       },
       {

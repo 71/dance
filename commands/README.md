@@ -89,8 +89,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.history.forward` | Move forward in history | Move forward in history. | `Shift+Alt+U` (`dance.mode == 'normal'`) |
 | `dance.rotate` | Rotate | Rotate each selection clockwise. | `)` (`dance.mode == 'normal'`) |
 | `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. | `(` (`dance.mode == 'normal'`) |
-| `dance.rotate.content` | Rotate content | Rotate content of each selection clockwise. | `Alt+)` (`dance.mode == 'normal'`) |
-| `dance.rotate.content.backwards` | Rotate content backwards | Rotate content of each selection counter-clockwise. | `Alt+(` (`dance.mode == 'normal'`) |
+| `dance.rotate.content` | Rotate selection content | Rotate each selection (as well as its content) clockwise. | `Alt+)` (`dance.mode == 'normal'`) |
+| `dance.rotate.content.backwards` | Rotate selection content backwards | Rotate each selection (as well as its content) counter-clockwise. | `Alt+(` (`dance.mode == 'normal'`) |
+| `dance.rotate.contentOnly` | Rotate content only | Rotate each selection content clockwise, without changing selections. |  |
+| `dance.rotate.contentOnly.backwards` | Rotate content only backwards | Rotate each selection content counter-clockwise, without changing selections. |  |
 | `dance.search` | Search | Search for the given input string. | `Slash` (`dance.mode == 'normal'`) |
 | `dance.search.backwards` | Search backwards | Search for the given input string before the current selections. | `Alt+Slash` (`dance.mode == 'normal'`) |
 | `dance.search.selection.smart` | Search current selections (smart) | Search current selections (smart). | `Shift+8` (`dance.mode == 'normal'`) |
