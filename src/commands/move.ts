@@ -4,6 +4,7 @@ import { Selection, TextEditor } from 'vscode'
 
 import { keypress, registerCommand, Command } from '.'
 import { Extension } from '../extension'
+import { TextBuffer } from '../utils/textBuffer';
 
 
 // Yes, this looks like a decorator. Yes, it's supposed to be one.
@@ -263,7 +264,7 @@ registerToPreviousWord(Command.selectWordAltPrevious      , false, isNonWsWord)
 registerToPreviousWord(Command.selectWordAltPreviousExtend, true , isNonWsWord)
 
 
-// Line selecting key bindings (x, X, alt+[xX])
+// Line selecting key bindings (x, X, alt+[xX], home, end)
 // ===============================================================================================
 
 registerCommand(Command.selectLine, editor => {
@@ -279,6 +280,34 @@ registerCommand(Command.selectLineExtend, editor => {
     const line = editor.document.lineAt(x.active)
 
     return new vscode.Selection(x.anchor, line.rangeIncludingLineBreak.end)
+  })
+})
+
+registerCommand(Command.selectToLineBegin, editor => {
+  editor.selections = editor.selections.map(x => {
+    return new vscode.Selection(x.active, new vscode.Position(x.active.line, 0))
+  })
+})
+
+registerCommand(Command.selectToLineBeginExtend, editor => {
+  editor.selections = editor.selections.map(x => {
+    return new vscode.Selection(x.anchor, new vscode.Position(x.active.line, 0))
+  })
+})
+
+registerCommand(Command.selectToLineEnd, editor => {
+  editor.selections = editor.selections.map(x => {
+    const line = editor.document.lineAt(x.active)
+
+    return new vscode.Selection(x.active, line.range.end)
+  })
+})
+
+registerCommand(Command.selectToLineEndExtend, editor => {
+  editor.selections = editor.selections.map(x => {
+    const line = editor.document.lineAt(x.active)
+
+    return new vscode.Selection(x.anchor, line.range.end)
   })
 })
 
@@ -299,6 +328,143 @@ registerCommand(Command.trimLines, editor => {
     return x.isReversed ? new vscode.Selection(end, start) : new vscode.Selection(start, end)
   })
 })
+
+
+// Select enclosing (m, M, alt+[mM])
+// ===============================================================================================
+
+const enclosingChars = '(){}[]<>'
+
+function indexOfEnclosingChar(line: string, position = 0) {
+  for (let i = position; i < line.length; i++) {
+    const ch = line[i]
+    const idx = enclosingChars.indexOf(ch)
+
+    if (idx !== -1)
+      return i
+  }
+
+  return -1
+}
+
+function lastIndexOfEnclosingChar(line: string, position = line.length - 1) {
+  for (let i = position; i >= 0; i--) {
+    const ch = line[i]
+    const idx = enclosingChars.indexOf(ch)
+
+    if (idx !== -1)
+      return i
+  }
+
+  return -1
+}
+
+function registerToEnclosing(command: Command, extend: boolean, backwards: boolean) {
+  registerCommand(command, (editor, state) => {
+    editor.selections = editor.selections.map(selection => {
+      let line = selection.active.line
+      let text = editor.document.lineAt(line).text
+
+      let idx = backwards
+        ? lastIndexOfEnclosingChar(text, selection.active.character)
+        : indexOfEnclosingChar(text, selection.active.character)
+
+      for (let i = state.currentCount || 1; i > 0; i--) {
+        while (idx === -1) {
+          // There is no initial match, so we check the surrounding lines
+
+          if (backwards) {
+            if (--line === -1)
+              return selection // No match
+          } else {
+            if (++line === editor.document.lineCount)
+              return selection // No match
+          }
+
+          text = editor.document.lineAt(line).text
+          idx = backwards ? lastIndexOfEnclosingChar(text) : indexOfEnclosingChar(text)
+        }
+      }
+
+      const enclosingChar = text[idx],
+            idxOfEnclosingChar = enclosingChars.indexOf(enclosingChar)
+
+      let enclosingCharPos = new vscode.Position(line, idx),
+          balance = 0,
+          matchingOffset = 0,
+          buffer = new TextBuffer(editor.document, enclosingCharPos)
+
+      if (idxOfEnclosingChar & 1) {
+        // Odd enclosingChar index <=> enclosingChar is closing character
+        //                         <=> we go backwards looking for the opening character
+        const opening = enclosingChars[idxOfEnclosingChar - 1]
+
+        for (let i = -1;; i--) {
+          const ch = buffer.char(i)
+
+          if (ch === undefined) {
+            matchingOffset = i + 1
+            break
+          } else if (ch === enclosingChar) {
+            balance++
+          } else if (ch === opening && balance !== 0) {
+            balance--
+          } else if (ch === opening) {
+            matchingOffset = i
+            break
+          }
+        }
+
+        enclosingCharPos = enclosingCharPos.translate(0, 1)
+
+        const anchor = extend
+          ? (backwards
+              ? (selection.anchor.isBefore(enclosingCharPos) ? enclosingCharPos : selection.anchor)
+              : (selection.anchor.isAfter(enclosingCharPos) ? selection.anchor : enclosingCharPos))
+          : enclosingCharPos
+
+        return backwards
+          ? new vscode.Selection(anchor, buffer.position(matchingOffset)!)
+          : new vscode.Selection(buffer.position(matchingOffset)!, anchor)
+      } else {
+        // Even enclosingChar index <=> enclosingChar is opening character
+        //                          <=> we go forwards looking for the closing character
+        const closing = enclosingChars[idxOfEnclosingChar + 1]
+
+        for (let i = 1;; i++) {
+          const ch = buffer.char(i)
+
+          if (ch === undefined) {
+            matchingOffset = i
+            break
+          } else if (ch === enclosingChar) {
+            balance--
+          } else if (ch === closing && balance !== 0) {
+            balance++
+          } else if (ch === closing) {
+            matchingOffset = i + 1
+            break
+          }
+        }
+
+        const anchor = extend
+          ? (backwards
+              ? (selection.anchor.isAfter(enclosingCharPos) ? enclosingCharPos : selection.anchor)
+              : (selection.anchor.isBefore(enclosingCharPos) ? selection.anchor : enclosingCharPos))
+          : enclosingCharPos
+
+        return backwards
+          ? new vscode.Selection(buffer.position(matchingOffset)!, anchor)
+          : new vscode.Selection(anchor, buffer.position(matchingOffset)!)
+      }
+    })
+  })
+}
+
+registerToEnclosing(Command.selectEnclosing               , false, false)
+registerToEnclosing(Command.selectEnclosingExtend         , true , false)
+registerToEnclosing(Command.selectEnclosingBackwards      , false, true )
+registerToEnclosing(Command.selectEnclosingExtendBackwards, true , true )
 
 
 // Other bindings (%)

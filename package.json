@@ -185,6 +185,24 @@
         "category": "Dance"
       },
       {
+        "command": "dance.select.toLineBegin",
+        "title": "Select to line beginning",
+        "description": "Select to line beginning.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.toLineEnd",
+        "title": "Select to line end",
+        "description": "Select to line end.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.enclosing",
+        "title": "Select enclosing characters",
+        "description": "Select enclosing characters.",
+        "category": "Dance"
+      },
+      {
         "command": "dance.expandLines",
         "title": "Extend lines",
         "description": "Extend selections to contain full lines (including end-of-lines).",
@@ -671,6 +689,24 @@
         "category": "Dance"
       },
       {
+        "command": "dance.select.toLineBegin.extend",
+        "title": "Extend to line beginning",
+        "description": "Extend to line beginning.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.toLineEnd.extend",
+        "title": "Extend to line end",
+        "description": "Extend to line end.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.enclosing.extend",
+        "title": "Extend with enclosing characters",
+        "description": "Extend with enclosing characters.",
+        "category": "Dance"
+      },
+      {
         "command": "dance.select.word.extend",
         "title": "Extend to next word start",
         "description": "Extend with the word and following whitespaces on the right of the end of each selection.",
@@ -743,6 +779,12 @@
         "category": "Dance"
       },
       {
+        "command": "dance.select.enclosing.backwards",
+        "title": "Select enclosing characters (backwards)",
+        "description": "Select enclosing characters. (backwards)",
+        "category": "Dance"
+      },
+      {
         "command": "dance.select.to.included.extend.backwards",
         "title": "Extend to (backwards)",
         "description": "Extend to the next character pressed, including it. (backwards)",
@@ -752,6 +794,12 @@
         "command": "dance.select.to.excluded.extend.backwards",
         "title": "Extend until (backwards)",
         "description": "Extend with until the next character pressed, excluding it. (backwards)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.enclosing.extend.backwards",
+        "title": "Extend with enclosing characters (backwards)",
+        "description": "Extend with enclosing characters. (backwards)",
         "category": "Dance"
       },
       {
@@ -948,6 +996,31 @@
       {
         "command": "dance.select.line",
         "key": "x",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.toLineBegin",
+        "key": "Alt+h",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.toLineBegin",
+        "key": "home",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.toLineEnd",
+        "key": "Alt+l",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.toLineEnd",
+        "key": "end",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.enclosing",
+        "key": "m",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1376,6 +1449,31 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
+        "command": "dance.select.toLineBegin.extend",
+        "key": "Shift+Alt+h",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.toLineBegin.extend",
+        "key": "home",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.toLineEnd.extend",
+        "key": "Shift+Alt+l",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.toLineEnd.extend",
+        "key": "end",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.enclosing.extend",
+        "key": "Shift+m",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
         "command": "dance.select.word.extend",
         "key": "Shift+w",
         "when": "editorTextFocus && dance.mode == 'normal'"
@@ -1436,6 +1534,11 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
+        "command": "dance.select.enclosing.backwards",
+        "key": "Alt+m",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
         "command": "dance.select.to.included.extend.backwards",
         "key": "Alt+Shift+f",
         "when": "editorTextFocus && dance.mode == 'normal'"
@@ -1443,6 +1546,11 @@
       {
         "command": "dance.select.to.excluded.extend.backwards",
         "key": "Alt+Shift+t",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.enclosing.extend.backwards",
+        "key": "Alt+Shift+m",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

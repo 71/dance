@@ -123,6 +123,21 @@ select.line:
   keys: x (normal)
   add: extend
 
+select.toLineBegin:
+  title: Select to line beginning
+  keys: a-h (normal), home (normal)
+  add: extend
+
+select.toLineEnd:
+  title: Select to line end
+  keys: a-l (normal), end (normal)
+  add: extend
+
+select.enclosing:
+  title: Select enclosing characters
+  keys: m (normal)
+  add: extend back
+
 expandLines:
   title: Extend lines
   descr: Extend selections to contain full lines (including end-of-lines).
