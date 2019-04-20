@@ -202,6 +202,35 @@ export const selectLine: ICommand & { readonly id: 'dance.select.line' } = {
     { key: 'x', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
+/** Select to line beginning. */
+export const selectToLineBegin: ICommand & { readonly id: 'dance.select.toLineBegin' } = {
+  id         : 'dance.select.toLineBegin',
+  title      : 'Select to line beginning',
+  description: 'Select to line beginning.',
+  keybindings: [
+    { key: 'Alt+h', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'home', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Select to line end. */
+export const selectToLineEnd: ICommand & { readonly id: 'dance.select.toLineEnd' } = {
+  id         : 'dance.select.toLineEnd',
+  title      : 'Select to line end',
+  description: 'Select to line end.',
+  keybindings: [
+    { key: 'Alt+l', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'end', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Select enclosing characters. */
+export const selectEnclosing: ICommand & { readonly id: 'dance.select.enclosing' } = {
+  id         : 'dance.select.enclosing',
+  title      : 'Select enclosing characters',
+  description: 'Select enclosing characters.',
+  keybindings: [
+    { key: 'm', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
 /** Extend selections to contain full lines (including end-of-lines). */
 export const expandLines: ICommand & { readonly id: 'dance.expandLines' } = {
   id         : 'dance.expandLines',
@@ -932,6 +961,35 @@ export const selectLineExtend: ICommand & { readonly id: 'dance.select.line.exte
     { key: 'Shift+x', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
+/** Extend to line beginning. */
+export const selectToLineBeginExtend: ICommand & { readonly id: 'dance.select.toLineBegin.extend' } = {
+  id         : 'dance.select.toLineBegin.extend',
+  title      : 'Extend to line beginning',
+  description: 'Extend to line beginning.',
+  keybindings: [
+    { key: 'Shift+Alt+h', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'home', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Extend to line end. */
+export const selectToLineEndExtend: ICommand & { readonly id: 'dance.select.toLineEnd.extend' } = {
+  id         : 'dance.select.toLineEnd.extend',
+  title      : 'Extend to line end',
+  description: 'Extend to line end.',
+  keybindings: [
+    { key: 'Shift+Alt+l', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'end', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Extend with enclosing characters. */
+export const selectEnclosingExtend: ICommand & { readonly id: 'dance.select.enclosing.extend' } = {
+  id         : 'dance.select.enclosing.extend',
+  title      : 'Extend with enclosing characters',
+  description: 'Extend with enclosing characters.',
+  keybindings: [
+    { key: 'Shift+m', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
 /** Extend with the word and following whitespaces on the right of the end of each selection. */
 export const selectWordExtend: ICommand & { readonly id: 'dance.select.word.extend' } = {
   id         : 'dance.select.word.extend',
@@ -1040,6 +1098,15 @@ export const selectToExcludedBackwards: ICommand & { readonly id: 'dance.select.
     { key: 'Alt+t', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
+/** Select enclosing characters. (backwards) */
+export const selectEnclosingBackwards: ICommand & { readonly id: 'dance.select.enclosing.backwards' } = {
+  id         : 'dance.select.enclosing.backwards',
+  title      : 'Select enclosing characters (backwards)',
+  description: 'Select enclosing characters. (backwards)',
+  keybindings: [
+    { key: 'Alt+m', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
 /** Extend to the next character pressed, including it. (backwards) */
 export const selectToIncludedExtendBackwards: ICommand & { readonly id: 'dance.select.to.included.extend.backwards' } = {
   id         : 'dance.select.to.included.extend.backwards',
@@ -1056,6 +1123,15 @@ export const selectToExcludedExtendBackwards: ICommand & { readonly id: 'dance.s
   description: 'Extend with until the next character pressed, excluding it. (backwards)',
   keybindings: [
     { key: 'Alt+Shift+t', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Extend with enclosing characters. (backwards) */
+export const selectEnclosingExtendBackwards: ICommand & { readonly id: 'dance.select.enclosing.extend.backwards' } = {
+  id         : 'dance.select.enclosing.extend.backwards',
+  title      : 'Extend with enclosing characters (backwards)',
+  description: 'Extend with enclosing characters. (backwards)',
+  keybindings: [
+    { key: 'Alt+Shift+m', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select to the inner object start. */
@@ -1231,6 +1307,12 @@ export const commands = {
   selectBuffer,
   /** Select line on which the end of each selection lies (or next line when end lies on an end-of-line). */
   selectLine,
+  /** Select to line beginning. */
+  selectToLineBegin,
+  /** Select to line end. */
+  selectToLineEnd,
+  /** Select enclosing characters. */
+  selectEnclosing,
   /** Extend selections to contain full lines (including end-of-lines). */
   expandLines,
   /** Trim selections to only contain full lines (not including last end-of-line). */
@@ -1393,6 +1475,12 @@ export const commands = {
   selectToExcludedExtend,
   /** Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line). */
   selectLineExtend,
+  /** Extend to line beginning. */
+  selectToLineBeginExtend,
+  /** Extend to line end. */
+  selectToLineEndExtend,
+  /** Extend with enclosing characters. */
+  selectEnclosingExtend,
   /** Extend with the word and following whitespaces on the right of the end of each selection. */
   selectWordExtend,
   /** Extend with preceding whitespaces and the word on the left of the end of each selection. */
@@ -1417,10 +1505,14 @@ export const commands = {
   selectToIncludedBackwards,
   /** Select until the next character pressed, excluding it. (backwards) */
   selectToExcludedBackwards,
+  /** Select enclosing characters. (backwards) */
+  selectEnclosingBackwards,
   /** Extend to the next character pressed, including it. (backwards) */
   selectToIncludedExtendBackwards,
   /** Extend with until the next character pressed, excluding it. (backwards) */
   selectToExcludedExtendBackwards,
+  /** Extend with enclosing characters. (backwards) */
+  selectEnclosingExtendBackwards,
   /** Select to the inner object start. */
   objectsSelectToStartInner,
   /** Select to the inner object end. */
@@ -1497,6 +1589,12 @@ export const enum Command {
   selectBuffer = 'dance.select.buffer',
   /** Select line on which the end of each selection lies (or next line when end lies on an end-of-line). */
   selectLine = 'dance.select.line',
+  /** Select to line beginning. */
+  selectToLineBegin = 'dance.select.toLineBegin',
+  /** Select to line end. */
+  selectToLineEnd = 'dance.select.toLineEnd',
+  /** Select enclosing characters. */
+  selectEnclosing = 'dance.select.enclosing',
   /** Extend selections to contain full lines (including end-of-lines). */
   expandLines = 'dance.expandLines',
   /** Trim selections to only contain full lines (not including last end-of-line). */
@@ -1659,6 +1757,12 @@ export const enum Command {
   selectToExcludedExtend = 'dance.select.to.excluded.extend',
   /** Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line). */
   selectLineExtend = 'dance.select.line.extend',
+  /** Extend to line beginning. */
+  selectToLineBeginExtend = 'dance.select.toLineBegin.extend',
+  /** Extend to line end. */
+  selectToLineEndExtend = 'dance.select.toLineEnd.extend',
+  /** Extend with enclosing characters. */
+  selectEnclosingExtend = 'dance.select.enclosing.extend',
   /** Extend with the word and following whitespaces on the right of the end of each selection. */
   selectWordExtend = 'dance.select.word.extend',
   /** Extend with preceding whitespaces and the word on the left of the end of each selection. */
@@ -1683,10 +1787,14 @@ export const enum Command {
   selectToIncludedBackwards = 'dance.select.to.included.backwards',
   /** Select until the next character pressed, excluding it. (backwards) */
   selectToExcludedBackwards = 'dance.select.to.excluded.backwards',
+  /** Select enclosing characters. (backwards) */
+  selectEnclosingBackwards = 'dance.select.enclosing.backwards',
   /** Extend to the next character pressed, including it. (backwards) */
   selectToIncludedExtendBackwards = 'dance.select.to.included.extend.backwards',
   /** Extend with until the next character pressed, excluding it. (backwards) */
   selectToExcludedExtendBackwards = 'dance.select.to.excluded.extend.backwards',
+  /** Extend with enclosing characters. (backwards) */
+  selectEnclosingExtendBackwards = 'dance.select.enclosing.extend.backwards',
   /** Select to the inner object start. */
   objectsSelectToStartInner = 'dance.objects.selectToStart.inner',
   /** Select to the inner object end. */

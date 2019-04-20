@@ -30,6 +30,8 @@ function isMultilineRegExp(regex: string) {
         return true
 
       i++ // Ignore next character
+    } else if (ch === '$' && i < len - 1) {
+      return true
     }
   }
 

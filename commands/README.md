@@ -34,6 +34,9 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.select.to.excluded` | Select until | Select until the next character pressed, excluding it. | `T` (`dance.mode == 'normal'`) |
 | `dance.select.buffer` | Select whole buffer | Select whole buffer. | `Shift+5` (`dance.mode == 'normal'`) |
 | `dance.select.line` | Select line | Select line on which the end of each selection lies (or next line when end lies on an end-of-line). | `X` (`dance.mode == 'normal'`) |
+| `dance.select.toLineBegin` | Select to line beginning | Select to line beginning. | `Alt+H` (`dance.mode == 'normal'`), `Home` (`dance.mode == 'normal'`) |
+| `dance.select.toLineEnd` | Select to line end | Select to line end. | `Alt+L` (`dance.mode == 'normal'`), `End` (`dance.mode == 'normal'`) |
+| `dance.select.enclosing` | Select enclosing characters | Select enclosing characters. | `M` (`dance.mode == 'normal'`) |
 | `dance.expandLines` | Extend lines | Extend selections to contain full lines (including end-of-lines). | `Alt+X` (`dance.mode == 'normal'`) |
 | `dance.trimLines` | Trim lines | Trim selections to only contain full lines (not including last end-of-line). | `Shift+Alt+X` (`dance.mode == 'normal'`) |
 | `dance.select.word` | Select to next word start | Select the word and following whitespaces on the right of the end of each selection. | `W` (`dance.mode == 'normal'`) |
@@ -115,6 +118,9 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.select.to.included.extend` | Extend to | Extend to the next character pressed, including it. | `Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend` | Extend until | Extend with until the next character pressed, excluding it. | `Shift+T` (`dance.mode == 'normal'`) |
 | `dance.select.line.extend` | Extend with line | Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line). | `Shift+X` (`dance.mode == 'normal'`) |
+| `dance.select.toLineBegin.extend` | Extend to line beginning | Extend to line beginning. | `Shift+Alt+H` (`dance.mode == 'normal'`), `Home` (`dance.mode == 'normal'`) |
+| `dance.select.toLineEnd.extend` | Extend to line end | Extend to line end. | `Shift+Alt+L` (`dance.mode == 'normal'`), `End` (`dance.mode == 'normal'`) |
+| `dance.select.enclosing.extend` | Extend with enclosing characters | Extend with enclosing characters. | `Shift+M` (`dance.mode == 'normal'`) |
 | `dance.select.word.extend` | Extend to next word start | Extend with the word and following whitespaces on the right of the end of each selection. | `Shift+W` (`dance.mode == 'normal'`) |
 | `dance.select.word.previous.extend` | Extend to previous word start | Extend with preceding whitespaces and the word on the left of the end of each selection. | `Shift+B` (`dance.mode == 'normal'`) |
 | `dance.select.word.end.extend` | Extend to next word end | Extend with preceding whitespaces and the word on the right of the end of each selection. | `Shift+E` (`dance.mode == 'normal'`) |
@@ -127,8 +133,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.objects.selectToEnd.extend` | Extend to the whole object end | Extend to the whole object end. | `Shift+[BracketRight]` (`dance.mode == 'normal'`) |
 | `dance.select.to.included.backwards` | Select to (backwards) | Select to the next character pressed, including it. (backwards) | `Alt+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.backwards` | Select until (backwards) | Select until the next character pressed, excluding it. (backwards) | `Alt+T` (`dance.mode == 'normal'`) |
+| `dance.select.enclosing.backwards` | Select enclosing characters (backwards) | Select enclosing characters. (backwards) | `Alt+M` (`dance.mode == 'normal'`) |
 | `dance.select.to.included.extend.backwards` | Extend to (backwards) | Extend to the next character pressed, including it. (backwards) | `Alt+Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend.backwards` | Extend until (backwards) | Extend with until the next character pressed, excluding it. (backwards) | `Alt+Shift+T` (`dance.mode == 'normal'`) |
+| `dance.select.enclosing.extend.backwards` | Extend with enclosing characters (backwards) | Extend with enclosing characters. (backwards) | `Alt+Shift+M` (`dance.mode == 'normal'`) |
 | `dance.objects.selectToStart.inner` | Select to the inner object start | Select to the inner object start. | `Alt+[BracketLeft]` (`dance.mode == 'normal'`) |
 | `dance.objects.selectToEnd.inner` | Select to the inner object end | Select to the inner object end. | `Alt+[BracketRight]` (`dance.mode == 'normal'`) |
 | `dance.objects.selectToStart.extend.inner` | Extend to the inner object start | Extend to the inner object start. | `Alt+Shift+[BracketLeft]` (`dance.mode == 'normal'`) |
