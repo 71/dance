@@ -7,10 +7,17 @@ import { Extension } from '../extension'
 export function prompt(state: Extension, opts: vscode.InputBoxOptions, cancellationToken?: vscode.CancellationToken) {
   return state.setMode(Mode.Awaiting)
               .then(() => vscode.window.showInputBox(opts, cancellationToken))
-              .then(result => state.setMode(Mode.Normal).then(() => result))
+              .then(result => {
+                if (result !== undefined)
+                  state.history
+                    .for(vscode.window.activeTextEditor!.document)
+                    .addPromptedText(result)
+
+                return state.setMode(Mode.Normal).then(() => result)
+              })
 }
 
-export function promptRegex(flags?: string) {
+export function promptRegex(state: Extension, flags?: string) {
   return vscode.window.showInputBox({
     prompt: 'Selection RegExp',
     validateInput(input) {
@@ -22,5 +29,14 @@ export function promptRegex(flags?: string) {
         return 'Invalid ECMA RegExp.'
       }
     }
-  }).then(x => x === undefined ? undefined : new RegExp(x, flags))
+  }).then(x => {
+    if (x === undefined)
+      return undefined
+
+    state.history
+      .for(vscode.window.activeTextEditor!.document)
+      .addPromptedRegex(new RegExp(x, flags))
+
+    return new RegExp(x, flags)
+  })
 }

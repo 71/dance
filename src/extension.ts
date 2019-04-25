@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 
 import { commands, Mode }      from './commands/index'
+import { HistoryManager }      from './history'
 import { Register, Registers } from './registers'
 
 
@@ -33,6 +34,7 @@ export class Extension implements vscode.Disposable {
   readonly subscriptions: vscode.Disposable[] = []
 
   readonly registers = new Registers()
+  readonly history = new HistoryManager()
 
   readonly normalModeLineDecoration = vscode.window.createTextEditorDecorationType({
     borderColor: new vscode.ThemeColor('editor.background'),
@@ -171,6 +173,7 @@ export class Extension implements vscode.Disposable {
     this.normalModeLineDecoration.dispose()
     this.primarySelectionDecoration.dispose()
     this.secondarySelectionDecoration.dispose()
+    this.history.dispose()
 
     if (!this.enabled)
       return

@@ -1,6 +1,8 @@
 // Marks: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
 import * as vscode from 'vscode'
 
+import { Extension } from '../extension'
+
 import { Command, registerCommand, keypress, promptInList } from '.'
 
 
@@ -16,8 +18,8 @@ registerCommand(Command.registersInsert, async (editor, state) => {
 })
 
 
-function promptCombine() {
-  return promptInList(false,
+function promptCombine(state: Extension) {
+  return promptInList(state, false,
     ['a', 'Append lists'],
     ['u', 'Union'],
     ['i', 'Intersection'],
