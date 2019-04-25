@@ -96,7 +96,7 @@ registerCommand(Command.selectionsClearMain, editor => {
 registerCommand(Command.selectionsKeepMatching, async (editor, state) => {
   await state.setMode(Mode.Awaiting)
 
-  const regex = await promptRegex()
+  const regex = await promptRegex(state)
 
   await state.setMode(Mode.Normal)
 
@@ -114,7 +114,7 @@ registerCommand(Command.selectionsKeepMatching, async (editor, state) => {
 registerCommand(Command.selectionsClearMatching, async (editor, state) => {
   await state.setMode(Mode.Awaiting)
 
-  const regex = await promptRegex()
+  const regex = await promptRegex(state)
 
   await state.setMode(Mode.Normal)
 

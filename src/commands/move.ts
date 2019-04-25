@@ -333,7 +333,7 @@ registerCommand(Command.trimLines, editor => {
 // Select enclosing (m, M, alt+[mM])
 // ===============================================================================================
 
-const enclosingChars = '(){}[]<>'
+const enclosingChars = '(){}[]'
 
 function indexOfEnclosingChar(line: string, position = 0) {
   for (let i = position; i < line.length; i++) {

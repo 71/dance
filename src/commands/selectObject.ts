@@ -1,12 +1,14 @@
 // Objects: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
 import * as vscode from 'vscode'
 
-import { promptInList, registerCommand, Command } from '.'
+import { Extension }                              from '../extension'
 import { TextBuffer }                             from '../utils/textBuffer'
 
+import { promptInList, registerCommand, Command } from '.'
 
-function promptObjectType() {
-  return promptInList(false,
+
+function promptObjectType(state: Extension) {
+  return promptInList(state, false,
     ['b, (, )', 'Select to enclosing parenthesis'],
     ['B, {, }', 'Select to enclosing brackets'],
     ['r, [, ]', 'Select to enclosing square brackets'],
@@ -455,7 +457,7 @@ function registerObjectSelect(command: Command, inner: boolean, extend: boolean,
   // Start === undefined: Select to both start and end
 
   registerCommand(command, async (editor, state) => {
-    const objType = await promptObjectType()
+    const objType = await promptObjectType(state)
 
     if (objType !== undefined)
       await performObjectSelect(editor, state.currentCount || 1, inner, objType, extend, start !== false, start !== true)

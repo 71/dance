@@ -8,7 +8,7 @@ import { promptRegex }                    from '../utils/prompt'
 registerCommand(Command.select, async (editor, state) => {
   await state.setMode(Mode.Awaiting)
 
-  const regex = await promptRegex('g')
+  const regex = await promptRegex(state, 'g')
 
   await state.setMode(Mode.Normal)
 
@@ -38,7 +38,7 @@ registerCommand(Command.select, async (editor, state) => {
 registerCommand(Command.split, async (editor, state) => {
   await state.setMode(Mode.Awaiting)
 
-  const regex = await promptRegex('g')
+  const regex = await promptRegex(state, 'g')
 
   await state.setMode(Mode.Normal)
 

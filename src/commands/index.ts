@@ -26,8 +26,11 @@ export function registerCommand(command: Command, action: Action) {
       return vscode.commands.registerCommand(command, async () => {
         const editor = vscode.window.activeTextEditor
 
-        if (editor !== undefined)
+        if (editor !== undefined) {
+          state.history.for(editor.document).startCommand(command)
           await action(editor, state)
+          state.history.for(editor.document).endCommand(command)
+        }
 
         if (!command.startsWith('dance.count.'))
           state.currentCount = 0
@@ -62,6 +65,9 @@ export function keypress(cancellationToken?: vscode.CancellationToken): Thenable
               subscription.dispose()
               done = true
 
+              state.history
+                .for(vscode.window.activeTextEditor!.document)
+                .addKeypress(text)
               resolve(text)
             }
           })
@@ -83,11 +89,11 @@ export function keypress(cancellationToken?: vscode.CancellationToken): Thenable
       }))
 }
 
-export function promptInList(canPickMany: true , ...items: [string, string][]): Thenable<undefined | number[]>
-export function promptInList(canPickMany: false, ...items: [string, string][]): Thenable<undefined | number>
+export function promptInList(state: Extension, canPickMany: true , ...items: [string, string][]): Thenable<undefined | number[]>
+export function promptInList(state: Extension, canPickMany: false, ...items: [string, string][]): Thenable<undefined | number>
 
-export function promptInList(canPickMany: boolean, ...items: [string, string][]): Thenable<undefined | number | number[]> {
-  return new Promise(resolve => {
+export function promptInList(state: Extension, canPickMany: boolean, ...items: [string, string][]): Thenable<undefined | number | number[]> {
+  return new Promise<undefined | number | number[]>(resolve => {
     const quickPick = vscode.window.createQuickPick()
 
     quickPick.title = 'Object'
@@ -125,6 +131,15 @@ export function promptInList(canPickMany: boolean, ...items: [string, string][])
     })
 
     quickPick.show()
+  }).then(x => {
+    if (x === undefined)
+      return x
+
+    state.history
+      .for(vscode.window.activeTextEditor!.document)
+      .addPromptedList(x)
+
+    return x
   })
 }
 

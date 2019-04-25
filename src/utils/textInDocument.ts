@@ -41,10 +41,6 @@ export function getOppositePosition(document: vscode.TextDocument, text: string,
   }
 }
 
-export function getOppositePositionFromString(document: string, text: string, position: vscode.Position, isStart: boolean) {
-  
-}
-
 /**
  * Returns the `Selection` starting at the given position, and ending at the end of the given text.
  */
