@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { registerCommand, Command } from '.'
+import { registerCommand, Command, CommandFlags } from '.'
 
 
 function rotateSelections(selections: vscode.Selection[]) {
@@ -27,11 +27,11 @@ function rotateSelectionsBackwards(selections: vscode.Selection[]) {
   return selections
 }
 
-registerCommand(Command.rotate, editor => {
+registerCommand(Command.rotate, CommandFlags.ChangeSelections, editor => {
   editor.selections = rotateSelections(editor.selections)
 })
 
-registerCommand(Command.rotateBackwards, editor => {
+registerCommand(Command.rotateBackwards, CommandFlags.ChangeSelections, editor => {
   editor.selections = rotateSelectionsBackwards(editor.selections)
 })
 
@@ -58,16 +58,13 @@ function rotateSelectionsContentBackwards(editor: vscode.TextEditor) {
   })
 }
 
-registerCommand(Command.rotateContentOnly, rotateSelectionsContent)
+registerCommand(Command.rotateContentOnly         , CommandFlags.Edit, editor => rotateSelectionsContent(editor).then(() => {}))
+registerCommand(Command.rotateContentOnlyBackwards, CommandFlags.Edit, editor => rotateSelectionsContentBackwards(editor).then(() => {}))
 
-registerCommand(Command.rotateContentOnlyBackwards, rotateSelectionsContentBackwards)
-
-registerCommand(Command.rotateContent, editor => {
-  return rotateSelectionsContent(editor)
-          .then(() => editor.selections = rotateSelections(editor.selections))
+registerCommand(Command.rotateContent, CommandFlags.ChangeSelections | CommandFlags.Edit, editor => {
+  return rotateSelectionsContent(editor).then(() => { editor.selections = rotateSelections(editor.selections) })
 })
 
-registerCommand(Command.rotateContentBackwards, editor => {
-  return rotateSelectionsContentBackwards(editor)
-          .then(() => editor.selections = rotateSelectionsBackwards(editor.selections))
+registerCommand(Command.rotateContentBackwards, CommandFlags.ChangeSelections | CommandFlags.Edit, editor => {
+  return rotateSelectionsContentBackwards(editor).then(() => { editor.selections = rotateSelectionsBackwards(editor.selections) })
 })

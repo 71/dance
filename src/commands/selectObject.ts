@@ -1,32 +1,29 @@
 // Objects: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
 import * as vscode from 'vscode'
 
-import { Extension }                              from '../extension'
-import { TextBuffer }                             from '../utils/textBuffer'
+import { TextBuffer }   from '../utils/textBuffer'
 
-import { promptInList, registerCommand, Command } from '.'
+import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 
-function promptObjectType(state: Extension) {
-  return promptInList(state, false,
-    ['b, (, )', 'Select to enclosing parenthesis'],
-    ['B, {, }', 'Select to enclosing brackets'],
-    ['r, [, ]', 'Select to enclosing square brackets'],
-    ['a, <, >', 'Select to enclosing angle brackets'],
-    ['Q, "'   , 'Select to enclosing double quotes'],
-    ['q, \''  , 'Select enclosing single quotes'],
-    ['g, `'   , 'Select to enclosing grave quotes'],
-    ['w'      , 'Select word'],
-    ['W'      , 'Select non-whitespace word'],
-    ['s'      , 'Select sentence'],
-    ['p'      , 'Select paragraph'],
-    [' '      , 'Select whitespaces'],
-    ['i'      , 'Select current indentation block'],
-    ['n'      , 'Select number'],
-    ['u'      , 'Select the argument'],
-    ['c'      , 'Select custom object'],
-  )
-}
+const objectTypePromptItems: [string, string][] = [
+  ['b, (, )', 'Select to enclosing parenthesis'],
+  ['B, {, }', 'Select to enclosing brackets'],
+  ['r, [, ]', 'Select to enclosing square brackets'],
+  ['a, <, >', 'Select to enclosing angle brackets'],
+  ['Q, "'   , 'Select to enclosing double quotes'],
+  ['q, \''  , 'Select enclosing single quotes'],
+  ['g, `'   , 'Select to enclosing grave quotes'],
+  ['w'      , 'Select word'],
+  ['W'      , 'Select non-whitespace word'],
+  ['s'      , 'Select sentence'],
+  ['p'      , 'Select paragraph'],
+  [' '      , 'Select whitespaces'],
+  ['i'      , 'Select current indentation block'],
+  ['n'      , 'Select number'],
+  ['u'      , 'Select the argument'],
+  ['c'      , 'Select custom object'],
+]
 
 
 // Selecting is a bit harder than it sounds like:
@@ -456,11 +453,8 @@ function registerObjectSelect(command: Command, inner: boolean, extend: boolean,
   // Start === false    : Select only to end
   // Start === undefined: Select to both start and end
 
-  registerCommand(command, async (editor, state) => {
-    const objType = await promptObjectType(state)
-
-    if (objType !== undefined)
-      await performObjectSelect(editor, state.currentCount || 1, inner, objType, extend, start !== false, start !== true)
+  registerCommand(command, CommandFlags.ChangeSelections, InputKind.ListOneItem, objectTypePromptItems, async (editor, state) => {
+    await performObjectSelect(editor, state.currentCount || 1, inner, state.input, extend, start !== false, start !== true)
   })
 }
 
@@ -475,7 +469,7 @@ registerObjectSelect(Command.objectsSelectToEndInner        , true , false, fals
 registerObjectSelect(Command.objectsSelectToEndExtend       , false, true , false)
 registerObjectSelect(Command.objectsSelectToEndExtendInner  , true , true , false)
 
-registerCommand(Command.objectsSelectRepeat, (editor, state) => {
+registerCommand(Command.objectsSelectRepeat, CommandFlags.ChangeSelections, (editor, state) => {
   if (lastObjectSelectOperation === undefined)
     return
 

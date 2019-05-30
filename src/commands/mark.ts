@@ -2,33 +2,29 @@
 import * as vscode from 'vscode'
 
 import { Extension } from '../extension'
+import { keypress, promptInList } from '../utils/prompt'
 
-import { Command, registerCommand, keypress, promptInList } from '.'
+import { Command, registerCommand, CommandFlags, InputKind } from '.'
 
 
-registerCommand(Command.registersSelect, async (editor, state) => {
-  const key = await keypress()
-  const reg = state.registers.get(key)
-
-  state.currentRegister = reg
+registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, undefined, async (_, { input: key }, __, ctx) => {
+  ctx.currentRegister = ctx.registers.get(key)
 })
 
-registerCommand(Command.registersInsert, async (editor, state) => {
+registerCommand(Command.registersInsert, CommandFlags.None, async (editor, state) => {
   throw new Error('Not implemented.')
 })
 
 
-function promptCombine(state: Extension) {
-  return promptInList(state, false,
-    ['a', 'Append lists'],
-    ['u', 'Union'],
-    ['i', 'Intersection'],
-    ['<', 'Select leftmost cursor'],
-    ['>', 'Select rightmost cursor'],
-    ['+', 'Select longest'],
-    ['-', 'Select shortest'],
-  )
-}
+const combineOpts = [
+  ['a', 'Append lists'],
+  ['u', 'Union'],
+  ['i', 'Intersection'],
+  ['<', 'Select leftmost cursor'],
+  ['>', 'Select rightmost cursor'],
+  ['+', 'Select longest'],
+  ['-', 'Select shortest'],
+]
 
 // function saveSelections(combine: boolean) {
 

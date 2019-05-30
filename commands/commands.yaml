@@ -405,7 +405,7 @@ pipe.prepend:
   keys: s-a-1 (normal)
 
 
-# Undo (history.ts)
+# History and macros (history.ts)
 # ================================================================================================
 
 history.undo:
@@ -423,6 +423,27 @@ history.redo:
 history.forward:
   title: Move forward in history
   keys: s-a-u (normal)
+
+history.repeat:
+  title: Repeat last change
+
+history.repeat.selection:
+  title: Repeat last selection change
+
+history.repeat.edit:
+  title: Repeat last edit change
+
+macros.record.start:
+  title: Start recording macro
+  keys: s-q (normal)
+
+macros.record.stop:
+  title: Stop recording macro
+  keys: escape (normal)
+
+macros.play:
+  title: Play macro
+  keys: q (normal)
 
 
 # Rotate (rotate.ts)
@@ -505,6 +526,16 @@ objects.selectToEnd:
 objects.select.repeat:
   title: Repeat object select
   keys: a-. (normal)
+
+
+# Goto (goto.ts)
+# ================================================================================================
+
+goto:
+  title: Go to...
+  descr: Shows prompt to jump somewhere
+  keys: g (normal)
+  add: extend
 
 
 # Registers and marks (mark.ts)

@@ -1,20 +1,10 @@
 // Multiple selections: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#multiple-selections
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, Mode } from '.'
-import { promptRegex }                    from '../utils/prompt'
+import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 
-registerCommand(Command.select, async (editor, state) => {
-  await state.setMode(Mode.Awaiting)
-
-  const regex = await promptRegex(state, 'g')
-
-  await state.setMode(Mode.Normal)
-
-  if (regex === undefined)
-    return
-
+registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'g', async (editor, { input: regex }) => {
   const newSelections = [] as vscode.Selection[]
 
   for (let i = 0; i < editor.selections.length; i++) {
@@ -35,16 +25,7 @@ registerCommand(Command.select, async (editor, state) => {
   editor.selections = newSelections
 })
 
-registerCommand(Command.split, async (editor, state) => {
-  await state.setMode(Mode.Awaiting)
-
-  const regex = await promptRegex(state, 'g')
-
-  await state.setMode(Mode.Normal)
-
-  if (regex === undefined)
-    return
-
+registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'g', async (editor, { input: regex }) => {
   const newSelections = [] as vscode.Selection[]
 
   for (let i = 0; i < editor.selections.length; i++) {
@@ -73,7 +54,7 @@ registerCommand(Command.split, async (editor, state) => {
   editor.selections = newSelections
 })
 
-registerCommand(Command.splitLines, editor => {
+registerCommand(Command.splitLines, CommandFlags.ChangeSelections, editor => {
   const newSelections = [] as vscode.Selection[]
 
   for (let i = 0; i < editor.selections.length; i++) {
@@ -104,7 +85,7 @@ registerCommand(Command.splitLines, editor => {
   editor.selections = newSelections
 })
 
-registerCommand(Command.selectFirstLast, editor => {
+registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, editor => {
   const newSelections = [] as vscode.Selection[]
 
   for (let i = 0; i < editor.selections.length; i++) {
