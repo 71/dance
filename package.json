@@ -9,6 +9,10 @@
     "name": "Grégoire Geis",
     "email": "git@gregoirege.is"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/71/dance.git"
+  },
   "readme": "README.md",
   "categories": [
     "Keymaps",
@@ -34,6 +38,7 @@
     "ts-node": "^8.0.3",
     "tslint": "^5.12.1",
     "typescript": "^3.3.1",
+    "vsce": "^1.59.0",
     "vscode": "^1.1.28"
   },
   "activationEvents": [
@@ -521,6 +526,42 @@
         "category": "Dance"
       },
       {
+        "command": "dance.history.repeat",
+        "title": "Repeat last change",
+        "description": "Repeat last change.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.repeat.selection",
+        "title": "Repeat last selection change",
+        "description": "Repeat last selection change.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.repeat.edit",
+        "title": "Repeat last edit change",
+        "description": "Repeat last edit change.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.macros.record.start",
+        "title": "Start recording macro",
+        "description": "Start recording macro.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.macros.record.stop",
+        "title": "Stop recording macro",
+        "description": "Stop recording macro.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.macros.play",
+        "title": "Play macro",
+        "description": "Play macro.",
+        "category": "Dance"
+      },
+      {
         "command": "dance.rotate",
         "title": "Rotate",
         "description": "Rotate each selection clockwise.",
@@ -608,6 +649,12 @@
         "command": "dance.objects.select.repeat",
         "title": "Repeat object select",
         "description": "Repeat object select.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto",
+        "title": "Go to...",
+        "description": "Shows prompt to jump somewhere",
         "category": "Dance"
       },
       {
@@ -764,6 +811,12 @@
         "command": "dance.objects.selectToEnd.extend",
         "title": "Extend to the whole object end",
         "description": "Extend to the whole object end.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.extend",
+        "title": "Go to... (extend)",
+        "description": "Shows prompt to jump somewhere",
         "category": "Dance"
       },
       {
@@ -1284,6 +1337,21 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
+        "command": "dance.macros.record.start",
+        "key": "Shift+q",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.macros.record.stop",
+        "key": "escape",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.macros.play",
+        "key": "q",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
         "command": "dance.rotate",
         "key": ")",
         "when": "editorTextFocus && dance.mode == 'normal'"
@@ -1356,6 +1424,11 @@
       {
         "command": "dance.objects.select.repeat",
         "key": "Alt+.",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.goto",
+        "key": "g",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1521,6 +1594,11 @@
       {
         "command": "dance.objects.selectToEnd.extend",
         "key": "Shift+[BracketRight]",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.goto.extend",
+        "key": "Shift+g",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

@@ -19,6 +19,11 @@ const pkg = {
     email: 'git@gregoirege.is',
   },
 
+  repository: {
+    type: 'git',
+    url : 'https://github.com/71/dance.git',
+  },
+
   readme: 'README.md',
 
   categories: [
@@ -49,6 +54,7 @@ const pkg = {
     'ts-node'   : '^8.0.3',
     'tslint'    : '^5.12.1',
     'typescript': '^3.3.1',
+    'vsce'      : '^1.59.0',
     'vscode'    : '^1.1.28',
   },
 

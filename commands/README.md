@@ -90,6 +90,12 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.history.backward` | Move backward in history | Move backward in history. | `Alt+U` (`dance.mode == 'normal'`) |
 | `dance.history.redo` | Redo | Redo. | `Shift+U` (`dance.mode == 'normal'`) |
 | `dance.history.forward` | Move forward in history | Move forward in history. | `Shift+Alt+U` (`dance.mode == 'normal'`) |
+| `dance.history.repeat` | Repeat last change | Repeat last change. |  |
+| `dance.history.repeat.selection` | Repeat last selection change | Repeat last selection change. |  |
+| `dance.history.repeat.edit` | Repeat last edit change | Repeat last edit change. |  |
+| `dance.macros.record.start` | Start recording macro | Start recording macro. | `Shift+Q` (`dance.mode == 'normal'`) |
+| `dance.macros.record.stop` | Stop recording macro | Stop recording macro. | `Escape` (`dance.mode == 'normal'`) |
+| `dance.macros.play` | Play macro | Play macro. | `Q` (`dance.mode == 'normal'`) |
 | `dance.rotate` | Rotate | Rotate each selection clockwise. | `)` (`dance.mode == 'normal'`) |
 | `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. | `(` (`dance.mode == 'normal'`) |
 | `dance.rotate.content` | Rotate selection content | Rotate each selection (as well as its content) clockwise. | `Alt+)` (`dance.mode == 'normal'`) |
@@ -105,6 +111,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.objects.selectToStart` | Select to the whole object start | Select to the whole object start. | `[BracketLeft]` (`dance.mode == 'normal'`) |
 | `dance.objects.selectToEnd` | Select to the whole object end | Select to the whole object end. | `[BracketRight]` (`dance.mode == 'normal'`) |
 | `dance.objects.select.repeat` | Repeat object select | Repeat object select. | `Alt+.` (`dance.mode == 'normal'`) |
+| `dance.goto` | Go to... | Shows prompt to jump somewhere | `G` (`dance.mode == 'normal'`) |
 | `dance.registers.insert` | Insert value in register | Insert value in register. | `Ctrl+R` (`dance.mode == 'normal'`), `Ctrl+R` (`dance.mode == 'insert'`) |
 | `dance.registers.select` | Select register for next command | Select register for next command. | `[Quote]` (`dance.mode == 'normal'`) |
 | `dance.marks.saveSelections` | Save selections | Save selections. | `Shift+Z` (`dance.mode == 'normal'`) |
@@ -131,6 +138,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.search.backwards.extend` | Search backwards (extend) | Search for the given input string before the current selections (extend). | `Shift+Alt+Slash` (`dance.mode == 'normal'`) |
 | `dance.objects.selectToStart.extend` | Extend to the whole object start | Extend to the whole object start. | `Shift+[BracketLeft]` (`dance.mode == 'normal'`) |
 | `dance.objects.selectToEnd.extend` | Extend to the whole object end | Extend to the whole object end. | `Shift+[BracketRight]` (`dance.mode == 'normal'`) |
+| `dance.goto.extend` | Go to... (extend) | Shows prompt to jump somewhere | `Shift+G` (`dance.mode == 'normal'`) |
 | `dance.select.to.included.backwards` | Select to (backwards) | Select to the next character pressed, including it. (backwards) | `Alt+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.backwards` | Select until (backwards) | Select until the next character pressed, excluding it. (backwards) | `Alt+T` (`dance.mode == 'normal'`) |
 | `dance.select.enclosing.backwards` | Select enclosing characters (backwards) | Select enclosing characters. (backwards) | `Alt+M` (`dance.mode == 'normal'`) |

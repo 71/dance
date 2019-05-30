@@ -2,16 +2,12 @@
 import * as vscode               from 'vscode'
 import { Selection, TextEditor } from 'vscode'
 
-import { keypress, registerCommand, Command } from '.'
-import { Extension } from '../extension'
-import { TextBuffer } from '../utils/textBuffer';
+import { registerCommand, Command, CommandFlags, CommandState, InputKind } from '.'
+import { TextBuffer } from '../utils/textBuffer'
 
 
-// Yes, this looks like a decorator. Yes, it's supposed to be one.
-// Yes, I'm hoping that TypeScript will one day consider this a bug,
-// and fix the current behavior, which causes an error.
-function registerMovement(cmd: Command, modifier: (selection: Selection, editor: TextEditor, state: Extension) => Selection) {
-  registerCommand(cmd, (editor, state) => {
+function registerMovement(cmd: Command, modifier: (selection: Selection, editor: TextEditor, state: CommandState<InputKind.None>) => Selection) {
+  registerCommand(cmd, CommandFlags.ChangeSelections, (editor, state) => {
     editor.selections = editor.selections.map(s => modifier(s, editor, state))
   })
 }
@@ -63,16 +59,14 @@ for (const [command, lineDelta, charDelta] of simpleMovements) {
 // ===============================================================================================
 
 function registerSelectTo(commandName: Command, diff: number, extend: boolean, backwards: boolean) {
-  registerCommand(commandName, async (editor, state) => {
-    const key = await keypress()
-
+  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, async (editor, { currentCount, input: key }) => {
     editor.selections = editor.selections.map(selection => {
       let line = selection.active.line
       let idx = backwards
         ? editor.document.lineAt(line).text.lastIndexOf(key, selection.active.character - 1 - diff)
         : editor.document.lineAt(line).text.indexOf(key, selection.active.character + 1 - diff)
 
-      for (let i = state.currentCount || 1; i > 0; i--) {
+      for (let i = currentCount || 1; i > 0; i--) {
         while (idx === -1) {
           // There is no initial match, so we check the surrounding lines
 
@@ -172,7 +166,7 @@ function skipEmptyLines(document: vscode.TextDocument, pos: vscode.Position, bac
 
 
 function registerToNextWord(commandName: Command, extend: boolean, end: boolean, isWord: (c: string) => boolean) {
-  registerCommand(commandName, (editor, state) => {
+  registerCommand(commandName, CommandFlags.ChangeSelections, (editor, state) => {
     editor.selections = editor.selections.map(selection => {
       const anchor = extend ? selection.anchor : selection.active
 
@@ -215,7 +209,7 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
 }
 
 function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (c: string) => boolean) {
-  registerCommand(commandName, (editor, state) => {
+  registerCommand(commandName, CommandFlags.ChangeSelections, (editor, state) => {
     editor.selections = editor.selections.map(selection => {
       const anchor = extend ? selection.anchor : selection.active
 
@@ -267,7 +261,7 @@ registerToPreviousWord(Command.selectWordAltPreviousExtend, true , isNonWsWord)
 // Line selecting key bindings (x, X, alt+[xX], home, end)
 // ===============================================================================================
 
-registerCommand(Command.selectLine, editor => {
+registerCommand(Command.selectLine, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
     const line = editor.document.lineAt(x.active)
 
@@ -275,7 +269,7 @@ registerCommand(Command.selectLine, editor => {
   })
 })
 
-registerCommand(Command.selectLineExtend, editor => {
+registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
     const line = editor.document.lineAt(x.active)
 
@@ -283,19 +277,19 @@ registerCommand(Command.selectLineExtend, editor => {
   })
 })
 
-registerCommand(Command.selectToLineBegin, editor => {
+registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
     return new vscode.Selection(x.active, new vscode.Position(x.active.line, 0))
   })
 })
 
-registerCommand(Command.selectToLineBeginExtend, editor => {
+registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
     return new vscode.Selection(x.anchor, new vscode.Position(x.active.line, 0))
   })
 })
 
-registerCommand(Command.selectToLineEnd, editor => {
+registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
     const line = editor.document.lineAt(x.active)
 
@@ -303,7 +297,7 @@ registerCommand(Command.selectToLineEnd, editor => {
   })
 })
 
-registerCommand(Command.selectToLineEndExtend, editor => {
+registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
     const line = editor.document.lineAt(x.active)
 
@@ -311,7 +305,7 @@ registerCommand(Command.selectToLineEndExtend, editor => {
   })
 })
 
-registerCommand(Command.expandLines, editor => {
+registerCommand(Command.expandLines, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
     const anchorLine = editor.document.lineAt(x.anchor)
     const activeLine = editor.document.lineAt(x.active)
@@ -320,7 +314,7 @@ registerCommand(Command.expandLines, editor => {
   })
 })
 
-registerCommand(Command.trimLines, editor => {
+registerCommand(Command.trimLines, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
     const start = x.start.character == 0 ? x.start : x.start.translate(1, 0)
     const end   = x.end.character == editor.document.lineAt(x.end).range.end.character ? x.end : x.end.translate(-1, 0)
@@ -360,7 +354,7 @@ function lastIndexOfEnclosingChar(line: string, position = line.length - 1) {
 }
 
 function registerToEnclosing(command: Command, extend: boolean, backwards: boolean) {
-  registerCommand(command, (editor, state) => {
+  registerCommand(command, CommandFlags.ChangeSelections, (editor, state) => {
     editor.selections = editor.selections.map(selection => {
       let line = selection.active.line
       let text = editor.document.lineAt(line).text
@@ -470,7 +464,7 @@ registerToEnclosing(Command.selectEnclosingExtendBackwards, true , true )
 // Other bindings (%)
 // ===============================================================================================
 
-registerCommand(Command.selectBuffer, editor => {
+registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, editor => {
   const start = new vscode.Position(0, 0)
   const end   = editor.document.lineAt(editor.document.lineCount - 1).range.end
 

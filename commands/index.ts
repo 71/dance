@@ -706,6 +706,54 @@ export const historyForward: ICommand & { readonly id: 'dance.history.forward' }
     { key: 'Shift+Alt+u', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
+/** Repeat last change. */
+export const historyRepeat: ICommand & { readonly id: 'dance.history.repeat' } = {
+  id         : 'dance.history.repeat',
+  title      : 'Repeat last change',
+  description: 'Repeat last change.',
+  keybindings: [],
+}
+/** Repeat last selection change. */
+export const historyRepeatSelection: ICommand & { readonly id: 'dance.history.repeat.selection' } = {
+  id         : 'dance.history.repeat.selection',
+  title      : 'Repeat last selection change',
+  description: 'Repeat last selection change.',
+  keybindings: [],
+}
+/** Repeat last edit change. */
+export const historyRepeatEdit: ICommand & { readonly id: 'dance.history.repeat.edit' } = {
+  id         : 'dance.history.repeat.edit',
+  title      : 'Repeat last edit change',
+  description: 'Repeat last edit change.',
+  keybindings: [],
+}
+/** Start recording macro. */
+export const macrosRecordStart: ICommand & { readonly id: 'dance.macros.record.start' } = {
+  id         : 'dance.macros.record.start',
+  title      : 'Start recording macro',
+  description: 'Start recording macro.',
+  keybindings: [
+    { key: 'Shift+q', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Stop recording macro. */
+export const macrosRecordStop: ICommand & { readonly id: 'dance.macros.record.stop' } = {
+  id         : 'dance.macros.record.stop',
+  title      : 'Stop recording macro',
+  description: 'Stop recording macro.',
+  keybindings: [
+    { key: 'escape', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Play macro. */
+export const macrosPlay: ICommand & { readonly id: 'dance.macros.play' } = {
+  id         : 'dance.macros.play',
+  title      : 'Play macro',
+  description: 'Play macro.',
+  keybindings: [
+    { key: 'q', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
 /** Rotate each selection clockwise. */
 export const rotate: ICommand & { readonly id: 'dance.rotate' } = {
   id         : 'dance.rotate',
@@ -837,6 +885,15 @@ export const objectsSelectRepeat: ICommand & { readonly id: 'dance.objects.selec
   description: 'Repeat object select.',
   keybindings: [
     { key: 'Alt+.', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Shows prompt to jump somewhere */
+export const goto: ICommand & { readonly id: 'dance.goto' } = {
+  id         : 'dance.goto',
+  title      : 'Go to...',
+  description: 'Shows prompt to jump somewhere',
+  keybindings: [
+    { key: 'g', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Insert value in register. */
@@ -1078,6 +1135,15 @@ export const objectsSelectToEndExtend: ICommand & { readonly id: 'dance.objects.
   description: 'Extend to the whole object end.',
   keybindings: [
     { key: 'Shift+[BracketRight]', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Shows prompt to jump somewhere */
+export const gotoExtend: ICommand & { readonly id: 'dance.goto.extend' } = {
+  id         : 'dance.goto.extend',
+  title      : 'Go to... (extend)',
+  description: 'Shows prompt to jump somewhere',
+  keybindings: [
+    { key: 'Shift+g', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Select to the next character pressed, including it. (backwards) */
@@ -1419,6 +1485,18 @@ export const commands = {
   historyRedo,
   /** Move forward in history. */
   historyForward,
+  /** Repeat last change. */
+  historyRepeat,
+  /** Repeat last selection change. */
+  historyRepeatSelection,
+  /** Repeat last edit change. */
+  historyRepeatEdit,
+  /** Start recording macro. */
+  macrosRecordStart,
+  /** Stop recording macro. */
+  macrosRecordStop,
+  /** Play macro. */
+  macrosPlay,
   /** Rotate each selection clockwise. */
   rotate,
   /** Rotate each selection counter-clockwise. */
@@ -1449,6 +1527,8 @@ export const commands = {
   objectsSelectToEnd,
   /** Repeat object select. */
   objectsSelectRepeat,
+  /** Shows prompt to jump somewhere */
+  goto,
   /** Insert value in register. */
   registersInsert,
   /** Select register for next command. */
@@ -1501,6 +1581,8 @@ export const commands = {
   objectsSelectToStartExtend,
   /** Extend to the whole object end. */
   objectsSelectToEndExtend,
+  /** Shows prompt to jump somewhere */
+  gotoExtend,
   /** Select to the next character pressed, including it. (backwards) */
   selectToIncludedBackwards,
   /** Select until the next character pressed, excluding it. (backwards) */
@@ -1701,6 +1783,18 @@ export const enum Command {
   historyRedo = 'dance.history.redo',
   /** Move forward in history. */
   historyForward = 'dance.history.forward',
+  /** Repeat last change. */
+  historyRepeat = 'dance.history.repeat',
+  /** Repeat last selection change. */
+  historyRepeatSelection = 'dance.history.repeat.selection',
+  /** Repeat last edit change. */
+  historyRepeatEdit = 'dance.history.repeat.edit',
+  /** Start recording macro. */
+  macrosRecordStart = 'dance.macros.record.start',
+  /** Stop recording macro. */
+  macrosRecordStop = 'dance.macros.record.stop',
+  /** Play macro. */
+  macrosPlay = 'dance.macros.play',
   /** Rotate each selection clockwise. */
   rotate = 'dance.rotate',
   /** Rotate each selection counter-clockwise. */
@@ -1731,6 +1825,8 @@ export const enum Command {
   objectsSelectToEnd = 'dance.objects.selectToEnd',
   /** Repeat object select. */
   objectsSelectRepeat = 'dance.objects.select.repeat',
+  /** Shows prompt to jump somewhere */
+  goto = 'dance.goto',
   /** Insert value in register. */
   registersInsert = 'dance.registers.insert',
   /** Select register for next command. */
@@ -1783,6 +1879,8 @@ export const enum Command {
   objectsSelectToStartExtend = 'dance.objects.selectToStart.extend',
   /** Extend to the whole object end. */
   objectsSelectToEndExtend = 'dance.objects.selectToEnd.extend',
+  /** Shows prompt to jump somewhere */
+  gotoExtend = 'dance.goto.extend',
   /** Select to the next character pressed, including it. (backwards) */
   selectToIncludedBackwards = 'dance.select.to.included.backwards',
   /** Select until the next character pressed, excluding it. (backwards) */

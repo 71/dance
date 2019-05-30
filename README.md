@@ -120,7 +120,9 @@ Most (but not all) commands defined in [`commands`][commands] are implemented.
 - [ ] History:
   - [X] Undo / redo.
   - [ ] Forward / backward.
-- [ ] Macros.
+  - [X] Repeat command.
+  - [ ] Repeat insertion.
+- [X] Macros.
 - [ ] Registers.
 
 

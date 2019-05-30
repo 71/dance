@@ -1,27 +1,26 @@
 // Select / extend: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, Mode } from '.'
-import { promptRegex }                    from '../utils/prompt'
+import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 
-registerCommand(Command.selectionsReduce, editor => {
+registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => new vscode.Selection(x.active, x.active))
 })
 
-registerCommand(Command.selectionsFlip, editor => {
+registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => new vscode.Selection(x.active, x.anchor))
 })
 
-registerCommand(Command.selectionsForward, editor => {
+registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => x.isReversed ? new vscode.Selection(x.start, x.end) : x)
 })
 
-registerCommand(Command.selectionsBackward, editor => {
+registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => x.isReversed ? x : new vscode.Selection(x.end, x.start))
 })
 
-registerCommand(Command.selectionsMerge, editor => {
+registerCommand(Command.selectionsMerge, CommandFlags.ChangeSelections, editor => {
   const selections = editor.selections
 
   // VS Code automatically merges overlapping selections, so here
@@ -54,20 +53,20 @@ registerCommand(Command.selectionsMerge, editor => {
   editor.selections = selections
 })
 
-registerCommand(Command.selectionsAlign, editor => {
+registerCommand(Command.selectionsAlign, CommandFlags.Edit, editor => {
   const startChar = editor.selections.reduce((max, sel) => sel.start.character > max ? sel.start.character : max, 0)
 
-  editor.edit(builder => {
+  return builder => {
     for (const selection of editor.selections)
       builder.insert(selection.start, ' '.repeat(startChar - selection.start.character))
-  })
+  }
 })
 
-registerCommand(Command.selectionsAlignCopy, (editor, state) => {
+registerCommand(Command.selectionsAlignCopy, CommandFlags.Edit, (editor, state) => {
   const sourceSelection = editor.selections[state.currentCount] || editor.selection
   const sourceIndent = editor.document.lineAt(sourceSelection.start).firstNonWhitespaceCharacterIndex
 
-  editor.edit(builder => {
+  return builder => {
     for (let i = 0; i < editor.selections.length; i++) {
       if (i === sourceSelection.start.line)
         continue
@@ -80,29 +79,20 @@ registerCommand(Command.selectionsAlignCopy, (editor, state) => {
       else if (indent < sourceIndent)
         builder.insert(line.range.start, ' '.repeat(indent - sourceIndent))
     }
-  })
+  }
 })
 
 
-registerCommand(Command.selectionsClear, editor => {
+registerCommand(Command.selectionsClear, CommandFlags.ChangeSelections, editor => {
   editor.selections = [editor.selection]
 })
 
-registerCommand(Command.selectionsClearMain, editor => {
+registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, editor => {
   if (editor.selections.length > 1)
     editor.selections = editor.selections.splice(editor.selections.indexOf(editor.selection), 1)
 })
 
-registerCommand(Command.selectionsKeepMatching, async (editor, state) => {
-  await state.setMode(Mode.Awaiting)
-
-  const regex = await promptRegex(state)
-
-  await state.setMode(Mode.Normal)
-
-  if (regex === undefined)
-    return
-
+registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', async (editor, { input: regex }) => {
   const newSelections = editor.selections.filter(x => regex.test(editor.document.getText(x)))
 
   if (newSelections.length === 0)
@@ -111,16 +101,7 @@ registerCommand(Command.selectionsKeepMatching, async (editor, state) => {
     editor.selections = newSelections
 })
 
-registerCommand(Command.selectionsClearMatching, async (editor, state) => {
-  await state.setMode(Mode.Awaiting)
-
-  const regex = await promptRegex(state)
-
-  await state.setMode(Mode.Normal)
-
-  if (regex === undefined)
-    return
-
+registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', async (editor, { input: regex }) => {
   const newSelections = editor.selections.filter(x => !regex.test(editor.document.getText(x)))
 
   if (newSelections.length === 0)

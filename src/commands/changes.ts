@@ -1,57 +1,53 @@
 // Changes: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes
 import * as vscode from 'vscode'
 
-import { keypress, registerCommand, Command, Mode }   from '.'
+import { registerCommand, Command, CommandFlags, CommandState, InputKind } from '.'
+
 import { Extension }                                  from '../extension'
+import { keypress }                                   from '../utils/prompt'
 import { getSelectionFromStart, getSelectionFromEnd } from '../utils/textInDocument'
 
 
-function getRegister(state: Extension) {
-  return state.currentRegister || state.registers.dquote
+function getRegister(state: CommandState<any>, ctx: Extension) {
+  return state.currentRegister || ctx.registers.dquote
 }
 
-registerCommand(Command.deleteYank, async (editor, state) => {
-  const reg = getRegister(state)
+registerCommand(Command.deleteYank, CommandFlags.Edit, async (editor, state, _, ctx) => {
+  const reg = getRegister(state, ctx)
 
   if (reg.canWrite())
     await reg.set(editor, editor.selections.map(x => editor.document.getText(x)))
 
-  await editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (const selection of editor.selections)
       builder.delete(selection)
-  })
+  }
 })
 
-registerCommand(Command.deleteInsertYank, async (editor, state) => {
-  const reg = getRegister(state)
+registerCommand(Command.deleteInsertYank, CommandFlags.Edit | CommandFlags.SwitchToInsert, async (editor, state, _, ctx) => {
+  const reg = getRegister(state, ctx)
 
   if (reg.canWrite())
     await reg.set(editor, editor.selections.map(x => editor.document.getText(x)))
 
-  await editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (const selection of editor.selections)
       builder.delete(selection)
-  })
-
-  await state.setEditorMode(editor, Mode.Insert)
+  }
 })
 
-registerCommand(Command.deleteNoYank, editor => {
-  return editor.edit(builder => {
-    for (const selection of editor.selections)
-      builder.delete(selection)
-  })
+registerCommand(Command.deleteNoYank, CommandFlags.Edit, editor => builder => {
+  for (const selection of editor.selections)
+    builder.delete(selection)
 })
 
-registerCommand(Command.deleteInsertNoYank, (editor, state) => {
-  return editor.edit(builder => {
-    for (const selection of editor.selections)
-      builder.delete(selection)
-  }).then(() => state.setEditorMode(editor, Mode.Insert))
+registerCommand(Command.deleteInsertNoYank, CommandFlags.Edit | CommandFlags.SwitchToInsert, editor => builder => {
+  for (const selection of editor.selections)
+    builder.delete(selection)
 })
 
-registerCommand(Command.yank, (editor, state) => {
-  const reg = getRegister(state)
+registerCommand(Command.yank, CommandFlags.None, (editor, state, _, ctx) => {
+  const reg = getRegister(state, ctx)
 
   if (reg.canWrite())
     return reg.set(editor, editor.selections.map(x => editor.document.getText(x)))
@@ -60,38 +56,38 @@ registerCommand(Command.yank, (editor, state) => {
 })
 
 
-function getContentToPaste(editor: vscode.TextEditor, state: Extension) {
-  return getRegister(state)
+function getContentToPaste(editor: vscode.TextEditor, state: CommandState<any>, ctx: Extension) {
+  return getRegister(state, ctx)
     .get(editor)
     .then(reg => reg && reg[0] ? reg[0] : undefined)
 }
 
-registerCommand(Command.pasteAfter, async (editor, state) => {
-  const content = await getContentToPaste(editor, state)
+registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, _, ctx) => {
+  const content = await getContentToPaste(editor, state, ctx)
 
   if (content === undefined)
-    return
+    return undefined
 
-  await editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (const selection of editor.selections)
       builder.insert(selection.end, content)
-  })
+  }
 })
 
-registerCommand(Command.pasteBefore, async (editor, state) => {
-  const content = await getContentToPaste(editor, state)
+registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, _, ctx) => {
+  const content = await getContentToPaste(editor, state, ctx)
 
   if (content === undefined)
     return
 
-  await editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (const selection of editor.selections)
       builder.insert(selection.start, content)
-  })
+  }
 })
 
-registerCommand(Command.pasteSelectAfter, async (editor, state) => {
-  const content = await getContentToPaste(editor, state)
+registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
+  const content = await getContentToPaste(editor, state, ctx)
 
   if (content === undefined)
     return
@@ -103,13 +99,13 @@ registerCommand(Command.pasteSelectAfter, async (editor, state) => {
       builder.insert(selection.end, content)
       newSelections.push(getSelectionFromStart(editor.document, content, selection.end))
     }
-  })
+  }, undoStops)
 
   editor.selections = newSelections
 })
 
-registerCommand(Command.pasteSelectBefore, async (editor, state) => {
-  const content = await getContentToPaste(editor, state)
+registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
+  const content = await getContentToPaste(editor, state, ctx)
 
   if (content === undefined)
     return
@@ -121,41 +117,40 @@ registerCommand(Command.pasteSelectBefore, async (editor, state) => {
       builder.insert(selection.start, content)
       newSelections.push(getSelectionFromEnd(editor.document, content, selection.start))
     }
-  })
+  }, undoStops)
 
   editor.selections = newSelections
 })
 
-registerCommand(Command.pasteReplace, async (editor, state) => {
-  const content = await getContentToPaste(editor, state)
+registerCommand(Command.pasteReplace, CommandFlags.Edit, async (editor, state, _, ctx) => {
+  const content = await getContentToPaste(editor, state, ctx)
 
   if (content === undefined)
     return
 
-  await editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (const selection of editor.selections)
       builder.replace(selection, content)
-  })
+  }
 })
 
-registerCommand(Command.pasteReplaceEvery, async (editor, state) => {
-  const contents = await getRegister(state).get(editor)
+registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async (editor, state, _, ctx) => {
+  const contents = await getRegister(state, ctx).get(editor)
 
   if (contents === undefined || contents.length !== editor.selections.length)
     return
 
-  await editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (let i = 0; i < contents.length; i++)
       builder.replace(editor.selections[i], contents[i])
-  })
+  }
 })
 
 
-registerCommand(Command.replaceCharacters, async (editor, state) => {
-  const key = await keypress()
-  const string = key.repeat(state.currentCount || 1)
+registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, undefined, async (editor, { currentCount, input: key }) => {
+  const string = key.repeat(currentCount || 1)
 
-  await editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (const selection of editor.selections) {
       let i = selection.start.line
 
@@ -183,15 +178,15 @@ registerCommand(Command.replaceCharacters, async (editor, state) => {
 
       builder.replace(lastLine, string.repeat(lastLine.end.character - lastLine.start.character))
     }
-  })
+  }
 })
 
 
-registerCommand(Command.join, () => {
+registerCommand(Command.join, CommandFlags.Edit, () => {
   return vscode.commands.executeCommand('editor.action.joinLines')
 })
 
-registerCommand(Command.joinSelect, async editor => {
+registerCommand(Command.joinSelect, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, _, undoStops) => {
   const newSelections = [] as vscode.Selection[]
 
   await editor.edit(builder => {
@@ -209,7 +204,7 @@ registerCommand(Command.joinSelect, async editor => {
         newSelections.push(new vscode.Selection(startPosition, startPosition.translate(0, 1)))
       }
     }
-  })
+  }, undoStops)
 
   editor.selections = newSelections
 })
@@ -238,7 +233,7 @@ function getSelectionsLines(selections: vscode.Selection[]) {
 }
 
 function indent(editor: vscode.TextEditor, ignoreEmpty: boolean) {
-  return editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     const indent = editor.options.insertSpaces === true
                     ? ' '.repeat(editor.options.tabSize as number)
                     : '\t'
@@ -249,19 +244,19 @@ function indent(editor: vscode.TextEditor, ignoreEmpty: boolean) {
 
       builder.insert(new vscode.Position(i, 0), indent)
     }
-  })
+  }
 }
 
-registerCommand(Command.indent, editor => indent(editor, true))
-registerCommand(Command.indentWithEmpty, editor => indent(editor, false))
+registerCommand(Command.indent         , CommandFlags.Edit, editor => indent(editor, true))
+registerCommand(Command.indentWithEmpty, CommandFlags.Edit, editor => indent(editor, false))
 
-function deindent(editor: vscode.TextEditor, state: Extension, further: boolean) {
-  return editor.edit(builder => {
+function deindent(editor: vscode.TextEditor, currentCount: number, further: boolean) {
+  return (builder: vscode.TextEditorEdit) => {
     const doc = editor.document
     const tabSize = editor.options.tabSize as number
 
     // Number of blank characters needed to deindent:
-    const needed = (state.currentCount || 1) * tabSize
+    const needed = (currentCount || 1) * tabSize
 
     for (const i of getSelectionsLines(editor.selections)) {
       const line = doc.lineAt(i),
@@ -289,28 +284,28 @@ function deindent(editor: vscode.TextEditor, state: Extension, further: boolean)
       if (j !== 0)
         builder.delete(line.range.with(undefined, line.range.start.translate(0, j)))
     }
-  })
+  }
 }
 
-registerCommand(Command.deindent, (editor, state) => deindent(editor, state, false))
-registerCommand(Command.deindentFurther, (editor, state) => deindent(editor, state, true))
+registerCommand(Command.deindent       , CommandFlags.Edit, (editor, state) => deindent(editor, state.currentCount, false))
+registerCommand(Command.deindentFurther, CommandFlags.Edit, (editor, state) => deindent(editor, state.currentCount, true))
 
 
-registerCommand(Command.toLowerCase, editor => editor.edit(builder => {
+registerCommand(Command.toLowerCase, CommandFlags.Edit, editor => builder => {
   const doc = editor.document
 
   for (const selection of editor.selections)
     builder.replace(selection, doc.getText(selection).toLocaleLowerCase())
-}))
+})
 
-registerCommand(Command.toUpperCase, editor => editor.edit(builder => {
+registerCommand(Command.toUpperCase, CommandFlags.Edit, editor => builder => {
   const doc = editor.document
 
   for (const selection of editor.selections)
     builder.replace(selection, doc.getText(selection).toLocaleUpperCase())
-}))
+})
 
-registerCommand(Command.swapCase, editor => editor.edit(builder => {
+registerCommand(Command.swapCase, CommandFlags.Edit, editor => builder => {
   const doc = editor.document
 
   for (const selection of editor.selections) {
@@ -326,4 +321,4 @@ registerCommand(Command.swapCase, editor => editor.edit(builder => {
 
     builder.replace(selection, text)
   }
-}))
+})

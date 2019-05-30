@@ -3,10 +3,7 @@ import * as cp     from 'child_process'
 import * as util   from 'util'
 import * as vscode from 'vscode'
 
-import { Extension } from '../extension'
-import { prompt }    from '../utils/prompt'
-
-import { registerCommand, Command } from '.'
+import { registerCommand, Command, InputKind, CommandFlags } from '.'
 
 
 const exec = util.promisify(cp.exec)
@@ -118,7 +115,7 @@ function pipe(command: string, selections: string[]) {
 }
 
 
-const promptCommand = (state: Extension, expectReplacement = false) => prompt(state, {
+const getInputBoxOptions = (expectReplacement: boolean) => ({
   validateInput(input) {
     if (input.trim().length === 0)
       return 'The given command cannot be empty.'
@@ -151,17 +148,17 @@ const promptCommand = (state: Extension, expectReplacement = false) => prompt(st
   },
 
   prompt: 'Enter an expression',
-}) as Thenable<string | undefined>
+} as vscode.InputBoxOptions)
 
-const promptExecSelections = (state: Extension, editor: vscode.TextEditor, expectReplacement = false) =>
-  promptCommand(state, expectReplacement).then(cmd =>
-    cmd === undefined
-      ? undefined
-      : pipe(cmd, editor.selections.map(editor.document.getText)) as Promise<{ val?: string, err?: string }[]>)
+const inputBoxOptions = getInputBoxOptions(false)
+const inputBoxOptionsWithReplacement = getInputBoxOptions(true)
 
+function pipeInput(input: string, editor: vscode.TextEditor) {
+  return pipe(input, editor.selections.map(editor.document.getText)) as Thenable<{ val?: string, err?: string }[]>
+}
 
-registerCommand(Command.pipeFilter, async (editor, state) => {
-  const outputs = await promptExecSelections(state, editor, false)
+registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Text, inputBoxOptions, async (editor, state) => {
+  const outputs = await pipeInput(state.input, editor)
 
   if (outputs === undefined)
     return
@@ -170,8 +167,8 @@ registerCommand(Command.pipeFilter, async (editor, state) => {
   editor.selections = editor.selections.filter((_, i) => !outputs[i].err && outputs[i].val !== 'false')
 })
 
-registerCommand(Command.pipeIgnore, async (editor, state) => {
-  const outputs = await promptExecSelections(state, editor, false)
+registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, inputBoxOptions, async (editor, state) => {
+  const outputs = await pipeInput(state.input, editor)
 
   if (outputs === undefined)
     return
@@ -179,8 +176,8 @@ registerCommand(Command.pipeIgnore, async (editor, state) => {
   // TODO: Handle stderr
 })
 
-registerCommand(Command.pipeReplace, async (editor, state) => {
-  const outputs = await promptExecSelections(state, editor, true)
+registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBoxOptionsWithReplacement, async (editor, state) => {
+  const outputs = await pipeInput(state.input, editor)
 
   if (outputs === undefined)
     return
@@ -189,14 +186,14 @@ registerCommand(Command.pipeReplace, async (editor, state) => {
   if (outputs.find(x => !!x.err))
     return
 
-  editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (let i = 0; i < outputs.length; i++)
       builder.replace(editor.selections[i], outputs[i].val!)
-  })
+  }
 })
 
-registerCommand(Command.pipeAppend, async (editor, state) => {
-  const outputs = await promptExecSelections(state, editor, false)
+registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
+  const outputs = await pipeInput(state.input, editor)
 
   if (outputs === undefined)
     return
@@ -205,14 +202,14 @@ registerCommand(Command.pipeAppend, async (editor, state) => {
   if (outputs.find(x => !!x.err))
     return
 
-  editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (let i = 0; i < outputs.length; i++)
       builder.insert(editor.selections[i].end, outputs[i].val!)
-  })
+  }
 })
 
-registerCommand(Command.pipePrepend, async (editor, state) => {
-  const outputs = await promptExecSelections(state, editor, false)
+registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
+  const outputs = await pipeInput(state.input, editor)
 
   if (outputs === undefined)
     return
@@ -221,8 +218,8 @@ registerCommand(Command.pipePrepend, async (editor, state) => {
   if (outputs.find(x => !!x.err))
     return
 
-  editor.edit(builder => {
+  return (builder: vscode.TextEditorEdit) => {
     for (let i = 0; i < outputs.length; i++)
       builder.insert(editor.selections[i].start, outputs[i].val!)
-  })
+  }
 })

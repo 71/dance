@@ -1,7 +1,7 @@
 // Search: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#searching
 import * as vscode from 'vscode'
 
-import { registerCommand, Command } from '.'
+import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 
 function isMultilineRegExp(regex: string) {
@@ -197,59 +197,62 @@ function searchBackward(document: vscode.TextDocument, end: vscode.Position, reg
 }
 
 function registerSearchCommand(command: Command, backward: boolean, extend: boolean) {
-  registerCommand(command, async editor => {
-    const initialSelections = editor.selections
+  let initialSelections: vscode.Selection[]
 
-    const result = await vscode.window.showInputBox({
-      prompt: 'Search RegExp',
+  registerCommand(command, CommandFlags.ChangeSelections, InputKind.Text, {
+    prompt: 'Search RegExp',
 
-      validateInput(input) {
-        if (input.length === 0)
-          return 'RegExp cannot be empty.'
+    setup(editor) {
+      initialSelections = editor.selections
+    },
 
-        let regex: RegExp
-        let flags = (isMultilineRegExp(input) ? 'm' : '') + (backward ? 'g' : '')
+    validateInput(input) {
+      if (input.length === 0)
+        return 'RegExp cannot be empty.'
 
-        try {
-          regex = new RegExp(input, flags)
-        } catch {
-          return 'Invalid ECMA RegExp.'
-        }
+      const editor = vscode.window.activeTextEditor!
 
-        // TODO: For subsequent searches, first try to match at start of previous
-        // match by adding a ^, and then fallback to the default search routine
-        if (extend) {
-          if (backward)
-            editor.selections = initialSelections.map(selection => {
-              const newSelection = searchBackward(editor.document, selection.anchor, regex)
+      let regex: RegExp
+      let flags = (isMultilineRegExp(input) ? 'm' : '') + (backward ? 'g' : '')
 
-              return newSelection === undefined
-                ? selection
-                : new vscode.Selection(newSelection.start, selection.end)
-            })
-          else
-            editor.selections = initialSelections.map(selection => {
-              const newSelection = search(editor.document, selection.active, regex)
-
-              return newSelection === undefined
-                ? selection
-                : new vscode.Selection(selection.start, newSelection.end)
-            })
-        } else {
-          editor.selections = initialSelections.map(selection => {
-            return (backward
-              ? searchBackward(editor.document, selection.anchor, regex)
-              : search(editor.document, selection.active, regex))
-            || selection
-          })
-        }
-
-        return undefined
+      try {
+        regex = new RegExp(input, flags)
+      } catch {
+        return 'Invalid ECMA RegExp.'
       }
-    })
 
-    if (result === undefined)
-      editor.selections = initialSelections
+      // TODO: For subsequent searches, first try to match at start of previous
+      // match by adding a ^, and then fallback to the default search routine
+      if (extend) {
+        if (backward)
+          editor.selections = initialSelections.map(selection => {
+            const newSelection = searchBackward(editor.document, selection.anchor, regex)
+
+            return newSelection === undefined
+              ? selection
+              : new vscode.Selection(newSelection.start, selection.end)
+          })
+        else
+          editor.selections = initialSelections.map(selection => {
+            const newSelection = search(editor.document, selection.active, regex)
+
+            return newSelection === undefined
+              ? selection
+              : new vscode.Selection(selection.start, newSelection.end)
+          })
+      } else {
+        editor.selections = initialSelections.map(selection => {
+          return (backward
+            ? searchBackward(editor.document, selection.anchor, regex)
+            : search(editor.document, selection.active, regex))
+          || selection
+        })
+      }
+
+      return undefined
+    }
+  }, async editor => {
+    editor.selections = initialSelections
   })
 }
 

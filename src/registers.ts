@@ -1,4 +1,5 @@
 import * as vscode from 'vscode'
+import { CommandDescriptor, CommandState } from './commands';
 
 
 export interface Register {
@@ -8,12 +9,19 @@ export interface Register {
   get(editor: vscode.TextEditor): Thenable<string[] | undefined>
 }
 
+export interface MacroRegister {
+  getMacro(): [CommandDescriptor<any>, CommandState<any>][] | undefined
+  setMacro(data: [CommandDescriptor<any>, CommandState<any>][]): void
+}
+
 export interface WritableRegister extends Register {
   set(editor: vscode.TextEditor, values: string[]): Thenable<void>
 }
 
-export class GeneralPurposeRegister implements Register {
+export class GeneralPurposeRegister implements Register, MacroRegister {
   values: string[] | undefined
+  macroCommands: [CommandDescriptor<any>, CommandState<any>][] | undefined
+
   canWrite() { return !this.readonly }
 
   constructor(readonly name: string, readonly readonly = false) {}
@@ -24,6 +32,14 @@ export class GeneralPurposeRegister implements Register {
 
   get() {
     return Promise.resolve(this.values)
+  }
+
+  getMacro() {
+    return this.macroCommands
+  }
+
+  setMacro(data: [CommandDescriptor<any>, CommandState<any>][]) {
+    this.macroCommands = data
   }
 }
 
