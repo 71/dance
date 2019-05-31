@@ -341,8 +341,11 @@ function indexOfEnclosingChar(line: string, position = 0) {
   return -1
 }
 
-function lastIndexOfEnclosingChar(line: string, position = line.length - 1) {
-  for (let i = position; i >= 0; i--) {
+function lastIndexOfEnclosingChar(line: string, position = line.length) {
+  if (position === 0)
+    return -1
+
+  for (let i = position - 1; i >= 0; i--) {
     const ch = line[i]
     const idx = enclosingChars.indexOf(ch)
 

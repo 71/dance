@@ -7,6 +7,8 @@ export class HistoryManager {
   private readonly map = new WeakMap<vscode.TextDocument, DocumentHistory>()
   private readonly changeDisposable: vscode.Disposable
 
+  readonly jumpList = [] as vscode.Selection[][]
+
   constructor() {
     this.changeDisposable = vscode.workspace.onDidChangeTextDocument(change => {
       this.for(change.document).handleChanges(change.contentChanges)

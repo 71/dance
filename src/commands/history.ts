@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandDescriptor, CommandFlags } from '.'
-import { MacroRegister } from '../registers'
+import { MacroRegister, Register } from '../registers'
 
 
 registerCommand(Command.historyUndo, CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory, () => {
@@ -56,18 +56,25 @@ registerCommand(Command.historyRepeatEdit, CommandFlags.Edit | CommandFlags.Igno
 
 // })
 
-const recording = new WeakMap<vscode.TextEditor, { reg: MacroRegister, lastHistoryEntry: number }>()
+const recording = new WeakMap<vscode.TextEditor, {
+  reg: MacroRegister, lastHistoryEntry: number, sbi: vscode.StatusBarItem
+}>()
 
 registerCommand(Command.macrosRecordStart, CommandFlags.IgnoreInHistory, (editor, _, __, ctx) => {
-  const reg = ctx.currentRegister as any as MacroRegister || ctx.registers.arobase
+  const reg = ctx.currentRegister as any as (MacroRegister & Register) || ctx.registers.arobase
 
   if (typeof reg.setMacro === 'function') {
     if (recording.has(editor))
       return
 
     const history = ctx.history.for(editor.document)
+    const sbi = vscode.window.createStatusBarItem()
 
-    recording.set(editor, { reg, lastHistoryEntry: history.commands.length })
+    sbi.command = Command.macrosRecordStop
+    sbi.text = 'Macro recording in ' + reg.name
+    sbi.show()
+
+    recording.set(editor, { reg, lastHistoryEntry: history.commands.length, sbi })
   }
 })
 
@@ -79,17 +86,21 @@ registerCommand(Command.macrosRecordStop, CommandFlags.IgnoreInHistory, (editor,
     const commands = history.commands.slice(macro.lastHistoryEntry)
 
     macro.reg.setMacro(commands)
+    macro.sbi.dispose()
+
     recording.delete(editor)
   }
 })
 
-registerCommand(Command.macrosPlay, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, _, __, ctx) => {
+registerCommand(Command.macrosPlay, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, state, _, ctx) => {
   const reg = ctx.currentRegister as any as MacroRegister || ctx.registers.arobase
 
   if (typeof reg.getMacro === 'function') {
     const commands = reg.getMacro()
 
-    if (commands !== undefined)
-      CommandDescriptor.executeMany(ctx, editor, commands)
+    if (commands !== undefined) {
+      for (let i = state.currentCount || 1; i > 0; i--)
+        CommandDescriptor.executeMany(ctx, editor, commands)
+    }
   }
 })
