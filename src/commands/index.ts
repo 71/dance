@@ -96,30 +96,30 @@ export class CommandDescriptor<Input extends InputKind = any> {
     const history = state.history.for(editor.document)
     const flags = this.flags
 
-    let input: InputTypeMap[Input]
+    let input: InputTypeMap[Input] | undefined = undefined
 
     switch (this.input) {
       case InputKind.RegExp:
-        input = await promptRegex(this.inputDescr as string)
+        input = await promptRegex(this.inputDescr as string) as any
         break
       case InputKind.ListOneItem:
-        input = await promptInList(false, this.inputDescr as [string, string][])
+        input = await promptInList(false, this.inputDescr as [string, string][]) as any
         break
       case InputKind.ListManyItems:
-        input = await promptInList(true, this.inputDescr as [string, string][])
+        input = await promptInList(true, this.inputDescr as [string, string][]) as any
         break
       case InputKind.Text:
-        input = await prompt(this.inputDescr as any)
+        input = await prompt(this.inputDescr as any) as any
         break
       case InputKind.Key:
-        input = await keypress()
+        input = await keypress() as any
         break
     }
 
     if (this.input !== InputKind.None && input === undefined)
       return
 
-    const commandState = new CommandState<Input>(state.currentCount, state.currentRegister, input)
+    const commandState = new CommandState<Input>(state.currentCount, state.currentRegister, input as any)
 
     if (!(flags & CommandFlags.IgnoreInHistory))
       history.addCommand(this, commandState)

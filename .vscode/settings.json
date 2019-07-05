@@ -1,8 +1,5 @@
 {
     "search.exclude": {
         "out": true
-    },
-    "typescript.tsc.autoDetect": "off",
-    "editor.lineNumbers": "on",
-    "dance.enabled": true
+    }
 }

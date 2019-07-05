@@ -168,7 +168,7 @@ registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, und
 
       // Replace in intermediate lines
       while (i < selection.end.line) {
-        const line = editor.document.lineAt(i)
+        const line = editor.document.lineAt(i++)
 
         builder.replace(line.range, string.repeat(line.text.length))
       }
