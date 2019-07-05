@@ -44,6 +44,8 @@ const pkg = {
     'watch'            : 'tsc -watch -p ./',
     'postinstall'      : 'node ./node_modules/vscode/bin/install',
     'test'             : 'yarn run compile && node ./node_modules/vscode/bin/test',
+    'package'          : 'vsce package',
+    'publish'          : 'vsce publish',
   },
 
   devDependencies: {
@@ -54,7 +56,7 @@ const pkg = {
     'ts-node'   : '^8.0.3',
     'tslint'    : '^5.12.1',
     'typescript': '^3.3.1',
-    'vsce'      : '^1.59.0',
+    'vsce'      : '^1.62.0',
     'vscode'    : '^1.1.28',
   },
 

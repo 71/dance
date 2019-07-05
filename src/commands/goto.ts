@@ -19,14 +19,41 @@ const jumps: [string, string][] = [
   ['.', 'go to last buffer modification position'],
 ]
 
-function executeGoto(selection: number, count: number, extend: boolean) {
-
+function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number, extend: boolean) {
+  switch (gotoType) {
+    case 0: // go to line start
+      editor.selections = editor.selections.map(x => x)
+      break
+    case 1: // go to line end
+      break
+    case 2: // go to non-blank line start
+      break
+    case 3: // go to first line
+    case 4: // go to first line
+      break
+    case 5: // go to last line
+      break
+    case 6: // go to last char of last line
+      break
+    case 7: // go to first displayed line
+      break
+    case 8: // go to middle displayed line
+      break
+    case 9: // go to last displayed line
+      break
+    case 10: // go to previous buffer
+      break
+    case 11: // go to file whose name is selected
+      break
+    case 12: // go to last buffer modification position
+      break
+  }
 }
 
 registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, ctx) => {
-  return executeGoto(state.input, state.currentCount, false)
+  return executeGoto(state.input, editor, state.currentCount, false)
 })
 
 registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, ctx) => {
-  return executeGoto(state.input, state.currentCount, true)
+  return executeGoto(state.input, editor, state.currentCount, true)
 })
