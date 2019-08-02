@@ -189,5 +189,5 @@ ${commands.map(x => `  /** ${yaml[x].descr} */\n  ${writable(x)} = '${prefix}.${
 
 doc.write('\n')
 
-stream.close()
-doc.close()
+stream.end()
+doc.end()
