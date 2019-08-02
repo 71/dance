@@ -78,7 +78,7 @@ registerCommand(Command.macrosRecordStart, CommandFlags.IgnoreInHistory, (editor
   }
 })
 
-registerCommand(Command.macrosRecordStop, CommandFlags.IgnoreInHistory, (editor, _, __, ctx) => {
+registerCommand(Command.macrosRecordStop, CommandFlags.SwitchToNormal | CommandFlags.IgnoreInHistory, (editor, _, __, ctx) => {
   const macro = recording.get(editor)
 
   if (macro !== undefined) {
