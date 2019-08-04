@@ -237,6 +237,7 @@ export function setRemainingNormalCommands(remaining: number) {
 
 import './changes'
 import './count'
+import './goto'
 import './history'
 import './insert'
 import './mark'
@@ -248,4 +249,3 @@ import './rotate'
 import './search'
 import './select'
 import './selectObject'
-import './goto'
