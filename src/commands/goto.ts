@@ -22,32 +22,32 @@ const jumps: [string, string][] = [
 function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number, extend: boolean) {
   switch (gotoType) {
     case 0: // go to line start
-      executeGotoLine(editor, count, extend, 'true');
+      executeGotoLine(editor, count, extend, 'true')
       break
     case 1: // go to line end
-      executeGotoLine(editor, count, extend, 'end');
+      executeGotoLine(editor, count, extend, 'end')
       break
     case 2: // go to non-blank line start
-      executeGotoLine(editor, count, extend, 'first');
+      executeGotoLine(editor, count, extend, 'first')
       break
     case 3: // go to first line
     case 4: // go to first line
-      executeGotoFirstLine(editor, count, extend);
+      executeGotoFirstLine(editor, count, extend)
       break
     case 5: // go to last line
-      executeGotoLastLine(editor, count, extend);
+      executeGotoLastLine(editor, count, extend)
       break
     case 6: // go to last char of last line
-      executeGotoLastLine(editor, count, extend, true);
+      executeGotoLastLine(editor, count, extend, true)
       break
     case 7: // go to first displayed line
-      executeGotoDisplayLine(editor, count, extend, 'top');
+      executeGotoDisplayLine(editor, count, extend, 'top')
       break
     case 8: // go to middle displayed line
-      executeGotoDisplayLine(editor, count, extend, 'center');
+      executeGotoDisplayLine(editor, count, extend, 'center')
       break
     case 9: // go to last displayed line
-      executeGotoDisplayLine(editor, count, extend, 'bottom');
+      executeGotoDisplayLine(editor, count, extend, 'bottom')
       break
     case 10: // go to previous buffer
       break
