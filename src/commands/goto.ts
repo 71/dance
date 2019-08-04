@@ -22,12 +22,13 @@ const jumps: [string, string][] = [
 function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number, extend: boolean) {
   switch (gotoType) {
     case 0: // go to line start
-      executeGotoLine(editor, count, extend);
+      executeGotoLine(editor, count, extend, 'true');
       break
     case 1: // go to line end
-      executeGotoLine(editor, count, extend, true);
+      executeGotoLine(editor, count, extend, 'end');
       break
     case 2: // go to non-blank line start
+      executeGotoLine(editor, count, extend, 'first');
       break
     case 3: // go to first line
     case 4: // go to first line
@@ -40,10 +41,13 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
       executeGotoLastLine(editor, count, extend, true);
       break
     case 7: // go to first displayed line
+      executeGotoDisplayLine(editor, count, extend, 'top');
       break
     case 8: // go to middle displayed line
+      executeGotoDisplayLine(editor, count, extend, 'center');
       break
     case 9: // go to last displayed line
+      executeGotoDisplayLine(editor, count, extend, 'bottom');
       break
     case 10: // go to previous buffer
       break
@@ -53,10 +57,47 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
       break
   }
 }
-function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boolean, toEnd:boolean = false) {
+function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boolean, position:string = 'default') {
+  const positions: { [index:string]: {(x: vscode.Selection): number} } = {
+    'first': function (x: vscode.Selection) {
+      return editor.document.lineAt(x.active.line).firstNonWhitespaceCharacterIndex
+    },
+    'end': function (x: vscode.Selection) {
+      return editor.document.lineAt(x.active.line).range.end.character
+    },
+    'start': function (x: vscode.Selection) {
+      return 0
+    },
+    'default': function (x: vscode.Selection) {
+      return 0
+    }
+  };
   editor.selections = editor.selections.map(x =>
     {
-      const npos:vscode.Position = new vscode.Position(x.active.line,  toEnd ? editor.document.lineAt(x.active.line).range.end.character: 0);
+      const npos:vscode.Position = new vscode.Position(x.active.line,  (positions[position] || positions['default'])(x));
+      return new vscode.Selection(extend ? x.anchor : npos, npos)
+    }
+  )
+}
+function executeGotoDisplayLine(editor: vscode.TextEditor, count: number, extend: boolean, position:string) {
+  const positions: { [index:string]: {(): number} } = {
+    'top': function () {
+      return editor.visibleRanges[0].start.line
+    },
+    'center': function () {
+      return (editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2
+    },
+    'bottom': function () {
+      //return editor.visibleRanges[editor.visibleRanges.length-1].start.line
+      return editor.visibleRanges[0].end.line
+    },
+    'default': function () {
+      return 0
+    }
+  };
+  editor.selections = editor.selections.map(x =>
+    {
+      const npos:vscode.Position = new vscode.Position((positions[position] || positions['default'])(), 0);
       return new vscode.Selection(extend ? x.anchor : npos, npos)
     }
   )
