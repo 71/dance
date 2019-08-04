@@ -22,18 +22,22 @@ const jumps: [string, string][] = [
 function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number, extend: boolean) {
   switch (gotoType) {
     case 0: // go to line start
-      editor.selections = editor.selections.map(x => x)
+      executeGotoLine(editor, count, extend);
       break
     case 1: // go to line end
+      executeGotoLine(editor, count, extend, true);
       break
     case 2: // go to non-blank line start
       break
     case 3: // go to first line
     case 4: // go to first line
+      executeGotoFirstLine(editor, count, extend);
       break
     case 5: // go to last line
+      executeGotoLastLine(editor, count, extend);
       break
     case 6: // go to last char of last line
+      executeGotoLastLine(editor, count, extend, true);
       break
     case 7: // go to first displayed line
       break
@@ -48,6 +52,29 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
     case 12: // go to last buffer modification position
       break
   }
+}
+function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boolean, toEnd:boolean = false) {
+  editor.selections = editor.selections.map(x =>
+    {
+      const npos:vscode.Position = new vscode.Position(x.active.line,  toEnd ? editor.document.lineAt(x.active.line).range.end.character: 0);
+      return new vscode.Selection(extend ? x.anchor : npos, npos)
+    }
+  )
+}
+
+function executeGotoFirstLine(editor: vscode.TextEditor, count: number, extend: boolean) {
+  const nanch:vscode.Position = (extend
+                                 ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isAfter(current) ? prev : current))
+                                 : new vscode.Position(0,0));
+  editor.selections = [new vscode.Selection(nanch, new vscode.Position(0,0))];
+}
+function executeGotoLastLine(editor: vscode.TextEditor, count: number, extend: boolean, gotoLastChar: boolean = false) {
+  const lastline:number = (editor.document.lineCount > 0) ? (editor.document.lineCount-1) : editor.document.lineCount ;
+  const npos:vscode.Position = new vscode.Position(lastline, gotoLastChar ? editor.document.lineAt(lastline).range.end.character : 0);
+  const nanch:vscode.Position = (extend
+                                 ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isBefore(current) ? prev : current))
+                                 : npos);
+  editor.selections = [new vscode.Selection(nanch, npos)];
 }
 
 registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, ctx) => {
