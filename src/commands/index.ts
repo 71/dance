@@ -112,7 +112,12 @@ export class CommandDescriptor<Input extends InputKind = any> {
         input = await prompt(this.inputDescr as any) as any
         break
       case InputKind.Key:
+        const prevMode = state.getMode()
+
+        await state.setMode(Mode.Awaiting)
         input = await keypress() as any
+        await state.setMode(prevMode)
+
         break
     }
 
@@ -237,6 +242,7 @@ export function setRemainingNormalCommands(remaining: number) {
 
 import './changes'
 import './count'
+import './goto'
 import './history'
 import './insert'
 import './mark'
