@@ -168,19 +168,21 @@ function skipEmptyLines(document: vscode.TextDocument, pos: vscode.Position, bac
 function registerToNextWord(commandName: Command, extend: boolean, end: boolean, isWord: (c: string) => boolean) {
   registerCommand(commandName, CommandFlags.ChangeSelections, (editor, state) => {
     editor.selections = editor.selections.map(selection => {
-      const anchor = extend ? selection.anchor : selection.active
+      const anchor = extend ? selection.anchor : selection.active,
+            endPosition = editor.document.lineAt(editor.document.lineCount - 1).rangeIncludingLineBreak.end,
+            defaultSelection = new vscode.Selection(anchor, endPosition)
 
       for (let i = state.currentCount || 1; i > 0; i--) {
         let pos = skipEmptyLines(editor.document, selection.active, false)
 
         if (pos === undefined)
-          return selection
+          return defaultSelection
 
         if (end) {
           pos = skipWhile(editor.document, pos, false, isBlank)
 
           if (pos === undefined)
-            return selection
+            return defaultSelection
         }
 
         let ch = editor.document.lineAt(pos).text[pos.character]
@@ -191,13 +193,13 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
           pos = skipWhile(editor.document, pos, false, isPunctuation)
 
         if (pos === undefined)
-          return selection
+          return defaultSelection
 
         if (!end) {
           pos = skipWhile(editor.document, pos, false, isBlank)
 
           if (pos === undefined)
-            return selection
+            return defaultSelection
         }
 
         selection = new vscode.Selection(anchor, pos)
@@ -211,18 +213,20 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
 function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (c: string) => boolean) {
   registerCommand(commandName, CommandFlags.ChangeSelections, (editor, state) => {
     editor.selections = editor.selections.map(selection => {
-      const anchor = extend ? selection.anchor : selection.active
+      const anchor = extend ? selection.anchor : selection.active,
+            startPosition = new vscode.Position(0, 0),
+            defaultSelection = new vscode.Selection(anchor, startPosition)
 
       for (let i = state.currentCount || 1; i > 0; i--) {
         let pos = skipEmptyLines(editor.document, selection.active, true)
 
         if (pos === undefined)
-          return selection
+          return defaultSelection
 
         pos = skipWhile(editor.document, pos, true, isBlank)
 
         if (pos === undefined)
-          return selection
+          return defaultSelection
 
         let ch = editor.document.lineAt(pos).text[pos.character]
 
@@ -232,7 +236,7 @@ function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (
           pos = skipWhile(editor.document, pos, true, isPunctuation)
 
         if (pos === undefined)
-          return selection
+          return defaultSelection
 
         selection = new vscode.Selection(anchor, pos.translate(0, 1))
       }
