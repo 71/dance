@@ -251,9 +251,7 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
 
       return undefined
     }
-  }, async editor => {
-    editor.selections = initialSelections
-  })
+  }, () => {})
 }
 
 registerSearchCommand(Command.search               , false, false)

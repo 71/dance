@@ -1,8 +1,5 @@
 import * as vscode from 'vscode'
 
-import { Mode }      from '../commands'
-import { Extension } from '../extension'
-
 
 export function prompt(opts: vscode.InputBoxOptions, cancellationToken?: vscode.CancellationToken) {
   return vscode.window.showInputBox(opts, cancellationToken)
