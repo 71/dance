@@ -1,12 +1,11 @@
 // Movement: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode               from 'vscode'
-import { Selection, TextEditor } from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandState, InputKind } from '.'
 import { TextBuffer } from '../utils/textBuffer'
 
 
-function registerMovement(cmd: Command, modifier: (selection: Selection, editor: TextEditor, state: CommandState<InputKind.None>) => Selection) {
+function registerMovement(cmd: Command, modifier: (selection: vscode.Selection, editor: vscode.TextEditor, state: CommandState<InputKind.None>) => Selection) {
   registerCommand(cmd, CommandFlags.ChangeSelections, (editor, state) => {
     editor.selections = editor.selections.map(s => modifier(s, editor, state))
   })
@@ -39,18 +38,16 @@ for (const [command, lineDelta, charDelta] of simpleMovements) {
   // Move left / down / up / right
   registerMovement(command, (selection, editor, state) => {
     const mult = state.currentCount || 1
-
-    const anchor = translate(lineDelta * mult, charDelta * mult, selection.anchor, editor)
     const active = translate(lineDelta * mult, charDelta * mult, selection.active, editor)
 
-    return new Selection(anchor, active)
+    return new vscode.Selection(active, active)
   })
 
   // Extend left / down / up / right
   registerMovement(command + '.extend' as Command, (selection, editor, state) => {
     const mult = state.currentCount || 1
 
-    return new Selection(selection.anchor, translate(lineDelta * mult, charDelta * mult, selection.active, editor))
+    return new vscode.Selection(selection.anchor, translate(lineDelta * mult, charDelta * mult, selection.active, editor))
   })
 }
 
@@ -84,7 +81,7 @@ function registerSelectTo(commandName: Command, diff: number, extend: boolean, b
         }
       }
 
-      return new Selection(extend ? selection.anchor : selection.active, new vscode.Position(line, idx + diff))
+      return new vscode.Selection(extend ? selection.anchor : selection.active, new vscode.Position(line, idx + diff))
     })
   })
 }
