@@ -1,3 +1,4 @@
+
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandDescriptor, CommandFlags, InputKind } from '.'
@@ -57,8 +58,9 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
       break
   }
 }
-function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boolean, position:string = 'default') {
-  const positions: { [index:string]: {(x: vscode.Selection): number} } = {
+
+function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boolean, position: string = 'default') {
+  const positions: { [index: string]: {(x: vscode.Selection): number} } = {
     'first': function (x: vscode.Selection) {
       return editor.document.lineAt(x.active.line).firstNonWhitespaceCharacterIndex
     },
@@ -71,7 +73,8 @@ function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boole
     'default': function (x: vscode.Selection) {
       return 0
     }
-  };
+  }
+  
   editor.selections = editor.selections.map(x =>
     {
       const npos:vscode.Position = new vscode.Position(x.active.line,  (positions[position] || positions['default'])(x));
@@ -79,7 +82,8 @@ function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boole
     }
   )
 }
-function executeGotoDisplayLine(editor: vscode.TextEditor, count: number, extend: boolean, position:string) {
+
+function executeGotoDisplayLine(editor: vscode.TextEditor, count: number, extend: boolean, position: string) {
   const positions: { [index:string]: {(): number} } = {
     'top': function () {
       return editor.visibleRanges[0].start.line
@@ -94,28 +98,29 @@ function executeGotoDisplayLine(editor: vscode.TextEditor, count: number, extend
     'default': function () {
       return 0
     }
-  };
-  editor.selections = editor.selections.map(x =>
-    {
-      const npos:vscode.Position = new vscode.Position((positions[position] || positions['default'])(), 0);
+  }
+  
+  editor.selections = editor.selections.map(x => {
+      const npos = new vscode.Position((positions[position] || positions['default'])(), 0)
       return new vscode.Selection(extend ? x.anchor : npos, npos)
     }
   )
 }
 
 function executeGotoFirstLine(editor: vscode.TextEditor, count: number, extend: boolean) {
-  const nanch:vscode.Position = (extend
-                                 ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isAfter(current) ? prev : current))
-                                 : new vscode.Position(0,0));
-  editor.selections = [new vscode.Selection(nanch, new vscode.Position(0,0))];
+  const nanch = (extend
+                   ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isAfter(current) ? prev : current))
+                   : new vscode.Position(0,0))
+  editor.selections = [new vscode.Selection(nanch, new vscode.Position(0,0))]
 }
+
 function executeGotoLastLine(editor: vscode.TextEditor, count: number, extend: boolean, gotoLastChar: boolean = false) {
-  const lastline:number = (editor.document.lineCount > 0) ? (editor.document.lineCount-1) : editor.document.lineCount ;
-  const npos:vscode.Position = new vscode.Position(lastline, gotoLastChar ? editor.document.lineAt(lastline).range.end.character : 0);
-  const nanch:vscode.Position = (extend
-                                 ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isBefore(current) ? prev : current))
-                                 : npos);
-  editor.selections = [new vscode.Selection(nanch, npos)];
+  const lastline:number = (editor.document.lineCount > 0) ? (editor.document.lineCount-1) : editor.document.lineCount 
+  const npos = new vscode.Position(lastline, gotoLastChar ? editor.document.lineAt(lastline).range.end.character : 0)
+  const nanch = (extend
+                   ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isBefore(current) ? prev : current))
+                   : npos)
+  editor.selections = [new vscode.Selection(nanch, npos)]
 }
 
 registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, ctx) => {
