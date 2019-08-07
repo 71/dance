@@ -80,7 +80,7 @@ export interface InputDescrMap {
 /**
  * Defines a command's behavior, as well as its inputs.
  */
-export class CommandDescriptor<Input extends InputKind = any> {
+export class CommandDescriptor<Input extends InputKind = InputKind> {
   constructor(
     readonly command: Command,
     readonly flags  : CommandFlags,
@@ -109,10 +109,20 @@ export class CommandDescriptor<Input extends InputKind = any> {
         input = await promptInList(true, this.inputDescr as [string, string][]) as any
         break
       case InputKind.Text:
-        input = await prompt(this.inputDescr as any) as any
+        const inputDescr = this.inputDescr as InputDescrMap[InputKind.Text]
+
+        if (inputDescr.setup !== undefined)
+          inputDescr.setup(editor)
+
+        input = await prompt(inputDescr) as any
         break
       case InputKind.Key:
+        const prevMode = state.getMode()
+
+        await state.setMode(Mode.Awaiting)
         input = await keypress() as any
+        await state.setMode(prevMode)
+
         break
     }
 

@@ -82,6 +82,14 @@ export class Extension implements vscode.Disposable {
     return Promise.resolve()
   }
 
+  getMode() {
+    const editor = vscode.window.activeTextEditor
+
+    return editor === undefined
+      ? Mode.Disabled
+      : this.modeMap.get(editor) || Mode.Normal
+  }
+
   setMode(mode: Mode) {
     const editor = vscode.window.activeTextEditor
 
