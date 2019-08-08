@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode'
 import * as path   from 'path'
 import * as fs     from 'fs'
@@ -120,8 +119,8 @@ function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boole
   return Promise.resolve()
 }
 
-function executeGotoDisplayLine(editor: vscode.TextEditor, count: number, extend: boolean, position: string) {
-  const positions: { [index:string]: {(): number} } = {
+function executeGotoDisplayLine(editor: vscode.TextEditor, count: number, extend: boolean, position: 'top' | 'center' | 'bottom' | 'default') {
+  const positions = {
     'top': function () {
       return editor.visibleRanges[0].start.line
     },
