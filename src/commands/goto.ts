@@ -24,35 +24,44 @@ const jumps: [string, string][] = [
 function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number, extend: boolean) {
   switch (gotoType) {
     case 0: // go to line start
-      return executeGotoLine(editor, count, extend, 'start')
+      executeGotoLine(editor, count, extend, 'start')
+      break
 
     case 1: // go to line end
-      return executeGotoLine(editor, count, extend, 'end')
+      executeGotoLine(editor, count, extend, 'end')
+      break
 
     case 2: // go to non-blank line start
-      return executeGotoLine(editor, count, extend, 'first')
+      executeGotoLine(editor, count, extend, 'first')
+      break
 
     case 3: // go to first line
     case 4: // go to first line
-      return executeGotoFirstLine(editor, count, extend)
+      executeGotoFirstLine(editor, count, extend)
+      break
 
     case 5: // go to last line
-      return executeGotoLastLine(editor, count, extend)
+      executeGotoLastLine(editor, count, extend)
+      break
 
     case 6: // go to last char of last line
-      return executeGotoLastLine(editor, count, extend, true)
+      executeGotoLastLine(editor, count, extend, true)
+      break
 
     case 7: // go to first displayed line
-      return executeGotoDisplayLine(editor, count, extend, 'top')
+      executeGotoDisplayLine(editor, count, extend, 'top')
+      break
 
     case 8: // go to middle displayed line
-      return executeGotoDisplayLine(editor, count, extend, 'center')
+      executeGotoDisplayLine(editor, count, extend, 'center')
+      break
 
     case 9: // go to last displayed line
-      return executeGotoDisplayLine(editor, count, extend, 'bottom')
+      executeGotoDisplayLine(editor, count, extend, 'bottom')
+      break
 
     case 10: // go to previous buffer
-      break;
+      break
 
     case 11: // go to file whose name is selected
       const basePath = path.dirname(editor.document.fileName)
@@ -100,7 +109,7 @@ function executeGotoLine(editor: vscode.TextEditor, count: number, extend: boole
   }
   
   editor.selections = editor.selections.map(x => {
-      const npos = new vscode.Position(x.active.line,  (positions[position] || positions['default'])(x));
+      const npos = new vscode.Position(x.active.line, positions[position](x))
       return new vscode.Selection(extend ? x.anchor : npos, npos)
     }
   )
@@ -116,7 +125,6 @@ function executeGotoDisplayLine(editor: vscode.TextEditor, count: number, extend
       return (editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2
     },
     'bottom': function () {
-      //return editor.visibleRanges[editor.visibleRanges.length-1].start.line
       return editor.visibleRanges[0].end.line
     },
     'default': function () {
@@ -125,7 +133,7 @@ function executeGotoDisplayLine(editor: vscode.TextEditor, count: number, extend
   }
   
   editor.selections = editor.selections.map(x => {
-      const npos = new vscode.Position((positions[position] || positions['default'])(), 0)
+      const npos = new vscode.Position(positions[position](), 0)
       return new vscode.Selection(extend ? x.anchor : npos, npos)
     }
   )
