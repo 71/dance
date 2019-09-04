@@ -25,43 +25,43 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
   switch (gotoType) {
     case 0: // go to line start
       executeGotoLine(editor, count, extend, 'start')
-      return Promise.resolve()
+      break
 
     case 1: // go to line end
       executeGotoLine(editor, count, extend, 'end')
-      return Promise.resolve()
+      break
 
     case 2: // go to non-blank line start
       executeGotoLine(editor, count, extend, 'first')
-      return Promise.resolve()
+      break
 
     case 3: // go to first line
     case 4: // go to first line
       executeGotoFirstLine(editor, count, extend)
-      return Promise.resolve()
+      break
 
     case 5: // go to last line
       executeGotoLastLine(editor, count, extend)
-      return Promise.resolve()
+      break
 
     case 6: // go to last char of last line
       executeGotoLastLine(editor, count, extend, true)
-      return Promise.resolve()
+      break
 
     case 7: // go to first displayed line
       executeGotoDisplayLine(editor, count, extend, 'top')
-      return Promise.resolve()
+      break
 
     case 8: // go to middle displayed line
       executeGotoDisplayLine(editor, count, extend, 'center')
-      return Promise.resolve()
+      break
 
     case 9: // go to last displayed line
       executeGotoDisplayLine(editor, count, extend, 'bottom')
-      return Promise.resolve()
+      break
 
     case 10: // go to previous buffer
-      return Promise.resolve()
+      break
 
     case 11: // go to file whose name is selected
       const basePath = path.dirname(editor.document.fileName)
@@ -87,7 +87,7 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
       }))
 
     case 12: // go to last buffer modification position
-      return Promise.resolve()
+      break
   }
   return Promise.resolve()
 }
