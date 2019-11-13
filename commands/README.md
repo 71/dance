@@ -118,15 +118,15 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.marks.restoreSelections` | Restore selections | Restore selections. | `Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromCurrent` | Combine current selections with ones from register | Combine current selections with ones from register. | `Shift+Alt+Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromRegister` | Combine register selections with current ones | Combine register selections with current ones. | `Alt+Z` (`dance.mode == 'normal'`) |
-| `dance.left.extend` | Move left (extend) | Move left (extend). | `Shift+Left` (`dance.mode == 'normal'`), `H` (`dance.mode == 'normal'`) |
-| `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `L` (`dance.mode == 'normal'`) |
-| `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `K` (`dance.mode == 'normal'`) |
-| `dance.down.extend` | Move down (extend) | Move down (extend). | `Shift+Down` (`dance.mode == 'normal'`), `J` (`dance.mode == 'normal'`) |
+| `dance.left.extend` | Move left (extend) | Move left (extend). | `Shift+Left` (`dance.mode == 'normal'`), `Shift+H` (`dance.mode == 'normal'`) |
+| `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `Shift+L` (`dance.mode == 'normal'`) |
+| `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `Shift+K` (`dance.mode == 'normal'`) |
+| `dance.down.extend` | Move down (extend) | Move down (extend). | `Shift+Down` (`dance.mode == 'normal'`), `Shift+J` (`dance.mode == 'normal'`) |
 | `dance.select.to.included.extend` | Extend to | Extend to the next character pressed, including it. | `Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend` | Extend until | Extend with until the next character pressed, excluding it. | `Shift+T` (`dance.mode == 'normal'`) |
 | `dance.select.line.extend` | Extend with line | Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line). | `Shift+X` (`dance.mode == 'normal'`) |
-| `dance.select.toLineBegin.extend` | Extend to line beginning | Extend to line beginning. | `Shift+Alt+H` (`dance.mode == 'normal'`), `Home` (`dance.mode == 'normal'`) |
-| `dance.select.toLineEnd.extend` | Extend to line end | Extend to line end. | `Shift+Alt+L` (`dance.mode == 'normal'`), `End` (`dance.mode == 'normal'`) |
+| `dance.select.toLineBegin.extend` | Extend to line beginning | Extend to line beginning. | `Shift+Alt+H` (`dance.mode == 'normal'`), `Shift+Home` (`dance.mode == 'normal'`) |
+| `dance.select.toLineEnd.extend` | Extend to line end | Extend to line end. | `Shift+Alt+L` (`dance.mode == 'normal'`), `Shift+End` (`dance.mode == 'normal'`) |
 | `dance.select.enclosing.extend` | Extend with enclosing characters | Extend with enclosing characters. | `Shift+M` (`dance.mode == 'normal'`) |
 | `dance.select.word.extend` | Extend to next word start | Extend with the word and following whitespaces on the right of the end of each selection. | `Shift+W` (`dance.mode == 'normal'`) |
 | `dance.select.word.previous.extend` | Extend to previous word start | Extend with preceding whitespaces and the word on the left of the end of each selection. | `Shift+B` (`dance.mode == 'normal'`) |

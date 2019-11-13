@@ -53,6 +53,8 @@ interface Entry {
 
 const yaml: Record<string, Entry> = load(readFileSync('./commands/commands.yaml', 'utf8'), { schema: CORE_SCHEMA })
 
+const prefixKeys = (prefix: string, keys: string) => keys.replace(/(^|, )(.)/g, `$1${prefix}$2`)
+
 for (const id in yaml) {
   const command = yaml[id]
 
@@ -72,7 +74,7 @@ for (const id in yaml) {
       ...command,
 
       title, descr,
-      keys: `s-${command.keys}`,
+      keys: prefixKeys('s-', command.keys!),
     }
   }
 }
@@ -85,7 +87,7 @@ for (const id in yaml) {
       ...command,
       title: `${command.title} (backwards)`,
       descr: `${command.descr} (backwards)`,
-      keys: `a-${command.keys}`,
+      keys: prefixKeys('a-', command.keys!),
     }
   }
 }
@@ -98,7 +100,7 @@ for (const id in yaml) {
       ...command,
       title: command.title.replace('whole', 'inner'),
       descr: command.descr.replace('whole', 'inner'),
-      keys: `a-${command.keys}`,
+      keys: prefixKeys('a-', command.keys!),
     }
   }
 }

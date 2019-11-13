@@ -1475,7 +1475,7 @@
       },
       {
         "command": "dance.left.extend",
-        "key": "h",
+        "key": "Shift+h",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1485,7 +1485,7 @@
       },
       {
         "command": "dance.right.extend",
-        "key": "l",
+        "key": "Shift+l",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1495,7 +1495,7 @@
       },
       {
         "command": "dance.up.extend",
-        "key": "k",
+        "key": "Shift+k",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1505,7 +1505,7 @@
       },
       {
         "command": "dance.down.extend",
-        "key": "j",
+        "key": "Shift+j",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1530,7 +1530,7 @@
       },
       {
         "command": "dance.select.toLineBegin.extend",
-        "key": "home",
+        "key": "Shift+home",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1540,7 +1540,7 @@
       },
       {
         "command": "dance.select.toLineEnd.extend",
-        "key": "end",
+        "key": "Shift+end",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

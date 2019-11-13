@@ -958,7 +958,7 @@ export const leftExtend: ICommand & { readonly id: 'dance.left.extend' } = {
   description: 'Move left (extend).',
   keybindings: [
     { key: 'Shift+left', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'h', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+h', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move right (extend). */
@@ -968,7 +968,7 @@ export const rightExtend: ICommand & { readonly id: 'dance.right.extend' } = {
   description: 'Move right (extend).',
   keybindings: [
     { key: 'Shift+right', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'l', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+l', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move up (extend). */
@@ -978,7 +978,7 @@ export const upExtend: ICommand & { readonly id: 'dance.up.extend' } = {
   description: 'Move up (extend).',
   keybindings: [
     { key: 'Shift+up', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'k', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+k', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Move down (extend). */
@@ -988,7 +988,7 @@ export const downExtend: ICommand & { readonly id: 'dance.down.extend' } = {
   description: 'Move down (extend).',
   keybindings: [
     { key: 'Shift+down', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'j', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+j', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend to the next character pressed, including it. */
@@ -1025,7 +1025,7 @@ export const selectToLineBeginExtend: ICommand & { readonly id: 'dance.select.to
   description: 'Extend to line beginning.',
   keybindings: [
     { key: 'Shift+Alt+h', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'home', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+home', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend to line end. */
@@ -1035,7 +1035,7 @@ export const selectToLineEndExtend: ICommand & { readonly id: 'dance.select.toLi
   description: 'Extend to line end.',
   keybindings: [
     { key: 'Shift+Alt+l', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'end', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+end', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /** Extend with enclosing characters. */
