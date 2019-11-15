@@ -106,3 +106,61 @@ registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, editor =
 
   editor.selections = newSelections
 })
+
+function tryCopySelection(document: vscode.TextDocument, selection: vscode.Selection, newActiveLine: number) {
+  if (selection.active.line === selection.anchor.line) {
+    const newLine = document.lineAt(newActiveLine)
+
+    return newLine.range.end.character >= selection.end.character
+      ? new vscode.Selection(selection.anchor.with(newActiveLine), selection.active.with(newActiveLine))
+      : undefined
+  }
+
+  const newAnchorLine = newActiveLine + selection.anchor.line - selection.active.line
+
+  if (newAnchorLine < 0 || newAnchorLine >= document.lineCount)
+    return undefined
+
+  const newAnchorLineInfo = document.lineAt(newAnchorLine)
+
+  if (selection.anchor.character > newAnchorLineInfo.range.end.character)
+    return undefined
+
+  const newActiveLineInfo = document.lineAt(newActiveLine)
+
+  if (selection.active.character > newActiveLineInfo.range.end.character)
+    return undefined
+
+  return new vscode.Selection(selection.anchor.with(newAnchorLine), selection.active.with(newActiveLine))
+}
+
+function copySelection(editor: vscode.TextEditor, count: number, dir: 1 | -1) {
+  count = count || 1
+
+  const newSelections = editor.selections.slice()
+
+  for (const selection of editor.selections) {
+    let currentLine = selection.active.line + dir
+
+    for (let i = 0; i < count && currentLine >= 0 && currentLine < editor.document.lineCount;) {
+      const copiedSelection = tryCopySelection(editor.document, selection, currentLine)
+
+      if (copiedSelection !== undefined) {
+        newSelections.push(copiedSelection)
+        i++
+      }
+
+      currentLine += dir
+    }
+  }
+
+  editor.selections = newSelections
+}
+
+registerCommand(Command.selectCopy, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+  copySelection(editor, currentCount, 1)
+})
+
+registerCommand(Command.selectCopyBackwards, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+  copySelection(editor, currentCount, -1)
+})

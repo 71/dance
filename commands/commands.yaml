@@ -212,6 +212,14 @@ select.firstLast:
   descr: Select first and last characters of each selection.
   keys: s-a-s (normal)
 
+select.copy:
+  title: Copy selection to next line
+  keys: s-c (normal)
+
+select.copy.backwards:
+  title: Copy selection to previous line
+  keys: s-a-c (normal)
+
 
 # Switch current selections and modify selections (select.ts)
 # ================================================================================================

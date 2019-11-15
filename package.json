@@ -2,7 +2,7 @@
   "name": "dance",
   "displayName": "Dance",
   "description": "Make those cursors dance.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "license": "MIT",
   "publisher": "gregoire",
   "author": {
@@ -279,6 +279,18 @@
         "command": "dance.select.firstLast",
         "title": "Select first and last characters",
         "description": "Select first and last characters of each selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.copy",
+        "title": "Copy selection to next line",
+        "description": "Copy selection to next line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.copy.backwards",
+        "title": "Copy selection to previous line",
+        "description": "Copy selection to previous line.",
         "category": "Dance"
       },
       {
@@ -1136,6 +1148,16 @@
       {
         "command": "dance.select.firstLast",
         "key": "Shift+Alt+s",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.copy",
+        "key": "Shift+c",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.select.copy.backwards",
+        "key": "Shift+Alt+c",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

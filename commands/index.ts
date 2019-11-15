@@ -339,6 +339,24 @@ export const selectFirstLast: ICommand & { readonly id: 'dance.select.firstLast'
     { key: 'Shift+Alt+s', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
+/** Copy selection to next line. */
+export const selectCopy: ICommand & { readonly id: 'dance.select.copy' } = {
+  id         : 'dance.select.copy',
+  title      : 'Copy selection to next line',
+  description: 'Copy selection to next line.',
+  keybindings: [
+    { key: 'Shift+c', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Copy selection to previous line. */
+export const selectCopyBackwards: ICommand & { readonly id: 'dance.select.copy.backwards' } = {
+  id         : 'dance.select.copy.backwards',
+  title      : 'Copy selection to previous line',
+  description: 'Copy selection to previous line.',
+  keybindings: [
+    { key: 'Shift+Alt+c', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
 /** Reduce selections to their cursor. */
 export const selectionsReduce: ICommand & { readonly id: 'dance.selections.reduce' } = {
   id         : 'dance.selections.reduce',
@@ -1403,6 +1421,10 @@ export const commands = {
   splitLines,
   /** Select first and last characters of each selection. */
   selectFirstLast,
+  /** Copy selection to next line. */
+  selectCopy,
+  /** Copy selection to previous line. */
+  selectCopyBackwards,
   /** Reduce selections to their cursor. */
   selectionsReduce,
   /** Flip the direction of each selection. */
@@ -1701,6 +1723,10 @@ export const enum Command {
   splitLines = 'dance.split.lines',
   /** Select first and last characters of each selection. */
   selectFirstLast = 'dance.select.firstLast',
+  /** Copy selection to next line. */
+  selectCopy = 'dance.select.copy',
+  /** Copy selection to previous line. */
+  selectCopyBackwards = 'dance.select.copy.backwards',
   /** Reduce selections to their cursor. */
   selectionsReduce = 'dance.selections.reduce',
   /** Flip the direction of each selection. */

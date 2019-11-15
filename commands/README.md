@@ -49,6 +49,8 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.split` | Split | Split within current selections according to a RegExp. | `Shift+S` (`dance.mode == 'normal'`) |
 | `dance.split.lines` | Split lines | Split selections into lines. | `Alt+S` (`dance.mode == 'normal'`) |
 | `dance.select.firstLast` | Select first and last characters | Select first and last characters of each selection. | `Shift+Alt+S` (`dance.mode == 'normal'`) |
+| `dance.select.copy` | Copy selection to next line | Copy selection to next line. | `Shift+C` (`dance.mode == 'normal'`) |
+| `dance.select.copy.backwards` | Copy selection to previous line | Copy selection to previous line. | `Shift+Alt+C` (`dance.mode == 'normal'`) |
 | `dance.selections.reduce` | Reduce selections | Reduce selections to their cursor. | `;` (`dance.mode == 'normal'`) |
 | `dance.selections.flip` | Flip selections | Flip the direction of each selection. | `Alt+;` (`dance.mode == 'normal'`) |
 | `dance.selections.forward` | Forward selections | Ensure selections are in forward direction (the active cursor is after the anchor). | `Shift+Alt+;` (`dance.mode == 'normal'`) |
