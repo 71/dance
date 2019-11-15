@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
-import { CommandDescriptor, CommandState } from './commands';
+
+import { CommandDescriptor, CommandState } from './commands'
 
 
 export interface Register {

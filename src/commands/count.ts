@@ -1,4 +1,4 @@
-import { Command, CommandFlags, registerCommand } from '.'
+import { registerCommand, Command, CommandFlags } from '.'
 
 for (let i = 0; i < 10; i++) {
   const j = i

@@ -4,8 +4,7 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, CommandState, InputKind } from '.'
 
 import { Extension }                                  from '../extension'
-import { keypress }                                   from '../utils/prompt'
-import { getSelectionFromStart, getSelectionFromEnd } from '../utils/textInDocument'
+import { getSelectionFromEnd, getSelectionFromStart } from '../utils/textInDocument'
 
 
 function getRegister(state: CommandState<any>, ctx: Extension) {

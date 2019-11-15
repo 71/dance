@@ -4,7 +4,7 @@ import { Command }   from '../../commands'
 import { Extension } from '../extension'
 import { Register }  from '../registers'
 
-import { promptRegex, promptInList, prompt, keypress } from '../utils/prompt'
+import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
 
 export import Command = Command
 

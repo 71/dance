@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { Command, Mode, registerCommand, setRemainingNormalCommands, CommandFlags } from '.'
+import { registerCommand, setRemainingNormalCommands, Command, CommandFlags, Mode } from '.'
 
 
 registerCommand(Command.setInsert, CommandFlags.SwitchToInsert, () => {})

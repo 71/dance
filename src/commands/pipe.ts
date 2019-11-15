@@ -3,7 +3,7 @@ import * as cp     from 'child_process'
 import * as util   from 'util'
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, InputKind, CommandFlags } from '.'
+import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 
 const exec = util.promisify(cp.exec)

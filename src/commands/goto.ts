@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 import * as path   from 'path'
 import * as fs     from 'fs'
 
-import { registerCommand, Command, CommandDescriptor, CommandFlags, InputKind } from '.'
+import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 
 const jumps: [string, string][] = [
@@ -87,6 +87,8 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
     case 12: // go to last buffer modification position
       break
   }
+
+  return
 }
 
 registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, __) => {

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { Command, registerCommand, CommandFlags } from '.'
+import { registerCommand, Command, CommandFlags } from '.'
 
 
 registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {

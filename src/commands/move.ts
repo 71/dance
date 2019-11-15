@@ -5,7 +5,7 @@ import { registerCommand, Command, CommandFlags, CommandState, InputKind } from 
 import { TextBuffer } from '../utils/textBuffer'
 
 
-function registerMovement(cmd: Command, modifier: (selection: vscode.Selection, editor: vscode.TextEditor, state: CommandState<InputKind.None>) => Selection) {
+function registerMovement(cmd: Command, modifier: (selection: vscode.Selection, editor: vscode.TextEditor, state: CommandState<InputKind.None>) => vscode.Selection) {
   registerCommand(cmd, CommandFlags.ChangeSelections, (editor, state) => {
     editor.selections = editor.selections.map(s => modifier(s, editor, state))
   })
