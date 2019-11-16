@@ -4,6 +4,8 @@ import * as fs     from 'fs'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
+import { Extension } from '../extension'
+
 
 const jumps: [string, string][] = [
   ['h', 'go to line start'],
@@ -21,41 +23,43 @@ const jumps: [string, string][] = [
   ['.', 'go to last buffer modification position'],
 ]
 
-function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number, extend: boolean) {
+function executeGoto(gotoType: number, editor: vscode.TextEditor, extend: boolean) {
   switch (gotoType) {
     case 0: // go to line start
-      editor.selections = editor.selections.map(x =>
-        new vscode.Selection(extend ? x.anchor : x.active, new vscode.Position(x.active.line, 0)))
+      executeGotoLine(editor, extend, 'start')
       break
 
     case 1: // go to line end
-      editor.selections = editor.selections.map(x => {
-        const line = editor.document.lineAt(x.active)
-
-        return new vscode.Selection(extend ? x.anchor : x.active, line.range.end)
-      })
+      executeGotoLine(editor, extend, 'end')
       break
 
     case 2: // go to non-blank line start
+      executeGotoLine(editor, extend, 'first')
       break
 
     case 3: // go to first line
     case 4: // go to first line
+      executeGotoFirstLine(editor, extend)
       break
 
     case 5: // go to last line
+      executeGotoLastLine(editor, extend)
       break
 
     case 6: // go to last char of last line
+      executeGotoLastLine(editor, extend, true)
       break
 
     case 7: // go to first displayed line
+      executeGotoDisplayLine(editor, extend, 'top')
       break
 
     case 8: // go to middle displayed line
+      executeGotoDisplayLine(editor, extend, 'center')
       break
 
     case 9: // go to last displayed line
+      executeGotoDisplayLine(editor, extend, 'bottom')
       break
 
     case 10: // go to previous buffer
@@ -76,7 +80,7 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
 
           fs.exists(filepath, exists => {
             if (exists)
-              vscode.workspace.openTextDocument(filepath)
+              vscode.workspace.openTextDocument(filepath).then(vscode.window.showTextDocument)
 
             if (--remaining === 0)
               resolve()
@@ -91,10 +95,78 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, count: number,
   return
 }
 
+function executeGotoLine(editor: vscode.TextEditor, extend: boolean, position: 'first' | 'end' | 'start' | 'default') {
+  const getCharacter = {
+    first(x: vscode.Selection) {
+      return editor.document.lineAt(x.active.line).firstNonWhitespaceCharacterIndex
+    },
+    end(x: vscode.Selection) {
+      return editor.document.lineAt(x.active.line).range.end.character
+    },
+    start() {
+      return 0
+    },
+    default() {
+      return 0
+    },
+  }[position]
+
+  editor.selections = editor.selections.map(x => {
+    const npos = new vscode.Position(x.active.line, getCharacter(x))
+    return new vscode.Selection(extend ? x.anchor : npos, npos)
+  })
+}
+
+function executeGotoDisplayLine(editor: vscode.TextEditor, extend: boolean, position: 'top' | 'center' | 'bottom' | 'default') {
+  const newLine = {
+    top() {
+      return editor.visibleRanges[0].start.line
+    },
+    center() {
+      return (editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2
+    },
+    bottom() {
+      return editor.visibleRanges[0].end.line
+    },
+    default() {
+      return 0
+    },
+  }[position]()
+
+  const newActive = new vscode.Position(newLine, 0)
+
+  if (extend) {
+    editor.selections = editor.selections.map(x => {
+      return new vscode.Selection(x.anchor, newActive)
+    })
+  } else {
+    editor.selections = [new vscode.Selection(newActive, newActive)]
+  }
+}
+
+function executeGotoFirstLine(editor: vscode.TextEditor, extend: boolean) {
+  const nanch = extend
+    ? editor.selections.map(x => x.anchor).reduce((prev, current) => prev.isAfter(current) ? prev : current)
+    : new vscode.Position(0, 0)
+
+  editor.selections = [new vscode.Selection(nanch, new vscode.Position(0, 0))]
+}
+
+function executeGotoLastLine(editor: vscode.TextEditor, extend: boolean, gotoLastChar: boolean = false) {
+  const lastLine = editor.document.lineCount - 1
+  const npos = new vscode.Position(lastLine, gotoLastChar ? editor.document.lineAt(lastLine).range.end.character : 0)
+  const nanch = extend
+    ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isBefore(current) ? prev : current))
+    : npos
+
+  editor.selections = [new vscode.Selection(nanch, npos)]
+}
+
+
 registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, __) => {
-  return executeGoto(state.input, editor, state.currentCount, false)
+  return executeGoto(state.input, editor, false)
 })
 
 registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, __) => {
-  return executeGoto(state.input, editor, state.currentCount, true)
+  return executeGoto(state.input, editor, true)
 })
