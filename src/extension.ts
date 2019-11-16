@@ -74,6 +74,10 @@ export class Extension implements vscode.Disposable {
         file.changes.length = 0
         file.insertPosition = editor.selection.active
       }
+
+      editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
+    } else {
+      editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
     }
 
     if (vscode.window.activeTextEditor === editor)
@@ -101,12 +105,8 @@ export class Extension implements vscode.Disposable {
   private async onActiveModeChanged(mode: Mode) {
     if (mode === Mode.Insert) {
       this.statusBarItem.text = '$(pencil) INSERT'
-
-      await vscode.workspace.getConfiguration('editor').update('lineNumbers', 'on', true)
     } else if (mode === Mode.Normal) {
       this.statusBarItem.text = '$(beaker) NORMAL'
-
-      await vscode.workspace.getConfiguration('editor').update('lineNumbers', 'relative', true)
     }
 
     await vscode.commands.executeCommand('setContext', extensionName + '.mode', mode)
