@@ -4,13 +4,13 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 
-registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'g', async (editor, { input: regex }) => {
+registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', async (editor, { input: regex }) => {
   const newSelections = [] as vscode.Selection[]
 
   for (let i = 0; i < editor.selections.length; i++) {
-    const selection = editor.selections[i]
-    const selectionText         = editor.document.getText(selection)
-    const selectionAnchorOffset = editor.document.offsetAt(selection.start)
+    const selection = editor.selections[i],
+          selectionText = editor.document.getText(selection),
+          selectionAnchorOffset = editor.document.offsetAt(selection.start)
 
     let match: RegExpExecArray | null
 
@@ -19,19 +19,22 @@ registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp,
       const active = editor.document.positionAt(selectionAnchorOffset + match.index + match[0].length)
 
       newSelections.push(new vscode.Selection(anchor, active))
+
+      if (match[0].length === 0)
+        regex.lastIndex++
     }
   }
 
   editor.selections = newSelections
 })
 
-registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'g', async (editor, { input: regex }) => {
+registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', async (editor, { input: regex }) => {
   const newSelections = [] as vscode.Selection[]
 
   for (let i = 0; i < editor.selections.length; i++) {
-    const selection = editor.selections[i]
-    const selectionText         = editor.document.getText(selection)
-    const selectionAnchorOffset = editor.document.offsetAt(selection.start)
+    const selection = editor.selections[i],
+          selectionText = editor.document.getText(selection),
+          selectionAnchorOffset = editor.document.offsetAt(selection.start)
 
     let match: RegExpExecArray | null
     let index = 0
@@ -43,6 +46,9 @@ registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 
       newSelections.push(new vscode.Selection(anchor, active))
 
       index = match.index + match[0].length
+
+      if (match[0].length === 0)
+        regex.lastIndex++
     }
 
     const lastAnchor = editor.document.positionAt(selectionAnchorOffset + index)
