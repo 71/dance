@@ -131,7 +131,12 @@ function tryCopySelection(document: vscode.TextDocument, selection: vscode.Selec
   if (selection.active.character > newActiveLineInfo.range.end.character)
     return undefined
 
-  return new vscode.Selection(selection.anchor.with(newAnchorLine), selection.active.with(newActiveLine))
+  const newSelection = new vscode.Selection(selection.anchor.with(newAnchorLine), selection.active.with(newActiveLine))
+
+  if (selection.intersection(newSelection) !== undefined)
+    return undefined
+
+  return newSelection
 }
 
 function copySelection(editor: vscode.TextEditor, count: number, dir: 1 | -1) {
