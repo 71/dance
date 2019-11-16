@@ -274,7 +274,7 @@ registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, editor 
   editor.selections = editor.selections.map(x => {
     const line = editor.document.lineAt(x.active)
 
-    return new vscode.Selection(x.anchor, line.rangeIncludingLineBreak.end)
+    return new vscode.Selection(x.anchor.with(undefined, 0), line.rangeIncludingLineBreak.end)
   })
 })
 
