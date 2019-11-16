@@ -33,7 +33,7 @@ export class Extension implements vscode.Disposable {
 
   readonly statusBarItem: vscode.StatusBarItem
 
-  readonly modeMap = new Map<vscode.TextEditor, Mode>()
+  readonly modeMap = new WeakMap<vscode.TextDocument, Mode>()
   readonly files   = new WeakMap<vscode.TextDocument, FileState>()
 
   readonly registers = new Registers()
@@ -62,10 +62,10 @@ export class Extension implements vscode.Disposable {
   }
 
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
-    if (this.modeMap.get(editor) === mode)
+    if (this.modeMap.get(editor.document) === mode)
       return Promise.resolve()
 
-    this.modeMap.set(editor, mode)
+    this.modeMap.set(editor.document, mode)
 
     if (mode === Mode.Insert) {
       const file = this.files.get(editor.document)
@@ -87,7 +87,7 @@ export class Extension implements vscode.Disposable {
 
     return editor === undefined
       ? Mode.Disabled
-      : this.modeMap.get(editor) || Mode.Normal
+      : this.modeMap.get(editor.document) || Mode.Normal
   }
 
   setMode(mode: Mode) {
@@ -133,12 +133,12 @@ export class Extension implements vscode.Disposable {
         if (editor === undefined)
           return
 
-        let mode = this.modeMap.get(editor)
+        let mode = this.modeMap.get(editor.document)
 
         if (mode === undefined)
           return this.setEditorMode(editor, mode = Mode.Normal)
         else
-          return this.setEditorMode(editor, mode)
+          return this.onActiveModeChanged(mode)
       })
 
       this.subscriptions.push(

@@ -190,7 +190,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         break
       }
 
-    let currentMode = state.modeMap.get(editor) || Mode.Normal
+    let currentMode = state.modeMap.get(editor.document) || Mode.Normal
 
     for (let i = 0; i < commands.length; i++) {
       const [descr, commandState] = commands[i]
