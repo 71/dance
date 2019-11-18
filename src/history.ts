@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { CommandDescriptor, CommandState, InputKind }  from './commands'
+import { CommandDescriptor, CommandState, InputKind } from './commands'
 
 
 export class HistoryManager {

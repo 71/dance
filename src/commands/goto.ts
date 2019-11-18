@@ -163,10 +163,32 @@ function executeGotoLastLine(editor: vscode.TextEditor, extend: boolean, gotoLas
 }
 
 
-registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, __) => {
-  return executeGoto(state.input, editor, false)
+registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state, _, __) => {
+  if (state.input === null) {
+    let line = state.currentCount - 1
+
+    if (line >= editor.document.lineCount)
+      line = editor.document.lineCount - 1
+
+    editor.selection = new vscode.Selection(new vscode.Position(line, 0), new vscode.Position(line, 0))
+
+    return
+  } else {
+    return executeGoto(state.input, editor, false)
+  }
 })
 
-registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItem, jumps, (editor, state, _, __) => {
-  return executeGoto(state.input, editor, true)
+registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state, _, __) => {
+  if (state.input === null) {
+    let line = state.currentCount - 1
+
+    if (line >= editor.document.lineCount)
+      line = editor.document.lineCount - 1
+
+    editor.selection = new vscode.Selection(editor.selection.anchor, new vscode.Position(line, 0))
+
+    return
+  } else {
+    return executeGoto(state.input, editor, true)
+  }
 })

@@ -57,6 +57,7 @@ export const enum InputKind {
   ListManyItems,
   Text,
   Key,
+  ListOneItemOrCount,
 }
 
 export interface InputTypeMap {
@@ -66,6 +67,7 @@ export interface InputTypeMap {
   [InputKind.ListManyItems]: number[]
   [InputKind.Text]: string
   [InputKind.Key]: string
+  [InputKind.ListOneItemOrCount]: number | null
 }
 
 export interface InputDescrMap {
@@ -75,6 +77,7 @@ export interface InputDescrMap {
   [InputKind.RegExp]: string
   [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editor: vscode.TextEditor) => void }
   [InputKind.Key]: undefined
+  [InputKind.ListOneItemOrCount]: [string, string][]
 }
 
 /**
@@ -104,6 +107,12 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         break
       case InputKind.ListOneItem:
         input = await promptInList(false, this.inputDescr as [string, string][]) as any
+        break
+      case InputKind.ListOneItemOrCount:
+        if (state.currentCount === 0)
+          input = await promptInList(false, this.inputDescr as [string, string][]) as any
+        else
+          input = null as any
         break
       case InputKind.ListManyItems:
         input = await promptInList(true, this.inputDescr as [string, string][]) as any
