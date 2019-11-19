@@ -1,5 +1,6 @@
 {
-    "search.exclude": {
-        "out": true
-    }
+  "search.exclude": {
+    "out": true
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
