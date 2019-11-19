@@ -49,13 +49,13 @@ const pkg = {
   },
 
   devDependencies: {
+    '@types/js-yaml': '^3.12.1',
     '@types/mocha'  : '^2.2.42',
     '@types/node'   : '^10.12.21',
-    '@types/js-yaml': '^3.12.1',
     'js-yaml'   : '^3.13.0',
     'ts-node'   : '^8.0.3',
     'tslint'    : '^5.12.1',
-    'typescript': '^3.3.1',
+    'typescript': '^3.7.2',
     'vsce'      : '^1.62.0',
     'vscode'    : '^1.1.28',
   },

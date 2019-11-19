@@ -33,13 +33,13 @@
     "publish": "vsce publish"
   },
   "devDependencies": {
+    "@types/js-yaml": "^3.12.1",
     "@types/mocha": "^2.2.42",
     "@types/node": "^10.12.21",
-    "@types/js-yaml": "^3.12.1",
     "js-yaml": "^3.13.0",
     "ts-node": "^8.0.3",
     "tslint": "^5.12.1",
-    "typescript": "^3.3.1",
+    "typescript": "^3.7.2",
     "vsce": "^1.62.0",
     "vscode": "^1.1.28"
   },
@@ -633,6 +633,30 @@
         "command": "dance.search.selection",
         "title": "Search current selections",
         "description": "Search current selections.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.next",
+        "title": "Select next match",
+        "description": "Select next match after the main selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.next.add",
+        "title": "Add next match",
+        "description": "Add a new selection with the next match after the main selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.previous",
+        "title": "Select previous match",
+        "description": "Select previous match before the main selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.previous.add",
+        "title": "Add previous match",
+        "description": "Add a new selection with the previous match before the main selection.",
         "category": "Dance"
       },
       {
@@ -1413,6 +1437,26 @@
       {
         "command": "dance.search.selection",
         "key": "Shift+Alt+8",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.next",
+        "key": "n",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.next.add",
+        "key": "Shift+n",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.previous",
+        "key": "Alt+n",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.search.previous.add",
+        "key": "Shift+Alt+n",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
