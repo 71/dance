@@ -59,9 +59,9 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.selections.clearMain` | Clear main selection | Clear main selection. | `Alt+Space` (`dance.mode == 'normal'`) |
 | `dance.selections.keepMatching` | Keep matching selections | Keep selections that match a RegExp. | `Alt+K` (`dance.mode == 'normal'`) |
 | `dance.selections.clearMatching` | Clear matching selections | Clear selections that match a RegExp. | `Shift+Alt+K` (`dance.mode == 'normal'`) |
-| `dance.selections.merge` | Merge contiguous selections | Merge contiguous selections together, including across lines. | `Alt+_` (`dance.mode == 'normal'`) |
-| `dance.selections.align` | Align selections | Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. | `&` (`dance.mode == 'normal'`) |
-| `dance.selections.align.copy` | Copy indentation | Copy the indentation of the main selection (or the count one if a count is given) to all other ones. | `Alt+&` (`dance.mode == 'normal'`) |
+| `dance.selections.merge` | Merge contiguous selections | Merge contiguous selections together, including across lines. | `Shift+Alt+-` (`dance.mode == 'normal'`) |
+| `dance.selections.align` | Align selections | Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. | `Shift+7` (`dance.mode == 'normal'`) |
+| `dance.selections.align.copy` | Copy indentation | Copy the indentation of the main selection (or the count one if a count is given) to all other ones. | `Shift+Alt+7` (`dance.mode == 'normal'`) |
 | `dance.delete.yank` | Yank and delete | Yank and delete selections. | `D` (`dance.mode == 'normal'`) |
 | `dance.delete.insert.yank` | Yank, delete and insert | Yank, delete and enter insert mode. | `C` (`dance.mode == 'normal'`) |
 | `dance.delete.noYank` | Delete without yank | Delete selections without yanking. | `Alt+D` (`dance.mode == 'normal'`) |
@@ -76,12 +76,12 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.replace.characters` | Replace character | Replace each selected character with the next entered one. | `R` (`dance.mode == 'normal'`) |
 | `dance.join` | Join lines | Join selected lines. | `Alt+J` (`dance.mode == 'normal'`) |
 | `dance.join.select` | Join lines and select spaces | Join selected lines and select spaces inserted in place of line breaks. | `Shift+Alt+J` (`dance.mode == 'normal'`) |
-| `dance.indent` | Indent | Indent selected lines. | `>` (`dance.mode == 'normal'`) |
-| `dance.indent.withEmpty` | Indent (including empty) | Indent selected lines (including empty lines). | `Alt+>` (`dance.mode == 'normal'`) |
-| `dance.deindent` | Deindent | Deindent selected lines. | `<` (`dance.mode == 'normal'`) |
-| `dance.deindent.further` | Deindent (including incomplete indent) | Deindent selected lines (and remove additional incomplete indent). | `Alt+<` (`dance.mode == 'normal'`) |
+| `dance.indent` | Indent | Indent selected lines. | `Shift+.` (`dance.mode == 'normal'`) |
+| `dance.indent.withEmpty` | Indent (including empty) | Indent selected lines (including empty lines). | `Shift+Alt+.` (`dance.mode == 'normal'`) |
+| `dance.deindent` | Deindent | Deindent selected lines. | `Shift+Alt+,` (`dance.mode == 'normal'`) |
+| `dance.deindent.further` | Deindent (including incomplete indent) | Deindent selected lines (and remove additional incomplete indent). | `Shift+,` (`dance.mode == 'normal'`) |
 | `dance.toLowerCase` | Transform to lowercase | Transform to lowercase. | ``` (`dance.mode == 'normal'`) |
-| `dance.toUpperCase` | Transform to uppercase | Transform to uppercase. | `~` (`dance.mode == 'normal'`) |
+| `dance.toUpperCase` | Transform to uppercase | Transform to uppercase. | `Shift+`` (`dance.mode == 'normal'`) |
 | `dance.swapCase` | Swap case | Swap case. | `Alt+`` (`dance.mode == 'normal'`) |
 | `dance.pipe.filter` | Filter through pipe | Pipe each selection to a program, and keeps it if the program returns 0. | `Shift+4` (`dance.mode == 'normal'`) |
 | `dance.pipe.replace` | Pipe and replace | Pipe each selection to a command, and replaces it with its output. | `Shift+\` (`dance.mode == 'normal'`) |
@@ -98,24 +98,26 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.macros.record.start` | Start recording macro | Start recording macro. | `Shift+Q` (`dance.mode == 'normal'`) |
 | `dance.macros.record.stop` | Stop recording macro | Stop recording macro. | `Escape` (`dance.mode == 'normal'`) |
 | `dance.macros.play` | Play macro | Play macro. | `Q` (`dance.mode == 'normal'`) |
-| `dance.rotate` | Rotate | Rotate each selection clockwise. | `)` (`dance.mode == 'normal'`) |
-| `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. | `(` (`dance.mode == 'normal'`) |
-| `dance.rotate.content` | Rotate selection content | Rotate each selection (as well as its content) clockwise. | `Alt+)` (`dance.mode == 'normal'`) |
-| `dance.rotate.content.backwards` | Rotate selection content backwards | Rotate each selection (as well as its content) counter-clockwise. | `Alt+(` (`dance.mode == 'normal'`) |
+| `dance.rotate` | Rotate | Rotate each selection clockwise. | `Shift+0` (`dance.mode == 'normal'`) |
+| `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. | `Shift+9` (`dance.mode == 'normal'`) |
+| `dance.rotate.content` | Rotate selection content | Rotate each selection (as well as its content) clockwise. | `Shift+Alt+0` (`dance.mode == 'normal'`) |
+| `dance.rotate.content.backwards` | Rotate selection content backwards | Rotate each selection (as well as its content) counter-clockwise. | `Shift+Alt+9` (`dance.mode == 'normal'`) |
 | `dance.rotate.contentOnly` | Rotate content only | Rotate each selection content clockwise, without changing selections. |  |
 | `dance.rotate.contentOnly.backwards` | Rotate content only backwards | Rotate each selection content counter-clockwise, without changing selections. |  |
-| `dance.search` | Search | Search for the given input string. | `Slash` (`dance.mode == 'normal'`) |
-| `dance.search.backwards` | Search backwards | Search for the given input string before the current selections. | `Alt+Slash` (`dance.mode == 'normal'`) |
+| `dance.search` | Search | Search for the given input string. | `/` (`dance.mode == 'normal'`) |
+| `dance.search.backwards` | Search backwards | Search for the given input string before the current selections. | `Alt+/` (`dance.mode == 'normal'`) |
 | `dance.search.selection.smart` | Search current selections (smart) | Search current selections (smart). | `Shift+8` (`dance.mode == 'normal'`) |
 | `dance.search.selection` | Search current selections | Search current selections. | `Shift+Alt+8` (`dance.mode == 'normal'`) |
 | `dance.objects.select` | Select whole object | Select whole object. | `Alt+A` (`dance.mode == 'normal'`), `Alt+A` (`dance.mode == 'insert'`) |
 | `dance.objects.select.inner` | Select inner object | Select inner object. | `Alt+I` (`dance.mode == 'normal'`), `Alt+I` (`dance.mode == 'insert'`) |
-| `dance.objects.selectToStart` | Select to the whole object start | Select to the whole object start. | `[BracketLeft]` (`dance.mode == 'normal'`) |
-| `dance.objects.selectToEnd` | Select to the whole object end | Select to the whole object end. | `[BracketRight]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToStart` | Select to the whole object start | Select to the whole object start. | `[` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToStart.extend` | Extend to the whole object start | Extend to the whole object start. | `Shift+[` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToEnd` | Select to the whole object end | Select to the whole object end. | `]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToEnd.extend` | Extend to the whole object end | Extend to the whole object end. | `Shift+]` (`dance.mode == 'normal'`) |
 | `dance.objects.select.repeat` | Repeat object select | Repeat object select. | `Alt+.` (`dance.mode == 'normal'`) |
 | `dance.goto` | Go to... | Shows prompt to jump somewhere | `G` (`dance.mode == 'normal'`) |
 | `dance.registers.insert` | Insert value in register | Insert value in register. | `Ctrl+R` (`dance.mode == 'normal'`), `Ctrl+R` (`dance.mode == 'insert'`) |
-| `dance.registers.select` | Select register for next command | Select register for next command. | `[Quote]` (`dance.mode == 'normal'`) |
+| `dance.registers.select` | Select register for next command | Select register for next command. | `Shift+\'` (`dance.mode == 'normal'`) |
 | `dance.marks.saveSelections` | Save selections | Save selections. | `Shift+Z` (`dance.mode == 'normal'`) |
 | `dance.marks.restoreSelections` | Restore selections | Restore selections. | `Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromCurrent` | Combine current selections with ones from register | Combine current selections with ones from register. | `Shift+Alt+Z` (`dance.mode == 'normal'`) |
@@ -136,10 +138,8 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.select.word.alt.extend` | Extend to next non-whitespace word start | Extend with the non-whitespace word and following whitespaces on the right of the end of each selection. | `Shift+Alt+W` (`dance.mode == 'normal'`) |
 | `dance.select.word.alt.previous.extend` | Extend to previous non-whitespace word start | Extend with preceding whitespaces and the non-whitespace word on the left of the end of each selection. | `Shift+Alt+B` (`dance.mode == 'normal'`) |
 | `dance.select.word.alt.end.extend` | Extend to next non-whitespace word end | Extend with preceding whitespaces and the non-whitespace word on the right of the end of each selection. | `Shift+Alt+E` (`dance.mode == 'normal'`) |
-| `dance.search.extend` | Search (extend) | Search for the given input string (extend). | `Shift+Slash` (`dance.mode == 'normal'`) |
-| `dance.search.backwards.extend` | Search backwards (extend) | Search for the given input string before the current selections (extend). | `Shift+Alt+Slash` (`dance.mode == 'normal'`) |
-| `dance.objects.selectToStart.extend` | Extend to the whole object start | Extend to the whole object start. | `Shift+[BracketLeft]` (`dance.mode == 'normal'`) |
-| `dance.objects.selectToEnd.extend` | Extend to the whole object end | Extend to the whole object end. | `Shift+[BracketRight]` (`dance.mode == 'normal'`) |
+| `dance.search.extend` | Search (extend) | Search for the given input string (extend). | `Shift+/` (`dance.mode == 'normal'`) |
+| `dance.search.backwards.extend` | Search backwards (extend) | Search for the given input string before the current selections (extend). | `Shift+Alt+/` (`dance.mode == 'normal'`) |
 | `dance.goto.extend` | Go to... (extend) | Shows prompt to jump somewhere | `Shift+G` (`dance.mode == 'normal'`) |
 | `dance.select.to.included.backwards` | Select to (backwards) | Select to the next character pressed, including it. (backwards) | `Alt+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.backwards` | Select until (backwards) | Select until the next character pressed, excluding it. (backwards) | `Alt+T` (`dance.mode == 'normal'`) |
@@ -147,10 +147,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.select.to.included.extend.backwards` | Extend to (backwards) | Extend to the next character pressed, including it. (backwards) | `Alt+Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend.backwards` | Extend until (backwards) | Extend with until the next character pressed, excluding it. (backwards) | `Alt+Shift+T` (`dance.mode == 'normal'`) |
 | `dance.select.enclosing.extend.backwards` | Extend with enclosing characters (backwards) | Extend with enclosing characters. (backwards) | `Alt+Shift+M` (`dance.mode == 'normal'`) |
-| `dance.objects.selectToStart.inner` | Select to the inner object start | Select to the inner object start. | `Alt+[BracketLeft]` (`dance.mode == 'normal'`) |
-| `dance.objects.selectToEnd.inner` | Select to the inner object end | Select to the inner object end. | `Alt+[BracketRight]` (`dance.mode == 'normal'`) |
-| `dance.objects.selectToStart.extend.inner` | Extend to the inner object start | Extend to the inner object start. | `Alt+Shift+[BracketLeft]` (`dance.mode == 'normal'`) |
-| `dance.objects.selectToEnd.extend.inner` | Extend to the inner object end | Extend to the inner object end. | `Alt+Shift+[BracketRight]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToStart.inner` | Select to the inner object start | Select to the inner object start. | `Alt+[` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToStart.extend.inner` | Extend to the inner object start | Extend to the inner object start. | `Alt+Shift+[` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToEnd.inner` | Select to the inner object end | Select to the inner object end. | `Alt+]` (`dance.mode == 'normal'`) |
+| `dance.objects.selectToEnd.extend.inner` | Extend to the inner object end | Extend to the inner object end. | `Alt+Shift+]` (`dance.mode == 'normal'`) |
 | `dance.count.0` | Count 0 | Adds 0 to the current counter for the next operation. | `0` (`dance.mode == 'normal'`) |
 | `dance.count.1` | Count 1 | Adds 1 to the current counter for the next operation. | `1` (`dance.mode == 'normal'`) |
 | `dance.count.2` | Count 2 | Adds 2 to the current counter for the next operation. | `2` (`dance.mode == 'normal'`) |

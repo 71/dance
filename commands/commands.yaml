@@ -265,17 +265,17 @@ selections.clearMatching:
 selections.merge:
   title: Merge contiguous selections
   descr: Merge contiguous selections together, including across lines.
-  keys: a-_ (normal)
+  keys: s-a-- (normal)
 
 selections.align:
   title: Align selections
   descr: Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection.
-  keys: '& (normal)'
+  keys: 's-7 (normal)'
 
 selections.align.copy:
   title: Copy indentation
   descr: Copy the indentation of the main selection (or the count one if a count is given) to all other ones.
-  keys: 'a-& (normal)'
+  keys: 's-a-7 (normal)'
 
 
 # Changes (changes.ts)
@@ -354,22 +354,22 @@ join.select:
 indent:
   title: Indent
   descr: Indent selected lines.
-  keys: '> (normal)'
+  keys: 's-. (normal)'
 
 indent.withEmpty:
   title: Indent (including empty)
   descr: Indent selected lines (including empty lines).
-  keys: 'a-> (normal)'
+  keys: 's-a-. (normal)'
 
 deindent:
   title: Deindent
   descr: Deindent selected lines.
-  keys: '< (normal)'
+  keys: 's-a-, (normal)'
 
 deindent.further:
   title: Deindent (including incomplete indent)
   descr: Deindent selected lines (and remove additional incomplete indent).
-  keys: 'a-< (normal)'
+  keys: 's-, (normal)'
 
 toLowerCase:
   title: Transform to lowercase
@@ -377,7 +377,7 @@ toLowerCase:
 
 toUpperCase:
   title: Transform to uppercase
-  keys: '~ (normal)'
+  keys: 's-` (normal)'
 
 swapCase:
   title: Swap case
@@ -460,22 +460,22 @@ macros.play:
 rotate:
   title: Rotate
   descr: Rotate each selection clockwise.
-  keys: ) (normal)
+  keys: s-0 (normal)
 
 rotate.backwards:
   title: Rotate backwards
   descr: Rotate each selection counter-clockwise.
-  keys: ( (normal)
+  keys: s-9 (normal)
 
 rotate.content:
   title: Rotate selection content
   descr: Rotate each selection (as well as its content) clockwise.
-  keys: a-) (normal)
+  keys: s-a-0 (normal)
 
 rotate.content.backwards:
   title: Rotate selection content backwards
   descr: Rotate each selection (as well as its content) counter-clockwise.
-  keys: a-( (normal)
+  keys: s-a-9 (normal)
 
 rotate.contentOnly:
   title: Rotate content only
@@ -492,13 +492,13 @@ rotate.contentOnly.backwards:
 search:
   title: Search
   descr: Search for the given input string.
-  keys: slash (normal)
+  keys: / (normal)
   add: extend
 
 search.backwards:
   title: Search backwards
   descr: Search for the given input string before the current selections.
-  keys: a-slash (normal)
+  keys: a-/ (normal)
   add: extend
 
 search.selection.smart:
@@ -523,13 +523,23 @@ objects.select.inner:
 
 objects.selectToStart:
   title: Select to the whole object start
-  keys: "[BracketLeft] (normal)"
-  add: extend inner
+  keys: "[ (normal)"
+  add: inner
+
+objects.selectToStart.extend:
+  title: Extend to the whole object start
+  keys: "s-[ (normal)"
+  add: inner
 
 objects.selectToEnd:
   title: Select to the whole object end
-  keys: "[BracketRight] (normal)"
-  add: extend inner
+  keys: "] (normal)"
+  add: inner
+
+objects.selectToEnd.extend:
+  title: Extend to the whole object end
+  keys: "s-] (normal)"
+  add: inner
 
 objects.select.repeat:
   title: Repeat object select
@@ -555,7 +565,7 @@ registers.insert:
 
 registers.select:
   title: Select register for next command
-  keys: "[Quote] (normal)"
+  keys: s-\' (normal)
 
 
 marks.saveSelections:

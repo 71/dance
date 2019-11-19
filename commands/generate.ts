@@ -156,7 +156,7 @@ for (const id in yaml) {
     stream.write(`  keybindings: [\n`)
 
     for (const key of keys) {
-      stream.write(`    { key: '${key.key.replace('\\', '\\\\')}', when: 'editorTextFocus && ${key.when.replace(/'/g, '\\\'')}' },\n`)
+      stream.write(`    { key: '${key.key.replace('\\', '\\\\').replace("'", "\\'")}', when: 'editorTextFocus && ${key.when.replace(/'/g, '\\\'')}' },\n`)
     }
 
     stream.write(`  ],\n`)
