@@ -410,7 +410,7 @@ registerCommand(Command.expandLines, CommandFlags.ChangeSelections, editor => {
           anchor = anchorLine.range.start,
           active = activeLine.rangeIncludingLineBreak.end
 
-    return x.isReversed
+    return x.isReversed && !x.isEmpty
       ? new vscode.Selection(active, anchor)
       : new vscode.Selection(anchor, active)
   })
