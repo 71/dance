@@ -10,7 +10,7 @@ const pkg = {
   name: 'dance',
   displayName: 'Dance',
   description: 'Make those cursors dance.',
-  version: '0.1.4',
+  version: '0.1.5',
   license: 'MIT',
 
   publisher: 'gregoire',
