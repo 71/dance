@@ -76,7 +76,7 @@ export function promptInList(canPickMany: boolean, items: [string, string][]): T
         resolve(index === -1 ? undefined : index)
     })
 
-    quickPick.onDidHide(() => {
+    quickPick.onDidAccept(() => {
       let picked = quickPick.selectedItems
 
       if (picked !== undefined && picked.length === 0)
