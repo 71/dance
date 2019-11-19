@@ -1,55 +1,152 @@
 // Movement: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
-import * as vscode               from 'vscode'
+import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags, CommandState, InputKind } from '.'
+import { registerCommand, Command, CommandFlags, InputKind } from '.'
+
 import { TextBuffer } from '../utils/textBuffer'
-
-
-function registerMovement(cmd: Command, modifier: (selection: vscode.Selection, editor: vscode.TextEditor, state: CommandState<InputKind.None>) => vscode.Selection) {
-  registerCommand(cmd, CommandFlags.ChangeSelections, (editor, state) => {
-    editor.selections = editor.selections.map(s => modifier(s, editor, state))
-  })
-}
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
 // ===============================================================================================
 
-function translate(lineDelta: number, charDelta: number, position: vscode.Position, editor: vscode.TextEditor) {
-  if (lineDelta ===  1 && position.line === editor.document.lineCount) lineDelta = 0
-  else if (lineDelta === -1 && position.line === 0) lineDelta = 0
+// There was initially a single function for all movements;
+// this was however changed to make sure the logic was as
+// straightforward as possible.
 
-  const line = editor.document.lineAt(position.line)
+const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
-  if (charDelta ===  1 && position.character === line.text.length) charDelta = 0
-  else if (charDelta === -1 && position.character === 0) charDelta = 0
+function moveLeft(editor: vscode.TextEditor, expand: boolean, mult: number) {
+  preferredColumnsPerEditor.delete(editor)
 
-  return position.translate(lineDelta, charDelta)
+  let selections = editor.selections.slice(),
+      firstActive = undefined as vscode.Position | undefined
+
+  for (let i = 0; i < selections.length; i++) {
+    const selection = selections[i],
+          active = editor.document.positionAt(editor.document.offsetAt(selection.active) - mult)
+
+    selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
+
+    if (firstActive === undefined || firstActive.isAfter(active))
+      firstActive = active
+  }
+
+  if (selections !== editor.selections) {
+    editor.selections = selections
+    editor.revealRange(new vscode.Range(firstActive!, firstActive!))
+  }
 }
 
-const simpleMovements: [Command, number, number][] = [
-  [Command.left ,  0, -1],
-  [Command.down ,  1,  0],
-  [Command.up   , -1,  0],
-  [Command.right,  0,  1],
-]
+function moveRight(editor: vscode.TextEditor, expand: boolean, mult: number) {
+  preferredColumnsPerEditor.delete(editor)
 
-for (const [command, lineDelta, charDelta] of simpleMovements) {
-  // Move left / down / up / right
-  registerMovement(command, (selection, editor, state) => {
-    const mult = state.currentCount || 1
-    const active = translate(lineDelta * mult, charDelta * mult, selection.active, editor)
+  let selections = editor.selections.slice(),
+      lastActive = undefined as vscode.Position | undefined
 
-    return new vscode.Selection(active, active)
-  })
+  for (let i = 0; i < selections.length; i++) {
+    const selection = selections[i],
+          active = editor.document.positionAt(editor.document.offsetAt(selection.active) + mult)
 
-  // Extend left / down / up / right
-  registerMovement(command + '.extend' as Command, (selection, editor, state) => {
-    const mult = state.currentCount || 1
+    selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
 
-    return new vscode.Selection(selection.anchor, translate(lineDelta * mult, charDelta * mult, selection.active, editor))
-  })
+    if (lastActive === undefined || lastActive.isBefore(active))
+      lastActive = active
+  }
+
+  if (selections !== editor.selections) {
+    editor.selections = selections
+    editor.revealRange(new vscode.Range(lastActive!, lastActive!))
+  }
 }
+
+function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number) {
+  let preferredColumns = preferredColumnsPerEditor.get(editor)
+
+  if (preferredColumns === undefined)
+    preferredColumnsPerEditor.set(editor, preferredColumns = [])
+
+  let selections = editor.selections,
+      firstPosition = undefined as vscode.Position | undefined
+
+  if (preferredColumns.length !== selections.length) {
+    preferredColumns.length = 0
+
+    for (let i = 0; i < selections.length; i++)
+      preferredColumns.push(selections[i].active.character)
+  }
+
+  for (let i = 0; i < selections.length; i++) {
+    const selection = selections[i]
+    let { active } = selection
+
+    if (active.line === 0)
+      continue
+
+    if (selections === editor.selections)
+      selections = selections.slice()
+
+    active = new vscode.Position(Math.max(active.line - mult, 0), preferredColumns[i])
+    selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
+
+    if (firstPosition === undefined || firstPosition.isAfter(active))
+      firstPosition = active
+  }
+
+  if (selections !== editor.selections) {
+    editor.selections = selections
+    editor.revealRange(new vscode.Range(firstPosition!, firstPosition!))
+  }
+}
+
+function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number) {
+  let preferredColumns = preferredColumnsPerEditor.get(editor)
+
+  if (preferredColumns === undefined)
+    preferredColumnsPerEditor.set(editor, preferredColumns = [])
+
+  const lastLine = editor.document.lineCount - 1
+  let selections = editor.selections,
+      lastPosition = undefined as vscode.Position | undefined
+
+  if (preferredColumns.length !== selections.length) {
+    preferredColumns.length = 0
+
+    for (let i = 0; i < selections.length; i++)
+      preferredColumns.push(selections[i].active.character)
+  }
+
+  for (let i = 0; i < selections.length; i++) {
+    const selection = selections[i]
+    let { active } = selection
+
+    if (active.line === lastLine)
+      continue
+
+    if (selections === editor.selections)
+      selections = selections.slice()
+
+    active = new vscode.Position(Math.min(active.line + mult, lastLine), preferredColumns[i])
+    selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
+
+    if (lastPosition === undefined || lastPosition.isBefore(active))
+      lastPosition = active
+  }
+
+  if (selections !== editor.selections) {
+    editor.selections = selections
+    editor.revealRange(new vscode.Range(lastPosition!, lastPosition!))
+  }
+}
+
+// Move/extend left/down/up/right
+registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveLeft(editor, false, currentCount || 1))
+registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveLeft(editor, true , currentCount || 1))
+registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, { currentCount }) => moveRight(editor, false, currentCount || 1))
+registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, { currentCount }) => moveRight(editor, true , currentCount || 1))
+registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, { currentCount }) =>    moveUp(editor, false, currentCount || 1))
+registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, { currentCount }) =>    moveUp(editor, true , currentCount || 1))
+registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveDown(editor, false, currentCount || 1))
+registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveDown(editor, true , currentCount || 1))
 
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
