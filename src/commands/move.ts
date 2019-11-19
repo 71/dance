@@ -405,10 +405,14 @@ registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, ed
 
 registerCommand(Command.expandLines, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
-    const anchorLine = editor.document.lineAt(x.anchor)
-    const activeLine = editor.document.lineAt(x.active)
+    const anchorLine = editor.document.lineAt(x.start),
+          activeLine = editor.document.lineAt(x.end),
+          anchor = anchorLine.range.start,
+          active = activeLine.rangeIncludingLineBreak.end
 
-    return new vscode.Selection(anchorLine.range.start, activeLine.rangeIncludingLineBreak.end)
+    return x.isReversed
+      ? new vscode.Selection(active, anchor)
+      : new vscode.Selection(anchor, active)
   })
 })
 
