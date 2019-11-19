@@ -19,7 +19,7 @@ export interface WritableRegister extends Register {
   set(editor: vscode.TextEditor, values: string[]): Thenable<void>
 }
 
-export class GeneralPurposeRegister implements Register, MacroRegister {
+export class GeneralPurposeRegister implements Register, WritableRegister, MacroRegister {
   values: string[] | undefined
   macroCommands: [CommandDescriptor<any>, CommandState<any>][] | undefined
 
@@ -29,6 +29,8 @@ export class GeneralPurposeRegister implements Register, MacroRegister {
 
   set(_: vscode.TextEditor, values: string[]) {
     this.values = values
+
+    return Promise.resolve()
   }
 
   get() {

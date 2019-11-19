@@ -108,6 +108,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.search.backwards` | Search backwards | Search for the given input string before the current selections. | `Alt+/` (`dance.mode == 'normal'`) |
 | `dance.search.selection.smart` | Search current selections (smart) | Search current selections (smart). | `Shift+8` (`dance.mode == 'normal'`) |
 | `dance.search.selection` | Search current selections | Search current selections. | `Shift+Alt+8` (`dance.mode == 'normal'`) |
+| `dance.search.next` | Select next match | Select next match after the main selection. | `N` (`dance.mode == 'normal'`) |
+| `dance.search.next.add` | Add next match | Add a new selection with the next match after the main selection. | `Shift+N` (`dance.mode == 'normal'`) |
+| `dance.search.previous` | Select previous match | Select previous match before the main selection. | `Alt+N` (`dance.mode == 'normal'`) |
+| `dance.search.previous.add` | Add previous match | Add a new selection with the previous match before the main selection. | `Shift+Alt+N` (`dance.mode == 'normal'`) |
 | `dance.objects.select` | Select whole object | Select whole object. | `Alt+A` (`dance.mode == 'normal'`), `Alt+A` (`dance.mode == 'insert'`) |
 | `dance.objects.select.inner` | Select inner object | Select inner object. | `Alt+I` (`dance.mode == 'normal'`), `Alt+I` (`dance.mode == 'insert'`) |
 | `dance.objects.selectToStart` | Select to the whole object start | Select to the whole object start. | `[` (`dance.mode == 'normal'`) |

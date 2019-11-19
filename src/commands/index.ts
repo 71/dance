@@ -75,7 +75,7 @@ export interface InputDescrMap {
   [InputKind.ListOneItem]: [string, string][]
   [InputKind.ListManyItems]: [string, string][]
   [InputKind.RegExp]: string
-  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editor: vscode.TextEditor) => void }
+  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editor: vscode.TextEditor, state: Extension) => void }
   [InputKind.Key]: undefined
   [InputKind.ListOneItemOrCount]: [string, string][]
 }
@@ -121,7 +121,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         const inputDescr = this.inputDescr as InputDescrMap[InputKind.Text]
 
         if (inputDescr.setup !== undefined)
-          inputDescr.setup(editor)
+          inputDescr.setup(editor, state)
 
         input = await prompt(inputDescr) as any
         break

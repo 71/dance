@@ -858,6 +858,42 @@ export const searchSelection: ICommand & { readonly id: 'dance.search.selection'
     { key: 'Shift+Alt+8', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
+/** Select next match after the main selection. */
+export const searchNext: ICommand & { readonly id: 'dance.search.next' } = {
+  id         : 'dance.search.next',
+  title      : 'Select next match',
+  description: 'Select next match after the main selection.',
+  keybindings: [
+    { key: 'n', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Add a new selection with the next match after the main selection. */
+export const searchNextAdd: ICommand & { readonly id: 'dance.search.next.add' } = {
+  id         : 'dance.search.next.add',
+  title      : 'Add next match',
+  description: 'Add a new selection with the next match after the main selection.',
+  keybindings: [
+    { key: 'Shift+n', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Select previous match before the main selection. */
+export const searchPrevious: ICommand & { readonly id: 'dance.search.previous' } = {
+  id         : 'dance.search.previous',
+  title      : 'Select previous match',
+  description: 'Select previous match before the main selection.',
+  keybindings: [
+    { key: 'Alt+n', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/** Add a new selection with the previous match before the main selection. */
+export const searchPreviousAdd: ICommand & { readonly id: 'dance.search.previous.add' } = {
+  id         : 'dance.search.previous.add',
+  title      : 'Add previous match',
+  description: 'Add a new selection with the previous match before the main selection.',
+  keybindings: [
+    { key: 'Shift+Alt+n', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
 /** Select whole object. */
 export const objectsSelect: ICommand & { readonly id: 'dance.objects.select' } = {
   id         : 'dance.objects.select',
@@ -1539,6 +1575,14 @@ export const commands = {
   searchSelectionSmart,
   /** Search current selections. */
   searchSelection,
+  /** Select next match after the main selection. */
+  searchNext,
+  /** Add a new selection with the next match after the main selection. */
+  searchNextAdd,
+  /** Select previous match before the main selection. */
+  searchPrevious,
+  /** Add a new selection with the previous match before the main selection. */
+  searchPreviousAdd,
   /** Select whole object. */
   objectsSelect,
   /** Select inner object. */
@@ -1841,6 +1885,14 @@ export const enum Command {
   searchSelectionSmart = 'dance.search.selection.smart',
   /** Search current selections. */
   searchSelection = 'dance.search.selection',
+  /** Select next match after the main selection. */
+  searchNext = 'dance.search.next',
+  /** Add a new selection with the next match after the main selection. */
+  searchNextAdd = 'dance.search.next.add',
+  /** Select previous match before the main selection. */
+  searchPrevious = 'dance.search.previous',
+  /** Add a new selection with the previous match before the main selection. */
+  searchPreviousAdd = 'dance.search.previous.add',
   /** Select whole object. */
   objectsSelect = 'dance.objects.select',
   /** Select inner object. */

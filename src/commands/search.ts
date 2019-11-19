@@ -3,6 +3,9 @@ import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
+import { Extension }        from '../extension'
+import { WritableRegister } from '../registers'
+
 
 function isMultilineRegExp(regex: string) {
   const len = regex.length
@@ -94,13 +97,13 @@ function findPositionBackward(text: string, position: vscode.Position, offset: n
 // TODO: Should search strings be limited to the range between the current selection
 // and the previous/next selection, or only to the bounds of the document?
 
-function search(document: vscode.TextDocument, start: vscode.Position, regex: RegExp) {
+function search(document: vscode.TextDocument, start: vscode.Position, regex: RegExp, allowWrap: boolean): vscode.Selection | undefined {
   if (regex.multiline) {
     const text = document.getText(document.lineAt(document.lineCount - 1).range.with(start))
     const match = regex.exec(text)
 
     if (match === null)
-      return undefined
+      return allowWrap ? search(document, new vscode.Position(0, 0), regex, false) : undefined
 
     const startPos = findPosition(text, start, match.index),
           endPos = findPosition(text, startPos, match[0].length, match.index)
@@ -132,7 +135,7 @@ function search(document: vscode.TextDocument, start: vscode.Position, regex: Re
       )
     }
 
-    return undefined
+    return allowWrap ? search(document, new vscode.Position(0, 0), regex, false) : undefined
   }
 }
 
@@ -154,13 +157,13 @@ function execFromEnd(regex: RegExp, input: string) {
   }
 }
 
-function searchBackward(document: vscode.TextDocument, end: vscode.Position, regex: RegExp) {
+function searchBackward(document: vscode.TextDocument, end: vscode.Position, regex: RegExp, allowWrap: boolean): vscode.Selection | undefined {
   if (regex.multiline) {
     const text = document.getText(new vscode.Range(new vscode.Position(0, 0), end))
     const match = execFromEnd(regex, text)
 
     if (match === null)
-      return undefined
+      return allowWrap ? searchBackward(document, new vscode.Position(document.lineCount - 1, 10000), regex, false) : undefined
 
     const startPos = findPositionBackward(text, end, match.index),
           endPos = findPosition(text, startPos, match[0].length, match.index)
@@ -192,18 +195,26 @@ function searchBackward(document: vscode.TextDocument, end: vscode.Position, reg
       )
     }
 
-    return undefined
+    return allowWrap ? searchBackward(document, new vscode.Position(document.lineCount - 1, 10000), regex, false) : undefined
   }
 }
 
 function registerSearchCommand(command: Command, backward: boolean, extend: boolean) {
-  let initialSelections: vscode.Selection[]
+  let initialSelections: vscode.Selection[],
+      register: WritableRegister
 
   registerCommand(command, CommandFlags.ChangeSelections, InputKind.Text, {
     prompt: 'Search RegExp',
 
-    setup(editor) {
+    setup(editor, state) {
       initialSelections = editor.selections
+
+      const targetRegister = state.currentRegister
+
+      if (targetRegister === undefined || !targetRegister.canWrite())
+        register = state.registers.slash
+      else
+        targetRegister
     },
 
     validateInput(input) {
@@ -221,12 +232,14 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
         return 'Invalid ECMA RegExp.'
       }
 
+      register.set(editor, [input])
+
       // TODO: For subsequent searches, first try to match at start of previous
       // match by adding a ^, and then fallback to the default search routine
       if (extend) {
         if (backward)
           editor.selections = initialSelections.map(selection => {
-            const newSelection = searchBackward(editor.document, selection.anchor, regex)
+            const newSelection = searchBackward(editor.document, selection.anchor, regex, false)
 
             return newSelection === undefined
               ? selection
@@ -234,7 +247,7 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
           })
         else
           editor.selections = initialSelections.map(selection => {
-            const newSelection = search(editor.document, selection.active, regex)
+            const newSelection = search(editor.document, selection.active, regex, false)
 
             return newSelection === undefined
               ? selection
@@ -243,8 +256,8 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
       } else {
         editor.selections = initialSelections.map(selection => {
           return (backward
-            ? searchBackward(editor.document, selection.anchor, regex)
-            : search(editor.document, selection.active, regex))
+            ? searchBackward(editor.document, selection.anchor, regex, false)
+            : search(editor.document, selection.active, regex, false))
           || selection
         })
       }
@@ -258,3 +271,79 @@ registerSearchCommand(Command.search               , false, false)
 registerSearchCommand(Command.searchBackwards      , true , false)
 registerSearchCommand(Command.searchExtend         , false, true )
 registerSearchCommand(Command.searchBackwardsExtend, true , true )
+
+function setSearchSelection(source: string, editor: vscode.TextEditor, state: Extension) {
+  try {
+    new RegExp(source, 'g')
+  } catch {
+    return vscode.window.showErrorMessage('Invalid ECMA RegExp.').then(() => {})
+  }
+
+  let register = state.currentRegister
+
+  if (register === undefined || !register.canWrite())
+    state.registers.slash.set(editor, [source])
+  else
+    register.set(editor, [source])
+
+  return
+}
+
+registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, (editor, _, __, state) => {
+  return setSearchSelection(editor.document.getText(editor.selection), editor, state)
+})
+
+function isSmartSelectionPart(char: string) {
+  return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9')
+}
+
+function escapeRegExp(str: string) {
+  // TODO: improve that
+  return str.replace('/', '\\/')
+}
+
+registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, (editor, _, __, state) => {
+  let text = escapeRegExp(editor.document.getText(editor.selection)),
+      firstLine = editor.document.lineAt(editor.selection.start).text,
+      firstLineStart = editor.selection.start.character
+
+  if (firstLineStart === 0 || !isSmartSelectionPart(firstLine[firstLineStart - 1])) {
+    text = `\\b${text}`
+  }
+
+  let lastLine = editor.document.lineAt(editor.selection.end).text,
+      lastLineEnd = editor.selection.end.character
+
+  if (lastLineEnd >= lastLine.length || !isSmartSelectionPart(lastLine[lastLineEnd])) {
+    text = `${text}\\b`
+  }
+
+  return setSearchSelection(text, editor, state)
+})
+
+function registerNextCommand(command: Command, backward: boolean, replace: boolean) {
+  registerCommand(command, CommandFlags.ChangeSelections, async (editor, { currentRegister }, _, state) => {
+    const regexStr = await (currentRegister || state.registers.slash).get(editor)
+
+    if (regexStr === undefined || regexStr.length === 0)
+      return
+
+    const regex = new RegExp(regexStr[0])
+    const next = backward
+      ? searchBackward(editor.document, editor.selection.anchor, regex, true)
+      : search(editor.document, editor.selection.active, regex, true)
+
+    if (next === undefined)
+      return
+
+    if (replace)
+      editor.selection = next
+    else
+      editor.selections = [...editor.selections, next]
+  })
+}
+
+registerNextCommand(Command.searchNext       , false, true )
+registerNextCommand(Command.searchNextAdd    , false, false)
+registerNextCommand(Command.searchPrevious   , true , true )
+registerNextCommand(Command.searchPreviousAdd, true , false)

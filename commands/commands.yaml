@@ -509,6 +509,26 @@ search.selection:
   title: Search current selections
   keys: s-a-8 (normal)
 
+search.next:
+  title: Select next match
+  descr: Select next match after the main selection.
+  keys: n (normal)
+
+search.next.add:
+  title: Add next match
+  descr: Add a new selection with the next match after the main selection.
+  keys: s-n (normal)
+
+search.previous:
+  title: Select previous match
+  descr: Select previous match before the main selection.
+  keys: a-n (normal)
+
+search.previous.add:
+  title: Add previous match
+  descr: Add a new selection with the previous match before the main selection.
+  keys: s-a-n (normal)
+
 
 # Objects (selectObject.ts)
 # ================================================================================================
