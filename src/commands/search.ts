@@ -328,7 +328,7 @@ function registerNextCommand(command: Command, backward: boolean, replace: boole
     if (regexStr === undefined || regexStr.length === 0)
       return
 
-    const regex = new RegExp(regexStr[0])
+    const regex = new RegExp(regexStr[0], 'g')
     const next = backward
       ? searchBackward(editor.document, editor.selection.anchor, regex, true)
       : search(editor.document, editor.selection.active, regex, true)
