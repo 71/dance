@@ -4,11 +4,11 @@ import { registerCommand, Command, CommandFlags } from '.'
 
 
 registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
-  editor.selections = editor.selections.map(x => new vscode.Selection(x.anchor, x.anchor))
+  editor.selections = editor.selections.map(x => new vscode.Selection(x.start, x.start))
 })
 
 registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
-  editor.selections = editor.selections.map(x => new vscode.Selection(x.active, x.active))
+  editor.selections = editor.selections.map(x => new vscode.Selection(x.end, x.end))
 })
 
 registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
