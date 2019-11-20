@@ -55,6 +55,11 @@
           "type": "boolean",
           "default": true,
           "description": "Enables or disables the Dance key bindings."
+        },
+        "dance.normalModeLineNumbersRelative": {
+          "type": "boolean",
+          "default": true,
+          "description": "Use relative line numbers in normal mode"
         }
       }
     },

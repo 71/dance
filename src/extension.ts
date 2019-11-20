@@ -85,8 +85,12 @@ export class Extension implements vscode.Disposable {
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
     } else {
       this.setDecorations(editor)
-
-      editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
+      const useRelative = vscode.workspace.getConfiguration(extensionName).get('normalModeLineNumbersRelative', true);
+      if (useRelative) {
+        editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
+      }else {
+        editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
+      }
     }
 
     if (vscode.window.activeTextEditor === editor)
