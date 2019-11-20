@@ -67,10 +67,12 @@ insert.newLine.above:
 newLine.below:
   title: Add new line below
   descr: Add a new line below, without entering insert mode.
+  keys: a-o (normal)
 
 newLine.above:
   title: Add new line above
   descr: Add a new line above, without entering insert mode.
+  keys: s-a-o (normal)
 
 repeat.insert:
   title: Repeat last insert-mode change

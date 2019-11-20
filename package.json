@@ -1025,6 +1025,16 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
+        "command": "dance.newLine.below",
+        "key": "Alt+o",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.newLine.above",
+        "key": "Shift+Alt+o",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
         "command": "dance.repeat.insert",
         "key": ".",
         "when": "editorTextFocus && dance.mode == 'normal'"

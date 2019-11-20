@@ -23,8 +23,8 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.insert.lineEnd` | Insert at line end | Start insert at line end of each selection. | `Shift+A` (`dance.mode == 'normal'`) |
 | `dance.insert.newLine.below` | Insert new line below | Create new line and start insert below. | `O` (`dance.mode == 'normal'`) |
 | `dance.insert.newLine.above` | Insert new line above | Create new line and start insert above. | `Shift+O` (`dance.mode == 'normal'`) |
-| `dance.newLine.below` | Add new line below | Add a new line below, without entering insert mode. |  |
-| `dance.newLine.above` | Add new line above | Add a new line above, without entering insert mode. |  |
+| `dance.newLine.below` | Add new line below | Add a new line below, without entering insert mode. | `Alt+O` (`dance.mode == 'normal'`) |
+| `dance.newLine.above` | Add new line above | Add a new line above, without entering insert mode. | `Shift+Alt+O` (`dance.mode == 'normal'`) |
 | `dance.repeat.insert` | Repeat last insert-mode change | Repeat last insert-mode change. | `.` (`dance.mode == 'normal'`) |
 | `dance.left` | Move left | Move left. | `Left` (`dance.mode == 'normal'`), `H` (`dance.mode == 'normal'`) |
 | `dance.right` | Move right | Move right. | `Right` (`dance.mode == 'normal'`), `L` (`dance.mode == 'normal'`) |

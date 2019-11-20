@@ -108,14 +108,18 @@ export const newLineBelow: ICommand & { readonly id: 'dance.newLine.below' } = {
   id         : 'dance.newLine.below',
   title      : 'Add new line below',
   description: 'Add a new line below, without entering insert mode.',
-  keybindings: [],
+  keybindings: [
+    { key: 'Alt+o', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
 }
 /** Add a new line above, without entering insert mode. */
 export const newLineAbove: ICommand & { readonly id: 'dance.newLine.above' } = {
   id         : 'dance.newLine.above',
   title      : 'Add new line above',
   description: 'Add a new line above, without entering insert mode.',
-  keybindings: [],
+  keybindings: [
+    { key: 'Shift+Alt+o', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
 }
 /** Repeat last insert-mode change. */
 export const repeatInsert: ICommand & { readonly id: 'dance.repeat.insert' } = {
