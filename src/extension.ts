@@ -61,6 +61,11 @@ export class Extension implements vscode.Disposable {
     return state
   }
 
+  readonly normalModeDecoration = vscode.window.createTextEditorDecorationType({
+    backgroundColor: new vscode.ThemeColor('editor.hoverHighlightBackground'),
+    isWholeLine: true,
+  })
+
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
     if (this.modeMap.get(editor.document) === mode)
       return Promise.resolve()
@@ -75,8 +80,12 @@ export class Extension implements vscode.Disposable {
         file.insertPosition = editor.selection.active
       }
 
+      this.clearDecorations(editor)
+
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
     } else {
+      this.setDecorations(editor)
+
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
     }
 
@@ -112,6 +121,45 @@ export class Extension implements vscode.Disposable {
     await vscode.commands.executeCommand('setContext', extensionName + '.mode', mode)
   }
 
+  private clearDecorations(editor: vscode.TextEditor) {
+    editor.setDecorations(this.normalModeDecoration, [])
+  }
+
+  private setDecorations(editor: vscode.TextEditor) {
+    const lines: number[] = [],
+          selections = editor.selections
+
+    let needsCopy = false
+
+    for (let i = 0; i < selections.length; i++) {
+      const selection = selections[i]
+
+      for (let line = selection.start.line; line <= selection.end.line; line++) {
+        if (lines.indexOf(line) === -1) {
+          lines.push(line)
+        } else {
+          // There is some overlap, so we need a copy
+          needsCopy = true
+        }
+      }
+    }
+
+    if (needsCopy) {
+      const ranges: vscode.Range[] = []
+
+      for (let i = 0; i < lines.length; i++) {
+        const pos = new vscode.Position(lines[i], 0),
+              range = new vscode.Range(pos, pos)
+
+        ranges.push(range)
+      }
+
+      editor.setDecorations(this.normalModeDecoration, ranges)
+    } else {
+      editor.setDecorations(this.normalModeDecoration, selections)
+    }
+  }
+
   setEnabled(enabled: boolean, changeConfiguration: boolean) {
     if (enabled === this.enabled)
       return
@@ -124,7 +172,7 @@ export class Extension implements vscode.Disposable {
       this.subscriptions.splice(0).forEach(x => x.dispose())
 
       if (changeConfiguration)
-        vscode.workspace.getConfiguration(extensionName).update('enabled', this.enabled = false)
+        vscode.workspace.getConfiguration(extensionName).update('enabled', false)
     } else {
       this.statusBarItem.show()
 
@@ -142,6 +190,11 @@ export class Extension implements vscode.Disposable {
       })
 
       this.subscriptions.push(
+        vscode.window.onDidChangeTextEditorSelection(e => {
+          if (this.modeMap.get(e.textEditor.document) !== Mode.Insert)
+            this.setDecorations(e.textEditor)
+        }),
+
         vscode.workspace.onDidChangeTextDocument(e => {
           const file = this.getFileState(e.document)
 
@@ -153,10 +206,10 @@ export class Extension implements vscode.Disposable {
         this.subscriptions.push(commands[i].register(this))
 
       if (changeConfiguration)
-        vscode.workspace.getConfiguration(extensionName).update('enabled', this.enabled = true)
+        vscode.workspace.getConfiguration(extensionName).update('enabled', true)
     }
 
-    return this.enabled
+    return this.enabled = enabled
   }
 
   dispose() {
