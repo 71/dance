@@ -159,6 +159,11 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       await state.setMode(Mode.Normal)
     }
 
+    if (flags & CommandFlags.ChangeSelections) {
+      // Scroll to cursor if needed
+      editor.revealRange(editor.selection)
+    }
+
     if (!this.command.startsWith('dance.count.'))
       state.currentCount = 0
 
