@@ -262,6 +262,8 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
         })
       }
 
+      editor.revealRange(editor.selection)
+
       return undefined
     }
   }, () => {})
@@ -339,7 +341,7 @@ function registerNextCommand(command: Command, backward: boolean, replace: boole
     if (replace)
       editor.selection = next
     else
-      editor.selections = [...editor.selections, next]
+      editor.selections = [next, ...editor.selections]
   })
 }
 
