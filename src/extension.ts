@@ -21,6 +21,9 @@ class FileState {
  * Global state of the extension.
  */
 export class Extension implements vscode.Disposable {
+  private readonly configurationChangeHandlers = new Map<string, () => void>()
+  private configuration = vscode.workspace.getConfiguration(extensionName)
+
   enabled: boolean = false
 
   typeCommand: vscode.Disposable | undefined = undefined
@@ -43,8 +46,48 @@ export class Extension implements vscode.Disposable {
     this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100)
     this.statusBarItem.tooltip = 'Current mode'
 
-    this.setEnabled(vscode.workspace.getConfiguration(extensionName).get('enabled', true), false)
+    this.setEnabled(this.configuration.get('enabled', true), false)
+
+    this.observePreference<string | null>('insertMode.lineHighlight', null, value => {
+      if (this.insertModeDecorationType !== undefined)
+        this.insertModeDecorationType.dispose()
+
+      if (value === null || value.length === 0)
+        return this.insertModeDecorationType = undefined
+
+      this.insertModeDecorationType = this.createDecorationType(value)
+
+      if (this.getMode() === Mode.Insert && vscode.window.activeTextEditor !== undefined)
+        this.setDecorations(vscode.window.activeTextEditor, this.insertModeDecorationType)
+
+      return
+    }, true)
+
+    this.observePreference<string | null>('normalMode.lineHighlight', 'editor.hoverHighlightBackground', value => {
+      if (this.normalModeDecorationType !== undefined)
+        this.normalModeDecorationType.dispose()
+
+      if (value === null || value.length === 0)
+        return this.normalModeDecorationType = undefined
+
+      this.normalModeDecorationType = this.createDecorationType(value)
+
+      if (this.getMode() === Mode.Normal && vscode.window.activeTextEditor !== undefined)
+        this.setDecorations(vscode.window.activeTextEditor, this.normalModeDecorationType)
+
+      return
+    }, true)
   }
+
+  private createDecorationType(color: string) {
+    return vscode.window.createTextEditorDecorationType({
+      backgroundColor: color[0] === '#' ? color : new vscode.ThemeColor(color),
+      isWholeLine: true,
+    })
+  }
+
+  private normalModeDecorationType?: vscode.TextEditorDecorationType
+  private insertModeDecorationType?: vscode.TextEditorDecorationType
 
   get activeFileState() {
     return this.getFileState(vscode.window.activeTextEditor!.document)
@@ -61,11 +104,6 @@ export class Extension implements vscode.Disposable {
     return state
   }
 
-  readonly normalModeDecoration = vscode.window.createTextEditorDecorationType({
-    backgroundColor: new vscode.ThemeColor('editor.hoverHighlightBackground'),
-    isWholeLine: true,
-  })
-
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
     if (this.modeMap.get(editor.document) === mode)
       return Promise.resolve()
@@ -80,11 +118,13 @@ export class Extension implements vscode.Disposable {
         file.insertPosition = editor.selection.active
       }
 
-      this.clearDecorations(editor)
+      this.clearDecorations(editor, this.normalModeDecorationType)
+      this.setDecorations(editor, this.insertModeDecorationType)
 
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
     } else {
-      this.setDecorations(editor)
+      this.clearDecorations(editor, this.insertModeDecorationType)
+      this.setDecorations(editor, this.normalModeDecorationType)
 
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
     }
@@ -121,11 +161,15 @@ export class Extension implements vscode.Disposable {
     await vscode.commands.executeCommand('setContext', extensionName + '.mode', mode)
   }
 
-  private clearDecorations(editor: vscode.TextEditor) {
-    editor.setDecorations(this.normalModeDecoration, [])
+  private clearDecorations(editor: vscode.TextEditor, decorationType: vscode.TextEditorDecorationType | undefined) {
+    if (decorationType !== undefined)
+      editor.setDecorations(decorationType, [])
   }
 
-  private setDecorations(editor: vscode.TextEditor) {
+  private setDecorations(editor: vscode.TextEditor, decorationType: vscode.TextEditorDecorationType | undefined) {
+    if (decorationType === undefined)
+      return
+
     const lines: number[] = [],
           selections = editor.selections
 
@@ -154,9 +198,9 @@ export class Extension implements vscode.Disposable {
         ranges.push(range)
       }
 
-      editor.setDecorations(this.normalModeDecoration, ranges)
+      editor.setDecorations(decorationType, ranges)
     } else {
-      editor.setDecorations(this.normalModeDecoration, selections)
+      editor.setDecorations(decorationType, selections)
     }
   }
 
@@ -191,14 +235,27 @@ export class Extension implements vscode.Disposable {
 
       this.subscriptions.push(
         vscode.window.onDidChangeTextEditorSelection(e => {
-          if (this.modeMap.get(e.textEditor.document) !== Mode.Insert)
-            this.setDecorations(e.textEditor)
+          const mode = this.modeMap.get(e.textEditor.document)
+
+          if (mode === Mode.Insert)
+            this.setDecorations(e.textEditor, this.insertModeDecorationType)
+          else
+            this.setDecorations(e.textEditor, this.normalModeDecorationType)
         }),
 
         vscode.workspace.onDidChangeTextDocument(e => {
           const file = this.getFileState(e.document)
 
           file.changes.push(...e.contentChanges)
+        }),
+
+        vscode.workspace.onDidChangeConfiguration(e => {
+          this.configuration = vscode.workspace.getConfiguration(extensionName)
+
+          for (const [section, handler] of this.configurationChangeHandlers.entries()) {
+            if (e.affectsConfiguration(section))
+              handler()
+          }
         }),
       )
 
@@ -220,6 +277,23 @@ export class Extension implements vscode.Disposable {
       return
 
     this.typeCommand!.dispose()
+  }
+
+  /**
+   * Listen for changes to the specified preference and calls the given handler when a change occurs.
+   *
+   * Must be called in the constructor.
+   *
+   * @param triggerNow If `true`, the handler will also be triggered immediately with the current value.
+   */
+  private observePreference<T>(section: string, defaultValue: T, handler: (value: T) => void, triggerNow = false) {
+    this.configurationChangeHandlers.set('dance.' + section, () => {
+      handler(this.configuration.get(section, defaultValue))
+    })
+
+    if (triggerNow) {
+      handler(this.configuration.get(section, defaultValue))
+    }
   }
 }
 

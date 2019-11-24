@@ -71,7 +71,17 @@ const pkg = {
         'dance.enabled': {
           type: 'boolean',
           default: true,
-          description: 'Enables or disables the Dance key bindings.',
+          description: 'Enables or disables Dance.',
+        },
+        'dance.normalMode.lineHighlight': {
+          type: ['string', 'null'],
+          default: 'editor.hoverHighlightBackground',
+          markdownDescription: 'Controls the line highlighting applied to active lines in normal mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.',
+        },
+        'dance.insertMode.lineHighlight': {
+          type: ['string', 'null'],
+          default: null,
+          markdownDescription: 'Controls the line highlighting applied to active lines in insert mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.',
         },
       }
     },
