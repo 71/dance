@@ -83,7 +83,7 @@ const pkg = {
           default: null,
           markdownDescription: 'Controls the line highlighting applied to active lines in insert mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.',
         },
-      }
+      },
     },
     commands: Object.values(commands).map(x => ({
       command: x.id,
@@ -91,10 +91,9 @@ const pkg = {
       description: x.description,
       category: 'Dance',
     })),
-    keybindings: Object.values(commands).reduce((bindings, x) =>
-      // @ts-ignore
+    keybindings: Object.values(commands).reduce((bindings: { command: string, key: string, when: string }[], x) =>
       bindings.concat(x.keybindings.map(k => ({ command: x.id, key: k.key, when: k.when })))
-    , [])
+    , []),
   },
 }
 
