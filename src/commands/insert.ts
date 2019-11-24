@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags } from '.'
+import { registerCommand, Command, CommandFlags, CommandDescriptor, Mode } from '.'
 
 
 registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
@@ -61,22 +61,57 @@ registerCommand(Command.newLineBelow, CommandFlags.Edit, editor => builder => {
   }
 })
 
-registerCommand(Command.repeatInsert, CommandFlags.Edit, (editor, state, _, ctx) => {
-  const file = ctx.getFileState(editor.document)
+registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _, ctx) => {
+  const hist = ctx.history.for(editor.document)
 
-  if (file.insertPosition !== undefined) {
-    return builder => {
-      let insertPosition = file.insertPosition!
+  let switchToInsert: undefined | typeof hist.commands[0]
+  let i = hist.commands.length - 1
 
-      for (let i = state.currentCount || 1; i > 0; i--) {
-        for (const change of file.changes) {
-          builder.insert(insertPosition, change.text)
+  for (; i >= 0; i--) {
+    if (hist.commands[i][0].flags & CommandFlags.SwitchToInsert) {
+      switchToInsert = hist.commands[i]
+      break
+    }
+  }
 
-          insertPosition = insertPosition.translate(0, change.text.length)
+  if (switchToInsert === undefined)
+    return
+
+  let start = i
+  let switchToNormal: undefined | typeof hist.commands[0]
+
+  for (i++; i < hist.commands.length; i++) {
+    if (hist.commands[i][0].flags & CommandFlags.SwitchToNormal) {
+      switchToNormal = hist.commands[i]
+      break
+    }
+  }
+
+  if (switchToNormal === undefined)
+    return
+
+  await CommandDescriptor.execute(ctx, editor, ...hist.commands[start])
+  await ctx.setMode(Mode.Insert)
+
+  let end = i
+
+  return (builder: vscode.TextEditorEdit) => {
+    for (let i = state.currentCount || 1; i > 0; i--) {
+      for (let j = start; j <= end; j++) {
+        const state = hist.commands[j][1],
+              changes = hist.changes.get(state)
+
+        if (changes === undefined)
+          continue
+
+        for (const change of changes) {
+          if (change.rangeLength === 0) {
+            builder.insert(editor.selection.active, change.text)
+          } else {
+            builder.replace(editor.selection, change.text)
+          }
         }
       }
     }
-  } else {
-    return undefined
   }
 })

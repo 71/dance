@@ -180,7 +180,15 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
    * Executes the given command using the given state.
    */
   static async execute<I extends InputKind>(state: Extension, editor: vscode.TextEditor, descr: CommandDescriptor<I>, commandState: CommandState<I>) {
-    await descr.action(editor, commandState, { undoStopBefore: true, undoStopAfter: true }, state)
+    let result = descr.action(editor, commandState, { undoStopBefore: true, undoStopAfter: true }, state)
+
+    if (result !== undefined) {
+      if (typeof result === 'object' && typeof result.then === 'function')
+        result = await result
+
+      if (typeof result === 'function')
+        await editor.edit(result)
+    }
   }
 
   /**

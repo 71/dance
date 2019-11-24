@@ -31,12 +31,26 @@ export class HistoryManager {
 
 export class DocumentHistory {
   readonly commands = [] as [CommandDescriptor<any>, CommandState<any>][]
+  readonly changes = new WeakMap<CommandState<any>, vscode.TextDocumentContentChangeEvent[]>()
 
   handleChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
+    if (this.commands.length === 0)
+      return
 
+    const commandState = this.commands[this.commands.length - 1][1]
+    const allChanges = this.changes.get(commandState)
+
+    if (allChanges === undefined)
+      this.changes.set(commandState, changes)
+    else
+      allChanges.push(...changes)
   }
 
   addCommand<I extends InputKind>(command: CommandDescriptor<I>, state: CommandState<I>) {
     this.commands.push([command, state])
+  }
+
+  getChanges<I extends InputKind>(commandState: CommandState<I>) {
+    return this.changes.get(commandState) || [] as readonly vscode.TextDocumentContentChangeEvent[]
   }
 }

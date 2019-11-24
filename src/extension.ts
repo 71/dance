@@ -9,15 +9,6 @@ import { Register, Registers } from './registers'
 export const extensionName = 'dance'
 
 /**
- * File-specific state.
- */
-class FileState {
-  changes: vscode.TextDocumentContentChangeEvent[] = []
-  insertPosition?: vscode.Position
-  mode: Mode = Mode.Normal
-}
-
-/**
  * Global state of the extension.
  */
 export class Extension implements vscode.Disposable {
@@ -37,7 +28,6 @@ export class Extension implements vscode.Disposable {
   readonly statusBarItem: vscode.StatusBarItem
 
   readonly modeMap = new WeakMap<vscode.TextDocument, Mode>()
-  readonly files   = new WeakMap<vscode.TextDocument, FileState>()
 
   readonly registers = new Registers()
   readonly history   = new HistoryManager()
@@ -89,21 +79,6 @@ export class Extension implements vscode.Disposable {
   private normalModeDecorationType?: vscode.TextEditorDecorationType
   private insertModeDecorationType?: vscode.TextEditorDecorationType
 
-  get activeFileState() {
-    return this.getFileState(vscode.window.activeTextEditor!.document)
-  }
-
-  getFileState(doc: vscode.TextDocument) {
-    let state = this.files.get(doc)
-
-    if (state == undefined) {
-      state = new FileState()
-      this.files.set(doc, state)
-    }
-
-    return state
-  }
-
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
     if (this.modeMap.get(editor.document) === mode)
       return Promise.resolve()
@@ -111,13 +86,6 @@ export class Extension implements vscode.Disposable {
     this.modeMap.set(editor.document, mode)
 
     if (mode === Mode.Insert) {
-      const file = this.files.get(editor.document)
-
-      if (file !== undefined) {
-        file.changes.length = 0
-        file.insertPosition = editor.selection.active
-      }
-
       this.clearDecorations(editor, this.normalModeDecorationType)
       this.setDecorations(editor, this.insertModeDecorationType)
 
@@ -241,12 +209,6 @@ export class Extension implements vscode.Disposable {
             this.setDecorations(e.textEditor, this.insertModeDecorationType)
           else
             this.setDecorations(e.textEditor, this.normalModeDecorationType)
-        }),
-
-        vscode.workspace.onDidChangeTextDocument(e => {
-          const file = this.getFileState(e.document)
-
-          file.changes.push(...e.contentChanges)
         }),
 
         vscode.workspace.onDidChangeConfiguration(e => {
