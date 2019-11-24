@@ -73,6 +73,20 @@ const pkg = {
           default: true,
           description: 'Enables or disables the Dance key bindings.',
         },
+        'dance.normalMode.lineNumbers': {
+          type: 'integer',
+          enum: ['off', 'on', 'relative', 'inherit'],
+          default: 'relative',
+          description: 'What line numbering to use in normal mode',
+          enumDescriptions: ['No line numbers', 'Standard line numbering', 'Relative line numbers', 'Use the value from the editor settings'],
+        },
+        'dance.insertMode.lineNumbers': {
+          type: 'integer',
+          enum: ['off', 'on', 'relative', 'inherit'],
+          default: 'default',
+          description: 'What line numbering to use in insert mode',
+          enumDescriptions: ['No line numbers', 'Standard line numbering', 'Relative line numbers', 'Use the value from the editor settings'],
+        }
       }
     },
     commands: Object.values(commands).map(x => ({

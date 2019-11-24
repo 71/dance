@@ -82,15 +82,13 @@ export class Extension implements vscode.Disposable {
 
       this.clearDecorations(editor)
 
-      editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
+      const lineNumberConfig = vscode.workspace.getConfiguration(extensionName).get('insertMode.lineNumbers', 'inherit');
+      this.setLineNumberStyle(editor, lineNumberConfig);
     } else {
       this.setDecorations(editor)
-      const useRelative = vscode.workspace.getConfiguration(extensionName).get('normalModeLineNumbersRelative', true);
-      if (useRelative) {
-        editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
-      }else {
-        editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
-      }
+
+      const lineNumberConfig = vscode.workspace.getConfiguration(extensionName).get('normalMode.lineNumbers', 'relative');
+      this.setLineNumberStyle(editor, lineNumberConfig);
     }
 
     if (vscode.window.activeTextEditor === editor)
@@ -113,6 +111,26 @@ export class Extension implements vscode.Disposable {
     return editor === undefined
       ? Promise.resolve()
       : this.setEditorMode(editor, mode)
+  }
+  
+  setLineNumberStyle(editor: vscode.TextEditor, style:string) {
+    if(style === 'inherit') {
+      style = vscode.workspace.getConfiguration().get('editor.lineNumbers', 'on'); 
+    }
+    switch(style) {
+      case 'on':
+        editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On;
+        break;
+      case 'off':
+        editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Off;
+        break;
+      case 'relative':
+        editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative;
+        break;
+      case 'interval': // This is a real option but its not in vscode.d.ts
+        editor.options.lineNumbers = 3;
+        break;
+    }
   }
 
   private async onActiveModeChanged(mode: Mode) {
