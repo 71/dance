@@ -81,7 +81,7 @@
             "relative",
             "inherit"
           ],
-          "default": "default",
+          "default": "inherit",
           "description": "What line numbering to use in insert mode",
           "enumDescriptions": [
             "No line numbers",

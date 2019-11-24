@@ -83,7 +83,7 @@ const pkg = {
         'dance.insertMode.lineNumbers': {
           type: 'integer',
           enum: ['off', 'on', 'relative', 'inherit'],
-          default: 'default',
+          default: 'inherit',
           description: 'What line numbering to use in insert mode',
           enumDescriptions: ['No line numbers', 'Standard line numbering', 'Relative line numbers', 'Use the value from the editor settings'],
         }
