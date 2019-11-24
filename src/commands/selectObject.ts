@@ -1,7 +1,7 @@
 // Objects: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
 import * as vscode from 'vscode'
 
-import { TextBuffer }   from '../utils/textBuffer'
+import { TextBuffer } from '../utils/textBuffer'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
@@ -33,27 +33,21 @@ const objectTypePromptItems: [string, string][] = [
 
 let lastObjectSelectOperation: [boolean, number, boolean, boolean, boolean] | undefined
 
-function findPairObject(text: TextBuffer, reverse: boolean, start: string, end: string, inner: boolean): vscode.Position | undefined {
-  let balance = start === end ? -1 : reverse ? -1 : 1
-  let diff = reverse ? -1 : 1
+function findPairObject(text: TextBuffer, backwards: boolean, start: string, end: string, inner: boolean): vscode.Position | undefined {
+  let balance = start === end || backwards ? -1 : 1
+  let diff = backwards ? -1 : 1
 
-  for (let i = balance, c = text.char(i); c !== undefined; c = text.char(i += diff)) {
+  for (let i = backwards ? -1 : 0, c = text.char(i); c !== undefined; c = text.char(i += diff)) {
     if (c === start) {
-      if (text.char(i - 1) === '\\')
-        continue
-
       balance++
     } else if (c === end) {
-      if (text.char(i - 1) === '\\')
-        continue
-
       balance--
     } else {
       continue
     }
 
     if (balance === 0) {
-      if (inner !== reverse)
+      if (inner !== backwards)
         return text.position(i)
       else
         return text.position(i + 1)
@@ -63,8 +57,8 @@ function findPairObject(text: TextBuffer, reverse: boolean, start: string, end: 
   return undefined
 }
 
-function findObjectWithChars(text: TextBuffer, reverse: boolean, inner: boolean, ok: (c: string) => boolean): vscode.Position | undefined {
-  let diff = reverse ? -1 : 1
+function findObjectWithChars(text: TextBuffer, backwards: boolean, inner: boolean, ok: (c: string) => boolean): vscode.Position | undefined {
+  let diff = backwards ? -1 : 1
   let i = diff
 
   for (let c = text.char(i); c !== undefined; c = text.char(i += diff)) {
@@ -72,12 +66,12 @@ function findObjectWithChars(text: TextBuffer, reverse: boolean, inner: boolean,
       break
   }
 
-  return inner !== reverse
+  return inner !== backwards
     ? text.position(i)
     : text.position(i + 1)
 }
 
-function findSentenceStart(text: TextBuffer, inner: boolean): vscode.Position {
+function findSentenceStart(text: TextBuffer): vscode.Position {
   let balance = 0
 
   for (let i = 0, c = text.char(i);; c = text.char(--i)) {
@@ -117,7 +111,7 @@ function findSentenceEnd(text: TextBuffer, inner: boolean): vscode.Position {
   }
 }
 
-function findParagraphStart(text: TextBuffer, inner: boolean): vscode.Position {
+function findParagraphStart(text: TextBuffer): vscode.Position {
   let balance = 0
 
   for (let i = 0, c = text.char(i);; c = text.char(--i)) {
@@ -135,7 +129,7 @@ function findParagraphStart(text: TextBuffer, inner: boolean): vscode.Position {
   }
 }
 
-function findParagraphEnd(text: TextBuffer, inner: boolean): vscode.Position {
+function findParagraphEnd(text: TextBuffer): vscode.Position {
   let balance = 0
 
   for (let i = 0, c = text.char(i);; c = text.char(++i)) {
@@ -153,7 +147,7 @@ function findParagraphEnd(text: TextBuffer, inner: boolean): vscode.Position {
   }
 }
 
-function findIndentBlockStart(text: TextBuffer, inner: boolean): vscode.Position {
+function findIndentBlockStart(text: TextBuffer): vscode.Position {
   let line = text.line
 
   while (line.isEmptyOrWhitespace) {
@@ -181,7 +175,7 @@ function findIndentBlockStart(text: TextBuffer, inner: boolean): vscode.Position
   }
 }
 
-function findIndentBlockEnd(text: TextBuffer, inner: boolean): vscode.Position {
+function findIndentBlockEnd(text: TextBuffer): vscode.Position {
   let line = text.line
   let lastLine = text.doc.lineCount - 1
 
@@ -210,7 +204,7 @@ function findIndentBlockEnd(text: TextBuffer, inner: boolean): vscode.Position {
   }
 }
 
-function findArgumentStart(text: TextBuffer, inner: boolean): vscode.Position {
+function findArgumentStart(text: TextBuffer): vscode.Position {
   let bbalance = 0,
       pbalance = 0,
       strOpen = undefined as string | undefined
@@ -241,7 +235,7 @@ function findArgumentStart(text: TextBuffer, inner: boolean): vscode.Position {
   }
 }
 
-function findArgumentEnd(text: TextBuffer, inner: boolean): vscode.Position {
+function findArgumentEnd(text: TextBuffer): vscode.Position {
   let bbalance = 0,
       pbalance = 0,
       strOpen = undefined as string | undefined
@@ -310,16 +304,16 @@ function findObjectStart(text: TextBuffer, type: number, inner: boolean): vscode
 
 
     case 9: // Sentence
-      return findSentenceStart(text, inner)
+      return findSentenceStart(text)
 
     case 10: // Paragraph
-      return findParagraphStart(text, inner)
+      return findParagraphStart(text)
 
     case 12: // Indentation block
-      return findIndentBlockStart(text, inner)
+      return findIndentBlockStart(text)
 
     case 14: // Argument
-      return findArgumentStart(text, inner)
+      return findArgumentStart(text)
   }
 
   return undefined
@@ -366,13 +360,13 @@ function findObjectEnd(text: TextBuffer, type: number, inner: boolean): vscode.P
       return findSentenceEnd(text, inner)
 
     case 10: // Paragraph
-      return findParagraphEnd(text, inner)
+      return findParagraphEnd(text)
 
     case 12: // Indentation block
-      return findIndentBlockEnd(text, inner)
+      return findIndentBlockEnd(text)
 
     case 14: // Argument
-      return findArgumentEnd(text, inner)
+      return findArgumentEnd(text)
   }
 
   return undefined
@@ -442,7 +436,7 @@ function performObjectSelect(editor: vscode.TextEditor, count: number, inner: bo
         end = selection.start
     }
 
-    return selection.isReversed
+    return selection.isReversed && !selection.isEmpty
       ? new vscode.Selection(end, start)
       : new vscode.Selection(start, end)
   })
@@ -453,8 +447,8 @@ function registerObjectSelect(command: Command, inner: boolean, extend: boolean,
   // Start === false    : Select only to end
   // Start === undefined: Select to both start and end
 
-  registerCommand(command, CommandFlags.ChangeSelections, InputKind.ListOneItem, objectTypePromptItems, async (editor, state) => {
-    await performObjectSelect(editor, state.currentCount || 1, inner, state.input, extend, start !== false, start !== true)
+  registerCommand(command, CommandFlags.ChangeSelections, InputKind.ListOneItem, objectTypePromptItems, (editor, state) => {
+    performObjectSelect(editor, state.currentCount || 1, inner, state.input, extend, start !== false, start !== true)
   })
 }
 

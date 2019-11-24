@@ -48,7 +48,7 @@ export class TextBuffer {
       let line = this.line.lineNumber
       let lastLine = this.doc.lineCount
 
-      while (offset > this.lineOffset) {
+      while (offset >= this.lineEnd) {
         if (line === lastLine - 1)
           return undefined
 
