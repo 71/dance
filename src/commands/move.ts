@@ -359,20 +359,36 @@ registerToPreviousWord(Command.selectWordAltPreviousExtend, true , isNonWsWord)
 // Line selecting key bindings (x, X, alt+[xX], home, end)
 // ===============================================================================================
 
-registerCommand(Command.selectLine, CommandFlags.ChangeSelections, editor => {
-  editor.selections = editor.selections.map(x => {
-    const line = editor.document.lineAt(x.active)
+registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+  if (currentCount === 0 || currentCount === 1) {
+    editor.selections = editor.selections.map(x => {
+      const line = editor.document.lineAt(x.active)
 
-    return new vscode.Selection(line.rangeIncludingLineBreak.start, line.rangeIncludingLineBreak.end)
-  })
+      return new vscode.Selection(line.rangeIncludingLineBreak.start, line.rangeIncludingLineBreak.end)
+    })
+  } else {
+    editor.selections = editor.selections.map(x => {
+      const line = editor.document.lineAt(Math.min(x.active.line + currentCount - 1, editor.document.lineCount - 1))
+
+      return new vscode.Selection(line.rangeIncludingLineBreak.start, line.rangeIncludingLineBreak.end)
+    })
+  }
 })
 
-registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, editor => {
-  editor.selections = editor.selections.map(x => {
-    const line = editor.document.lineAt(x.active)
+registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+  if (currentCount === 0 || currentCount === 1) {
+    editor.selections = editor.selections.map(x => {
+      const line = editor.document.lineAt(x.active)
 
-    return new vscode.Selection(x.anchor.with(undefined, 0), line.rangeIncludingLineBreak.end)
-  })
+      return new vscode.Selection(x.anchor.with(undefined, 0), line.rangeIncludingLineBreak.end)
+    })
+  } else {
+    editor.selections = editor.selections.map(x => {
+      const line = editor.document.lineAt(Math.min(x.active.line + currentCount - 1, editor.document.lineCount - 1))
+
+      return new vscode.Selection(x.anchor.with(undefined, 0), line.rangeIncludingLineBreak.end)
+    })
+  }
 })
 
 registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, editor => {
