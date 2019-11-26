@@ -66,12 +66,12 @@ const pkg = {
   contributes: {
     configuration: {
       type: 'object',
-      title: 'Dance configuration',
+      title: 'Dance',
       properties: {
         'dance.enabled': {
           type: 'boolean',
           default: true,
-          description: 'Enables or disables Dance.',
+          description: 'Controls whether the Dance keybindings are enabled.',
         },
         'dance.normalMode.lineHighlight': {
           type: ['string', 'null'],
