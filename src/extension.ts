@@ -32,6 +32,13 @@ export class Extension implements vscode.Disposable {
   readonly registers = new Registers()
   readonly history   = new HistoryManager()
 
+  readonly selectionDecorationType = vscode.window.createTextEditorDecorationType(
+    <vscode.DecorationRenderOptions> {
+      color:  {id: "editor.foreground" },
+      backgroundColor:  {id: "editor.selectionBackground" }
+    }
+  )
+
   constructor() {
     this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100)
     this.statusBarItem.tooltip = 'Current mode'
@@ -69,6 +76,11 @@ export class Extension implements vscode.Disposable {
     }, true)
   }
 
+  prepareInsertion(editor: vscode.TextEditor, pos: 'before' | 'after' | 'start' | 'end' | 'above' | 'below') {
+    this.history.for(editor.document).setLastSelections(editor.document, editor.selections)
+    editor.setDecorations(this.selectionDecorationType, editor.selections.map( sel => new vscode.Range( sel.start, sel.end) ))
+  }
+
   private createDecorationType(color: string) {
     return vscode.window.createTextEditorDecorationType({
       backgroundColor: color[0] === '#' ? color : new vscode.ThemeColor(color),
@@ -91,10 +103,18 @@ export class Extension implements vscode.Disposable {
 
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
     } else {
+      this.clearDecorations(editor, this.selectionDecorationType)
       this.clearDecorations(editor, this.insertModeDecorationType)
       this.setDecorations(editor, this.normalModeDecorationType)
 
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
+
+      //! Restore selections
+      let documentHistory = this.history.for(editor.document)
+      let lastSels = documentHistory.getLastSelections(editor.document)
+      if(lastSels.length > 0 ) {
+        editor.selections = lastSels
+      }
     }
 
     if (vscode.window.activeTextEditor === editor)

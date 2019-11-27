@@ -34,13 +34,15 @@ const combineOpts = [
 
 // }
 
-// registerCommand(Command.marksSaveSelections, async (editor, state) => {
-//   const register = state.currentRegister || state.registers.caret
-// })
+registerCommand(Command.marksSaveSelections, CommandFlags.IgnoreInHistory, async (editor, state, _, ctx) => {
+  const register = ctx.currentRegister || ctx.registers.caret
+  ctx.history.for(editor.document).setSelectionsForMark(editor.document, register, editor.selections)
+})
 
-// registerCommand(Command.marksRestoreSelections, async (editor, state) => {
-//   const register = state.currentRegister || state.registers.caret
-// })
+registerCommand(Command.marksRestoreSelections, CommandFlags.IgnoreInHistory, async (editor, state, _, ctx) => {
+  const register = ctx.currentRegister || ctx.registers.caret
+  editor.selections = ctx.history.for(editor.document).getSelectionsForMark(editor.document,register)
+})
 
 // registerCommand(Command.marksCombineSelectionsFromCurrent, async (editor, state) => {
 

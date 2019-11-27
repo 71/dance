@@ -3,15 +3,18 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, CommandDescriptor, Mode } from '.'
 
 
-registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
+registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, _, __, ctx) => {
+  ctx.prepareInsertion(editor, 'before')
   editor.selections = editor.selections.map(x => new vscode.Selection(x.start, x.start))
 })
 
-registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
+registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, _, __, ctx) => {
+  ctx.prepareInsertion(editor, 'after')
   editor.selections = editor.selections.map(x => new vscode.Selection(x.end, x.end))
 })
 
-registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
+registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, _, __, ctx) => {
+  ctx.prepareInsertion(editor, 'start')
   editor.selections = editor.selections.map(x => {
     const anchor = editor.document.lineAt(x.active.line).range.start
 
@@ -19,7 +22,8 @@ registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | Command
   })
 })
 
-registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
+registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, _, __, ctx) => {
+  ctx.prepareInsertion(editor, 'end')
   editor.selections = editor.selections.map(x => {
     const anchor = editor.document.lineAt(x.active.line).range.end
 
@@ -27,11 +31,13 @@ registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFl
   })
 })
 
-registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsert, () => {
+registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsert, (editor, _, __, ctx) => {
+  ctx.prepareInsertion(editor, 'above')
   return vscode.commands.executeCommand('editor.action.insertLineBefore')
 })
 
-registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsert, () => {
+registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsert, (editor, _, __, ctx) => {
+  ctx.prepareInsertion(editor, 'below')
   return vscode.commands.executeCommand('editor.action.insertLineAfter')
 })
 
