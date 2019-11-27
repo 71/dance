@@ -23,7 +23,7 @@ const jumps: [string, string][] = [
   ['.', 'go to last buffer modification position'],
 ]
 
-function executeGoto(gotoType: number, editor: vscode.TextEditor, extend: boolean) {
+function executeGoto(gotoType: number, editor: vscode.TextEditor, ctx: Extension, extend: boolean) {
   switch (gotoType) {
     case 0: // go to line start
       executeGotoLine(editor, extend, 'start')
@@ -89,6 +89,10 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, extend: boolea
       }))
 
     case 12: // go to last buffer modification position
+      let lastSel = ctx.history.for(editor.document).lastBufferModification
+      if(lastSel) {
+        editor.selections = [new vscode.Selection(lastSel.start, lastSel.start)]
+      }
       break
   }
 
@@ -163,7 +167,7 @@ function executeGotoLastLine(editor: vscode.TextEditor, extend: boolean, gotoLas
 }
 
 
-registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state, _, __) => {
+registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state, _, ctx) => {
   if (state.input === null) {
     let line = state.currentCount - 1
 
@@ -174,11 +178,11 @@ registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneIt
 
     return
   } else {
-    return executeGoto(state.input, editor, false)
+    return executeGoto(state.input, editor, ctx, false)
   }
 })
 
-registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state, _, __) => {
+registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state, _, ctx) => {
   if (state.input === null) {
     let line = state.currentCount - 1
 
@@ -189,6 +193,6 @@ registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.Lis
 
     return
   } else {
-    return executeGoto(state.input, editor, true)
+    return executeGoto(state.input, editor, ctx, true)
   }
 })
