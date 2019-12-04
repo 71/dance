@@ -91,7 +91,6 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _
     return
 
   await CommandDescriptor.execute(ctx, editor, ...hist.commands[start])
-  await ctx.setMode(Mode.Insert)
 
   let end = i
 
