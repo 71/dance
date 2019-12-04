@@ -338,10 +338,7 @@ function registerNextCommand(command: Command, backward: boolean, replace: boole
     if (next === undefined)
       return
 
-    if (replace)
-      editor.selection = next
-    else
-      editor.selections = [next, ...editor.selections]
+    editor.selections = [next, ...editor.selections.slice(replace ? 1 : 0)]
   })
 }
 
