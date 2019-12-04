@@ -291,17 +291,19 @@ function setSearchSelection(source: string, editor: vscode.TextEditor, state: Ex
   return
 }
 
+function escapeRegExp(str: string) {
+  // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, (editor, _, __, state) => {
-  return setSearchSelection(editor.document.getText(editor.selection), editor, state)
+  let text = escapeRegExp(editor.document.getText(editor.selection))
+
+  return setSearchSelection(text, editor, state)
 })
 
 function isSmartSelectionPart(char: string) {
   return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9')
-}
-
-function escapeRegExp(str: string) {
-  // TODO: improve that
-  return str.replace('/', '\\/')
 }
 
 registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, (editor, _, __, state) => {
