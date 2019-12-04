@@ -239,7 +239,7 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
       if (extend) {
         if (backward)
           editor.selections = initialSelections.map(selection => {
-            const newSelection = searchBackward(editor.document, selection.anchor, regex, false)
+            const newSelection = searchBackward(editor.document, selection.anchor, regex, true)
 
             return newSelection === undefined
               ? selection
@@ -247,7 +247,7 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
           })
         else
           editor.selections = initialSelections.map(selection => {
-            const newSelection = search(editor.document, selection.active, regex, false)
+            const newSelection = search(editor.document, selection.active, regex, true)
 
             return newSelection === undefined
               ? selection
@@ -256,8 +256,8 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
       } else {
         editor.selections = initialSelections.map(selection => {
           return (backward
-            ? searchBackward(editor.document, selection.anchor, regex, false)
-            : search(editor.document, selection.active, regex, false))
+            ? searchBackward(editor.document, selection.anchor, regex, true)
+            : search(editor.document, selection.active, regex, true))
           || selection
         })
       }
