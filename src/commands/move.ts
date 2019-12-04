@@ -213,7 +213,7 @@ function isBlank(c: string) {
   return c == ' ' || c == '\t'
 }
 
-function skipWhile(document: vscode.TextDocument, pos: vscode.Position, backwards: boolean, cond: (c: string) => boolean) {
+function skipWhile(document: vscode.TextDocument, pos: vscode.Position, backwards: boolean, dontSkipLine: boolean, cond: (c: string) => boolean) {
   const diff = backwards ? -1 : 1
 
   let { line } = pos
@@ -225,10 +225,13 @@ function skipWhile(document: vscode.TextDocument, pos: vscode.Position, backward
       : (backwards ? text.length - 1   : 0)
 
     while (character >= 0 && character < text.length) {
-      if (!cond(text[character]))
+      if (!cond(text[character]) || (dontSkipLine && backwards && character === 0))
         return new vscode.Position(line, character)
 
       character += diff
+
+      if (dontSkipLine && !backwards && character === text.length)
+        return new vscode.Position(line, character)
     }
 
     line += diff
@@ -273,7 +276,7 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
           return defaultSelection
 
         if (end) {
-          pos = skipWhile(editor.document, pos, false, isBlank)
+          pos = skipWhile(editor.document, pos, false, false, isBlank)
 
           if (pos === undefined)
             return defaultSelection
@@ -282,15 +285,15 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
         let ch = editor.document.lineAt(pos).text[pos.character]
 
         if (isWord(ch))
-          pos = skipWhile(editor.document, pos, false, isWord)
+          pos = skipWhile(editor.document, pos, false, true, isWord)
         else if (isPunctuation(ch))
-          pos = skipWhile(editor.document, pos, false, isPunctuation)
+          pos = skipWhile(editor.document, pos, false, true, isPunctuation)
 
         if (pos === undefined)
           return defaultSelection
 
         if (!end) {
-          pos = skipWhile(editor.document, pos, false, isBlank)
+          pos = skipWhile(editor.document, pos, false, false, isBlank)
 
           if (pos === undefined)
             return defaultSelection
@@ -317,7 +320,7 @@ function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (
         if (pos === undefined)
           return defaultSelection
 
-        pos = skipWhile(editor.document, pos, true, isBlank)
+        pos = skipWhile(editor.document, pos, true, true, isBlank)
 
         if (pos === undefined)
           return defaultSelection
@@ -325,14 +328,14 @@ function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (
         let ch = editor.document.lineAt(pos).text[pos.character]
 
         if (isWord(ch))
-          pos = skipWhile(editor.document, pos, true, isWord)
+          pos = skipWhile(editor.document, pos, true, true, isWord)
         else if (isPunctuation(ch))
-          pos = skipWhile(editor.document, pos, true, isPunctuation)
+          pos = skipWhile(editor.document, pos, true, true, isPunctuation)
 
         if (pos === undefined)
           return defaultSelection
 
-        selection = new vscode.Selection(anchor, pos.translate(0, 1))
+        selection = new vscode.Selection(anchor, pos.character === 0 ? pos : pos.translate(0, 1))
       }
 
       return selection
