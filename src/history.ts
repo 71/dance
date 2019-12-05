@@ -87,20 +87,20 @@ export class DocumentHistory {
    */
   private updateChanges(offsetSelections: OffsetSelection[], changes: PreparedChanges[]) {
     return offsetSelections.map( s => {
-      if(changes.length == 0) return s
+      if (changes.length == 0) return s
       // If current selection is before all changes...
-      if(s.end < changes[0].initialRemoveRange.start) return s
+      if (s.end < changes[0].initialRemoveRange.start) return s
       // If current selection is after all changes...
-      if(s.start > changes[changes.length - 1].initialRemoveRange.end) return s.translateSelection(changes[changes.length - 1].absOffsetChange)
+      if (s.start > changes[changes.length - 1].initialRemoveRange.end) return s.translateSelection(changes[changes.length - 1].absOffsetChange)
 
       let filteredChanges = changes.filter( c => s.intersects(c.initialRemoveRange))
       //! Apply all changes
       //! The changes are ordered and hence already should have the right precomputed offset
-      if(filteredChanges.length > 0) {
+      if (filteredChanges.length > 0) {
         let newSel: OffsetSelection | undefined = s.translateSelection(filteredChanges[0].absOffsetChangeBefore)
         for(let i = 0; i < filteredChanges.length; ++i) {
           newSel = newSel.removeAndInsert(filteredChanges[i].remove, filteredChanges[i].insert)
-          if(newSel === undefined) {
+          if (newSel === undefined) {
             return undefined
           }
         }
@@ -112,7 +112,7 @@ export class DocumentHistory {
 
   handleChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
     // Handle marks and selections
-    if(changes.length > 0) {
+    if (changes.length > 0) {
       this.lastBufferModification = changes[0].range
       let changesAccum = this.prepareChanges(changes)
       this.lastSelections = this.updateChanges(this.lastSelections, changesAccum)
@@ -156,7 +156,7 @@ export class DocumentHistory {
 
   getSelectionsForMark(document: vscode.TextDocument, register: Register) {
     let offSel = this.marks.get(register)
-    if(offSel) {
+    if (offSel) {
       return offSel.map( offsetSel => offsetSel.toVSCodeSelection(document))
     }
     return [] as vscode.Selection[]

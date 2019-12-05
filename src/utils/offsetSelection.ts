@@ -51,11 +51,11 @@ export class  OffsetRange {
     }
 
     shiftEnd(delta: number) {
-      return this.shift({start: 0, end: delta})
+      return this.shift({ start: 0, end: delta})
     }
 
     shiftStart(delta: number) {
-      return this.shift({start: delta, end: 0})
+      return this.shift({ start: delta, end: 0})
     }
 
     contains(other: OffsetRange) {
@@ -209,7 +209,7 @@ export class OffsetSelection extends OffsetRange {
                             ? (other.length - (int ? int.length : 0))
                             : 0)
         let shiftAfter  = (int ? int.length : 0)
-        return this.shiftSelectionByPositions({start: shiftBefore * -1, end: (shiftBefore+shiftAfter) * -1})
+        return this.shiftSelectionByPositions({ start: shiftBefore * -1, end: (shiftBefore+shiftAfter) * -1})
       }
     }
 

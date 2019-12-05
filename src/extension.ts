@@ -34,8 +34,8 @@ export class Extension implements vscode.Disposable {
 
   readonly selectionDecorationType = vscode.window.createTextEditorDecorationType(
     <vscode.DecorationRenderOptions> {
-      color:  {id: "editor.foreground" },
-      backgroundColor:  {id: "editor.selectionBackground" }
+      color:  { id: "editor.foreground" },
+      backgroundColor:  { id: "editor.selectionBackground" }
     }
   )
 
@@ -112,7 +112,7 @@ export class Extension implements vscode.Disposable {
       //! Restore selections
       let documentHistory = this.history.for(editor.document)
       let lastSels = documentHistory.getLastSelections(editor.document)
-      if(lastSels.length > 0 ) {
+      if (lastSels.length > 0 ) {
         editor.selections = lastSels
       }
     }
