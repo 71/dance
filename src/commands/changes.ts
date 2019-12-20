@@ -58,7 +58,7 @@ registerCommand(Command.yank, CommandFlags.None, (editor, state, _, ctx) => {
 function getContentToPaste(editor: vscode.TextEditor, state: CommandState<any>, ctx: Extension) {
   return getRegister(state, ctx)
     .get(editor)
-    .then(reg => reg && reg[0] ? reg[0] : undefined)
+    .then(reg => reg !== undefined && reg[0] ? reg[0] : undefined)
 }
 
 registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, _, ctx) => {
@@ -67,9 +67,18 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, _, 
   if (content === undefined)
     return undefined
 
-  return (builder: vscode.TextEditorEdit) => {
-    for (const selection of editor.selections)
-      builder.insert(selection.end, content)
+  const shouldInsertInNewLine = content.endsWith('\n')
+
+  if (shouldInsertInNewLine) {
+    return (builder: vscode.TextEditorEdit) => {
+      for (const selection of editor.selections)
+        builder.insert(selection.end.with(selection.end.line + 1, 0), content)
+    }
+  } else {
+    return (builder: vscode.TextEditorEdit) => {
+      for (const selection of editor.selections)
+        builder.insert(selection.end, content)
+    }
   }
 })
 
@@ -79,9 +88,18 @@ registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, _,
   if (content === undefined)
     return
 
-  return (builder: vscode.TextEditorEdit) => {
-    for (const selection of editor.selections)
-      builder.insert(selection.start, content)
+  const shouldInsertInNewLine = content.endsWith('\n')
+
+  if (shouldInsertInNewLine) {
+    return (builder: vscode.TextEditorEdit) => {
+      for (const selection of editor.selections)
+        builder.insert(selection.start.with(undefined, 0), content)
+    }
+  } else {
+    return (builder: vscode.TextEditorEdit) => {
+      for (const selection of editor.selections)
+        builder.insert(selection.start, content)
+    }
   }
 })
 
@@ -91,14 +109,24 @@ registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | Comman
   if (content === undefined)
     return
 
+  const shouldInsertInNewLine = content.endsWith('\n')
   const newSelections = [] as vscode.Selection[]
 
-  await editor.edit(builder => {
-    for (const selection of editor.selections) {
-      builder.insert(selection.end, content)
-      newSelections.push(getSelectionFromStart(editor.document, content, selection.end))
-    }
-  }, undoStops)
+  if (shouldInsertInNewLine) {
+    await editor.edit(builder => {
+      for (const selection of editor.selections) {
+        builder.insert(selection.end.with(selection.end.line + 1, 0), content)
+        newSelections.push(getSelectionFromStart(editor.document, content, selection.end.with(selection.end.line + 1, 0)))
+      }
+    }, undoStops)
+  } else {
+    await editor.edit(builder => {
+      for (const selection of editor.selections) {
+        builder.insert(selection.end, content)
+        newSelections.push(getSelectionFromStart(editor.document, content, selection.end))
+      }
+    }, undoStops)
+  }
 
   editor.selections = newSelections
 })
@@ -109,14 +137,24 @@ registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | Comma
   if (content === undefined)
     return
 
+  const shouldInsertInNewLine = content.endsWith('\n')
   const newSelections = [] as vscode.Selection[]
 
-  await editor.edit(builder => {
-    for (const selection of editor.selections) {
-      builder.insert(selection.start, content)
-      newSelections.push(getSelectionFromEnd(editor.document, content, selection.start))
-    }
-  }, undoStops)
+  if (shouldInsertInNewLine) {
+    await editor.edit(builder => {
+      for (const selection of editor.selections) {
+        builder.insert(selection.start.with(undefined, 0), content)
+        newSelections.push(getSelectionFromStart(editor.document, content, selection.start.with(undefined, 0)))
+      }
+    }, undoStops)
+  } else {
+    await editor.edit(builder => {
+      for (const selection of editor.selections) {
+        builder.insert(selection.start, content)
+        newSelections.push(getSelectionFromEnd(editor.document, content, selection.start))
+      }
+    }, undoStops)
+  }
 
   editor.selections = newSelections
 })
