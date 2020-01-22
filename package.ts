@@ -9,8 +9,8 @@ import { commands } from './commands'
 const pkg = {
   name: 'dance',
   displayName: 'Dance',
-  description: 'Make those cursors dance.',
-  version: '0.1.7',
+  description: 'Make those cursors dance with Kakoune-inspired keybindings.',
+  version: '0.1.9',
   license: 'MIT',
 
   publisher: 'gregoire',

@@ -239,7 +239,7 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
       if (extend) {
         if (backward)
           editor.selections = initialSelections.map(selection => {
-            const newSelection = searchBackward(editor.document, selection.anchor, regex, false)
+            const newSelection = searchBackward(editor.document, selection.anchor, regex, true)
 
             return newSelection === undefined
               ? selection
@@ -247,7 +247,7 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
           })
         else
           editor.selections = initialSelections.map(selection => {
-            const newSelection = search(editor.document, selection.active, regex, false)
+            const newSelection = search(editor.document, selection.active, regex, true)
 
             return newSelection === undefined
               ? selection
@@ -256,8 +256,8 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
       } else {
         editor.selections = initialSelections.map(selection => {
           return (backward
-            ? searchBackward(editor.document, selection.anchor, regex, false)
-            : search(editor.document, selection.active, regex, false))
+            ? searchBackward(editor.document, selection.anchor, regex, true)
+            : search(editor.document, selection.active, regex, true))
           || selection
         })
       }
@@ -291,17 +291,19 @@ function setSearchSelection(source: string, editor: vscode.TextEditor, state: Ex
   return
 }
 
+function escapeRegExp(str: string) {
+  // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, (editor, _, __, state) => {
-  return setSearchSelection(editor.document.getText(editor.selection), editor, state)
+  let text = escapeRegExp(editor.document.getText(editor.selection))
+
+  return setSearchSelection(text, editor, state)
 })
 
 function isSmartSelectionPart(char: string) {
   return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9')
-}
-
-function escapeRegExp(str: string) {
-  // TODO: improve that
-  return str.replace('/', '\\/')
 }
 
 registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, (editor, _, __, state) => {
@@ -338,10 +340,7 @@ function registerNextCommand(command: Command, backward: boolean, replace: boole
     if (next === undefined)
       return
 
-    if (replace)
-      editor.selection = next
-    else
-      editor.selections = [next, ...editor.selections]
+    editor.selections = [next, ...editor.selections.slice(replace ? 1 : 0)]
   })
 }
 

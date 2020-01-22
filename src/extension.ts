@@ -196,12 +196,36 @@ export class Extension implements vscode.Disposable {
     if (enabled === this.enabled)
       return
 
+    this.subscriptions.splice(0).forEach(x => x.dispose())
+
     if (!enabled) {
+      const restoreLineNumbering = (visibleEditors: vscode.TextEditor[]) => {
+        for (const editor of visibleEditors) {
+          if (!this.modeMap.delete(editor.document))
+            continue
+
+          const lineNumbering = vscode.workspace.getConfiguration('editor').get('lineNumbers')
+
+          editor.options.lineNumbers = lineNumbering === 'on'       ? vscode.TextEditorLineNumbersStyle.On
+                                     : lineNumbering === 'relative' ? vscode.TextEditorLineNumbersStyle.Relative
+                                     : lineNumbering === 'interval' ? vscode.TextEditorLineNumbersStyle.Relative + 1
+                                     :                                vscode.TextEditorLineNumbersStyle.Off
+
+          this.clearDecorations(editor, this.normalModeDecorationType)
+          this.clearDecorations(editor, this.insertModeDecorationType)
+        }
+      }
+
       this.statusBarItem.hide()
 
       this.setMode(Mode.Disabled)
       this.changeEditorCommand!.dispose()
-      this.subscriptions.splice(0).forEach(x => x.dispose())
+
+      this.subscriptions.push(
+        vscode.window.onDidChangeVisibleTextEditors(restoreLineNumbering)
+      )
+
+      restoreLineNumbering(vscode.window.visibleTextEditors)
 
       if (changeConfiguration)
         vscode.workspace.getConfiguration(extensionName).update('enabled', false)

@@ -144,9 +144,17 @@ for (const id in yaml) {
   const command = yaml[id]
   const keys = parseKeys(command.keys || '')
 
+  const docKeys = keys
+    .map(({ key, when }) => `\`${key.replace(/(\+|^)[a-z]/g, x => x.toUpperCase())}\` (\`${when}\`)`)
+    .join(', ')
+
+  const docStringKeys = docKeys.length === 0
+    ? ''
+    : `\n *\n * Default key${keys.length === 1 ? '' : 's'}: ${docKeys}.`
+
   commands.push(id)
 
-  stream.write(`/** ${command.descr} */\n`)
+  stream.write(`/**\n * ${command.descr}${docStringKeys}\n */\n`)
   stream.write(`export const ${writable(id)}: ICommand & { readonly id: '${prefix}.${id}' } = {\n`)
   stream.write(`  id         : '${prefix}.${id}',\n`)
   stream.write(`  title      : '${command.title}',\n`)
@@ -165,10 +173,6 @@ for (const id in yaml) {
   }
 
   stream.write(`}\n`)
-
-  const docKeys = keys
-    .map(({ key, when }) => `\`${key.replace(/(\+|^)[a-z]/g, x => x.toUpperCase())}\` (\`${when}\`)`)
-    .join(', ')
 
   doc.write(`| \`${prefix}.${id}\` | ${command.title} | ${command.descr} | ${docKeys} |\n`)
 }

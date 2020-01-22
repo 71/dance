@@ -81,7 +81,7 @@ registerCommand(Command.splitLines, CommandFlags.ChangeSelections, editor => {
     newSelections.push(new vscode.Selection(selection.end.with(undefined, 0), selection.end))
 
     // Add intermediate lines
-    for (let i = selection.anchor.line + 1; i < selection.active.line; i++) {
+    for (let i = selection.start.line + 1; i < selection.end.line; i++) {
       const selectionRange = editor.document.lineAt(i).range
 
       newSelections.push(new vscode.Selection(selectionRange.start, selectionRange.end))
