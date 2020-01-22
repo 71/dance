@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { CommandDescriptor, CommandState, InputKind } from './commands'
-import { OffsetRange, OffsetSelection } from './utils/offsetSelection'
+import { OffsetRange, OffsetSelection, OffsetEdgeTransformationBehaviour } from './utils/offsetSelection'
 import { Register } from './registers'
 
 
@@ -142,8 +142,8 @@ export class DocumentHistory {
     return this.changes.get(commandState) || [] as readonly vscode.TextDocumentContentChangeEvent[]
   }
 
-  setLastSelections(document: vscode.TextDocument, newSelections: vscode.Selection[]) {
-    this.lastSelections = newSelections.map( sel => new OffsetSelection(document.offsetAt(sel.anchor), document.offsetAt(sel.active)))
+  setLastSelections(document: vscode.TextDocument, newSelections: vscode.Selection[], transformationBehaviour: OffsetEdgeTransformationBehaviour = OffsetEdgeTransformationBehaviour.ExclusiveStart) {
+    this.lastSelections = newSelections.map( sel => new OffsetSelection(document.offsetAt(sel.anchor), document.offsetAt(sel.active), transformationBehaviour))
   }
 
   getLastSelections(document: vscode.TextDocument): vscode.Selection[] {

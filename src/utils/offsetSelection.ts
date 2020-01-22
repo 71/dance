@@ -10,6 +10,9 @@ interface DeltaByPosition {
   end: number
 }
 
+
+
+
 export class  OffsetRange {
     readonly start: number
     readonly end: number
@@ -89,18 +92,27 @@ export class  OffsetRange {
     }
 }
 
+
+export enum OffsetEdgeTransformationBehaviour {
+    Inclusive = 0, // Default
+    ExclusiveStart = 1 << 0,
+    ExclusiveEnd = 1 << 1,
+}
+
 export class OffsetSelection extends OffsetRange {
     anchor: number
     active: number
+    transformationBehaviour: OffsetEdgeTransformationBehaviour
     readonly isReversed: boolean
     readonly isEmpty: boolean
 
-    constructor(anchor: number, active: number) {
+    constructor(anchor: number, active: number, transformationBehaviour: OffsetEdgeTransformationBehaviour = OffsetEdgeTransformationBehaviour.ExclusiveStart) {
       super(anchor, active)
       this.anchor = anchor
       this.active = active
       this.isReversed = (active < anchor)
       this.isEmpty = (active === anchor)
+      this.transformationBehaviour = transformationBehaviour
     }
 
     translateSelection(delta: number) {
@@ -212,25 +224,32 @@ export class OffsetSelection extends OffsetRange {
         return this.shiftSelectionByPositions({ start: shiftBefore * -1, end: (shiftBefore+shiftAfter) * -1})
       }
     }
+    
+    getTransformationBehaviour() {
+      return this.transformationBehaviour
+    }
+    
+    setTransformationBehaviour(transformationBehaviour: OffsetEdgeTransformationBehaviour) {
+      this.transformationBehaviour = transformationBehaviour
+    }
 
-    insert(offset: number, length: number): OffsetSelection {
-      //! This behaviour changes whether changes at the start/end of a selections are inclusive or exclusive.
-      //if(offset >= this.end || (length <= 0))
-      if(offset > this.end || (length <= 0)) {
+    insert(offset: number, length: number, transformationBehaviour: OffsetEdgeTransformationBehaviour | undefined = OffsetEdgeTransformationBehaviour.ExclusiveStart): OffsetSelection {
+      if(transformationBehaviour === undefined) transformationBehaviour = this.transformationBehaviour 
+      if( (transformationBehaviour & OffsetEdgeTransformationBehaviour.ExclusiveEnd) ? offset >= this.end : offset > this.end) {
         return this
       }
-      //else if(offset <= this.start)
-      else if(offset < this.start) {
+      else if( (transformationBehaviour & OffsetEdgeTransformationBehaviour.ExclusiveStart) ? offset <= this.start : offset < this.start) {
         return this.translateSelection(length)
       } else {
         return this.shiftSelectionEnd(length)
       }
     }
 
-    removeAndInsert(other: OffsetRange, length: number): OffsetSelection | undefined {
+    removeAndInsert(other: OffsetRange, length: number, transformationBehaviour: OffsetEdgeTransformationBehaviour | undefined = OffsetEdgeTransformationBehaviour.ExclusiveStart): OffsetSelection | undefined {
+      if(transformationBehaviour === undefined) transformationBehaviour = this.transformationBehaviour 
       let removeMaybe = this.remove(other)
       if(removeMaybe) {
-        return removeMaybe.insert(other.start, length)
+        return removeMaybe.insert(other.start, length, transformationBehaviour)
       }
       return undefined
     }

@@ -3,6 +3,7 @@ import * as vscode from 'vscode'
 import { commands, Mode }      from './commands/index'
 import { HistoryManager }      from './history'
 import { Register, Registers } from './registers'
+import { OffsetEdgeTransformationBehaviour }      from './utils/offsetSelection'
 
 
 /** Name of the extension, used in commands and settings. */
@@ -36,6 +37,13 @@ export class Extension implements vscode.Disposable {
     <vscode.DecorationRenderOptions> {
       color:  { id: "editor.foreground" },
       backgroundColor:  { id: "editor.selectionBackground" }
+    }
+  )
+  
+  readonly selectionInsertDecorationType = vscode.window.createTextEditorDecorationType(
+    <vscode.DecorationRenderOptions> {
+      color:  { id: "editor.foreground" },
+      backgroundColor:  { id: "editor.background" }
     }
   )
 
@@ -76,9 +84,23 @@ export class Extension implements vscode.Disposable {
     }, true)
   }
 
+  resetLastSelections(editor: vscode.TextEditor) {
+    this.history.for(editor.document).setLastSelections(editor.document, [])
+    editor.setDecorations(this.selectionDecorationType, [])
+    editor.setDecorations(this.selectionInsertDecorationType, [])
+  }
+
   prepareInsertion(editor: vscode.TextEditor, pos: 'before' | 'after' | 'start' | 'end' | 'above' | 'below') {
-    this.history.for(editor.document).setLastSelections(editor.document, editor.selections)
-    editor.setDecorations(this.selectionDecorationType, editor.selections.map( sel => new vscode.Range( sel.start, sel.end) ))
+    if (pos == 'before' || pos == 'after' ) {
+      this.history.for(editor.document).setLastSelections(editor.document, editor.selections, (pos == 'before' ? OffsetEdgeTransformationBehaviour.ExclusiveStart : OffsetEdgeTransformationBehaviour.Inclusive))
+      editor.setDecorations(this.selectionDecorationType, editor.selections.map( sel => new vscode.Range( sel.start, sel.end) ))
+      //! And an overlay to normalize inserted text -- reproduces kakoune behaviour
+      if (pos == 'before') {
+        editor.setDecorations(this.selectionInsertDecorationType, editor.selections.map( sel => new vscode.Range( sel.start, sel.start) ))
+      }
+    } else {
+      this.resetLastSelections(editor)
+    }
   }
 
   private createDecorationType(color: string) {
@@ -90,6 +112,14 @@ export class Extension implements vscode.Disposable {
 
   private normalModeDecorationType?: vscode.TextEditorDecorationType
   private insertModeDecorationType?: vscode.TextEditorDecorationType
+
+  restoreLastSelections(editor: vscode.TextEditor) {
+    let documentHistory = this.history.for(editor.document)
+    let lastSels = documentHistory.getLastSelections(editor.document)
+    if (lastSels.length > 0 ) {
+      editor.selections = lastSels
+    }
+  }
 
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
     if (this.modeMap.get(editor.document) === mode)
@@ -104,17 +134,13 @@ export class Extension implements vscode.Disposable {
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
     } else {
       this.clearDecorations(editor, this.selectionDecorationType)
+      this.clearDecorations(editor, this.selectionInsertDecorationType)
       this.clearDecorations(editor, this.insertModeDecorationType)
       this.setDecorations(editor, this.normalModeDecorationType)
 
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
 
-      //! Restore selections
-      let documentHistory = this.history.for(editor.document)
-      let lastSels = documentHistory.getLastSelections(editor.document)
-      if (lastSels.length > 0 ) {
-        editor.selections = lastSels
-      }
+      this.restoreLastSelections(editor)
     }
 
     if (vscode.window.activeTextEditor === editor)
