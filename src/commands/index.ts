@@ -157,9 +157,15 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       await state.setMode(Mode.Insert)
     } else if (flags & CommandFlags.SwitchToNormal) {
       await state.setMode(Mode.Normal)
+
+      // Force selection to be non-empty when switching to normal. This is only
+      // necessary because we do not restore selections yet.
+      // TODO: Remove this once https://github.com/71/dance/issues/31 is fixed.
+      state.normalizeSelections(editor)
     }
 
     if (flags & CommandFlags.ChangeSelections) {
+      state.normalizeSelections(editor)
       // Scroll to cursor if needed
       editor.revealRange(editor.selection)
     }

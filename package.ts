@@ -83,6 +83,11 @@ const pkg = {
           default: null,
           markdownDescription: 'Controls the line highlighting applied to active lines in insert mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.',
         },
+        'dance.selections.allowEmpty': {
+          type: 'boolean',
+          default: true,
+          description: 'Controls whether selections can be empty. If false, each selection will have at least one character.',
+        },
       },
     },
     commands: Object.values(commands).map(x => ({
