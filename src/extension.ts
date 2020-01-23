@@ -395,6 +395,28 @@ export class Extension implements vscode.Disposable {
     return this.enabled = enabled
   }
 
+  /**
+   * Make all selections in the editor non-empty by selecting at least one character.
+   */
+  normalizeSelections(editor: vscode.TextEditor) {
+    if (this.modeMap.get(editor.document) !== Mode.Normal) { return; }
+    if (this.configuration.get('selections.allowEmpty')) { return; }
+    if (editor.selections.some(sel => sel.isEmpty)) {
+      editor.selections = editor.selections.map(selection => {
+        if (!selection.isEmpty) { return selection; }
+        const offset = editor.document.offsetAt(selection.active);
+        const nextPos = editor.document.positionAt(offset + 1);
+        if (nextPos.isAfter(selection.active)) {
+          // Move anchor to select 1 character after, but keep the cursor position.
+          return new vscode.Selection(nextPos, selection.active);
+        } else {
+          // Selection is at the very end of the document. Select the last character instead.
+          return new vscode.Selection(selection.anchor, editor.document.positionAt(offset - 1));
+        }
+      });
+    }
+  }
+
   dispose() {
     this.history.dispose()
     this.statusBarItem.dispose()

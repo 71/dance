@@ -105,6 +105,11 @@ const pkg = {
           default: 'inherit',
           description: 'Controls the cursor style in insert mode.',
         },
+        'dance.selections.allowEmpty': {
+          type: 'boolean',
+          default: true,
+          description: 'Controls whether selections can be empty. If false, each selection will have at least one character.',
+        },
       },
     },
     commands: Object.values(commands).map(x => ({
