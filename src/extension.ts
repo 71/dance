@@ -408,20 +408,32 @@ export class Extension implements vscode.Disposable {
       return
     if (this.modeMap.get(editor.document) !== Mode.Normal)
       return
-    if (editor.selections.some(sel => sel.isEmpty)) {
-      editor.selections = editor.selections.map(selection => {
-        if (!selection.isEmpty) { return selection; }
+
+    // Since this is called every time when selection changes, avoid allocations
+    // unless really needed and iterate manually without using helper functions. 
+    let normalizedSelections;
+    for (let i = 0; i < editor.selections.length; i++) {
+      const selection = editor.selections[i];
+      if (selection.isEmpty) {
+        if (!normalizedSelections) {
+          // Change needed. Allocate the new array and copy what we have so far.
+          normalizedSelections = editor.selections.slice(0, i);
+        }
+
         const offset = editor.document.offsetAt(selection.active);
         const nextPos = editor.document.positionAt(offset + 1);
         if (nextPos.isAfter(selection.active)) {
           // Move anchor to select 1 character after, but keep the cursor position.
-          return new vscode.Selection(nextPos, selection.active);
+          normalizedSelections.push(new vscode.Selection(nextPos, selection.active));
         } else {
           // Selection is at the very end of the document. Select the last character instead.
-          return new vscode.Selection(selection.anchor, editor.document.positionAt(offset - 1));
+          normalizedSelections.push(new vscode.Selection(selection.anchor, editor.document.positionAt(offset - 1)));
         }
-      });
+      } else if (normalizedSelections)
+        normalizedSelections.push(selection);
     }
+    if (normalizedSelections)
+      editor.selections = normalizedSelections;
   }
 
   dispose() {
