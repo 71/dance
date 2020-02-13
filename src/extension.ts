@@ -218,6 +218,13 @@ export class Extension implements vscode.Disposable {
   }
 
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
+    if (mode === Mode.Normal) {
+      // Force selection to be non-empty when switching to normal. This is only
+      // necessary because we do not restore selections yet.
+      // TODO: Remove this once https://github.com/71/dance/issues/31 is fixed.
+      this.normalizeSelections(editor)
+    }
+
     if (this.modeMap.get(editor.document) === mode)
       return Promise.resolve()
 
