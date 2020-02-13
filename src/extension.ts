@@ -146,6 +146,7 @@ export class Extension implements vscode.Disposable {
   configuration = vscode.workspace.getConfiguration(extensionName)
 
   enabled: boolean = false
+  private allowEmptySelections: boolean = true
 
   typeCommand: vscode.Disposable | undefined = undefined
   changeEditorCommand: vscode.Disposable | undefined = undefined
@@ -192,6 +193,10 @@ export class Extension implements vscode.Disposable {
       this.insertMode.updateCursorStyle(this, 'inherit')
       this.normalMode.updateCursorStyle(this, 'inherit')
     })
+
+    this.observePreference<boolean>('selections.allowEmpty', true, value => {
+      this.allowEmptySelections = value;
+    }, true);
   }
 
   updateDecorations(mode: ModeConfiguration, color: string | null) {
@@ -399,8 +404,10 @@ export class Extension implements vscode.Disposable {
    * Make all selections in the editor non-empty by selecting at least one character.
    */
   normalizeSelections(editor: vscode.TextEditor) {
-    if (this.modeMap.get(editor.document) !== Mode.Normal) { return; }
-    if (this.configuration.get('selections.allowEmpty')) { return; }
+    if (this.allowEmptySelections)
+      return
+    if (this.modeMap.get(editor.document) !== Mode.Normal)
+      return
     if (editor.selections.some(sel => sel.isEmpty)) {
       editor.selections = editor.selections.map(selection => {
         if (!selection.isEmpty) { return selection; }
