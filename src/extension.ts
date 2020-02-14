@@ -251,6 +251,8 @@ export class Extension implements vscode.Disposable {
             this.setDecorations(e.textEditor, this.insertModeDecorationType)
           else
             this.setDecorations(e.textEditor, this.normalModeDecorationType)
+
+          this.normalizeSelections(e.textEditor)
         }),
 
         vscode.workspace.onDidChangeConfiguration(e => {
@@ -276,7 +278,7 @@ export class Extension implements vscode.Disposable {
   /**
    * Make all selections in the editor non-empty by selecting at least one character.
    */
-  normalizeSelections(editor: vscode.TextEditor) {
+  private normalizeSelections(editor: vscode.TextEditor) {
     if (this.allowEmptySelections)
       return
     if (this.modeMap.get(editor.document) !== Mode.Normal)
