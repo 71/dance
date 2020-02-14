@@ -160,7 +160,6 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     }
 
     if (flags & CommandFlags.ChangeSelections) {
-      state.normalizeSelections(editor)
       // Scroll to cursor if needed
       editor.revealRange(editor.selection)
     }
