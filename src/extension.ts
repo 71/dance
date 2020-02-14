@@ -170,6 +170,11 @@ export class Extension implements vscode.Disposable {
     this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100)
     this.statusBarItem.tooltip = 'Current mode'
 
+    // This needs to be before setEnabled for normalizing selections on start.
+    this.observePreference<boolean>('selections.allowEmpty', true, value => {
+      this.allowEmptySelections = value;
+    }, true);
+
     this.setEnabled(this.configuration.get('enabled', true), false)
 
     // Configuration: line highlight.
@@ -193,10 +198,6 @@ export class Extension implements vscode.Disposable {
       this.insertMode.updateCursorStyle(this, 'inherit')
       this.normalMode.updateCursorStyle(this, 'inherit')
     })
-
-    this.observePreference<boolean>('selections.allowEmpty', true, value => {
-      this.allowEmptySelections = value;
-    }, true);
   }
 
   updateDecorations(mode: ModeConfiguration, color: string | null) {
@@ -218,17 +219,17 @@ export class Extension implements vscode.Disposable {
   }
 
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
+    if (this.modeMap.get(editor.document) === mode)
+      return Promise.resolve()
+
+    this.modeMap.set(editor.document, mode)
+
     if (mode === Mode.Normal) {
       // Force selection to be non-empty when switching to normal. This is only
       // necessary because we do not restore selections yet.
       // TODO: Remove this once https://github.com/71/dance/issues/31 is fixed.
       this.normalizeSelections(editor)
     }
-
-    if (this.modeMap.get(editor.document) === mode)
-      return Promise.resolve()
-
-    this.modeMap.set(editor.document, mode)
 
     if (mode === Mode.Insert) {
       this.clearDecorations(editor, this.normalMode.decorationType)
