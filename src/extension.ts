@@ -91,6 +91,11 @@ export class Extension implements vscode.Disposable {
 
       editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
     } else {
+      if (mode === Mode.Awaiting) {
+        this.typeCommand?.dispose()
+        this.typeCommand = undefined
+      }
+
       this.clearDecorations(editor, this.insertModeDecorationType)
       this.setDecorations(editor, this.normalModeDecorationType)
 
