@@ -55,119 +55,131 @@ registerCommand(Command.yank, CommandFlags.None, (editor, state, _, ctx) => {
 })
 
 
-function getContentToPaste(editor: vscode.TextEditor, state: CommandState<any>, ctx: Extension) {
-  return getRegister(state, ctx)
-    .get(editor)
-    .then(reg => reg !== undefined && reg[0] ? reg[0] : undefined)
+async function getContentsToPaste(editor: vscode.TextEditor, state: CommandState<any>, ctx: Extension, amount: number) {
+  const yanked = await getRegister(state, ctx).get(editor)
+
+  if (yanked === undefined)
+    return undefined
+
+  const results = [] as string[],
+        yankedLength = yanked.length
+
+  let i = 0
+
+  for (; i < amount && i < yankedLength; i++) {
+    results.push(yanked[i])
+  }
+
+  for (; i < amount; i++) {
+    results.push(yanked[yankedLength - 1])
+  }
+
+  return results
 }
 
 registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, _, ctx) => {
-  const content = await getContentToPaste(editor, state, ctx)
+  const contents = await getContentsToPaste(editor, state, ctx, editor.selections.length)
 
-  if (content === undefined)
+  if (contents === undefined)
     return undefined
 
-  const shouldInsertInNewLine = content.endsWith('\n')
+  return (builder: vscode.TextEditorEdit) => {
+    for (let i = 0; i < contents.length; i++) {
+      const content = contents[i],
+            selection = editor.selections[i]
 
-  if (shouldInsertInNewLine) {
-    return (builder: vscode.TextEditorEdit) => {
-      for (const selection of editor.selections)
+      if (content.endsWith('\n'))
         builder.insert(selection.end.with(selection.end.line + 1, 0), content)
-    }
-  } else {
-    return (builder: vscode.TextEditorEdit) => {
-      for (const selection of editor.selections)
+      else
         builder.insert(selection.end, content)
     }
   }
 })
 
 registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, _, ctx) => {
-  const content = await getContentToPaste(editor, state, ctx)
+  const contents = await getContentsToPaste(editor, state, ctx, editor.selections.length)
 
-  if (content === undefined)
+  if (contents === undefined)
     return
 
-  const shouldInsertInNewLine = content.endsWith('\n')
+  return (builder: vscode.TextEditorEdit) => {
+    for (let i = 0; i < contents.length; i++) {
+      const content = contents[i],
+            selection = editor.selections[i]
 
-  if (shouldInsertInNewLine) {
-    return (builder: vscode.TextEditorEdit) => {
-      for (const selection of editor.selections)
+      if (content.endsWith('\n'))
         builder.insert(selection.start.with(undefined, 0), content)
-    }
-  } else {
-    return (builder: vscode.TextEditorEdit) => {
-      for (const selection of editor.selections)
+      else
         builder.insert(selection.start, content)
     }
   }
 })
 
 registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const content = await getContentToPaste(editor, state, ctx)
+  const contents = await getContentsToPaste(editor, state, ctx, editor.selections.length)
 
-  if (content === undefined)
+  if (contents === undefined)
     return
 
-  const shouldInsertInNewLine = content.endsWith('\n')
   const newSelections = [] as vscode.Selection[]
 
-  if (shouldInsertInNewLine) {
-    await editor.edit(builder => {
-      for (const selection of editor.selections) {
+  await editor.edit(builder => {
+    for (let i = 0; i < contents.length; i++) {
+      const content = contents[i],
+            selection = editor.selections[i]
+
+      if (content.endsWith('\n')) {
         builder.insert(selection.end.with(selection.end.line + 1, 0), content)
         newSelections.push(getSelectionFromStart(editor.document, content, selection.end.with(selection.end.line + 1, 0)))
-      }
-    }, undoStops)
-  } else {
-    await editor.edit(builder => {
-      for (const selection of editor.selections) {
+      } else {
         builder.insert(selection.end, content)
         newSelections.push(getSelectionFromStart(editor.document, content, selection.end))
       }
-    }, undoStops)
-  }
+    }
+  }, undoStops)
 
   editor.selections = newSelections
 })
 
 registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const content = await getContentToPaste(editor, state, ctx)
+  const contents = await getContentsToPaste(editor, state, ctx, editor.selections.length)
 
-  if (content === undefined)
+  if (contents === undefined)
     return
 
-  const shouldInsertInNewLine = content.endsWith('\n')
   const newSelections = [] as vscode.Selection[]
 
-  if (shouldInsertInNewLine) {
-    await editor.edit(builder => {
-      for (const selection of editor.selections) {
+  await editor.edit(builder => {
+    for (let i = 0; i < contents.length; i++) {
+      const content = contents[i],
+            selection = editor.selections[i]
+
+      if (content.endsWith('\n')) {
         builder.insert(selection.start.with(undefined, 0), content)
         newSelections.push(getSelectionFromStart(editor.document, content, selection.start.with(undefined, 0)))
-      }
-    }, undoStops)
-  } else {
-    await editor.edit(builder => {
-      for (const selection of editor.selections) {
+      } else {
         builder.insert(selection.start, content)
         newSelections.push(getSelectionFromEnd(editor.document, content, selection.start))
       }
-    }, undoStops)
-  }
+    }
+  }, undoStops)
 
   editor.selections = newSelections
 })
 
 registerCommand(Command.pasteReplace, CommandFlags.Edit, async (editor, state, _, ctx) => {
-  const content = await getContentToPaste(editor, state, ctx)
+  const contents = await getContentsToPaste(editor, state, ctx, editor.selections.length)
 
-  if (content === undefined)
+  if (contents === undefined)
     return
 
   return (builder: vscode.TextEditorEdit) => {
-    for (const selection of editor.selections)
+    for (let i = 0; i < contents.length; i++) {
+      const content = contents[i],
+            selection = editor.selections[i]
+
       builder.replace(selection, content)
+    }
   }
 })
 
