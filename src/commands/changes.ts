@@ -17,10 +17,11 @@ function deleteSelection(builder: vscode.TextEditorEdit, editor: vscode.TextEdit
 
   const line = editor.document.lineAt(selection.active.line)
 
-  if (!line.range.isEmpty)
-    return builder.delete(selection)
+  // Delete the line break if selection is at end of line.
+  if (selection.active.character >= editor.document.lineAt(selection.active.line).range.end.character)
+    return builder.delete(new vscode.Range(line.range.end, line.rangeIncludingLineBreak.end))
 
-  return builder.delete(line.rangeIncludingLineBreak)
+  return builder.delete(selection)
 }
 
 registerCommand(Command.deleteYank, CommandFlags.Edit, async (editor, state, _, ctx) => {
