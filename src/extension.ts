@@ -154,6 +154,8 @@ export class Extension implements vscode.Disposable {
   currentCount: number = 0
   currentRegister: Register | undefined = undefined
 
+  ignoreSelectionChanges = false
+
   readonly subscriptions: vscode.Disposable[] = []
 
   readonly statusBarItem: vscode.StatusBarItem
@@ -413,8 +415,8 @@ export class Extension implements vscode.Disposable {
   /**
    * Make all selections in the editor non-empty by selecting at least one character.
    */
-  private normalizeSelections(editor: vscode.TextEditor) {
-    if (this.allowEmptySelections)
+  normalizeSelections(editor: vscode.TextEditor) {
+    if (this.allowEmptySelections || this.ignoreSelectionChanges)
       return
     if (this.modeMap.get(editor.document) !== Mode.Normal)
       return
@@ -430,14 +432,14 @@ export class Extension implements vscode.Disposable {
           normalizedSelections = editor.selections.slice(0, i);
         }
 
-        const offset = editor.document.offsetAt(selection.active);
-        const nextPos = editor.document.positionAt(offset + 1);
-        if (nextPos.isAfter(selection.active)) {
+        const active = selection.active
+
+        if (active.character < editor.document.lineAt(active.line).range.end.character) {
           // Move anchor to select 1 character after, but keep the cursor position.
-          normalizedSelections.push(new vscode.Selection(nextPos, selection.active));
+          normalizedSelections.push(new vscode.Selection(active.translate(0, 1), active));
         } else {
-          // Selection is at the very end of the document. Select the last character instead.
-          normalizedSelections.push(new vscode.Selection(selection.anchor, editor.document.positionAt(offset - 1)));
+          // Selection is at the very end of the line. Select the last character instead.
+          normalizedSelections.push(new vscode.Selection(active, active.translate(0, -1)));
         }
       } else if (normalizedSelections)
         normalizedSelections.push(selection);
