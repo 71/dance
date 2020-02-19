@@ -275,6 +275,8 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
         if (pos === undefined)
           return defaultSelection
 
+        const wordStart = extend ? anchor : pos
+
         if (end) {
           pos = skipWhile(editor.document, pos, false, false, isBlank)
 
@@ -299,7 +301,7 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
             return defaultSelection
         }
 
-        selection = new vscode.Selection(anchor, pos)
+        selection = new vscode.Selection(wordStart, pos)
       }
 
       return selection
@@ -320,6 +322,8 @@ function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (
         if (pos === undefined)
           return defaultSelection
 
+        const wordStart = extend ? anchor : pos
+
         pos = skipWhile(editor.document, pos, true, true, isBlank)
 
         if (pos === undefined)
@@ -335,7 +339,7 @@ function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (
         if (pos === undefined)
           return defaultSelection
 
-        selection = new vscode.Selection(anchor, pos.character === 0 ? pos : pos.translate(0, 1))
+        selection = new vscode.Selection(wordStart, pos.character === 0 ? pos : pos.translate(0, 1))
       }
 
       return selection
