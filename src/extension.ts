@@ -302,6 +302,9 @@ export class Extension implements vscode.Disposable {
         if (active.character < editor.document.lineAt(active.line).range.end.character) {
           // Move anchor to select 1 character after, but keep the cursor position.
           normalizedSelections.push(new vscode.Selection(active.translate(0, 1), active));
+        } else if (active.character === 0) {
+          // Selection is on an empty line; we can't do much here.
+          normalizedSelections.push(selection);
         } else {
           // Selection is at the very end of the line. Select the last character instead.
           normalizedSelections.push(new vscode.Selection(active, active.translate(0, -1)));

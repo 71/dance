@@ -11,6 +11,18 @@ function getRegister(state: CommandState<any>, ctx: Extension) {
   return state.currentRegister || ctx.registers.dquote
 }
 
+function deleteSelection(builder: vscode.TextEditorEdit, editor: vscode.TextEditor, selection: vscode.Selection) {
+  if (!selection.isEmpty)
+    return builder.delete(selection)
+
+  const line = editor.document.lineAt(selection.active.line)
+
+  if (!line.range.isEmpty)
+    return builder.delete(selection)
+
+  return builder.delete(line.rangeIncludingLineBreak)
+}
+
 registerCommand(Command.deleteYank, CommandFlags.Edit, async (editor, state, _, ctx) => {
   const reg = getRegister(state, ctx)
 
@@ -19,7 +31,7 @@ registerCommand(Command.deleteYank, CommandFlags.Edit, async (editor, state, _, 
 
   return (builder: vscode.TextEditorEdit) => {
     for (const selection of editor.selections)
-      builder.delete(selection)
+      deleteSelection(builder, editor, selection)
   }
 })
 
@@ -31,18 +43,18 @@ registerCommand(Command.deleteInsertYank, CommandFlags.Edit | CommandFlags.Switc
 
   return (builder: vscode.TextEditorEdit) => {
     for (const selection of editor.selections)
-      builder.delete(selection)
+      deleteSelection(builder, editor, selection)
   }
 })
 
 registerCommand(Command.deleteNoYank, CommandFlags.Edit, editor => builder => {
   for (const selection of editor.selections)
-    builder.delete(selection)
+    deleteSelection(builder, editor, selection)
 })
 
 registerCommand(Command.deleteInsertNoYank, CommandFlags.Edit | CommandFlags.SwitchToInsert, editor => builder => {
   for (const selection of editor.selections)
-    builder.delete(selection)
+    deleteSelection(builder, editor, selection)
 })
 
 registerCommand(Command.yank, CommandFlags.None, (editor, state, _, ctx) => {
