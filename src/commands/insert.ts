@@ -13,7 +13,8 @@ registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlag
 
 registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
   editor.selections = editor.selections.map(x => {
-    const anchor = editor.document.lineAt(x.active.line).range.start
+    const activeLine = editor.document.lineAt(x.active.line)
+    const anchor = activeLine.range.start.with(undefined, activeLine.firstNonWhitespaceCharacterIndex)
 
     return new vscode.Selection(anchor, anchor)
   })
