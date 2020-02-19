@@ -589,6 +589,40 @@ registerToEnclosing(Command.selectEnclosingBackwards      , false, true )
 registerToEnclosing(Command.selectEnclosingExtendBackwards, true , true )
 
 
+// Move up/down (ctrl-[bfud])
+// ===============================================================================================
+
+function registerMoveLines(command: Command, direction: 'up' | 'down', extend: boolean, computeTranslation: (editor: vscode.TextEditor) => number) {
+  registerCommand(command, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+    const translation = computeTranslation(editor)
+
+    return vscode.commands.executeCommand('editorScroll', {
+      to: direction,
+      by: 'line',
+      value: (currentCount || 1) * translation,
+      revealCursor: true,
+      select: extend,
+    })
+  })
+}
+
+function getHeight(editor: vscode.TextEditor) {
+  const visibleRange = editor.visibleRanges[0]
+
+  return visibleRange.end.line - visibleRange.start.line
+}
+
+registerMoveLines(Command.moveUp          , 'up', false, editor => getHeight(editor))
+registerMoveLines(Command.moveUpExtend    , 'up', true , editor => getHeight(editor))
+registerMoveLines(Command.moveUpHalf      , 'up', false, editor => getHeight(editor) / 2)
+registerMoveLines(Command.moveUpHalfExtend, 'up', true , editor => getHeight(editor) / 2)
+
+registerMoveLines(Command.moveDown          , 'down', false, editor => getHeight(editor))
+registerMoveLines(Command.moveDownExtend    , 'down', true , editor => getHeight(editor))
+registerMoveLines(Command.moveDownHalf      , 'down', false, editor => getHeight(editor) / 2)
+registerMoveLines(Command.moveDownHalfExtend, 'down', true , editor => getHeight(editor) / 2)
+
+
 // Other bindings (%)
 // ===============================================================================================
 
