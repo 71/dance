@@ -147,6 +147,7 @@ export class Extension implements vscode.Disposable {
 
   enabled: boolean = false
   private allowEmptySelections: boolean = true
+  private normalizeTimeoutToken: NodeJS.Timeout | undefined
 
   typeCommand: vscode.Disposable | undefined = undefined
   changeEditorCommand: vscode.Disposable | undefined = undefined
@@ -389,7 +390,18 @@ export class Extension implements vscode.Disposable {
           else
             this.setDecorations(e.textEditor, this.normalMode.decorationType)
 
-          this.normalizeSelections(e.textEditor)
+          if (this.normalizeTimeoutToken !== undefined) {
+            clearTimeout(this.normalizeTimeoutToken)
+            this.normalizeTimeoutToken = undefined
+          }
+
+          if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
+            this.normalizeTimeoutToken = setTimeout(() => {
+              this.normalizeSelections(e.textEditor)
+              this.normalizeTimeoutToken = undefined
+            }, 200)
+          } else
+            this.normalizeSelections(e.textEditor)
         }),
 
         vscode.workspace.onDidChangeConfiguration(e => {
