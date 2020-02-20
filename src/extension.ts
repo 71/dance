@@ -146,8 +146,9 @@ export class Extension implements vscode.Disposable {
   configuration = vscode.workspace.getConfiguration(extensionName)
 
   enabled: boolean = false
+
   private allowEmptySelections: boolean = true
-  private normalizeTimeoutToken: NodeJS.Timeout | undefined
+  private normalizeTimeoutToken: NodeJS.Timeout | undefined = undefined
 
   typeCommand: vscode.Disposable | undefined = undefined
   changeEditorCommand: vscode.Disposable | undefined = undefined
@@ -400,8 +401,9 @@ export class Extension implements vscode.Disposable {
               this.normalizeSelections(e.textEditor)
               this.normalizeTimeoutToken = undefined
             }, 200)
-          } else
+          } else {
             this.normalizeSelections(e.textEditor)
+          }
         }),
 
         vscode.workspace.onDidChangeConfiguration(e => {
@@ -436,12 +438,13 @@ export class Extension implements vscode.Disposable {
 
     // Since this is called every time when selection changes, avoid allocations
     // unless really needed and iterate manually without using helper functions.
-    let normalizedSelections
+    let normalizedSelections: vscode.Selection[] | undefined = undefined
 
     for (let i = 0; i < editor.selections.length; i++) {
       const selection = editor.selections[i]
+
       if (selection.isEmpty) {
-        if (!normalizedSelections) {
+        if (normalizedSelections === undefined) {
           // Change needed. Allocate the new array and copy what we have so far.
           normalizedSelections = editor.selections.slice(0, i)
         }
@@ -463,11 +466,12 @@ export class Extension implements vscode.Disposable {
             normalizedSelections.push(new vscode.Selection(active, active.translate(0, -1)))
           }
         }
-      } else if (normalizedSelections)
+      } else if (normalizedSelections !== undefined) {
         normalizedSelections.push(selection)
+      }
     }
 
-    if (normalizedSelections)
+    if (normalizedSelections !== undefined)
       editor.selections = normalizedSelections
   }
 
