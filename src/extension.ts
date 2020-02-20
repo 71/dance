@@ -147,7 +147,7 @@ export class Extension implements vscode.Disposable {
 
   enabled: boolean = false
 
-  private allowEmptySelections: boolean = true
+  allowEmptySelections: boolean = true
   private normalizeTimeoutToken: NodeJS.Timeout | undefined = undefined
 
   typeCommand: vscode.Disposable | undefined = undefined
