@@ -139,8 +139,9 @@ function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allo
 }
 
 /**
- * Changes one character selections to be the direction specified. Return others unchanged.
- * @param selection the original selection. Will be reversed if needed
+ * Changes one character elections to be the direction specified. Return others unchanged.
+ *
+ * @param selection The original selection. Will be reversed if needed.
  * @param direction 1 for forward (active > anchor) or -1 for backward (active < anchor).
  */
 function fixDirection(selection: vscode.Selection, direction: -1 | 1) {
