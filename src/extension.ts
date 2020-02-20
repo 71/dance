@@ -8,29 +8,133 @@ import { Register, Registers } from './registers'
 /** Name of the extension, used in commands and settings. */
 export const extensionName = 'dance'
 
+type CursorStyle = 'line' | 'block' | 'underline' | 'line-thin' | 'block-outline' | 'underline-thin' | 'inherit'
+type LineNumbers = 'on' | 'off' | 'relative' | 'inherit'
+
 /** Mode-specific configuration. */
 class ModeConfiguration {
   private constructor(
     readonly mode: Mode,
+    readonly modePrefix: string,
 
     public lineNumbers: vscode.TextEditorLineNumbersStyle,
+    public cursorStyle: vscode.TextEditorCursorStyle,
     public decorationType?: vscode.TextEditorDecorationType,
   ) {}
 
   static insert() {
     return new ModeConfiguration(
       Mode.Insert,
+      'insertMode',
 
       vscode.TextEditorLineNumbersStyle.On,
+      vscode.TextEditorCursorStyle.Line,
     )
   }
 
   static normal() {
     return new ModeConfiguration(
       Mode.Normal,
+      'normalMode',
 
       vscode.TextEditorLineNumbersStyle.Relative,
+      vscode.TextEditorCursorStyle.Line,
     )
+  }
+
+  observeLineHighlightPreference(extension: Extension, defaultValue: string | null) {
+    extension.observePreference<string | null>(this.modePrefix + '.lineHighlight', defaultValue, value => {
+      extension.updateDecorations(this, value)
+    }, true)
+  }
+
+  observeLineNumbersPreference(extension: Extension, defaultValue: LineNumbers) {
+    extension.observePreference<LineNumbers>(this.modePrefix + '.lineNumbers', defaultValue, value => {
+      this.lineNumbers = this.lineNumbersStringToLineNumbersStyle(value)
+    }, true)
+  }
+
+  updateLineNumbers(extension: Extension, defaultValue: LineNumbers) {
+    this.lineNumbers = this.lineNumbersStringToLineNumbersStyle(
+      extension.configuration.get(this.modePrefix + '.lineNumbers') ?? defaultValue
+    )
+  }
+
+  observeCursorStylePreference(extension: Extension, defaultValue: CursorStyle) {
+    extension.observePreference<CursorStyle>(this.modePrefix + '.cursorStyle', defaultValue, value => {
+      this.cursorStyle = this.cursorStyleStringToCursorStyle(value)
+    }, true)
+  }
+
+  updateCursorStyle(extension: Extension, defaultValue: CursorStyle) {
+    this.cursorStyle = this.cursorStyleStringToCursorStyle(
+      extension.configuration.get(this.modePrefix + '.cursorStyle') ?? defaultValue
+    )
+  }
+
+  private lineNumbersStringToLineNumbersStyle(lineNumbers: LineNumbers) {
+    switch (lineNumbers) {
+      case 'on':
+        return vscode.TextEditorLineNumbersStyle.On
+      case 'off':
+        return vscode.TextEditorLineNumbersStyle.Off
+      case 'relative':
+        return vscode.TextEditorLineNumbersStyle.Relative
+      case 'inherit':
+      default:
+        const vscodeLineNumbers = vscode.workspace.getConfiguration().get<LineNumbers | 'interval'>('editor.lineNumbers', 'on')
+
+        switch (vscodeLineNumbers) {
+          case 'on':
+            return vscode.TextEditorLineNumbersStyle.On
+          case 'off':
+            return vscode.TextEditorLineNumbersStyle.Off
+          case 'relative':
+            return vscode.TextEditorLineNumbersStyle.Relative
+          case 'interval': // This is a real option but its not in vscode.d.ts
+            return 3
+          default:
+            return vscode.TextEditorLineNumbersStyle.On
+        }
+    }
+  }
+
+  private cursorStyleStringToCursorStyle(cursorStyle: CursorStyle) {
+    switch (cursorStyle) {
+      case 'block':
+        return vscode.TextEditorCursorStyle.Block
+      case 'block-outline':
+        return vscode.TextEditorCursorStyle.BlockOutline
+      case 'line':
+        return vscode.TextEditorCursorStyle.Line
+      case 'line-thin':
+        return vscode.TextEditorCursorStyle.LineThin
+      case 'underline':
+        return vscode.TextEditorCursorStyle.Underline
+      case 'underline-thin':
+        return vscode.TextEditorCursorStyle.UnderlineThin
+
+      case 'inherit':
+      default:
+        const vscodeCursorStyle = vscode.workspace.getConfiguration().get<CursorStyle>('editor.cursorStyle', 'line')
+
+        switch (vscodeCursorStyle) {
+          case 'block':
+            return vscode.TextEditorCursorStyle.Block
+          case 'block-outline':
+            return vscode.TextEditorCursorStyle.BlockOutline
+          case 'line':
+            return vscode.TextEditorCursorStyle.Line
+          case 'line-thin':
+            return vscode.TextEditorCursorStyle.LineThin
+          case 'underline':
+            return vscode.TextEditorCursorStyle.Underline
+          case 'underline-thin':
+            return vscode.TextEditorCursorStyle.UnderlineThin
+          default:
+            return vscode.TextEditorCursorStyle.Line
+        }
+    }
   }
 }
 
@@ -39,7 +143,7 @@ class ModeConfiguration {
  */
 export class Extension implements vscode.Disposable {
   private readonly configurationChangeHandlers = new Map<string, () => void>()
-  private configuration = vscode.workspace.getConfiguration(extensionName)
+  configuration = vscode.workspace.getConfiguration(extensionName)
 
   enabled: boolean = false
 
@@ -68,36 +172,29 @@ export class Extension implements vscode.Disposable {
     this.setEnabled(this.configuration.get('enabled', true), false)
 
     // Configuration: line highlight.
-
-    this.observePreference<string | null>('insertMode.lineHighlight', null, value => {
-      this.updateDecorations(this.insertMode, value)
-    }, true)
-
-    this.observePreference<string | null>('normalMode.lineHighlight', 'editor.hoverHighlightBackground', value => {
-      this.updateDecorations(this.normalMode, value)
-    }, true)
+    this.insertMode.observeLineHighlightPreference(this, null)
+    this.normalMode.observeLineHighlightPreference(this, 'editor.hoverHighlightBackground')
 
     // Configuration: line numbering.
+    this.insertMode.observeLineNumbersPreference(this, 'inherit')
+    this.normalMode.observeLineNumbersPreference(this, 'relative')
 
     this.configurationChangeHandlers.set('editor.lineNumbers', () => {
-      this.insertMode.lineNumbers = this.lineNumbersToLineNumbersStyle(
-        this.configuration.get('insertMode.lineNumbers', 'inherit')
-      )
-      this.normalMode.lineNumbers = this.lineNumbersToLineNumbersStyle(
-        this.configuration.get('normalMode.lineNumbers', 'relative')
-      )
+      this.insertMode.updateLineNumbers(this, 'inherit')
+      this.normalMode.updateLineNumbers(this, 'relative')
     })
 
-    this.observePreference<'on' | 'off' | 'relative' | 'inherit'>('insertMode.lineNumbers', 'inherit', value => {
-      this.insertMode.lineNumbers = this.lineNumbersToLineNumbersStyle(value)
-    }, true)
+    // Configuration: cursor style.
+    this.insertMode.observeCursorStylePreference(this, 'inherit')
+    this.normalMode.observeCursorStylePreference(this, 'inherit')
 
-    this.observePreference<'on' | 'off' | 'relative' | 'inherit'>('normalMode.lineNumbers', 'relative', value => {
-      this.normalMode.lineNumbers = this.lineNumbersToLineNumbersStyle(value)
-    }, true)
+    this.configurationChangeHandlers.set('editor.cursorStyle', () => {
+      this.insertMode.updateCursorStyle(this, 'inherit')
+      this.normalMode.updateCursorStyle(this, 'inherit')
+    })
   }
 
-  private updateDecorations(mode: ModeConfiguration, color: string | null) {
+  updateDecorations(mode: ModeConfiguration, color: string | null) {
     if (mode.decorationType !== undefined)
       mode.decorationType.dispose()
 
@@ -115,33 +212,6 @@ export class Extension implements vscode.Disposable {
     return
   }
 
-  private lineNumbersToLineNumbersStyle(lineNumbers: 'on' | 'off' | 'relative' | 'inherit') {
-    switch (lineNumbers) {
-      case 'on':
-        return vscode.TextEditorLineNumbersStyle.On
-      case 'off':
-        return vscode.TextEditorLineNumbersStyle.Off
-      case 'relative':
-        return vscode.TextEditorLineNumbersStyle.Relative
-      case 'inherit':
-      default:
-        const vscodeLineNumbers = vscode.workspace.getConfiguration().get<string>('editor.lineNumbers', 'on')
-
-        switch (vscodeLineNumbers) {
-          case 'on':
-            return vscode.TextEditorLineNumbersStyle.On
-          case 'off':
-            return vscode.TextEditorLineNumbersStyle.Off
-          case 'relative':
-            return vscode.TextEditorLineNumbersStyle.Relative
-          case 'interval': // This is a real option but its not in vscode.d.ts
-            return 3
-          default:
-            return vscode.TextEditorLineNumbersStyle.On
-        }
-    }
-  }
-
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
     if (this.modeMap.get(editor.document) === mode)
       return Promise.resolve()
@@ -153,6 +223,7 @@ export class Extension implements vscode.Disposable {
       this.setDecorations(editor, this.insertMode.decorationType)
 
       editor.options.lineNumbers = this.insertMode.lineNumbers
+      editor.options.cursorStyle = this.insertMode.cursorStyle
     } else {
       if (mode === Mode.Awaiting) {
         this.typeCommand?.dispose()
@@ -163,6 +234,7 @@ export class Extension implements vscode.Disposable {
       this.setDecorations(editor, this.normalMode.decorationType)
 
       editor.options.lineNumbers = this.normalMode.lineNumbers
+      editor.options.cursorStyle = this.normalMode.cursorStyle
     }
 
     if (vscode.window.activeTextEditor === editor)
@@ -340,7 +412,7 @@ export class Extension implements vscode.Disposable {
    *
    * @param triggerNow If `true`, the handler will also be triggered immediately with the current value.
    */
-  private observePreference<T>(section: string, defaultValue: T, handler: (value: T) => void, triggerNow = false) {
+  observePreference<T>(section: string, defaultValue: T, handler: (value: T) => void, triggerNow = false) {
     this.configurationChangeHandlers.set('dance.' + section, () => {
       handler(this.configuration.get(section, defaultValue))
     })

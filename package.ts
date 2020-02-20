@@ -95,6 +95,16 @@ const pkg = {
           description: 'Controls the display of line numbers in insert mode.',
           enumDescriptions: ['No line numbers.', 'Absolute line numbers.', 'Relative line numbers.', 'Inherit from `editor.lineNumbers`.'],
         },
+        'dance.normalMode.cursorStyle': {
+          enum: ['line', 'block', 'underline', 'line-thin', 'block-outline', 'underline-thin', 'inherit'],
+          default: 'inherit',
+          description: 'Controls the cursor style in normal mode.',
+        },
+        'dance.insertMode.cursorStyle': {
+          enum: ['line', 'block', 'underline', 'line-thin', 'block-outline', 'underline-thin', 'inherit'],
+          default: 'inherit',
+          description: 'Controls the cursor style in insert mode.',
+        },
       },
     },
     commands: Object.values(commands).map(x => ({
