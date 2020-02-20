@@ -175,8 +175,8 @@ export class Extension implements vscode.Disposable {
 
     // This needs to be before setEnabled for normalizing selections on start.
     this.observePreference<boolean>('selections.allowEmpty', true, value => {
-      this.allowEmptySelections = value;
-    }, true);
+      this.allowEmptySelections = value
+    }, true)
 
     this.setEnabled(this.configuration.get('enabled', true), false)
 
@@ -430,28 +430,31 @@ export class Extension implements vscode.Disposable {
   normalizeSelections(editor: vscode.TextEditor) {
     if (this.allowEmptySelections || this.ignoreSelectionChanges)
       return
+
     if (this.modeMap.get(editor.document) !== Mode.Normal)
       return
 
     // Since this is called every time when selection changes, avoid allocations
     // unless really needed and iterate manually without using helper functions. 
-    let normalizedSelections;
+    let normalizedSelections
+
     for (let i = 0; i < editor.selections.length; i++) {
-      const selection = editor.selections[i];
+      const selection = editor.selections[i]
       if (selection.isEmpty) {
         if (!normalizedSelections) {
           // Change needed. Allocate the new array and copy what we have so far.
-          normalizedSelections = editor.selections.slice(0, i);
+          normalizedSelections = editor.selections.slice(0, i)
         }
 
         const active = selection.active
 
         if (active.character >= editor.document.lineAt(active.line).range.end.character) {
           // Selection is at line end. Just keep it that way.
-          normalizedSelections.push(selection);
+          normalizedSelections.push(selection)
         } else {
           const offset = editor.document.offsetAt(selection.active)
           const nextPos = editor.document.positionAt(offset + 1)
+
           if (nextPos.isAfter(selection.active)) {
             // Move anchor to select 1 character after, but keep the cursor position.
             normalizedSelections.push(new vscode.Selection(active.translate(0, 1), active))
@@ -461,10 +464,11 @@ export class Extension implements vscode.Disposable {
           }
         }
       } else if (normalizedSelections)
-        normalizedSelections.push(selection);
+        normalizedSelections.push(selection)
     }
+
     if (normalizedSelections)
-      editor.selections = normalizedSelections;
+      editor.selections = normalizedSelections
   }
 
   dispose() {
