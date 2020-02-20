@@ -15,14 +15,14 @@ import { TextBuffer } from '../utils/textBuffer'
 
 const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
-function moveLeft(editor: vscode.TextEditor, expand: boolean, mult: number) {
+function moveLeft(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
   preferredColumnsPerEditor.delete(editor)
 
   let selections = editor.selections.slice(),
       firstActive = undefined as vscode.Position | undefined
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i],
+    const selection = expand && !allowEmptySelections ? fixDirection(selections[i], -1) : selections[i],
           active = editor.document.positionAt(editor.document.offsetAt(selection.active) - mult)
 
     selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
@@ -37,14 +37,14 @@ function moveLeft(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 }
 
-function moveRight(editor: vscode.TextEditor, expand: boolean, mult: number) {
+function moveRight(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
   preferredColumnsPerEditor.delete(editor)
 
   let selections = editor.selections.slice(),
       lastActive = undefined as vscode.Position | undefined
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i],
+    const selection = expand && !allowEmptySelections ? fixDirection(selections[i], 1) : selections[i],
           active = editor.document.positionAt(editor.document.offsetAt(selection.active) + mult)
 
     selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
@@ -59,7 +59,7 @@ function moveRight(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 }
 
-function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number) {
+function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
   let preferredColumns = preferredColumnsPerEditor.get(editor)
 
   if (preferredColumns === undefined)
@@ -76,7 +76,7 @@ function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i]
+    const selection = expand && !allowEmptySelections ? fixDirection(selections[i], -1) : selections[i]
     let { active } = selection
 
     if (active.line === 0)
@@ -98,7 +98,7 @@ function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 }
 
-function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number) {
+function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
   let preferredColumns = preferredColumnsPerEditor.get(editor)
 
   if (preferredColumns === undefined)
@@ -116,7 +116,7 @@ function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i]
+    const selection = expand && !allowEmptySelections ? fixDirection(selections[i], 1) : selections[i]
     let { active } = selection
 
     if (active.line === lastLine)
@@ -138,15 +138,30 @@ function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 }
 
+/**
+ * Changes one character selections to be the direction specified. Return others unchanged.
+ * @param selection the original selection. Will be reversed if needed
+ * @param direction 1 for forward (active > anchor) or -1 for backward (active < anchor).
+ */
+function fixDirection(selection: vscode.Selection, direction: -1 | 1) {
+  if (selection.isSingleLine && selection.active.character + direction === selection.anchor.character) {
+    // Treat one-character selection as non-directional when expanding.
+    // TODO(#53): Apply this to all extending commands in addition to HJKL.
+    return new vscode.Selection(selection.active, selection.anchor)
+  }
+
+  return selection
+}
+
 // Move/extend left/down/up/right
-registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveLeft(editor, false, currentCount || 1))
-registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveLeft(editor, true , currentCount || 1))
-registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, { currentCount }) => moveRight(editor, false, currentCount || 1))
-registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, { currentCount }) => moveRight(editor, true , currentCount || 1))
-registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, { currentCount }) =>    moveUp(editor, false, currentCount || 1))
-registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, { currentCount }) =>    moveUp(editor, true , currentCount || 1))
-registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveDown(editor, false, currentCount || 1))
-registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveDown(editor, true , currentCount || 1))
+registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor, false, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor, true , currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor, false, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor, true , currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>    moveUp(editor, false, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>    moveUp(editor, true , currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveDown(editor, false, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveDown(editor, true , currentCount || 1, ctx.allowEmptySelections))
 
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
