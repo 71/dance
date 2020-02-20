@@ -435,7 +435,7 @@ export class Extension implements vscode.Disposable {
       return
 
     // Since this is called every time when selection changes, avoid allocations
-    // unless really needed and iterate manually without using helper functions. 
+    // unless really needed and iterate manually without using helper functions.
     let normalizedSelections
 
     for (let i = 0; i < editor.selections.length; i++) {
