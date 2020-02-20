@@ -83,6 +83,18 @@ const pkg = {
           default: null,
           markdownDescription: 'Controls the line highlighting applied to active lines in insert mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.',
         },
+        'dance.normalMode.lineNumbers': {
+          enum: ['off', 'on', 'relative', 'inherit'],
+          default: 'relative',
+          description: 'Controls the display of line numbers in normal mode.',
+          enumDescriptions: ['No line numbers.', 'Absolute line numbers.', 'Relative line numbers.', 'Inherit from `editor.lineNumbers`.'],
+        },
+        'dance.insertMode.lineNumbers': {
+          enum: ['off', 'on', 'relative', 'inherit'],
+          default: 'inherit',
+          description: 'Controls the display of line numbers in insert mode.',
+          enumDescriptions: ['No line numbers.', 'Absolute line numbers.', 'Relative line numbers.', 'Inherit from `editor.lineNumbers`.'],
+        },
       },
     },
     commands: Object.values(commands).map(x => ({

@@ -8,6 +8,32 @@ import { Register, Registers } from './registers'
 /** Name of the extension, used in commands and settings. */
 export const extensionName = 'dance'
 
+/** Mode-specific configuration. */
+class ModeConfiguration {
+  private constructor(
+    readonly mode: Mode,
+
+    public lineNumbers: vscode.TextEditorLineNumbersStyle,
+    public decorationType?: vscode.TextEditorDecorationType,
+  ) {}
+
+  static insert() {
+    return new ModeConfiguration(
+      Mode.Insert,
+
+      vscode.TextEditorLineNumbersStyle.On,
+    )
+  }
+
+  static normal() {
+    return new ModeConfiguration(
+      Mode.Normal,
+
+      vscode.TextEditorLineNumbersStyle.Relative,
+    )
+  }
+}
+
 /**
  * Global state of the extension.
  */
@@ -32,52 +58,89 @@ export class Extension implements vscode.Disposable {
   readonly registers = new Registers()
   readonly history   = new HistoryManager()
 
+  readonly insertMode = ModeConfiguration.insert()
+  readonly normalMode = ModeConfiguration.normal()
+
   constructor() {
     this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100)
     this.statusBarItem.tooltip = 'Current mode'
 
     this.setEnabled(this.configuration.get('enabled', true), false)
 
+    // Configuration: line highlight.
+
     this.observePreference<string | null>('insertMode.lineHighlight', null, value => {
-      if (this.insertModeDecorationType !== undefined)
-        this.insertModeDecorationType.dispose()
-
-      if (value === null || value.length === 0)
-        return this.insertModeDecorationType = undefined
-
-      this.insertModeDecorationType = this.createDecorationType(value)
-
-      if (this.getMode() === Mode.Insert && vscode.window.activeTextEditor !== undefined)
-        this.setDecorations(vscode.window.activeTextEditor, this.insertModeDecorationType)
-
-      return
+      this.updateDecorations(this.insertMode, value)
     }, true)
 
     this.observePreference<string | null>('normalMode.lineHighlight', 'editor.hoverHighlightBackground', value => {
-      if (this.normalModeDecorationType !== undefined)
-        this.normalModeDecorationType.dispose()
+      this.updateDecorations(this.normalMode, value)
+    }, true)
 
-      if (value === null || value.length === 0)
-        return this.normalModeDecorationType = undefined
+    // Configuration: line numbering.
 
-      this.normalModeDecorationType = this.createDecorationType(value)
+    this.configurationChangeHandlers.set('editor.lineNumbers', () => {
+      this.insertMode.lineNumbers = this.lineNumbersToLineNumbersStyle(
+        this.configuration.get('insertMode.lineNumbers', 'inherit')
+      )
+      this.normalMode.lineNumbers = this.lineNumbersToLineNumbersStyle(
+        this.configuration.get('normalMode.lineNumbers', 'relative')
+      )
+    })
 
-      if (this.getMode() === Mode.Normal && vscode.window.activeTextEditor !== undefined)
-        this.setDecorations(vscode.window.activeTextEditor, this.normalModeDecorationType)
+    this.observePreference<'on' | 'off' | 'relative' | 'inherit'>('insertMode.lineNumbers', 'inherit', value => {
+      this.insertMode.lineNumbers = this.lineNumbersToLineNumbersStyle(value)
+    }, true)
 
-      return
+    this.observePreference<'on' | 'off' | 'relative' | 'inherit'>('normalMode.lineNumbers', 'relative', value => {
+      this.normalMode.lineNumbers = this.lineNumbersToLineNumbersStyle(value)
     }, true)
   }
 
-  private createDecorationType(color: string) {
-    return vscode.window.createTextEditorDecorationType({
+  private updateDecorations(mode: ModeConfiguration, color: string | null) {
+    if (mode.decorationType !== undefined)
+      mode.decorationType.dispose()
+
+    if (color === null || color.length === 0)
+      return mode.decorationType = undefined
+
+    mode.decorationType = vscode.window.createTextEditorDecorationType({
       backgroundColor: color[0] === '#' ? color : new vscode.ThemeColor(color),
       isWholeLine: true,
     })
+
+    if (this.getMode() === mode.mode && vscode.window.activeTextEditor !== undefined)
+      this.setDecorations(vscode.window.activeTextEditor, mode.decorationType)
+
+    return
   }
 
-  private normalModeDecorationType?: vscode.TextEditorDecorationType
-  private insertModeDecorationType?: vscode.TextEditorDecorationType
+  private lineNumbersToLineNumbersStyle(lineNumbers: 'on' | 'off' | 'relative' | 'inherit') {
+    switch (lineNumbers) {
+      case 'on':
+        return vscode.TextEditorLineNumbersStyle.On
+      case 'off':
+        return vscode.TextEditorLineNumbersStyle.Off
+      case 'relative':
+        return vscode.TextEditorLineNumbersStyle.Relative
+      case 'inherit':
+      default:
+        const vscodeLineNumbers = vscode.workspace.getConfiguration().get<string>('editor.lineNumbers', 'on')
+
+        switch (vscodeLineNumbers) {
+          case 'on':
+            return vscode.TextEditorLineNumbersStyle.On
+          case 'off':
+            return vscode.TextEditorLineNumbersStyle.Off
+          case 'relative':
+            return vscode.TextEditorLineNumbersStyle.Relative
+          case 'interval': // This is a real option but its not in vscode.d.ts
+            return 3
+          default:
+            return vscode.TextEditorLineNumbersStyle.On
+        }
+    }
+  }
 
   setEditorMode(editor: vscode.TextEditor, mode: Mode) {
     if (this.modeMap.get(editor.document) === mode)
@@ -86,20 +149,20 @@ export class Extension implements vscode.Disposable {
     this.modeMap.set(editor.document, mode)
 
     if (mode === Mode.Insert) {
-      this.clearDecorations(editor, this.normalModeDecorationType)
-      this.setDecorations(editor, this.insertModeDecorationType)
+      this.clearDecorations(editor, this.normalMode.decorationType)
+      this.setDecorations(editor, this.insertMode.decorationType)
 
-      editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
+      editor.options.lineNumbers = this.insertMode.lineNumbers
     } else {
       if (mode === Mode.Awaiting) {
         this.typeCommand?.dispose()
         this.typeCommand = undefined
       }
 
-      this.clearDecorations(editor, this.insertModeDecorationType)
-      this.setDecorations(editor, this.normalModeDecorationType)
+      this.clearDecorations(editor, this.insertMode.decorationType)
+      this.setDecorations(editor, this.normalMode.decorationType)
 
-      editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
+      editor.options.lineNumbers = this.normalMode.lineNumbers
     }
 
     if (vscode.window.activeTextEditor === editor)
@@ -196,8 +259,8 @@ export class Extension implements vscode.Disposable {
                                      : lineNumbering === 'interval' ? vscode.TextEditorLineNumbersStyle.Relative + 1
                                      :                                vscode.TextEditorLineNumbersStyle.Off
 
-          this.clearDecorations(editor, this.normalModeDecorationType)
-          this.clearDecorations(editor, this.insertModeDecorationType)
+          this.clearDecorations(editor, this.normalMode.decorationType)
+          this.clearDecorations(editor, this.insertMode.decorationType)
         }
       }
 
@@ -235,9 +298,9 @@ export class Extension implements vscode.Disposable {
           const mode = this.modeMap.get(e.textEditor.document)
 
           if (mode === Mode.Insert)
-            this.setDecorations(e.textEditor, this.insertModeDecorationType)
+            this.setDecorations(e.textEditor, this.insertMode.decorationType)
           else
-            this.setDecorations(e.textEditor, this.normalModeDecorationType)
+            this.setDecorations(e.textEditor, this.normalMode.decorationType)
         }),
 
         vscode.workspace.onDidChangeConfiguration(e => {
