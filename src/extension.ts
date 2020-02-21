@@ -179,8 +179,6 @@ export class Extension implements vscode.Disposable {
       this.allowEmptySelections = value
     }, true)
 
-    this.setEnabled(this.configuration.get('enabled', true), false)
-
     // Configuration: line highlight.
     this.insertMode.observeLineHighlightPreference(this, null)
     this.normalMode.observeLineHighlightPreference(this, 'editor.hoverHighlightBackground')
@@ -202,6 +200,9 @@ export class Extension implements vscode.Disposable {
       this.insertMode.updateCursorStyle(this, 'inherit')
       this.normalMode.updateCursorStyle(this, 'inherit')
     })
+
+    // Lastly, enable the extension and set up modes.
+    this.setEnabled(this.configuration.get('enabled', true), false)
   }
 
   updateDecorations(mode: ModeConfiguration, color: string | null) {
