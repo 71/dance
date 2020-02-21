@@ -217,7 +217,7 @@ function isPunctuation(c: string) {
   return !isAlphaWord(c) && !isBlank(c)
 }
 
-function isAlphaWord(c: string) {
+export function isAlphaWord(c: string) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c === '_') || (c === '-')
 }
 
