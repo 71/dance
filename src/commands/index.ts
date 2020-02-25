@@ -163,7 +163,8 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
     if (flags & CommandFlags.ChangeSelections) {
       // Scroll to cursor if needed
-      editor.revealRange(editor.selection)
+      const position = editor.selection.active
+      editor.revealRange(new vscode.Range(position, position))
     }
 
     if (!this.command.startsWith('dance.count.'))
