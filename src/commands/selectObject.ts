@@ -60,7 +60,7 @@ function findPairObject(text: TextBuffer, backwards: boolean, start: string, end
 
 function findObjectWithChars(text: TextBuffer, backwards: boolean, inner: boolean, ok: (c: string) => boolean): vscode.Position | undefined {
   let diff = backwards ? -1 : 1
-  let i = diff
+  let i = backwards ? -1 : 0
 
   for (let c = text.char(i); c !== undefined; c = text.char(i += diff)) {
     if (!ok(c))
