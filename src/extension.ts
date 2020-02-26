@@ -435,8 +435,6 @@ export class Extension implements vscode.Disposable {
           if (mode === Mode.Insert) {
             this.setDecorations(e.textEditor, this.insertMode.decorationType)
             let reset = true
-            console.log("SelectionKind: ", e.kind)
-            //if(!!e.kind && (e.kind == vscode.TextEditorSelectionChangeKind.Keyboard)) {
             //! If selection kind is Command it should/can be produced by insertion/append from dance
             //! If selection kind is Keyboard it should/can be produced by textchanges
             if(!!e.kind && ((e.kind == vscode.TextEditorSelectionChangeKind.Command) || (e.kind == vscode.TextEditorSelectionChangeKind.Keyboard))) {
@@ -446,15 +444,10 @@ export class Extension implements vscode.Disposable {
               //! it is assumed that the last selection must not be reset.
               let documentHistory = this.history.for(e.textEditor.document)
               let lastSels = documentHistory.getLastSelections(e.textEditor.document)
-              console.log(`Selection Length: ${e.selections.length} LastSel Length: ${lastSels.length}`)
               if(lastSels.length == e.selections.length) {
                 reset = false
                 for (let index in e.selections) {
-                  console.log("Index: ", index)
-                  console.log("LastSel: ", lastSels[index])
-                  console.log("NewSel: ", e.selections[index])
                   let intersection = lastSels[index].intersection(e.selections[index])
-                  console.log("Intersection: ", intersection)
                   if(lastSels[index].intersection(e.selections[index]) === undefined) {
                     reset = true
                     continue
@@ -465,8 +458,6 @@ export class Extension implements vscode.Disposable {
             if(reset) {
               this.resetLastSelections(e.textEditor)
             }
-           
-            console.log("SelectionChange")
           } else {
             this.setDecorations(e.textEditor, this.normalMode.decorationType)
           }

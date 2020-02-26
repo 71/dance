@@ -13,7 +13,6 @@ export class HistoryManager {
 
   constructor() {
     this.changeDisposable = vscode.workspace.onDidChangeTextDocument(change => {
-      console.log("Change: ", change)
       this.for(change.document).handleChanges(change.contentChanges)
     })
   }
@@ -113,12 +112,10 @@ export class DocumentHistory {
 
   handleChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
     // Handle marks and selections
-    console.log("handleChanges: ", changes)
     if (changes.length > 0) {
       this.lastBufferModification = changes[0].range
       let changesAccum = this.prepareChanges(changes)
       this.lastSelections = this.updateChanges(this.lastSelections, changesAccum)
-      console.log("lastSelections After Change: ", this.lastSelections)
       this.marks.forEach(
         (sels, register: Register, map) => map.set(register, this.updateChanges(sels, changesAccum))
       )
