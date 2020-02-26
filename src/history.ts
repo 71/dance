@@ -87,7 +87,7 @@ export class DocumentHistory {
    */
   private updateChanges(offsetSelections: OffsetSelection[], changes: PreparedChanges[]) {
     return offsetSelections.map( s => {
-      if (changes.length == 0) return s
+      if (changes.length === 0) return s
       // If current selection is before all changes...
       if (s.end < changes[0].initialRemoveRange.start) return s
       // If current selection is after all changes...
