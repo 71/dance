@@ -9,20 +9,155 @@ import { OffsetEdgeTransformationBehaviour }      from './utils/offsetSelection'
 /** Name of the extension, used in commands and settings. */
 export const extensionName = 'dance'
 
+type CursorStyle = 'line' | 'block' | 'underline' | 'line-thin' | 'block-outline' | 'underline-thin' | 'inherit'
+type LineNumbers = 'on' | 'off' | 'relative' | 'inherit'
+
+/** Mode-specific configuration. */
+class ModeConfiguration {
+  private constructor(
+    readonly mode: Mode,
+    readonly modePrefix: string,
+
+    public lineNumbers: vscode.TextEditorLineNumbersStyle,
+    public cursorStyle: vscode.TextEditorCursorStyle,
+    public decorationType?: vscode.TextEditorDecorationType,
+  ) {}
+
+  static insert() {
+    return new ModeConfiguration(
+      Mode.Insert,
+      'insertMode',
+
+      vscode.TextEditorLineNumbersStyle.On,
+      vscode.TextEditorCursorStyle.Line,
+    )
+  }
+
+  static normal() {
+    return new ModeConfiguration(
+      Mode.Normal,
+      'normalMode',
+
+      vscode.TextEditorLineNumbersStyle.Relative,
+      vscode.TextEditorCursorStyle.Line,
+    )
+  }
+
+  observeLineHighlightPreference(extension: Extension, defaultValue: string | null) {
+    extension.observePreference<string | null>(this.modePrefix + '.lineHighlight', defaultValue, value => {
+      extension.updateDecorations(this, value)
+    }, true)
+  }
+
+  observeLineNumbersPreference(extension: Extension, defaultValue: LineNumbers) {
+    extension.observePreference<LineNumbers>(this.modePrefix + '.lineNumbers', defaultValue, value => {
+      this.lineNumbers = this.lineNumbersStringToLineNumbersStyle(value)
+    }, true)
+  }
+
+  updateLineNumbers(extension: Extension, defaultValue: LineNumbers) {
+    this.lineNumbers = this.lineNumbersStringToLineNumbersStyle(
+      extension.configuration.get(this.modePrefix + '.lineNumbers') ?? defaultValue
+    )
+  }
+
+  observeCursorStylePreference(extension: Extension, defaultValue: CursorStyle) {
+    extension.observePreference<CursorStyle>(this.modePrefix + '.cursorStyle', defaultValue, value => {
+      this.cursorStyle = this.cursorStyleStringToCursorStyle(value)
+    }, true)
+  }
+
+  updateCursorStyle(extension: Extension, defaultValue: CursorStyle) {
+    this.cursorStyle = this.cursorStyleStringToCursorStyle(
+      extension.configuration.get(this.modePrefix + '.cursorStyle') ?? defaultValue
+    )
+  }
+
+  private lineNumbersStringToLineNumbersStyle(lineNumbers: LineNumbers) {
+    switch (lineNumbers) {
+      case 'on':
+        return vscode.TextEditorLineNumbersStyle.On
+      case 'off':
+        return vscode.TextEditorLineNumbersStyle.Off
+      case 'relative':
+        return vscode.TextEditorLineNumbersStyle.Relative
+      case 'inherit':
+      default:
+        const vscodeLineNumbers = vscode.workspace.getConfiguration().get<LineNumbers | 'interval'>('editor.lineNumbers', 'on')
+
+        switch (vscodeLineNumbers) {
+          case 'on':
+            return vscode.TextEditorLineNumbersStyle.On
+          case 'off':
+            return vscode.TextEditorLineNumbersStyle.Off
+          case 'relative':
+            return vscode.TextEditorLineNumbersStyle.Relative
+          case 'interval': // This is a real option but its not in vscode.d.ts
+            return 3
+          default:
+            return vscode.TextEditorLineNumbersStyle.On
+        }
+    }
+  }
+
+  private cursorStyleStringToCursorStyle(cursorStyle: CursorStyle) {
+    switch (cursorStyle) {
+      case 'block':
+        return vscode.TextEditorCursorStyle.Block
+      case 'block-outline':
+        return vscode.TextEditorCursorStyle.BlockOutline
+      case 'line':
+        return vscode.TextEditorCursorStyle.Line
+      case 'line-thin':
+        return vscode.TextEditorCursorStyle.LineThin
+      case 'underline':
+        return vscode.TextEditorCursorStyle.Underline
+      case 'underline-thin':
+        return vscode.TextEditorCursorStyle.UnderlineThin
+
+      case 'inherit':
+      default:
+        const vscodeCursorStyle = vscode.workspace.getConfiguration().get<CursorStyle>('editor.cursorStyle', 'line')
+
+        switch (vscodeCursorStyle) {
+          case 'block':
+            return vscode.TextEditorCursorStyle.Block
+          case 'block-outline':
+            return vscode.TextEditorCursorStyle.BlockOutline
+          case 'line':
+            return vscode.TextEditorCursorStyle.Line
+          case 'line-thin':
+            return vscode.TextEditorCursorStyle.LineThin
+          case 'underline':
+            return vscode.TextEditorCursorStyle.Underline
+          case 'underline-thin':
+            return vscode.TextEditorCursorStyle.UnderlineThin
+          default:
+            return vscode.TextEditorCursorStyle.Line
+        }
+    }
+  }
+}
+
 /**
  * Global state of the extension.
  */
 export class Extension implements vscode.Disposable {
   private readonly configurationChangeHandlers = new Map<string, () => void>()
-  private configuration = vscode.workspace.getConfiguration(extensionName)
+  configuration = vscode.workspace.getConfiguration(extensionName)
 
   enabled: boolean = false
+
+  allowEmptySelections: boolean = true
+  private normalizeTimeoutToken: NodeJS.Timeout | undefined = undefined
 
   typeCommand: vscode.Disposable | undefined = undefined
   changeEditorCommand: vscode.Disposable | undefined = undefined
 
   currentCount: number = 0
   currentRegister: Register | undefined = undefined
+
+  ignoreSelectionChanges = false
 
   readonly subscriptions: vscode.Disposable[] = []
 
@@ -46,42 +181,42 @@ export class Extension implements vscode.Disposable {
       backgroundColor:  { id: "editor.background" }
     }
   )
+  readonly insertMode = ModeConfiguration.insert()
+  readonly normalMode = ModeConfiguration.normal()
 
   constructor() {
     this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100)
     this.statusBarItem.tooltip = 'Current mode'
 
+    // This needs to be before setEnabled for normalizing selections on start.
+    this.observePreference<boolean>('selections.allowEmpty', true, value => {
+      this.allowEmptySelections = value
+    }, true)
+
+    // Configuration: line highlight.
+    this.insertMode.observeLineHighlightPreference(this, null)
+    this.normalMode.observeLineHighlightPreference(this, 'editor.hoverHighlightBackground')
+
+    // Configuration: line numbering.
+    this.insertMode.observeLineNumbersPreference(this, 'inherit')
+    this.normalMode.observeLineNumbersPreference(this, 'relative')
+
+    this.configurationChangeHandlers.set('editor.lineNumbers', () => {
+      this.insertMode.updateLineNumbers(this, 'inherit')
+      this.normalMode.updateLineNumbers(this, 'relative')
+    })
+
+    // Configuration: cursor style.
+    this.insertMode.observeCursorStylePreference(this, 'inherit')
+    this.normalMode.observeCursorStylePreference(this, 'inherit')
+
+    this.configurationChangeHandlers.set('editor.cursorStyle', () => {
+      this.insertMode.updateCursorStyle(this, 'inherit')
+      this.normalMode.updateCursorStyle(this, 'inherit')
+    })
+
+    // Lastly, enable the extension and set up modes.
     this.setEnabled(this.configuration.get('enabled', true), false)
-
-    this.observePreference<string | null>('insertMode.lineHighlight', null, value => {
-      if (this.insertModeDecorationType !== undefined)
-        this.insertModeDecorationType.dispose()
-
-      if (value === null || value.length === 0)
-        return this.insertModeDecorationType = undefined
-
-      this.insertModeDecorationType = this.createDecorationType(value)
-
-      if (this.getMode() === Mode.Insert && vscode.window.activeTextEditor !== undefined)
-        this.setDecorations(vscode.window.activeTextEditor, this.insertModeDecorationType)
-
-      return
-    }, true)
-
-    this.observePreference<string | null>('normalMode.lineHighlight', 'editor.hoverHighlightBackground', value => {
-      if (this.normalModeDecorationType !== undefined)
-        this.normalModeDecorationType.dispose()
-
-      if (value === null || value.length === 0)
-        return this.normalModeDecorationType = undefined
-
-      this.normalModeDecorationType = this.createDecorationType(value)
-
-      if (this.getMode() === Mode.Normal && vscode.window.activeTextEditor !== undefined)
-        this.setDecorations(vscode.window.activeTextEditor, this.normalModeDecorationType)
-
-      return
-    }, true)
   }
 
   resetLastSelections(editor: vscode.TextEditor) {
@@ -102,16 +237,24 @@ export class Extension implements vscode.Disposable {
       this.resetLastSelections(editor)
     }
   }
+  
+  updateDecorations(mode: ModeConfiguration, color: string | null) {
+    if (mode.decorationType !== undefined)
+      mode.decorationType.dispose()
 
-  private createDecorationType(color: string) {
-    return vscode.window.createTextEditorDecorationType({
+    if (color === null || color.length === 0)
+      return mode.decorationType = undefined
+
+    mode.decorationType = vscode.window.createTextEditorDecorationType({
       backgroundColor: color[0] === '#' ? color : new vscode.ThemeColor(color),
       isWholeLine: true,
     })
-  }
 
-  private normalModeDecorationType?: vscode.TextEditorDecorationType
-  private insertModeDecorationType?: vscode.TextEditorDecorationType
+    if (this.getMode() === mode.mode && vscode.window.activeTextEditor !== undefined)
+      this.setDecorations(vscode.window.activeTextEditor, mode.decorationType)
+
+    return
+  }
 
   restoreLastSelections(editor: vscode.TextEditor) {
     let documentHistory = this.history.for(editor.document)
@@ -127,19 +270,33 @@ export class Extension implements vscode.Disposable {
 
     this.modeMap.set(editor.document, mode)
 
-    if (mode === Mode.Insert) {
-      this.clearDecorations(editor, this.normalModeDecorationType)
-      this.setDecorations(editor, this.insertModeDecorationType)
+    if (mode === Mode.Normal) {
+      // Force selection to be non-empty when switching to normal. This is only
+      // necessary because we do not restore selections yet.
+      // TODO: Remove this once https://github.com/71/dance/issues/31 is fixed.
+      this.normalizeSelections(editor)
+    }
 
-      editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.On
+    if (mode === Mode.Insert) {
+      this.clearDecorations(editor, this.normalMode.decorationType)
+      this.setDecorations(editor, this.insertMode.decorationType)
+
+      editor.options.lineNumbers = this.insertMode.lineNumbers
+      editor.options.cursorStyle = this.insertMode.cursorStyle
     } else {
+      if (mode === Mode.Awaiting) {
+        this.typeCommand?.dispose()
+        this.typeCommand = undefined
+      }
+      
       this.clearDecorations(editor, this.selectionDecorationType)
       this.clearDecorations(editor, this.selectionInsertDecorationType)
-      this.clearDecorations(editor, this.insertModeDecorationType)
-      this.setDecorations(editor, this.normalModeDecorationType)
+      this.clearDecorations(editor, this.insertMode.decorationType)
+      this.setDecorations(editor, this.normalMode.decorationType)
 
-      editor.options.lineNumbers = vscode.TextEditorLineNumbersStyle.Relative
-
+      editor.options.lineNumbers = this.normalMode.lineNumbers
+      editor.options.cursorStyle = this.normalMode.cursorStyle
+      
       this.restoreLastSelections(editor)
     }
 
@@ -237,8 +394,8 @@ export class Extension implements vscode.Disposable {
                                      : lineNumbering === 'interval' ? vscode.TextEditorLineNumbersStyle.Relative + 1
                                      :                                vscode.TextEditorLineNumbersStyle.Off
 
-          this.clearDecorations(editor, this.normalModeDecorationType)
-          this.clearDecorations(editor, this.insertModeDecorationType)
+          this.clearDecorations(editor, this.normalMode.decorationType)
+          this.clearDecorations(editor, this.insertMode.decorationType)
         }
       }
 
@@ -275,10 +432,58 @@ export class Extension implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(e => {
           const mode = this.modeMap.get(e.textEditor.document)
 
-          if (mode === Mode.Insert)
-            this.setDecorations(e.textEditor, this.insertModeDecorationType)
-          else
-            this.setDecorations(e.textEditor, this.normalModeDecorationType)
+          if (mode === Mode.Insert) {
+            this.setDecorations(e.textEditor, this.insertMode.decorationType)
+            let reset = true
+            console.log("SelectionKind: ", e.kind)
+            //if(!!e.kind && (e.kind == vscode.TextEditorSelectionChangeKind.Keyboard)) {
+            //! If selection kind is Command it should/can be produced by insertion/append from dance
+            //! If selection kind is Keyboard it should/can be produced by textchanges
+            if(!!e.kind && ((e.kind == vscode.TextEditorSelectionChangeKind.Command) || (e.kind == vscode.TextEditorSelectionChangeKind.Keyboard))) {
+              //! Luckily document changes are fired before selection changes,
+              //! hence the 'last selections' in the document history has been already updated.
+              //! If new selections intersect with last selections of document changes, 
+              //! it is assumed that the last selection must not be reset.
+              let documentHistory = this.history.for(e.textEditor.document)
+              let lastSels = documentHistory.getLastSelections(e.textEditor.document)
+              console.log(`Selection Length: ${e.selections.length} LastSel Length: ${lastSels.length}`)
+              if(lastSels.length == e.selections.length) {
+                reset = false
+                for (let index in e.selections) {
+                  console.log("Index: ", index)
+                  console.log("LastSel: ", lastSels[index])
+                  console.log("NewSel: ", e.selections[index])
+                  let intersection = lastSels[index].intersection(e.selections[index])
+                  console.log("Intersection: ", intersection)
+                  if(lastSels[index].intersection(e.selections[index]) === undefined) {
+                    reset = true
+                    continue
+                  }
+                }
+              } 
+            }
+            if(reset) {
+              this.resetLastSelections(e.textEditor)
+            }
+           
+            console.log("SelectionChange")
+          } else {
+            this.setDecorations(e.textEditor, this.normalMode.decorationType)
+          }
+
+          if (this.normalizeTimeoutToken !== undefined) {
+            clearTimeout(this.normalizeTimeoutToken)
+            this.normalizeTimeoutToken = undefined
+          }
+
+          if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
+            this.normalizeTimeoutToken = setTimeout(() => {
+              this.normalizeSelections(e.textEditor)
+              this.normalizeTimeoutToken = undefined
+            }, 200)
+          } else {
+            this.normalizeSelections(e.textEditor)
+          }
         }),
 
         vscode.workspace.onDidChangeConfiguration(e => {
@@ -301,6 +506,55 @@ export class Extension implements vscode.Disposable {
     return this.enabled = enabled
   }
 
+  /**
+   * Make all selections in the editor non-empty by selecting at least one character.
+   */
+  normalizeSelections(editor: vscode.TextEditor) {
+    if (this.allowEmptySelections || this.ignoreSelectionChanges)
+      return
+
+    if (this.modeMap.get(editor.document) !== Mode.Normal)
+      return
+
+    // Since this is called every time when selection changes, avoid allocations
+    // unless really needed and iterate manually without using helper functions.
+    let normalizedSelections: vscode.Selection[] | undefined = undefined
+
+    for (let i = 0; i < editor.selections.length; i++) {
+      const selection = editor.selections[i]
+
+      if (selection.isEmpty) {
+        if (normalizedSelections === undefined) {
+          // Change needed. Allocate the new array and copy what we have so far.
+          normalizedSelections = editor.selections.slice(0, i)
+        }
+
+        const active = selection.active
+
+        if (active.character >= editor.document.lineAt(active.line).range.end.character) {
+          // Selection is at line end. Just keep it that way.
+          normalizedSelections.push(selection)
+        } else {
+          const offset = editor.document.offsetAt(selection.active)
+          const nextPos = editor.document.positionAt(offset + 1)
+
+          if (nextPos.isAfter(selection.active)) {
+            // Move anchor to select 1 character after, but keep the cursor position.
+            normalizedSelections.push(new vscode.Selection(active.translate(0, 1), active))
+          } else {
+            // Selection is at the very end of the document. Select the last character instead.
+            normalizedSelections.push(new vscode.Selection(active, active.translate(0, -1)))
+          }
+        }
+      } else if (normalizedSelections !== undefined) {
+        normalizedSelections.push(selection)
+      }
+    }
+
+    if (normalizedSelections !== undefined)
+      editor.selections = normalizedSelections
+  }
+
   dispose() {
     this.history.dispose()
     this.statusBarItem.dispose()
@@ -318,7 +572,7 @@ export class Extension implements vscode.Disposable {
    *
    * @param triggerNow If `true`, the handler will also be triggered immediately with the current value.
    */
-  private observePreference<T>(section: string, defaultValue: T, handler: (value: T) => void, triggerNow = false) {
+  observePreference<T>(section: string, defaultValue: T, handler: (value: T) => void, triggerNow = false) {
     this.configurationChangeHandlers.set('dance.' + section, () => {
       handler(this.configuration.get(section, defaultValue))
     })
