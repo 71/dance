@@ -9,18 +9,35 @@ import { registerCommand, Command, CommandFlags, InputKind } from '.'
 const exec = util.promisify(cp.exec)
 const replaceMap = { '\n': '\\n', '\r': '\\r', '"': '\\"' }
 
-const terminalConfig = vscode.workspace.getConfiguration('terminal.external')
-const shellToUse =
-  /*process.platform === 'win32' || process.platform === 'cygwin' ? terminalConfig.get<string>('windowsExec')
- :*/process.platform === 'darwin' ? terminalConfig.get<string>('osxExec')
-  : process.platform === 'linux'  ? terminalConfig.get<string>('linuxExec')
-  : undefined
+function getShell() {
+  let os: string
+
+  if (process.platform === 'cygwin')
+    os = 'linux'
+  else if (process.platform === 'linux')
+    os = 'linux'
+  else if (process.platform === 'darwin')
+    os = 'osx'
+  else if (process.platform === 'win32')
+    os = 'windows'
+  else
+    return undefined
+
+  const config = vscode.workspace.getConfiguration('terminal')
+
+  return config.get<string | null>(`integrated.automationShell.${os}`)
+      ?? config.get<string | null>(`integrated.shell.${os}`)
+      ?? process.env.SHELL
+      ?? undefined
+}
 
 function execWithInput(command: string, input: string) {
+  const shell = getShell()
+
   input = input.replace(/[\n\r"]/g, s => replaceMap[s as '\n' | '\r' | '"'])
   command = `echo "${input}" | ${command}`
 
-  return exec(command, { shell: shellToUse })
+  return exec(command, { shell })
           .then(x => ({ err: x.stderr, val: x.stdout.trimRight() }))
           .catch((e: cp.ExecException) => ({ err: e.message }))
 }
@@ -114,6 +131,29 @@ function pipe(command: string, selections: string[]) {
   }
 }
 
+function displayErrors(errors: { err?: string }[]) {
+  let message = ''
+  let errorCount = 0
+
+  for (const error of errors) {
+    if (error.err !== undefined && error.err.length > 0) {
+      message += `- "${error.err}".`
+      errorCount++
+    }
+  }
+
+  if (errorCount === 0)
+    return false
+  if (errorCount === 1)
+    message = `Error running shell command: ${message.substr(2)}`
+  else
+    message = `Errors running shell command:\n${message}`
+
+  vscode.window.showErrorMessage(message)
+
+  return true
+}
+
 
 const getInputBoxOptions = (expectReplacement: boolean) => ({
   validateInput(input) {
@@ -160,30 +200,20 @@ function pipeInput(input: string, editor: vscode.TextEditor) {
 registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Text, inputBoxOptions, async (editor, state) => {
   const outputs = await pipeInput(state.input, editor)
 
-  if (outputs === undefined)
-    return
-
-  // TODO: Handle stderr
+  displayErrors(outputs)
   editor.selections = editor.selections.filter((_, i) => !outputs[i].err && outputs[i].val !== 'false')
 })
 
 registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, inputBoxOptions, async (editor, state) => {
   const outputs = await pipeInput(state.input, editor)
 
-  if (outputs === undefined)
-    return
-
-  // TODO: Handle stderr
+  displayErrors(outputs)
 })
 
 registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBoxOptionsWithReplacement, async (editor, state) => {
   const outputs = await pipeInput(state.input, editor)
 
-  if (outputs === undefined)
-    return
-
-  // TODO: Handle stderr
-  if (outputs.find(x => !!x.err))
+  if (displayErrors(outputs))
     return
 
   return (builder: vscode.TextEditorEdit) => {
@@ -195,11 +225,7 @@ registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBox
 registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
   const outputs = await pipeInput(state.input, editor)
 
-  if (outputs === undefined)
-    return
-
-  // TODO: Handle stderr
-  if (outputs.find(x => !!x.err))
+  if (displayErrors(outputs))
     return
 
   return (builder: vscode.TextEditorEdit) => {
@@ -211,11 +237,7 @@ registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxO
 registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
   const outputs = await pipeInput(state.input, editor)
 
-  if (outputs === undefined)
-    return
-
-  // TODO: Handle stderr
-  if (outputs.find(x => !!x.err))
+  if (displayErrors(outputs))
     return
 
   return (builder: vscode.TextEditorEdit) => {

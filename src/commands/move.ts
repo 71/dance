@@ -15,14 +15,14 @@ import { TextBuffer } from '../utils/textBuffer'
 
 const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
-function moveLeft(editor: vscode.TextEditor, expand: boolean, mult: number) {
+function moveLeft(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
   preferredColumnsPerEditor.delete(editor)
 
   let selections = editor.selections.slice(),
       firstActive = undefined as vscode.Position | undefined
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i],
+    const selection = expand && !allowEmptySelections ? fixDirection(selections[i], -1) : selections[i],
           active = editor.document.positionAt(editor.document.offsetAt(selection.active) - mult)
 
     selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
@@ -37,14 +37,14 @@ function moveLeft(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 }
 
-function moveRight(editor: vscode.TextEditor, expand: boolean, mult: number) {
+function moveRight(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
   preferredColumnsPerEditor.delete(editor)
 
   let selections = editor.selections.slice(),
       lastActive = undefined as vscode.Position | undefined
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i],
+    const selection = expand && !allowEmptySelections ? fixDirection(selections[i], 1) : selections[i],
           active = editor.document.positionAt(editor.document.offsetAt(selection.active) + mult)
 
     selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
@@ -59,7 +59,7 @@ function moveRight(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 }
 
-function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number) {
+function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
   let preferredColumns = preferredColumnsPerEditor.get(editor)
 
   if (preferredColumns === undefined)
@@ -76,7 +76,7 @@ function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i]
+    const selection = expand && !allowEmptySelections ? fixDirection(selections[i], -1) : selections[i]
     let { active } = selection
 
     if (active.line === 0)
@@ -98,7 +98,7 @@ function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 }
 
-function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number) {
+function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
   let preferredColumns = preferredColumnsPerEditor.get(editor)
 
   if (preferredColumns === undefined)
@@ -116,7 +116,7 @@ function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i]
+    const selection = expand && !allowEmptySelections ? fixDirection(selections[i], 1) : selections[i]
     let { active } = selection
 
     if (active.line === lastLine)
@@ -138,15 +138,31 @@ function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number) {
   }
 }
 
+/**
+ * Changes one character elections to be the direction specified. Return others unchanged.
+ *
+ * @param selection The original selection. Will be reversed if needed.
+ * @param direction 1 for forward (active > anchor) or -1 for backward (active < anchor).
+ */
+function fixDirection(selection: vscode.Selection, direction: -1 | 1) {
+  if (selection.isSingleLine && selection.active.character + direction === selection.anchor.character) {
+    // Treat one-character selection as non-directional when expanding.
+    // TODO(#53): Apply this to all extending commands in addition to HJKL.
+    return new vscode.Selection(selection.active, selection.anchor)
+  }
+
+  return selection
+}
+
 // Move/extend left/down/up/right
-registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveLeft(editor, false, currentCount || 1))
-registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveLeft(editor, true , currentCount || 1))
-registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, { currentCount }) => moveRight(editor, false, currentCount || 1))
-registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, { currentCount }) => moveRight(editor, true , currentCount || 1))
-registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, { currentCount }) =>    moveUp(editor, false, currentCount || 1))
-registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, { currentCount }) =>    moveUp(editor, true , currentCount || 1))
-registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveDown(editor, false, currentCount || 1))
-registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, { currentCount }) =>  moveDown(editor, true , currentCount || 1))
+registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor, false, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor, true , currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor, false, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor, true , currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>    moveUp(editor, false, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>    moveUp(editor, true , currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveDown(editor, false, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveDown(editor, true , currentCount || 1, ctx.allowEmptySelections))
 
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
@@ -201,7 +217,7 @@ function isPunctuation(c: string) {
   return !isAlphaWord(c) && !isBlank(c)
 }
 
-function isAlphaWord(c: string) {
+export function isAlphaWord(c: string) {
   return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c === '_') || (c === '-')
 }
 
@@ -275,6 +291,8 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
         if (pos === undefined)
           return defaultSelection
 
+        const wordStart = extend ? anchor : pos
+
         if (end) {
           pos = skipWhile(editor.document, pos, false, false, isBlank)
 
@@ -299,7 +317,7 @@ function registerToNextWord(commandName: Command, extend: boolean, end: boolean,
             return defaultSelection
         }
 
-        selection = new vscode.Selection(anchor, pos)
+        selection = new vscode.Selection(wordStart, pos)
       }
 
       return selection
@@ -320,6 +338,8 @@ function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (
         if (pos === undefined)
           return defaultSelection
 
+        const wordStart = extend ? anchor : pos
+
         pos = skipWhile(editor.document, pos, true, true, isBlank)
 
         if (pos === undefined)
@@ -335,7 +355,7 @@ function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (
         if (pos === undefined)
           return defaultSelection
 
-        selection = new vscode.Selection(anchor, pos.character === 0 ? pos : pos.translate(0, 1))
+        selection = new vscode.Selection(wordStart, pos.character === 0 ? pos : pos.translate(0, 1))
       }
 
       return selection
@@ -583,6 +603,40 @@ registerToEnclosing(Command.selectEnclosing               , false, false)
 registerToEnclosing(Command.selectEnclosingExtend         , true , false)
 registerToEnclosing(Command.selectEnclosingBackwards      , false, true )
 registerToEnclosing(Command.selectEnclosingExtendBackwards, true , true )
+
+
+// Move up/down (ctrl-[bfud])
+// ===============================================================================================
+
+function registerMoveLines(command: Command, direction: 'up' | 'down', extend: boolean, computeTranslation: (editor: vscode.TextEditor) => number) {
+  registerCommand(command, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+    const translation = computeTranslation(editor)
+
+    return vscode.commands.executeCommand('editorScroll', {
+      to: direction,
+      by: 'line',
+      value: (currentCount || 1) * translation,
+      revealCursor: true,
+      select: extend,
+    })
+  })
+}
+
+function getHeight(editor: vscode.TextEditor) {
+  const visibleRange = editor.visibleRanges[0]
+
+  return visibleRange.end.line - visibleRange.start.line
+}
+
+registerMoveLines(Command.moveUp          , 'up', false, editor => getHeight(editor))
+registerMoveLines(Command.moveUpExtend    , 'up', true , editor => getHeight(editor))
+registerMoveLines(Command.moveUpHalf      , 'up', false, editor => getHeight(editor) / 2)
+registerMoveLines(Command.moveUpHalfExtend, 'up', true , editor => getHeight(editor) / 2)
+
+registerMoveLines(Command.moveDown          , 'down', false, editor => getHeight(editor))
+registerMoveLines(Command.moveDownExtend    , 'down', true , editor => getHeight(editor))
+registerMoveLines(Command.moveDownHalf      , 'down', false, editor => getHeight(editor) / 2)
+registerMoveLines(Command.moveDownHalfExtend, 'down', true , editor => getHeight(editor) / 2)
 
 
 // Other bindings (%)

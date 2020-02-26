@@ -89,7 +89,7 @@ registerCommand(Command.selectionsClear, CommandFlags.ChangeSelections, editor =
 
 registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, editor => {
   if (editor.selections.length > 1)
-    editor.selections = editor.selections.splice(editor.selections.indexOf(editor.selection), 1)
+    editor.selections = editor.selections.slice(1)
 })
 
 registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', async (editor, { input: regex }) => {

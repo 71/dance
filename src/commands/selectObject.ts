@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 import { TextBuffer } from '../utils/textBuffer'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
+import { isAlphaWord } from './move'
 
 
 const objectTypePromptItems: [string, string][] = [
@@ -291,7 +292,7 @@ function findObjectStart(text: TextBuffer, type: number, inner: boolean): vscode
 
 
     case 7: // Word
-      return findObjectWithChars(text, true, inner, c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+      return findObjectWithChars(text, true, inner, isAlphaWord)
 
     case 8: // Non-whitespace word
       return findObjectWithChars(text, true, inner, c => !' \t\r\n'.includes(c))
@@ -344,7 +345,7 @@ function findObjectEnd(text: TextBuffer, type: number, inner: boolean): vscode.P
 
 
     case 7: // Word
-      return findObjectWithChars(text, false, inner, c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+      return findObjectWithChars(text, false, inner, isAlphaWord)
 
     case 8: // Non-whitespace word
       return findObjectWithChars(text, false, inner, c => !' \t\r\n'.includes(c))

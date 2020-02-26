@@ -10,7 +10,7 @@ const pkg = {
   name: 'dance',
   displayName: 'Dance',
   description: 'Make those cursors dance with Kakoune-inspired keybindings.',
-  version: '0.1.9',
+  version: '0.2.0',
   license: 'MIT',
 
   publisher: 'gregoire',
@@ -82,6 +82,33 @@ const pkg = {
           type: ['string', 'null'],
           default: null,
           markdownDescription: 'Controls the line highlighting applied to active lines in insert mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.',
+        },
+        'dance.normalMode.lineNumbers': {
+          enum: ['off', 'on', 'relative', 'inherit'],
+          default: 'relative',
+          description: 'Controls the display of line numbers in normal mode.',
+          enumDescriptions: ['No line numbers.', 'Absolute line numbers.', 'Relative line numbers.', 'Inherit from `editor.lineNumbers`.'],
+        },
+        'dance.insertMode.lineNumbers': {
+          enum: ['off', 'on', 'relative', 'inherit'],
+          default: 'inherit',
+          description: 'Controls the display of line numbers in insert mode.',
+          enumDescriptions: ['No line numbers.', 'Absolute line numbers.', 'Relative line numbers.', 'Inherit from `editor.lineNumbers`.'],
+        },
+        'dance.normalMode.cursorStyle': {
+          enum: ['line', 'block', 'underline', 'line-thin', 'block-outline', 'underline-thin', 'inherit'],
+          default: 'inherit',
+          description: 'Controls the cursor style in normal mode.',
+        },
+        'dance.insertMode.cursorStyle': {
+          enum: ['line', 'block', 'underline', 'line-thin', 'block-outline', 'underline-thin', 'inherit'],
+          default: 'inherit',
+          description: 'Controls the cursor style in insert mode.',
+        },
+        'dance.selections.allowEmpty': {
+          type: 'boolean',
+          default: true,
+          description: 'Controls whether selections can be empty. If false, each selection will have at least one character.',
         },
       },
     },

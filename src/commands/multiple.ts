@@ -25,7 +25,8 @@ registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp,
     }
   }
 
-  editor.selections = newSelections
+  if (newSelections.length > 0)
+    editor.selections = newSelections
 })
 
 registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', async (editor, { input: regex }) => {

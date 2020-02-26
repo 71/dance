@@ -30,6 +30,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.right` | Move right | Move right. | `Right` (`dance.mode == 'normal'`), `L` (`dance.mode == 'normal'`) |
 | `dance.up` | Move up | Move up. | `Up` (`dance.mode == 'normal'`), `K` (`dance.mode == 'normal'`) |
 | `dance.down` | Move down | Move down. | `Down` (`dance.mode == 'normal'`), `J` (`dance.mode == 'normal'`) |
+| `dance.moveUp` | Scroll one page up | Scroll one page up. | `Ctrl+B` (`dance.mode == 'normal'`), `Ctrl+B` (`dance.mode == 'insert'`) |
+| `dance.moveDown` | Scroll one page down | Scroll one page down. | `Ctrl+F` (`dance.mode == 'normal'`), `Ctrl+F` (`dance.mode == 'insert'`) |
+| `dance.moveUp.half` | Scroll half a page up | Scroll half a page up. | `Ctrl+U` (`dance.mode == 'normal'`), `Ctrl+U` (`dance.mode == 'insert'`) |
+| `dance.moveDown.half` | Scroll half a page down | Scroll half a page down. | `Ctrl+D` (`dance.mode == 'normal'`), `Ctrl+D` (`dance.mode == 'insert'`) |
 | `dance.select.to.included` | Select to | Select to the next character pressed, including it. | `F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded` | Select until | Select until the next character pressed, excluding it. | `T` (`dance.mode == 'normal'`) |
 | `dance.select.buffer` | Select whole buffer | Select whole buffer. | `Shift+5` (`dance.mode == 'normal'`) |
@@ -130,6 +134,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `Shift+L` (`dance.mode == 'normal'`) |
 | `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `Shift+K` (`dance.mode == 'normal'`) |
 | `dance.down.extend` | Move down (extend) | Move down (extend). | `Shift+Down` (`dance.mode == 'normal'`), `Shift+J` (`dance.mode == 'normal'`) |
+| `dance.moveUp.extend` | Scroll one page up (extend) | Scroll one page up (extend). | `Shift+Ctrl+B` (`dance.mode == 'normal'`), `Shift+Ctrl+B` (`dance.mode == 'insert'`) |
+| `dance.moveDown.extend` | Scroll one page down (extend) | Scroll one page down (extend). | `Shift+Ctrl+F` (`dance.mode == 'normal'`), `Shift+Ctrl+F` (`dance.mode == 'insert'`) |
+| `dance.moveUp.half.extend` | Scroll half a page up (extend) | Scroll half a page up (extend). | `Shift+Ctrl+U` (`dance.mode == 'normal'`), `Shift+Ctrl+U` (`dance.mode == 'insert'`) |
+| `dance.moveDown.half.extend` | Scroll half a page down (extend) | Scroll half a page down (extend). | `Shift+Ctrl+D` (`dance.mode == 'normal'`), `Shift+Ctrl+D` (`dance.mode == 'insert'`) |
 | `dance.select.to.included.extend` | Extend to | Extend to the next character pressed, including it. | `Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend` | Extend until | Extend with until the next character pressed, excluding it. | `Shift+T` (`dance.mode == 'normal'`) |
 | `dance.select.line.extend` | Extend with line | Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line). | `Shift+X` (`dance.mode == 'normal'`) |
