@@ -1107,6 +1107,11 @@
     ],
     "keybindings": [
       {
+        "command": "workbench.action.showCommands",
+        "key": "Shift+;",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
         "command": "dance.set.normal",
         "key": "escape",
         "when": "editorTextFocus && dance.mode == 'insert'"

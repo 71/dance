@@ -120,7 +120,9 @@ const pkg = {
     })),
     keybindings: Object.values(commands).reduce((bindings: { command: string, key: string, when: string }[], x) =>
       bindings.concat(x.keybindings.map(k => ({ command: x.id, key: k.key, when: k.when })))
-    , []),
+    , [
+      { command: 'workbench.action.showCommands', key: 'Shift+;', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    ]),
   },
 }
 
