@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, CommandState, InputKind } from '.'
 
 import { Extension }                     from '../extension'
-import { makeSelection, offsetPosition } from '../utils/textInDocument'
+import { makeSelection, offsetPosition, Forward, Backward } from '../utils/selections'
 
 
 function getRegister(state: CommandState<any>, ctx: Extension) {
@@ -114,7 +114,7 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, und
           selection = editor.selections[i]
 
     if (!content.endsWith('\n')) {
-      const previousEnd = offsetPosition(editor.document, content, selection.end, false)
+      const previousEnd = offsetPosition(editor.document, content, selection.end, Backward)
 
       editor.selections[i] = makeSelection(selection.isEmpty ? previousEnd : selection.start, previousEnd, selection)
     }
@@ -147,7 +147,7 @@ registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, un
           selection = editor.selections[i]
 
     if (!content.endsWith('\n')) {
-      const previousStart = offsetPosition(editor.document, content, selection.start, true)
+      const previousStart = offsetPosition(editor.document, content, selection.start, Forward)
 
       editor.selections[i] = makeSelection(previousStart, selection.isEmpty ? previousStart : selection.end, selection)
     }

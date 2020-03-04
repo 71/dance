@@ -99,22 +99,22 @@ down:
   keys: down (normal), j (normal)
   add: extend
 
-moveUp:
+up.page:
   title: Scroll one page up
   keys: c-b (normal), c-b (insert)
   add: extend
 
-moveDown:
+down.page:
   title: Scroll one page down
   keys: c-f (normal), c-f (insert)
   add: extend
 
-moveUp.half:
+up.halfPage:
   title: Scroll half a page up
   keys: c-u (normal), c-u (insert)
   add: extend
 
-moveDown.half:
+down.halfPage:
   title: Scroll half a page down
   keys: c-d (normal), c-d (insert)
   add: extend

@@ -243,8 +243,8 @@ export const down: ICommand & { readonly id: 'dance.down' } = {
  *
  * Default keys: `Ctrl+B` (`dance.mode == 'normal'`), `Ctrl+B` (`dance.mode == 'insert'`).
  */
-export const moveUp: ICommand & { readonly id: 'dance.moveUp' } = {
-  id         : 'dance.moveUp',
+export const upPage: ICommand & { readonly id: 'dance.up.page' } = {
+  id         : 'dance.up.page',
   title      : 'Scroll one page up',
   description: 'Scroll one page up.',
   keybindings: [
@@ -257,8 +257,8 @@ export const moveUp: ICommand & { readonly id: 'dance.moveUp' } = {
  *
  * Default keys: `Ctrl+F` (`dance.mode == 'normal'`), `Ctrl+F` (`dance.mode == 'insert'`).
  */
-export const moveDown: ICommand & { readonly id: 'dance.moveDown' } = {
-  id         : 'dance.moveDown',
+export const downPage: ICommand & { readonly id: 'dance.down.page' } = {
+  id         : 'dance.down.page',
   title      : 'Scroll one page down',
   description: 'Scroll one page down.',
   keybindings: [
@@ -271,8 +271,8 @@ export const moveDown: ICommand & { readonly id: 'dance.moveDown' } = {
  *
  * Default keys: `Ctrl+U` (`dance.mode == 'normal'`), `Ctrl+U` (`dance.mode == 'insert'`).
  */
-export const moveUpHalf: ICommand & { readonly id: 'dance.moveUp.half' } = {
-  id         : 'dance.moveUp.half',
+export const upHalfPage: ICommand & { readonly id: 'dance.up.halfPage' } = {
+  id         : 'dance.up.halfPage',
   title      : 'Scroll half a page up',
   description: 'Scroll half a page up.',
   keybindings: [
@@ -285,8 +285,8 @@ export const moveUpHalf: ICommand & { readonly id: 'dance.moveUp.half' } = {
  *
  * Default keys: `Ctrl+D` (`dance.mode == 'normal'`), `Ctrl+D` (`dance.mode == 'insert'`).
  */
-export const moveDownHalf: ICommand & { readonly id: 'dance.moveDown.half' } = {
-  id         : 'dance.moveDown.half',
+export const downHalfPage: ICommand & { readonly id: 'dance.down.halfPage' } = {
+  id         : 'dance.down.halfPage',
   title      : 'Scroll half a page down',
   description: 'Scroll half a page down.',
   keybindings: [
@@ -1584,8 +1584,8 @@ export const downExtend: ICommand & { readonly id: 'dance.down.extend' } = {
  *
  * Default keys: `Shift+Ctrl+B` (`dance.mode == 'normal'`), `Shift+Ctrl+B` (`dance.mode == 'insert'`).
  */
-export const moveUpExtend: ICommand & { readonly id: 'dance.moveUp.extend' } = {
-  id         : 'dance.moveUp.extend',
+export const upPageExtend: ICommand & { readonly id: 'dance.up.page.extend' } = {
+  id         : 'dance.up.page.extend',
   title      : 'Scroll one page up (extend)',
   description: 'Scroll one page up (extend).',
   keybindings: [
@@ -1598,8 +1598,8 @@ export const moveUpExtend: ICommand & { readonly id: 'dance.moveUp.extend' } = {
  *
  * Default keys: `Shift+Ctrl+F` (`dance.mode == 'normal'`), `Shift+Ctrl+F` (`dance.mode == 'insert'`).
  */
-export const moveDownExtend: ICommand & { readonly id: 'dance.moveDown.extend' } = {
-  id         : 'dance.moveDown.extend',
+export const downPageExtend: ICommand & { readonly id: 'dance.down.page.extend' } = {
+  id         : 'dance.down.page.extend',
   title      : 'Scroll one page down (extend)',
   description: 'Scroll one page down (extend).',
   keybindings: [
@@ -1612,8 +1612,8 @@ export const moveDownExtend: ICommand & { readonly id: 'dance.moveDown.extend' }
  *
  * Default keys: `Shift+Ctrl+U` (`dance.mode == 'normal'`), `Shift+Ctrl+U` (`dance.mode == 'insert'`).
  */
-export const moveUpHalfExtend: ICommand & { readonly id: 'dance.moveUp.half.extend' } = {
-  id         : 'dance.moveUp.half.extend',
+export const upHalfPageExtend: ICommand & { readonly id: 'dance.up.halfPage.extend' } = {
+  id         : 'dance.up.halfPage.extend',
   title      : 'Scroll half a page up (extend)',
   description: 'Scroll half a page up (extend).',
   keybindings: [
@@ -1626,8 +1626,8 @@ export const moveUpHalfExtend: ICommand & { readonly id: 'dance.moveUp.half.exte
  *
  * Default keys: `Shift+Ctrl+D` (`dance.mode == 'normal'`), `Shift+Ctrl+D` (`dance.mode == 'insert'`).
  */
-export const moveDownHalfExtend: ICommand & { readonly id: 'dance.moveDown.half.extend' } = {
-  id         : 'dance.moveDown.half.extend',
+export const downHalfPageExtend: ICommand & { readonly id: 'dance.down.halfPage.extend' } = {
+  id         : 'dance.down.halfPage.extend',
   title      : 'Scroll half a page down (extend)',
   description: 'Scroll half a page down (extend).',
   keybindings: [
@@ -2132,13 +2132,13 @@ export const commands = {
   /** Move down. */
   down,
   /** Scroll one page up. */
-  moveUp,
+  upPage,
   /** Scroll one page down. */
-  moveDown,
+  downPage,
   /** Scroll half a page up. */
-  moveUpHalf,
+  upHalfPage,
   /** Scroll half a page down. */
-  moveDownHalf,
+  downHalfPage,
   /** Select to the next character pressed, including it. */
   selectToIncluded,
   /** Select until the next character pressed, excluding it. */
@@ -2340,13 +2340,13 @@ export const commands = {
   /** Move down (extend). */
   downExtend,
   /** Scroll one page up (extend). */
-  moveUpExtend,
+  upPageExtend,
   /** Scroll one page down (extend). */
-  moveDownExtend,
+  downPageExtend,
   /** Scroll half a page up (extend). */
-  moveUpHalfExtend,
+  upHalfPageExtend,
   /** Scroll half a page down (extend). */
-  moveDownHalfExtend,
+  downHalfPageExtend,
   /** Extend to the next character pressed, including it. */
   selectToIncludedExtend,
   /** Extend with until the next character pressed, excluding it. */
@@ -2458,13 +2458,13 @@ export const enum Command {
   /** Move down. */
   down = 'dance.down',
   /** Scroll one page up. */
-  moveUp = 'dance.moveUp',
+  upPage = 'dance.up.page',
   /** Scroll one page down. */
-  moveDown = 'dance.moveDown',
+  downPage = 'dance.down.page',
   /** Scroll half a page up. */
-  moveUpHalf = 'dance.moveUp.half',
+  upHalfPage = 'dance.up.halfPage',
   /** Scroll half a page down. */
-  moveDownHalf = 'dance.moveDown.half',
+  downHalfPage = 'dance.down.halfPage',
   /** Select to the next character pressed, including it. */
   selectToIncluded = 'dance.select.to.included',
   /** Select until the next character pressed, excluding it. */
@@ -2666,13 +2666,13 @@ export const enum Command {
   /** Move down (extend). */
   downExtend = 'dance.down.extend',
   /** Scroll one page up (extend). */
-  moveUpExtend = 'dance.moveUp.extend',
+  upPageExtend = 'dance.up.page.extend',
   /** Scroll one page down (extend). */
-  moveDownExtend = 'dance.moveDown.extend',
+  downPageExtend = 'dance.down.page.extend',
   /** Scroll half a page up (extend). */
-  moveUpHalfExtend = 'dance.moveUp.half.extend',
+  upHalfPageExtend = 'dance.up.halfPage.extend',
   /** Scroll half a page down (extend). */
-  moveDownHalfExtend = 'dance.moveDown.half.extend',
+  downHalfPageExtend = 'dance.down.halfPage.extend',
   /** Extend to the next character pressed, including it. */
   selectToIncludedExtend = 'dance.select.to.included.extend',
   /** Extend with until the next character pressed, excluding it. */

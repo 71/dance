@@ -247,25 +247,25 @@
         "category": "Dance"
       },
       {
-        "command": "dance.moveUp",
+        "command": "dance.up.page",
         "title": "Scroll one page up",
         "description": "Scroll one page up.",
         "category": "Dance"
       },
       {
-        "command": "dance.moveDown",
+        "command": "dance.down.page",
         "title": "Scroll one page down",
         "description": "Scroll one page down.",
         "category": "Dance"
       },
       {
-        "command": "dance.moveUp.half",
+        "command": "dance.up.halfPage",
         "title": "Scroll half a page up",
         "description": "Scroll half a page up.",
         "category": "Dance"
       },
       {
-        "command": "dance.moveDown.half",
+        "command": "dance.down.halfPage",
         "title": "Scroll half a page down",
         "description": "Scroll half a page down.",
         "category": "Dance"
@@ -871,25 +871,25 @@
         "category": "Dance"
       },
       {
-        "command": "dance.moveUp.extend",
+        "command": "dance.up.page.extend",
         "title": "Scroll one page up (extend)",
         "description": "Scroll one page up (extend).",
         "category": "Dance"
       },
       {
-        "command": "dance.moveDown.extend",
+        "command": "dance.down.page.extend",
         "title": "Scroll one page down (extend)",
         "description": "Scroll one page down (extend).",
         "category": "Dance"
       },
       {
-        "command": "dance.moveUp.half.extend",
+        "command": "dance.up.halfPage.extend",
         "title": "Scroll half a page up (extend)",
         "description": "Scroll half a page up (extend).",
         "category": "Dance"
       },
       {
-        "command": "dance.moveDown.half.extend",
+        "command": "dance.down.halfPage.extend",
         "title": "Scroll half a page down (extend)",
         "description": "Scroll half a page down (extend).",
         "category": "Dance"
@@ -1207,42 +1207,42 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveUp",
+        "command": "dance.up.page",
         "key": "Ctrl+b",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveUp",
+        "command": "dance.up.page",
         "key": "Ctrl+b",
         "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
-        "command": "dance.moveDown",
+        "command": "dance.down.page",
         "key": "Ctrl+f",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveDown",
+        "command": "dance.down.page",
         "key": "Ctrl+f",
         "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
-        "command": "dance.moveUp.half",
+        "command": "dance.up.halfPage",
         "key": "Ctrl+u",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveUp.half",
+        "command": "dance.up.halfPage",
         "key": "Ctrl+u",
         "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
-        "command": "dance.moveDown.half",
+        "command": "dance.down.halfPage",
         "key": "Ctrl+d",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveDown.half",
+        "command": "dance.down.halfPage",
         "key": "Ctrl+d",
         "when": "editorTextFocus && dance.mode == 'insert'"
       },
@@ -1762,42 +1762,42 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveUp.extend",
+        "command": "dance.up.page.extend",
         "key": "Shift+Ctrl+b",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveUp.extend",
+        "command": "dance.up.page.extend",
         "key": "Shift+Ctrl+b",
         "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
-        "command": "dance.moveDown.extend",
+        "command": "dance.down.page.extend",
         "key": "Shift+Ctrl+f",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveDown.extend",
+        "command": "dance.down.page.extend",
         "key": "Shift+Ctrl+f",
         "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
-        "command": "dance.moveUp.half.extend",
+        "command": "dance.up.halfPage.extend",
         "key": "Shift+Ctrl+u",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveUp.half.extend",
+        "command": "dance.up.halfPage.extend",
         "key": "Shift+Ctrl+u",
         "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
-        "command": "dance.moveDown.half.extend",
+        "command": "dance.down.halfPage.extend",
         "key": "Shift+Ctrl+d",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.moveDown.half.extend",
+        "command": "dance.down.halfPage.extend",
         "key": "Shift+Ctrl+d",
         "when": "editorTextFocus && dance.mode == 'insert'"
       },
