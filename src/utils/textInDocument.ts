@@ -1,8 +1,10 @@
 import * as vscode from 'vscode'
 
-
-export function getOppositePosition(document: vscode.TextDocument, text: string, position: vscode.Position, isStart: boolean) {
-  if (isStart) {
+/**
+ * Returns the position at the given offset (given by a string) from the given position.
+ */
+export function offsetPosition(document: vscode.TextDocument, text: string, position: vscode.Position, forwards: boolean) {
+  if (forwards) {
     let line = position.line
     let char = position.character
 
@@ -42,15 +44,11 @@ export function getOppositePosition(document: vscode.TextDocument, text: string,
 }
 
 /**
- * Returns the `Selection` starting at the given position, and ending at the end of the given text.
+ * Returns a selection with the given start and end positions, possibly reversing it.
  */
-export function getSelectionFromStart(document: vscode.TextDocument, text: string, position: vscode.Position) {
-  return new vscode.Selection(position, getOppositePosition(document, text, position, true))
-}
+export function makeSelection(start: vscode.Position, end: vscode.Position, isReversed: boolean | vscode.Selection) {
+  if (typeof isReversed !== 'boolean')
+    isReversed = isReversed.isReversed
 
-/**
- * Returns the `Selection` ending at the given position, and starting at the start of the given text.
- */
-export function getSelectionFromEnd(document: vscode.TextDocument, text: string, position: vscode.Position) {
-  return new vscode.Selection(getOppositePosition(document, text, position, false), position)
+  return isReversed ? new vscode.Selection(end, start) : new vscode.Selection(start, end)
 }
