@@ -20,7 +20,7 @@ export class  OffsetRange {
     readonly isEmpty: boolean
 
     constructor(start: number, end: number) {
-      if(start < end) {
+      if (start < end) {
         this.start = start
         this.end   = end
       } else {
@@ -32,7 +32,7 @@ export class  OffsetRange {
     }
 
     translate(delta: number) {
-      if(delta === 0) {
+      if (delta === 0) {
         return this
       } else {
         return new OffsetRange(
@@ -43,7 +43,7 @@ export class  OffsetRange {
     }
 
     shift(delta: DeltaByPosition) {
-      if(delta.start === 0 && delta.end === 0) {
+      if (delta.start === 0 && delta.end === 0) {
         return this
       } else {
         return new OffsetRange(
@@ -77,7 +77,7 @@ export class  OffsetRange {
     }
 
     intersection(other: OffsetRange): OffsetRange | undefined {
-      if(this.intersects(other)) {
+      if (this.intersects(other)) {
         return new OffsetRange(Math.max(this.start, other.start), Math.min(this.end, other.end))
       }
       return undefined
@@ -116,7 +116,7 @@ export class OffsetSelection extends OffsetRange {
     }
 
     translateSelection(delta: number) {
-      if(delta === 0) {
+      if (delta === 0) {
         return this
       } else {
         return new OffsetSelection(
@@ -129,7 +129,7 @@ export class OffsetSelection extends OffsetRange {
 
 
     shiftSelectionByAnchors(delta: DeltaByAnchor): OffsetSelection {
-      if(delta.anchor === 0 && delta.active === 0) {
+      if (delta.anchor === 0 && delta.active === 0) {
         return this
       } else {
         return new OffsetSelection(
@@ -140,7 +140,7 @@ export class OffsetSelection extends OffsetRange {
     }
 
     shiftSelectionByPositions(delta: DeltaByPosition): OffsetSelection {
-      if(delta.start === 0 && delta.end === 0) {
+      if (delta.start === 0 && delta.end === 0) {
         return this
       } else {
         return (this.isReversed
@@ -157,7 +157,7 @@ export class OffsetSelection extends OffsetRange {
     }
 
     shiftSelection(delta: DeltaByAnchor | DeltaByPosition) {
-      if(delta as DeltaByAnchor) {
+      if (delta as DeltaByAnchor) {
         return this.shiftSelectionByAnchors(<DeltaByAnchor>delta)
       } else {
         return this.shiftSelectionByPositions(<DeltaByPosition>delta)
@@ -165,7 +165,7 @@ export class OffsetSelection extends OffsetRange {
     }
 
     shiftActive(delta: number) {
-      if(delta === 0) {
+      if (delta === 0) {
         return this
       } else {
         return new OffsetSelection(
@@ -176,7 +176,7 @@ export class OffsetSelection extends OffsetRange {
     }
 
     shiftAnchor(delta: number) {
-      if(delta === 0) {
+      if (delta === 0) {
         return this
       } else {
         return new OffsetSelection(
@@ -209,18 +209,18 @@ export class OffsetSelection extends OffsetRange {
     }
 
     remove(other: OffsetRange): OffsetSelection | undefined {
-      if(other.isEmpty) {
+      if (other.isEmpty) {
         return this
       }
-      if(other.contains(this)) {
+      if (other.contains(this)) {
         return undefined
       }
       else {
-        let int = this.intersection(other)
-        let shiftBefore = (other.start <= this.start
+        const int = this.intersection(other)
+        const shiftBefore = (other.start <= this.start
                             ? (other.length - (int ? int.length : 0))
                             : 0)
-        let shiftAfter  = (int ? int.length : 0)
+        const shiftAfter  = (int ? int.length : 0)
         return this.shiftSelectionByPositions({ start: shiftBefore * -1, end: (shiftBefore+shiftAfter) * -1})
       }
     }
@@ -234,11 +234,12 @@ export class OffsetSelection extends OffsetRange {
     }
 
     insert(offset: number, length: number, transformationBehaviour: OffsetEdgeTransformationBehaviour | undefined = OffsetEdgeTransformationBehaviour.ExclusiveStart): OffsetSelection {
-      if(transformationBehaviour === undefined) transformationBehaviour = this.transformationBehaviour 
-      if( (transformationBehaviour & OffsetEdgeTransformationBehaviour.ExclusiveEnd) ? offset >= this.end : offset > this.end) {
+      if (transformationBehaviour === undefined) transformationBehaviour = this.transformationBehaviour
+      
+      if ((transformationBehaviour & OffsetEdgeTransformationBehaviour.ExclusiveEnd) ? offset >= this.end : offset > this.end) {
         return this
       }
-      else if( (transformationBehaviour & OffsetEdgeTransformationBehaviour.ExclusiveStart) ? offset <= this.start : offset < this.start) {
+      else if ( (transformationBehaviour & OffsetEdgeTransformationBehaviour.ExclusiveStart) ? offset <= this.start : offset < this.start) {
         return this.translateSelection(length)
       } else {
         return this.shiftSelectionEnd(length)
@@ -246,9 +247,10 @@ export class OffsetSelection extends OffsetRange {
     }
 
     removeAndInsert(other: OffsetRange, length: number, transformationBehaviour: OffsetEdgeTransformationBehaviour | undefined = OffsetEdgeTransformationBehaviour.ExclusiveStart): OffsetSelection | undefined {
-      if(transformationBehaviour === undefined) transformationBehaviour = this.transformationBehaviour 
-      let removeMaybe = this.remove(other)
-      if(removeMaybe) {
+      if (transformationBehaviour === undefined) transformationBehaviour = this.transformationBehaviour
+      
+      const removeMaybe = this.remove(other)
+      if (removeMaybe) {
         return removeMaybe.insert(other.start, length, transformationBehaviour)
       }
       return undefined

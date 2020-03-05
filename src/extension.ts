@@ -1,9 +1,9 @@
 import * as vscode from 'vscode'
 
-import { commands, Mode }      from './commands/index'
-import { HistoryManager }      from './history'
+import { commands, Mode } from './commands/index'
+import { HistoryManager } from './history'
 import { Register, Registers } from './registers'
-import { OffsetEdgeTransformationBehaviour }      from './utils/offsetSelection'
+import { OffsetEdgeTransformationBehaviour } from './utils/offsetSelection'
 
 
 /** Name of the extension, used in commands and settings. */
@@ -169,18 +169,19 @@ export class Extension implements vscode.Disposable {
   readonly history   = new HistoryManager()
 
   readonly selectionDecorationType = vscode.window.createTextEditorDecorationType(
-    <vscode.DecorationRenderOptions> {
-      color:  { id: "editor.foreground" },
-      backgroundColor:  { id: "editor.selectionBackground" }
+    {
+      color: { id: 'editor.foreground' },
+      backgroundColor: { id: 'editor.selectionBackground' }
     }
   )
   
   readonly selectionInsertDecorationType = vscode.window.createTextEditorDecorationType(
-    <vscode.DecorationRenderOptions> {
-      color:  { id: "editor.foreground" },
-      backgroundColor:  { id: "editor.background" }
+    {
+      color: { id: 'editor.foreground' },
+      backgroundColor: { id: 'editor.background' }
     }
   )
+  
   readonly insertMode = ModeConfiguration.insert()
   readonly normalMode = ModeConfiguration.normal()
 
@@ -259,7 +260,7 @@ export class Extension implements vscode.Disposable {
   restoreLastSelections(editor: vscode.TextEditor) {
     let documentHistory = this.history.for(editor.document)
     let lastSels = documentHistory.getLastSelections(editor.document)
-    if (lastSels.length > 0 ) {
+    if (lastSels.length > 0) {
       editor.selections = lastSels
     }
   }
@@ -437,25 +438,25 @@ export class Extension implements vscode.Disposable {
             let reset = true
             //! If selection kind is Command it should/can be produced by insertion/append from dance
             //! If selection kind is Keyboard it should/can be produced by textchanges
-            if(!!e.kind && ((e.kind === vscode.TextEditorSelectionChangeKind.Command) || (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard))) {
+            if (!!e.kind && ((e.kind === vscode.TextEditorSelectionChangeKind.Command) || (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard))) {
               //! Luckily document changes are fired before selection changes,
               //! hence the 'last selections' in the document history has been already updated.
               //! If new selections intersect with last selections of document changes, 
               //! it is assumed that the last selection must not be reset.
               let documentHistory = this.history.for(e.textEditor.document)
               let lastSels = documentHistory.getLastSelections(e.textEditor.document)
-              if(lastSels.length === e.selections.length) {
+              if (lastSels.length === e.selections.length) {
                 reset = false
                 for (let index in e.selections) {
-                  let intersection = lastSels[index].intersection(e.selections[index])
-                  if(lastSels[index].intersection(e.selections[index]) === undefined) {
+                  const intersection = lastSels[index].intersection(e.selections[index])
+                  if (lastSels[index].intersection(e.selections[index]) === undefined) {
                     reset = true
                     continue
                   }
                 }
               } 
             }
-            if(reset) {
+            if (reset) {
               this.resetLastSelections(e.textEditor)
             }
           } else {
