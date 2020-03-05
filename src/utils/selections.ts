@@ -10,8 +10,13 @@ export const enum Direction {
   Backward = -1,
 }
 
+export type ExtendBehavior = boolean
+
 export const Forward = Direction.Forward
 export const Backward = Direction.Backward
+
+export const Extend = true as ExtendBehavior
+export const DoNotExtend = false as ExtendBehavior
 
 /**
  * Returns the position at the given offset (given by a string) from the given position.
@@ -72,9 +77,7 @@ export function makeSelection(start: vscode.Position, end: vscode.Position, isRe
  * This function treats single-character selections as non-directional.
  */
 export function getAnchorForExtending(selection: vscode.Selection, direction: Direction) {
-  if (selection.isEmpty)
-    return selection.anchor
-  if (selection.isSingleLine && selection.anchor.character === selection.active.character + direction)
+  if (shouldInverseDirection(selection, direction))
     return selection.active
   else
     return selection.anchor
@@ -86,9 +89,7 @@ export function getAnchorForExtending(selection: vscode.Selection, direction: Di
  * This function treats single-character selections as non-directional.
  */
 export function getActiveForExtending(selection: vscode.Selection, direction: Direction) {
-  if (selection.isEmpty)
-    return selection.active
-  if (selection.isSingleLine && selection.active.character === selection.anchor.character + direction)
+  if (shouldInverseDirection(selection, direction))
     return selection.anchor
   else
     return selection.active
@@ -100,8 +101,31 @@ export function getActiveForExtending(selection: vscode.Selection, direction: Di
  * This function treats single-character selections as non-directional.
  */
 export function forExtending(selection: vscode.Selection, direction: Direction) {
-  if (!selection.isEmpty && selection.isSingleLine && selection.active.character === selection.anchor.character + direction)
-    return new vscode.Selection(selection.active, selection.anchor)
-  else
-    return selection
+  if (shouldInverseDirection(selection, direction)) {
+    return inverseDirection(selection)
+  }
+
+  return selection
+}
+
+/**
+ * Returns whether the direction of a selection should be inversed to allow single-character
+ * selections to act as non-directinal when extending in a given direction.
+ */
+export function shouldInverseDirection(selection: vscode.Selection, direction: Direction) {
+  return selection.isSingleLine && selection.anchor.character === selection.active.character + direction
+}
+
+/**
+ * Inverses the direction of the given selection.
+ */
+export function inverseDirection(selection: vscode.Selection) {
+  return new vscode.Selection(selection.active, selection.anchor)
+}
+
+/**
+ * Returns whether the given selection is a one-character selection.
+ */
+export function isSingleCharacter(selection: vscode.Selection) {
+  return selection.isSingleLine && Math.abs(selection.anchor.character - selection.active.character) === 1
 }

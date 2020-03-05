@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 import { TextBuffer } from '../utils/textBuffer'
-import { Direction, Forward, Backward, getAnchorForExtending, getActiveForExtending, forExtending } from '../utils/selections'
+import { Direction, Forward, Backward, getAnchorForExtending, getActiveForExtending, forExtending, isSingleCharacter, ExtendBehavior, DoNotExtend, Extend } from '../utils/selections'
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
@@ -16,48 +16,66 @@ import { Direction, Forward, Backward, getAnchorForExtending, getActiveForExtend
 
 const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
-function moveLeft(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
+function atOffset(position: vscode.Position, offset: number, document: vscode.TextDocument) {
+  return document.positionAt(document.offsetAt(position) + offset)
+}
+
+function moveLeft(editor: vscode.TextEditor, extend: ExtendBehavior, offset: number, allowEmptySelections: boolean) {
   preferredColumnsPerEditor.delete(editor)
 
   let selections = editor.selections.slice(),
       firstActive = undefined as vscode.Position | undefined
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = expand && !allowEmptySelections ? forExtending(selections[i], Backward) : selections[i],
-          active = editor.document.positionAt(editor.document.offsetAt(selection.active) - mult)
+    const selection = selections[i]
 
-    selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
+    if (!allowEmptySelections && isSingleCharacter(selection)) {
+      if (extend)
+        selections[i] = new vscode.Selection(selection.end, atOffset(selection.start, -offset, editor.document))
+      else
+        selections[i] = new vscode.Selection(atOffset(selection.end, -offset, editor.document), atOffset(selection.start, -offset, editor.document))
+    } else {
+      const localOffset = !allowEmptySelections && !extend && !selection.isReversed ? offset + 1 : offset
+      const active = atOffset(selection.active, -localOffset, editor.document)
 
-    if (firstActive === undefined || firstActive.isAfter(active))
-      firstActive = active
+      selections[i] = new vscode.Selection(extend ? selection.anchor : active, active)
+    }
+
+    if (firstActive === undefined || firstActive.isAfter(selections[i].active))
+      firstActive = selections[i].active
   }
 
-  if (selections !== editor.selections) {
-    editor.selections = selections
-    editor.revealRange(new vscode.Range(firstActive!, firstActive!))
-  }
+  editor.selections = selections
+  editor.revealRange(new vscode.Range(firstActive!, firstActive!))
 }
 
-function moveRight(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
+function moveRight(editor: vscode.TextEditor, extend: ExtendBehavior, offset: number, allowEmptySelections: boolean) {
   preferredColumnsPerEditor.delete(editor)
 
   let selections = editor.selections.slice(),
       lastActive = undefined as vscode.Position | undefined
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = expand && !allowEmptySelections ? forExtending(selections[i], Forward) : selections[i],
-          active = editor.document.positionAt(editor.document.offsetAt(selection.active) + mult)
+    const selection = selections[i]
 
-    selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
+    if (!allowEmptySelections && isSingleCharacter(selection)) {
+      if (extend)
+        selections[i] = new vscode.Selection(selection.start, atOffset(selection.end, offset, editor.document))
+      else
+        selections[i] = new vscode.Selection(atOffset(selection.start, offset, editor.document), atOffset(selection.end, offset, editor.document))
+    } else {
+      const localOffset = !allowEmptySelections && !extend && !selection.isReversed ? offset - 1 : offset
+      const active = atOffset(selection.active, localOffset, editor.document)
 
-    if (lastActive === undefined || lastActive.isBefore(active))
-      lastActive = active
+      selections[i] = new vscode.Selection(extend ? selection.anchor : active, active)
+    }
+
+    if (lastActive === undefined || lastActive.isBefore(selections[i].active))
+      lastActive = selections[i].active
   }
 
-  if (selections !== editor.selections) {
-    editor.selections = selections
-    editor.revealRange(new vscode.Range(lastActive!, lastActive!))
-  }
+  editor.selections = selections
+  editor.revealRange(new vscode.Range(lastActive!, lastActive!))
 }
 
 function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
@@ -93,10 +111,8 @@ function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number, allowE
       firstPosition = active
   }
 
-  if (selections !== editor.selections) {
-    editor.selections = selections
-    editor.revealRange(new vscode.Range(firstPosition!, firstPosition!))
-  }
+  editor.selections = selections
+  editor.revealRange(new vscode.Range(firstPosition!, firstPosition!))
 }
 
 function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
@@ -133,17 +149,15 @@ function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allo
       lastPosition = active
   }
 
-  if (selections !== editor.selections) {
-    editor.selections = selections
-    editor.revealRange(new vscode.Range(lastPosition!, lastPosition!))
-  }
+  editor.selections = selections
+  editor.revealRange(new vscode.Range(lastPosition!, lastPosition!))
 }
 
 // Move/extend left/down/up/right
-registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor, false, currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor, true , currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor, false, currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor, true , currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor, DoNotExtend, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor,      Extend, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor, DoNotExtend, currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor,      Extend, currentCount || 1, ctx.allowEmptySelections))
 registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>    moveUp(editor, false, currentCount || 1, ctx.allowEmptySelections))
 registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>    moveUp(editor, true , currentCount || 1, ctx.allowEmptySelections))
 registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveDown(editor, false, currentCount || 1, ctx.allowEmptySelections))
