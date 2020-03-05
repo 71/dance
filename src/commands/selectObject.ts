@@ -113,39 +113,30 @@ function findSentenceEnd(text: TextBuffer, inner: boolean): vscode.Position {
 }
 
 function findParagraphStart(text: TextBuffer): vscode.Position {
-  let balance = 0
-
-  for (let i = 0, c = text.char(i);; c = text.char(--i)) {
-    if (c === '(') {
-      balance++
-    } else if (c === ')') {
-      balance--
-    } else if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (balance !== 0) {
-      // Nop.
-    } else if (c === '\n' && text.char(i - 1) === '\n') {
-      return text.position(i + 1)!
-    }
+  let lineNumber = text.line.lineNumber
+  while (lineNumber >= 0 && !text.doc.lineAt(lineNumber).isEmptyOrWhitespace) {
+    lineNumber--
   }
+
+  return text.doc.lineAt(lineNumber + 1).range.start
 }
 
-function findParagraphEnd(text: TextBuffer): vscode.Position {
-  let balance = 0
-
-  for (let i = 0, c = text.char(i);; c = text.char(++i)) {
-    if (c === '(') {
-      balance++
-    } else if (c === ')') {
-      balance--
-    } else if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (balance !== 0) {
-      // Nop.
-    } else if (c === '\n' && text.char(i + 1) === '\n') {
-      return text.position(i)!
-    }
+function findParagraphEnd(text: TextBuffer, inner: boolean): vscode.Position {
+  let lineNumber = text.line.lineNumber
+  const lastLine = text.doc.lineCount - 1
+  while (lineNumber <= lastLine && !text.doc.lineAt(lineNumber).isEmptyOrWhitespace) {
+    lineNumber++
   }
+
+  if (!inner) {
+    // Select all empty lines below the paragraph
+    while (lineNumber <= lastLine && text.doc.lineAt(lineNumber).isEmptyOrWhitespace)
+    lineNumber++
+  }
+
+  return lineNumber > lastLine
+    ? text.doc.lineAt(lineNumber - 1).range.end
+    : text.doc.lineAt(lineNumber).range.start
 }
 
 function findIndentBlockStart(text: TextBuffer): vscode.Position {
@@ -361,7 +352,7 @@ function findObjectEnd(text: TextBuffer, type: number, inner: boolean): vscode.P
       return findSentenceEnd(text, inner)
 
     case 10: // Paragraph
-      return findParagraphEnd(text)
+      return findParagraphEnd(text, inner)
 
     case 12: // Indentation block
       return findIndentBlockEnd(text)
