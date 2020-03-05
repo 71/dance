@@ -48,10 +48,10 @@ export class DocumentHistory {
   lastBufferModification = undefined as vscode.Range | undefined
 
   private prepareChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
-    let prepChanges = changes.slice() // Copy arry with slice
+    const prepChanges = changes.slice() // Copy arry with slice
       .sort((c1, c2) => c1.range.start.compareTo(c2.range.start))
       .map(c => {
-          let offRange = new OffsetRange(c.rangeOffset, c.rangeOffset + c.rangeLength)
+          const offRange = new OffsetRange(c.rangeOffset, c.rangeOffset + c.rangeLength)
           return <PreparedChanges> {
             initialRemoveRange: offRange,
             remove: offRange,
@@ -95,8 +95,8 @@ export class DocumentHistory {
 
       const filteredChanges = changes.filter(c => s.intersects(c.initialRemoveRange))
       
-      //! Apply all changes
-      //! The changes are ordered and hence already should have the right precomputed offset
+      // Apply all changes
+      // The changes are ordered and hence already should have the right precomputed offset
       if (filteredChanges.length > 0) {
         let newSel: OffsetSelection | undefined = s.translateSelection(filteredChanges[0].absOffsetChangeBefore)
         for (let i = 0; i < filteredChanges.length; ++i) {
@@ -115,7 +115,7 @@ export class DocumentHistory {
     // Handle marks and selections
     if (changes.length > 0) {
       this.lastBufferModification = changes[0].range
-      let changesAccum = this.prepareChanges(changes)
+      const changesAccum = this.prepareChanges(changes)
       this.lastSelections = this.updateChanges(this.lastSelections, changesAccum)
       this.marks.forEach(
         (sels, register: Register, map) => map.set(register, this.updateChanges(sels, changesAccum))

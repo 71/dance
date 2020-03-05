@@ -230,7 +230,7 @@ export class Extension implements vscode.Disposable {
     if (pos === 'before' || pos === 'after' ) {
       this.history.for(editor.document).setLastSelections(editor.document, editor.selections, (pos === 'before' ? OffsetEdgeTransformationBehaviour.ExclusiveStart : OffsetEdgeTransformationBehaviour.Inclusive))
       editor.setDecorations(this.selectionDecorationType, editor.selections.map( sel => new vscode.Range( sel.start, sel.end) ))
-      //! And an overlay to normalize inserted text -- reproduces kakoune behaviour
+      // And an overlay to normalize inserted text -- reproduces kakoune behaviour
       if (pos === 'before') {
         editor.setDecorations(this.selectionInsertDecorationType, editor.selections.map( sel => new vscode.Range( sel.start, sel.start) ))
       }
@@ -258,8 +258,8 @@ export class Extension implements vscode.Disposable {
   }
 
   restoreLastSelections(editor: vscode.TextEditor) {
-    let documentHistory = this.history.for(editor.document)
-    let lastSels = documentHistory.getLastSelections(editor.document)
+    const documentHistory = this.history.for(editor.document)
+    const lastSels = documentHistory.getLastSelections(editor.document)
     if (lastSels.length > 0) {
       editor.selections = lastSels
     }
@@ -436,15 +436,15 @@ export class Extension implements vscode.Disposable {
           if (mode === Mode.Insert) {
             this.setDecorations(e.textEditor, this.insertMode.decorationType)
             let reset = true
-            //! If selection kind is Command it should/can be produced by insertion/append from dance
-            //! If selection kind is Keyboard it should/can be produced by textchanges
+            // If selection kind is Command it should/can be produced by insertion/append from dance
+            // If selection kind is Keyboard it should/can be produced by textchanges
             if (!!e.kind && ((e.kind === vscode.TextEditorSelectionChangeKind.Command) || (e.kind === vscode.TextEditorSelectionChangeKind.Keyboard))) {
-              //! Luckily document changes are fired before selection changes,
-              //! hence the 'last selections' in the document history has been already updated.
-              //! If new selections intersect with last selections of document changes, 
-              //! it is assumed that the last selection must not be reset.
-              let documentHistory = this.history.for(e.textEditor.document)
-              let lastSels = documentHistory.getLastSelections(e.textEditor.document)
+              // Luckily document changes are fired before selection changes,
+              // hence the 'last selections' in the document history has been already updated.
+              // If new selections intersect with last selections of document changes, 
+              // it is assumed that the last selection must not be reset.
+              const documentHistory = this.history.for(e.textEditor.document)
+              const lastSels = documentHistory.getLastSelections(e.textEditor.document)
               if (lastSels.length === e.selections.length) {
                 reset = false
                 for (let index in e.selections) {

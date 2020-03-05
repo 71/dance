@@ -221,7 +221,7 @@ export class OffsetSelection extends OffsetRange {
                             ? (other.length - (int ? int.length : 0))
                             : 0)
         const shiftAfter  = (int ? int.length : 0)
-        return this.shiftSelectionByPositions({ start: shiftBefore * -1, end: (shiftBefore+shiftAfter) * -1})
+        return this.shiftSelectionByPositions({start: shiftBefore * -1, end: (shiftBefore+shiftAfter) * -1})
       }
     }
     
