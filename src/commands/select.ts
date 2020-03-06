@@ -29,7 +29,7 @@ registerCommand(Command.selectionsMerge, CommandFlags.ChangeSelections, editor =
     const refSel = selections[i]
     const refLine = editor.document.lineAt(refSel.start)
 
-    if (refSel.end.character != refLine.range.end.character)
+    if (refSel.end.character !== refLine.range.end.character)
       // Not at the end of the line? We don't care
       continue
 
@@ -92,7 +92,7 @@ registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, edit
     editor.selections = editor.selections.slice(1)
 })
 
-registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', async (editor, { input: regex }) => {
+registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', (editor, { input: regex }) => {
   const newSelections = editor.selections.filter(x => regex.test(editor.document.getText(x)))
 
   if (newSelections.length === 0)
@@ -101,7 +101,7 @@ registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, I
     editor.selections = newSelections
 })
 
-registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', async (editor, { input: regex }) => {
+registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', (editor, { input: regex }) => {
   const newSelections = editor.selections.filter(x => !regex.test(editor.document.getText(x)))
 
   if (newSelections.length === 0)

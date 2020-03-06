@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
 
 
-registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', async (editor, { input: regex }) => {
+registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', (editor, { input: regex }) => {
   const newSelections = [] as vscode.Selection[]
 
   for (let i = 0; i < editor.selections.length; i++) {
@@ -29,7 +29,7 @@ registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp,
     editor.selections = newSelections
 })
 
-registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', async (editor, { input: regex }) => {
+registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', (editor, { input: regex }) => {
   const newSelections = [] as vscode.Selection[]
 
   for (let i = 0; i < editor.selections.length; i++) {

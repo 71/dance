@@ -168,7 +168,7 @@ registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, { c
 // ===============================================================================================
 
 function registerSelectTo(commandName: Command, diff: number, extend: boolean, direction: Direction) {
-  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, async (editor, { currentCount, input: key }) => {
+  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, { currentCount, input: key }) => {
     editor.selections = editor.selections.map(selection => {
       const active = getActiveForExtending(selection, direction)
 
@@ -223,11 +223,11 @@ export function isAlphaWord(c: string) {
 }
 
 function isNonWsWord(c: string) {
-  return c != ' ' && c != '\t'
+  return c !== ' ' && c !== '\t'
 }
 
 function isBlank(c: string) {
-  return c == ' ' || c == '\t'
+  return c === ' ' || c === '\t'
 }
 
 function skipWhile(document: vscode.TextDocument, pos: vscode.Position, direction: Direction, dontSkipLine: boolean, cond: (c: string) => boolean) {
@@ -464,8 +464,8 @@ registerCommand(Command.expandLines, CommandFlags.ChangeSelections, editor => {
 
 registerCommand(Command.trimLines, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
-    const start = x.start.character == 0 ? x.start : x.start.translate(1, 0)
-    const end   = x.end.character == editor.document.lineAt(x.end).range.end.character ? x.end : x.end.translate(-1, 0)
+    const start = x.start.character === 0 ? x.start : x.start.translate(1, 0)
+    const end   = x.end.character === editor.document.lineAt(x.end).range.end.character ? x.end : x.end.translate(-1, 0)
 
     return x.isReversed ? new vscode.Selection(end, start) : new vscode.Selection(start, end)
   })

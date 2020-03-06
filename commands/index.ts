@@ -2416,7 +2416,7 @@ export const commands = {
   /** Adds 8 to the current counter for the next operation. */
   count8,
   /** Adds 9 to the current counter for the next operation. */
-  count9
+  count9,
 }
 
 /** An enum which maps command names to command IDs. */
@@ -2742,5 +2742,5 @@ export const enum Command {
   /** Adds 8 to the current counter for the next operation. */
   count8 = 'dance.count.8',
   /** Adds 9 to the current counter for the next operation. */
-  count9 = 'dance.count.9'
+  count9 = 'dance.count.9',
 }

@@ -16,7 +16,7 @@ export function promptRegex(flags?: string) {
       } catch {
         return 'Invalid ECMA RegExp.'
       }
-    }
+    },
   }).then(x => x === undefined ? undefined : new RegExp(x, flags))
 }
 
@@ -24,7 +24,7 @@ export function keypress(cancellationToken?: vscode.CancellationToken): Thenable
   return new Promise(resolve => {
     try {
       let done = false
-      let subscription = vscode.commands.registerCommand('type', async ({ text }: { text: string }) => {
+      let subscription = vscode.commands.registerCommand('type', ({ text }: { text: string }) => {
         if (!done) {
           subscription.dispose()
           done = true
@@ -73,7 +73,7 @@ export function promptInList(canPickMany: boolean, items: [string, string][]): T
       quickPick.dispose()
 
       if (canPickMany)
-        resolve(index === -1 ? undefined : [ index ])
+        resolve(index === -1 ? undefined : [index])
       else
         resolve(index === -1 ? undefined : index)
     })

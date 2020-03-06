@@ -104,10 +104,10 @@ export class Registers {
   readonly caret   = new GeneralPurposeRegister('^')
   readonly pipe    = new GeneralPurposeRegister('|')
 
-  readonly percent    = new SpecialRegister('%', async editor => [editor.document.fileName])
-  readonly dot        = new SpecialRegister('.', async editor => editor.selections.map(editor.document.getText))
-  readonly hash       = new SpecialRegister('#', async editor => editor.selections.map((_, i) => i.toString()))
-  readonly underscore = new SpecialRegister('_', async ______ => [''])
+  readonly percent    = new SpecialRegister('%', editor => Promise.resolve([editor.document.fileName]))
+  readonly dot        = new SpecialRegister('.', editor => Promise.resolve(editor.selections.map(editor.document.getText)))
+  readonly hash       = new SpecialRegister('#', editor => Promise.resolve(editor.selections.map((_, i) => i.toString())))
+  readonly underscore = new SpecialRegister('_', ______ => Promise.resolve(['']))
   readonly colon      = new GeneralPurposeRegister(':', true)
 
   get(key: string) {

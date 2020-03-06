@@ -56,7 +56,7 @@ class ModeConfiguration {
 
   updateLineNumbers(extension: Extension, defaultValue: LineNumbers) {
     this.lineNumbers = this.lineNumbersStringToLineNumbersStyle(
-      extension.configuration.get(this.modePrefix + '.lineNumbers') ?? defaultValue
+      extension.configuration.get(this.modePrefix + '.lineNumbers') ?? defaultValue,
     )
   }
 
@@ -68,7 +68,7 @@ class ModeConfiguration {
 
   updateCursorStyle(extension: Extension, defaultValue: CursorStyle) {
     this.cursorStyle = this.cursorStyleStringToCursorStyle(
-      extension.configuration.get(this.modePrefix + '.cursorStyle') ?? defaultValue
+      extension.configuration.get(this.modePrefix + '.cursorStyle') ?? defaultValue,
     )
   }
 
@@ -360,7 +360,7 @@ export class Extension implements vscode.Disposable {
       this.changeEditorCommand!.dispose()
 
       this.subscriptions.push(
-        vscode.window.onDidChangeVisibleTextEditors(restoreLineNumbering)
+        vscode.window.onDidChangeVisibleTextEditors(restoreLineNumbering),
       )
 
       restoreLineNumbering(vscode.window.visibleTextEditors)
@@ -515,7 +515,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   if (process.env.VERBOSE_LOGGING === 'true') {
     // Log all commands we need to implement
-    Promise.all([ vscode.commands.getCommands(true), import('../commands/index') ])
+    Promise.all([vscode.commands.getCommands(true), import('../commands/index')])
       .then(([registeredCommands, { commands }]) => {
         for (const command of Object.values(commands)) {
           if (registeredCommands.indexOf(command.id) === -1)

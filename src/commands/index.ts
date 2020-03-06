@@ -244,7 +244,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   }
 
   register(state: Extension) {
-    return vscode.commands.registerCommand(this.command, async () => {
+    return vscode.commands.registerCommand(this.command, () => {
       const editor = vscode.window.activeTextEditor
 
       if (editor !== undefined)

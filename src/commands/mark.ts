@@ -1,17 +1,12 @@
 // Marks: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
-import * as vscode from 'vscode'
-
-import { Extension } from '../extension'
-import { keypress, promptInList } from '../utils/prompt'
-
 import { Command, registerCommand, CommandFlags, InputKind } from '.'
 
 
-registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, undefined, async (_, { input: key }, __, ctx) => {
+registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, undefined, (_, { input: key }, __, ctx) => {
   ctx.currentRegister = ctx.registers.get(key)
 })
 
-registerCommand(Command.registersInsert, CommandFlags.None, async (editor, state) => {
+registerCommand(Command.registersInsert, CommandFlags.None, (editor, state) => {
   throw new Error('Not implemented.')
 })
 

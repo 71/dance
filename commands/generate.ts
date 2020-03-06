@@ -184,12 +184,12 @@ for (const id in yaml) {
 stream.write(`
 /** All defined commands. */
 export const commands = {
-${commands.map(x => `  /** ${yaml[x].descr} */\n  ${writable(x)}`).join(',\n')}
+${commands.map(x => `  /** ${yaml[x].descr} */\n  ${writable(x)}`).join(',\n')},
 }
 
 /** An enum which maps command names to command IDs. */
 export const enum Command {
-${commands.map(x => `  /** ${yaml[x].descr} */\n  ${writable(x)} = '${prefix}.${x}'`).join(',\n')}
+${commands.map(x => `  /** ${yaml[x].descr} */\n  ${writable(x)} = '${prefix}.${x}'`).join(',\n')},
 }
 `)
 

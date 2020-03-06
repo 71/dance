@@ -96,10 +96,12 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, und
   if (contents === undefined)
     return
 
+  const selections = editor.selections
+
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i],
-            selection = editor.selections[i]
+            selection = selections[i]
 
       if (content.endsWith('\n'))
         builder.insert(selection.end.with(selection.end.line + 1, 0), content)
@@ -111,16 +113,16 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, und
   // Restore selections that were extended automatically.
   for (let i = 0; i < contents.length; i++) {
     const content = contents[i],
-          selection = editor.selections[i]
+          selection = selections[i]
 
     if (!content.endsWith('\n')) {
       const previousEnd = offsetPosition(editor.document, content, selection.end, Backward)
 
-      editor.selections[i] = makeSelection(selection.isEmpty ? previousEnd : selection.start, previousEnd, selection)
+      selections[i] = makeSelection(selection.isEmpty ? previousEnd : selection.start, previousEnd, selection)
     }
   }
 
-  editor.selections = editor.selections
+  editor.selections = selections
 })
 
 registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
@@ -129,10 +131,12 @@ registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, un
   if (contents === undefined)
     return
 
+  const selections = editor.selections
+
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i],
-            selection = editor.selections[i]
+            selection = selections[i]
 
       if (content.endsWith('\n'))
         builder.replace(selection.start.with(undefined, 0), content)
@@ -144,16 +148,16 @@ registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, un
   // Restore selections that were extended automatically.
   for (let i = 0; i < contents.length; i++) {
     const content = contents[i],
-          selection = editor.selections[i]
+          selection = selections[i]
 
     if (!content.endsWith('\n')) {
       const previousStart = offsetPosition(editor.document, content, selection.start, Forward)
 
-      editor.selections[i] = makeSelection(previousStart, selection.isEmpty ? previousStart : selection.end, selection)
+      selections[i] = makeSelection(previousStart, selection.isEmpty ? previousStart : selection.end, selection)
     }
   }
 
-  editor.selections = editor.selections
+  editor.selections = selections
 })
 
 registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
@@ -162,12 +166,13 @@ registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | Comman
   if (contents === undefined)
     return
 
-  const reverseSelection = [] as boolean[]
+  const selections = editor.selections,
+        reverseSelection = [] as boolean[]
 
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i],
-            selection = editor.selections[i]
+            selection = selections[i]
 
       if (content.endsWith('\n'))
         builder.replace(selection.end.with(selection.end.line + 1, 0), content)
@@ -181,14 +186,14 @@ registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | Comman
   // Reverse selections that were empty, since they are now extended in the wrong way.
   for (let i = 0; i < contents.length; i++) {
     const content = contents[i],
-          selection = editor.selections[i]
+          selection = selections[i]
 
     if (!content.endsWith('\n') && reverseSelection[i]) {
-      editor.selections[i] = new vscode.Selection(selection.active, selection.anchor)
+      selections[i] = new vscode.Selection(selection.active, selection.anchor)
     }
   }
 
-  editor.selections = editor.selections
+  editor.selections = selections
 })
 
 registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
@@ -239,7 +244,7 @@ registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async (editor, sta
 })
 
 
-registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, undefined, async (editor, { currentCount, input: key }) => {
+registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, undefined, (editor, { currentCount, input: key }) => {
   const string = key.repeat(currentCount || 1)
 
   return (builder: vscode.TextEditorEdit) => {

@@ -265,7 +265,7 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
       editor.revealRange(editor.selection)
 
       return undefined
-    }
+    },
   }, () => {})
 }
 
