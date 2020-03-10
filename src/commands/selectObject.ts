@@ -368,6 +368,7 @@ function performObjectSelect(editor: vscode.TextEditor, count: number, inner: bo
   lastObjectSelectOperation = [inner, type, extend, toStart, toEnd]
 
   editor.selections = editor.selections.map(selection => {
+    const cursor = selection.active
     let start = selection.start
     let end = selection.end
     let inInfiniteLooop = false
@@ -377,7 +378,7 @@ function performObjectSelect(editor: vscode.TextEditor, count: number, inner: bo
           sameEnd = true
 
       if (toStart) {
-        const buf = new TextBuffer(editor.document, start)
+        const buf = new TextBuffer(editor.document, cursor)
         const r = findObjectStart(buf, type, inner)
 
         if (r === undefined)
@@ -388,7 +389,7 @@ function performObjectSelect(editor: vscode.TextEditor, count: number, inner: bo
       }
 
       if (toEnd) {
-        const buf = new TextBuffer(editor.document, end)
+        const buf = new TextBuffer(editor.document, cursor)
         const r = findObjectEnd(buf, type, inner)
 
         if (r === undefined)
