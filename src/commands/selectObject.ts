@@ -112,8 +112,14 @@ function findSentenceEnd(text: TextBuffer, inner: boolean): vscode.Position {
   }
 }
 
-function findParagraphStart(text: TextBuffer): vscode.Position {
+function findParagraphStart(text: TextBuffer, inner: boolean): vscode.Position {
   let lineNumber = text.line.lineNumber
+  if (!inner) {
+    while (lineNumber >= 0 && text.doc.lineAt(lineNumber).isEmptyOrWhitespace) {
+      lineNumber--
+    }
+  }
+
   while (lineNumber >= 0 && !text.doc.lineAt(lineNumber).isEmptyOrWhitespace) {
     lineNumber--
   }
@@ -299,7 +305,7 @@ function findObjectStart(text: TextBuffer, type: number, inner: boolean): vscode
       return findSentenceStart(text)
 
     case 10: // Paragraph
-      return findParagraphStart(text)
+      return findParagraphStart(text, inner)
 
     case 12: // Indentation block
       return findIndentBlockStart(text)
@@ -368,70 +374,40 @@ function performObjectSelect(editor: vscode.TextEditor, count: number, inner: bo
   lastObjectSelectOperation = [inner, type, extend, toStart, toEnd]
 
   editor.selections = editor.selections.map(selection => {
-    const cursor = selection.active
-    let start = selection.start
-    let end = selection.end
-    let inInfiniteLooop = false
+    let start = selection.active
+    let end = selection.active
 
     for (let i = 0; i < count; i++) {
-      let sameStart = true,
-          sameEnd = true
 
       if (toStart) {
-        const buf = new TextBuffer(editor.document, cursor)
+        const buf = new TextBuffer(editor.document, start)
         const r = findObjectStart(buf, type, inner)
-
         if (r === undefined)
           break
-
-        sameStart = start.isEqual(r)
         start = r
       }
 
       if (toEnd) {
-        const buf = new TextBuffer(editor.document, cursor)
+        const buf = new TextBuffer(editor.document, end)
         const r = findObjectEnd(buf, type, inner)
-
         if (r === undefined)
           break
-
-        sameEnd = end.isEqual(r)
         end = r
       }
-
-      if (sameStart && sameEnd) {
-        // Our object did not move, so we try again with shifted indices
-        if (inInfiniteLooop)
-          break
-
-        inInfiniteLooop = true
-
-        start = start.character === 0
-          ? (start.line === 0 ? start : new vscode.Position(start.line - 1, 0))
-          : (start.translate(0, -1))
-
-        const lastChar = editor.document.lineAt(end.line).range.end.character
-
-        end = end.character === lastChar
-          ? (end.line === editor.document.lineCount - 1 ? end : new vscode.Position(end.line + 1, 0))
-          : end.translate(0, 1)
-
-        i--
-      } else {
-        inInfiniteLooop = false
-      }
     }
 
-    if (!extend && toStart !== toEnd) {
+    if (extend && toStart !== toEnd) {
       if (toEnd)
-        start = selection.end
+        start = selection.start
       else
-        end = selection.start
+        end = selection.end
     }
 
-    return selection.isReversed && !selection.isEmpty
-      ? new vscode.Selection(end, start)
-      : new vscode.Selection(start, end)
+    if (toEnd) {
+      return new vscode.Selection(start, end)
+    } else {
+      return new vscode.Selection(end, start)
+    }
   })
 }
 

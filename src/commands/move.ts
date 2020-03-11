@@ -219,7 +219,7 @@ function isPunctuation(c: string) {
 }
 
 export function isAlphaWord(c: string) {
-  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c === '_') || (c === '-')
+  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c === '_')
 }
 
 function isNonWsWord(c: string) {
