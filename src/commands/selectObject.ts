@@ -73,41 +73,37 @@ function findObjectWithChars(text: TextBuffer, backwards: boolean, inner: boolea
 }
 
 function findSentenceStart(text: TextBuffer): vscode.Position {
-  let balance = 0
-
-  for (let i = 0, c = text.char(i);; c = text.char(--i)) {
-    if (c === '(') {
-      balance++
-    } else if (c === ')') {
-      balance--
-    } else if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (balance !== 0) {
-      // Nop.
+  let lastCharIndex = 0;
+  for (let i = -1, c = text.char(i);; c = text.char(--i)) {
+    if (c === undefined) {
+      return text.position(lastCharIndex)!
     } else if (c === '\n' && text.char(i - 1) === '\n') {
-      return text.position(i + 1)!
+      return text.position(lastCharIndex)!
     } else if (c === '.' || c === ';' || c === '!' || c === '?') {
-      return text.position(i + 1)!
+      return text.position(lastCharIndex)!
+    }
+
+    if (isAlphaWord(c!)) {
+      lastCharIndex = i
     }
   }
 }
 
 function findSentenceEnd(text: TextBuffer, inner: boolean): vscode.Position {
-  let balance = 0
-
-  for (let i = 0, c = text.char(i);; c = text.char(++i)) {
-    if (c === '(') {
-      balance++
-    } else if (c === ')') {
-      balance--
-    } else if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (balance !== 0) {
-      // Nop.
+  let i = 0
+  for (let c = text.char(i);; c = text.char(i++)) {
+    if (c === undefined) {
+      return text.position(i-1)!
     } else if (c === '\n' && text.char(i + 1) === '\n') {
       return text.position(i)!
     } else if (c === '.' || c === ';' || c === '!' || c === '?') {
-      return text.position(i + (inner ? 1 : 0))!
+      if (inner)
+        return text.position(i)!
+      for (i++;; c = text.char(i++)) {
+        if (c=== undefined || isAlphaWord(c)) {
+          return text.position(i-1)!
+        }
+      }
     }
   }
 }
