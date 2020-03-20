@@ -219,7 +219,8 @@ function isPunctuation(c: string) {
 }
 
 export function isAlphaWord(c: string) {
-  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c === '_') || (c === '-')
+  const wordSeparators = vscode.workspace.getConfiguration("editor").get("wordSeparators")
+  return !String(wordSeparators).includes(c) && c !== ' ' && c !== '\t' && c !== '\n'
 }
 
 function isNonWsWord(c: string) {
