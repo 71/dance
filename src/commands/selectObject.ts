@@ -73,8 +73,15 @@ function findObjectWithChars(text: TextBuffer, backwards: boolean, inner: boolea
 }
 
 function findSentenceStart(text: TextBuffer): vscode.Position {
-  let lastCharIndex = 0;
-  for (let i = -1, c = text.char(i);; c = text.char(--i)) {
+  let i = 0
+  let lastCharIndex = 0
+
+  // Go to the end of the last sentence
+  while(text.char(i) == ' '){
+    i -= 1
+  }
+
+  for (let c = text.char(--i);; c = text.char(--i)) {
     if (c === undefined) {
       return text.position(lastCharIndex)!
     } else if (c === '\n' && text.char(i - 1) === '\n') {
@@ -366,11 +373,17 @@ function findObjectEnd(text: TextBuffer, type: number, inner: boolean): vscode.P
   return undefined
 }
 
-function performObjectSelect(editor: vscode.TextEditor, count: number, inner: boolean, type: number, extend: boolean, toStart: boolean, toEnd: boolean) {
+function performObjectSelect(editor: vscode.TextEditor, count: number, inner: boolean, type: number, extend: boolean, toStart: boolean, toEnd: boolean, shift?: boolean) {
   lastObjectSelectOperation = [inner, type, extend, toStart, toEnd]
 
   editor.selections = editor.selections.map(selection => {
     let start = selection.active
+    if (shift) {
+      if (selection.active.character !== 0)
+        start = start.translate({characterDelta: -1})
+      else if (start.line !== 0)
+        start = start.with(start.line - 1, editor.document.lineAt(start.line - 1).range.end.character)
+    }
     let end = selection.active
 
     for (let i = 0; i < count; i++) {
@@ -407,22 +420,22 @@ function performObjectSelect(editor: vscode.TextEditor, count: number, inner: bo
   })
 }
 
-function registerObjectSelect(command: Command, inner: boolean, extend: boolean, start?: boolean) {
+function registerObjectSelect(command: Command, inner: boolean, extend: boolean, start?: boolean, shift?: boolean) {
   // Start === true     : Select only to start
   // Start === false    : Select only to end
   // Start === undefined: Select to both start and end
 
   registerCommand(command, CommandFlags.ChangeSelections, InputKind.ListOneItem, objectTypePromptItems, (editor, state) => {
-    performObjectSelect(editor, state.currentCount || 1, inner, state.input, extend, start !== false, start !== true)
+    performObjectSelect(editor, state.currentCount || 1, inner, state.input, extend, start !== false, start !== true, shift)
   })
 }
 
-registerObjectSelect(Command.objectsSelect                  , false, true )
-registerObjectSelect(Command.objectsSelectInner             , true , true )
-registerObjectSelect(Command.objectsSelectToStart           , false, false, true )
-registerObjectSelect(Command.objectsSelectToStartInner      , true , false, true )
-registerObjectSelect(Command.objectsSelectToStartExtend     , false, true , true )
-registerObjectSelect(Command.objectsSelectToStartExtendInner, true , true , true )
+registerObjectSelect(Command.objectsSelect                  , false, true)
+registerObjectSelect(Command.objectsSelectInner             , true , true)
+registerObjectSelect(Command.objectsSelectToStart           , false, false, true, true)
+registerObjectSelect(Command.objectsSelectToStartInner      , true , false, true, true)
+registerObjectSelect(Command.objectsSelectToStartExtend     , false, true , true, true)
+registerObjectSelect(Command.objectsSelectToStartExtendInner, true , true , true, true)
 registerObjectSelect(Command.objectsSelectToEnd             , false, false, false)
 registerObjectSelect(Command.objectsSelectToEndInner        , true , false, false)
 registerObjectSelect(Command.objectsSelectToEndExtend       , false, true , false)
