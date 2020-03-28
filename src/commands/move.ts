@@ -615,35 +615,26 @@ registerToEnclosing(Command.selectEnclosingExtendBackwards, true , true )
 // Move up/down (ctrl-[bfud])
 // ===============================================================================================
 
-function registerMoveLines(command: Command, direction: 'up' | 'down', extend: boolean, computeTranslation: (editor: vscode.TextEditor) => number) {
-  registerCommand(command, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
-    const translation = computeTranslation(editor)
-
+function registerMoveLines(command: Command, direction: 'up' | 'down', extend: boolean, by: string) {
+  registerCommand(command, CommandFlags.ChangeSelections, () => {
     return vscode.commands.executeCommand('editorScroll', {
       to: direction,
-      by: 'line',
-      value: (currentCount || 1) * translation,
+      by: by,
       revealCursor: true,
       select: extend,
     })
   })
 }
 
-function getHeight(editor: vscode.TextEditor) {
-  const visibleRange = editor.visibleRanges[0]
+registerMoveLines(Command.upPage          , 'up', false, 'page')
+registerMoveLines(Command.upPageExtend    , 'up', true , 'page')
+registerMoveLines(Command.upHalfPage      , 'up', false, 'halfPage')
+registerMoveLines(Command.upHalfPageExtend, 'up', true , 'halfPage')
 
-  return visibleRange.end.line - visibleRange.start.line
-}
-
-registerMoveLines(Command.upPage          , 'up', false, editor => getHeight(editor))
-registerMoveLines(Command.upPageExtend    , 'up', true , editor => getHeight(editor))
-registerMoveLines(Command.upHalfPage      , 'up', false, editor => getHeight(editor) / 2)
-registerMoveLines(Command.upHalfPageExtend, 'up', true , editor => getHeight(editor) / 2)
-
-registerMoveLines(Command.downPage          , 'down', false, editor => getHeight(editor))
-registerMoveLines(Command.downPageExtend    , 'down', true , editor => getHeight(editor))
-registerMoveLines(Command.downHalfPage      , 'down', false, editor => getHeight(editor) / 2)
-registerMoveLines(Command.downHalfPageExtend, 'down', true , editor => getHeight(editor) / 2)
+registerMoveLines(Command.downPage          , 'down', false, 'page')
+registerMoveLines(Command.downPageExtend    , 'down', true , 'page')
+registerMoveLines(Command.downHalfPage      , 'down', false, 'halfPage')
+registerMoveLines(Command.downHalfPageExtend, 'down', true , 'halfPage')
 
 
 // Other bindings (%)
