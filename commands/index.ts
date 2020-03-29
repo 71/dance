@@ -1167,53 +1167,53 @@ export const macrosPlay: ICommand & { readonly id: 'dance.macros.play' } = {
 /**
  * Rotate each selection clockwise.
  *
- * Default key: `Shift+0` (`dance.mode == 'normal'`).
+ * Default key: `Shift+9` (`dance.mode == 'normal'`).
  */
 export const rotate: ICommand & { readonly id: 'dance.rotate' } = {
   id         : 'dance.rotate',
   title      : 'Rotate',
   description: 'Rotate each selection clockwise.',
   keybindings: [
-    { key: 'Shift+0', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+9', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /**
  * Rotate each selection counter-clockwise.
  *
- * Default key: `Shift+9` (`dance.mode == 'normal'`).
+ * Default key: `Shift+0` (`dance.mode == 'normal'`).
  */
 export const rotateBackwards: ICommand & { readonly id: 'dance.rotate.backwards' } = {
   id         : 'dance.rotate.backwards',
   title      : 'Rotate backwards',
   description: 'Rotate each selection counter-clockwise.',
   keybindings: [
-    { key: 'Shift+9', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+0', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /**
  * Rotate each selection (as well as its content) clockwise.
  *
- * Default key: `Shift+Alt+0` (`dance.mode == 'normal'`).
+ * Default key: `Shift+Alt+9` (`dance.mode == 'normal'`).
  */
 export const rotateContent: ICommand & { readonly id: 'dance.rotate.content' } = {
   id         : 'dance.rotate.content',
   title      : 'Rotate selection content',
   description: 'Rotate each selection (as well as its content) clockwise.',
   keybindings: [
-    { key: 'Shift+Alt+0', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+9', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /**
  * Rotate each selection (as well as its content) counter-clockwise.
  *
- * Default key: `Shift+Alt+9` (`dance.mode == 'normal'`).
+ * Default key: `Shift+Alt+0` (`dance.mode == 'normal'`).
  */
 export const rotateContentBackwards: ICommand & { readonly id: 'dance.rotate.content.backwards' } = {
   id         : 'dance.rotate.content.backwards',
   title      : 'Rotate selection content backwards',
   description: 'Rotate each selection (as well as its content) counter-clockwise.',
   keybindings: [
-    { key: 'Shift+Alt+9', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+Alt+0', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /**
