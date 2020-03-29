@@ -1583,22 +1583,22 @@
       },
       {
         "command": "dance.rotate",
-        "key": "Shift+0",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.rotate.backwards",
         "key": "Shift+9",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
+        "command": "dance.rotate.backwards",
+        "key": "Shift+0",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
         "command": "dance.rotate.content",
-        "key": "Shift+Alt+0",
+        "key": "Shift+Alt+9",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "command": "dance.rotate.content.backwards",
-        "key": "Shift+Alt+9",
+        "key": "Shift+Alt+0",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

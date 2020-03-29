@@ -18,7 +18,7 @@ registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp,
       const anchor = editor.document.positionAt(selectionAnchorOffset + match.index)
       const active = editor.document.positionAt(selectionAnchorOffset + match.index + match[0].length)
 
-      newSelections.push(new vscode.Selection(anchor, active))
+      newSelections.unshift(new vscode.Selection(anchor, active))
 
       if (match[0].length === 0)
         regex.lastIndex++

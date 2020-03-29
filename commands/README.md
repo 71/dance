@@ -102,10 +102,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.macros.record.start` | Start recording macro | Start recording macro. | `Shift+Q` (`dance.mode == 'normal'`) |
 | `dance.macros.record.stop` | Stop recording macro | Stop recording macro. | `Escape` (`dance.mode == 'normal'`) |
 | `dance.macros.play` | Play macro | Play macro. | `Q` (`dance.mode == 'normal'`) |
-| `dance.rotate` | Rotate | Rotate each selection clockwise. | `Shift+0` (`dance.mode == 'normal'`) |
-| `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. | `Shift+9` (`dance.mode == 'normal'`) |
-| `dance.rotate.content` | Rotate selection content | Rotate each selection (as well as its content) clockwise. | `Shift+Alt+0` (`dance.mode == 'normal'`) |
-| `dance.rotate.content.backwards` | Rotate selection content backwards | Rotate each selection (as well as its content) counter-clockwise. | `Shift+Alt+9` (`dance.mode == 'normal'`) |
+| `dance.rotate` | Rotate | Rotate each selection clockwise. | `Shift+9` (`dance.mode == 'normal'`) |
+| `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. | `Shift+0` (`dance.mode == 'normal'`) |
+| `dance.rotate.content` | Rotate selection content | Rotate each selection (as well as its content) clockwise. | `Shift+Alt+9` (`dance.mode == 'normal'`) |
+| `dance.rotate.content.backwards` | Rotate selection content backwards | Rotate each selection (as well as its content) counter-clockwise. | `Shift+Alt+0` (`dance.mode == 'normal'`) |
 | `dance.rotate.contentOnly` | Rotate content only | Rotate each selection content clockwise, without changing selections. |  |
 | `dance.rotate.contentOnly.backwards` | Rotate content only backwards | Rotate each selection content counter-clockwise, without changing selections. |  |
 | `dance.search` | Search | Search for the given input string. | `/` (`dance.mode == 'normal'`) |

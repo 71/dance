@@ -482,22 +482,22 @@ macros.play:
 rotate:
   title: Rotate
   descr: Rotate each selection clockwise.
-  keys: s-0 (normal)
+  keys: s-9 (normal)
 
 rotate.backwards:
   title: Rotate backwards
   descr: Rotate each selection counter-clockwise.
-  keys: s-9 (normal)
+  keys: s-0 (normal)
 
 rotate.content:
   title: Rotate selection content
   descr: Rotate each selection (as well as its content) clockwise.
-  keys: s-a-0 (normal)
+  keys: s-a-9 (normal)
 
 rotate.content.backwards:
   title: Rotate selection content backwards
   descr: Rotate each selection (as well as its content) counter-clockwise.
-  keys: s-a-9 (normal)
+  keys: s-a-0 (normal)
 
 rotate.contentOnly:
   title: Rotate content only
