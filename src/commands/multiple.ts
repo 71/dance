@@ -68,7 +68,7 @@ registerCommand(Command.splitLines, CommandFlags.ChangeSelections, editor => {
     const selection = editor.selections[i]
 
     if (selection.isSingleLine) {
-      newSelections.push(selection)
+      newSelections.unshift(selection)
 
       continue
     }
@@ -76,17 +76,17 @@ registerCommand(Command.splitLines, CommandFlags.ChangeSelections, editor => {
     // Add start line
     const startActive = editor.document.lineAt(selection.start.line).range.end
 
-    newSelections.push(new vscode.Selection(selection.start, startActive))
-
-    // Add end line
-    newSelections.push(new vscode.Selection(selection.end.with(undefined, 0), selection.end))
+    newSelections.unshift(new vscode.Selection(selection.start, startActive))
 
     // Add intermediate lines
     for (let i = selection.start.line + 1; i < selection.end.line; i++) {
       const selectionRange = editor.document.lineAt(i).range
 
-      newSelections.push(new vscode.Selection(selectionRange.start, selectionRange.end))
+      newSelections.unshift(new vscode.Selection(selectionRange.start, selectionRange.end))
     }
+
+    // Add end line
+    newSelections.unshift(new vscode.Selection(selection.end.with(undefined, 0), selection.end))
   }
 
   editor.selections = newSelections
