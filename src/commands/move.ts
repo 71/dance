@@ -404,13 +404,13 @@ registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor
     editor.selections = editor.selections.map(x => {
       const line = editor.document.lineAt(x.active)
 
-      return new vscode.Selection(x.anchor.with(undefined, 0), line.rangeIncludingLineBreak.end)
+      return new vscode.Selection(x.isSingleLine ? x.anchor.with(undefined, 0) : x.anchor, line.rangeIncludingLineBreak.end)
     })
   } else {
     editor.selections = editor.selections.map(x => {
       const line = editor.document.lineAt(Math.min(x.active.line + currentCount - 1, editor.document.lineCount - 1))
 
-      return new vscode.Selection(x.anchor.with(undefined, 0), line.rangeIncludingLineBreak.end)
+      return new vscode.Selection(x.isSingleLine ? x.anchor.with(undefined, 0) : x.anchor, line.rangeIncludingLineBreak.end)
     })
   }
 })
@@ -464,9 +464,11 @@ registerCommand(Command.expandLines, CommandFlags.ChangeSelections, editor => {
 
 registerCommand(Command.trimLines, CommandFlags.ChangeSelections, editor => {
   editor.selections = editor.selections.map(x => {
-    const start = x.start.character === 0 ? x.start : x.start.translate(1, 0)
-    const end   = x.end.character === editor.document.lineAt(x.end).range.end.character ? x.end : x.end.translate(-1, 0)
+    const start = x.start.character === 0 ? x.start : editor.document.lineAt(x.start.line + 1).range.start
+    const end = x.end.character === editor.document.lineAt(x.end).range.end.character ? x.end : editor.document.lineAt(x.end.line).range.start
 
+    if (start.line > end.line)
+      return x
     return x.isReversed ? new vscode.Selection(end, start) : new vscode.Selection(start, end)
   })
 })
