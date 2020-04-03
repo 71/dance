@@ -170,16 +170,16 @@ registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | Comman
         reverseSelection = [] as boolean[]
 
   await editor.edit(builder => {
-    for (let i = 0; i < contents.length; i++) {
-      const content = contents[i],
-            selection = selections[i]
-
-      if (content.endsWith('\n'))
-        builder.replace(selection.end.with(selection.end.line + 1, 0), content)
-      else
-        builder.replace(selection.end, content)
-
-      reverseSelection.push(selection.isEmpty)
+    for (let i = 0; i < selections.length; i++) {
+      const selection = selections[i]
+      for (let j = 0; j < contents.length; j++) {
+        const content = contents[i]
+        if (content.endsWith('\n'))
+          builder.replace(selection.end.with(selection.end.line + 1, 0), content)
+        else
+          builder.replace(selection.end, content)
+        reverseSelection.push(selection.isEmpty)
+      }
     }
   }, undoStops)
 
