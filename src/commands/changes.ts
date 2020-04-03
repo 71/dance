@@ -5,6 +5,7 @@ import { registerCommand, Command, CommandFlags, CommandState, InputKind } from 
 
 import { Extension }                     from '../extension'
 import { makeSelection, offsetPosition, Forward, Backward } from '../utils/selections'
+import { print } from 'util'
 
 
 function getRegister(state: CommandState<any>, ctx: Extension) {
@@ -91,7 +92,7 @@ async function getContentsToPaste(editor: vscode.TextEditor, state: CommandState
 }
 
 registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const contents = await getContentsToPaste(editor, state, ctx, editor.selections.length)
+  const contents = await (editor, state, ctx, editor.selections.length)
 
   if (contents === undefined)
     return
@@ -161,37 +162,20 @@ registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, un
 })
 
 registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const contents = await getContentsToPaste(editor, state, ctx, editor.selections.length)
+  const contents = await getRegister(state, ctx).get(editor),
+        selections = editor.selections
 
   if (contents === undefined)
     return
-
-  const selections = editor.selections,
-        reverseSelection = [] as boolean[]
-
+  const content = contents.join("")
   await editor.edit(builder => {
     for (let i = 0; i < selections.length; i++) {
       const selection = selections[i]
-      for (let j = 0; j < contents.length; j++) {
-        const content = contents[i]
-        if (content.endsWith('\n'))
-          builder.replace(selection.end.with(selection.end.line + 1, 0), content)
-        else
-          builder.replace(selection.end, content)
-        reverseSelection.push(selection.isEmpty)
-      }
+      const previousStart = offsetPosition(editor.document, content, selection.start, Forward)
+      builder.replace(selection.end, content)
+      selections[i] = makeSelection(previousStart, selection.isEmpty ? previousStart : selection.end, selection)
     }
   }, undoStops)
-
-  // Reverse selections that were empty, since they are now extended in the wrong way.
-  for (let i = 0; i < contents.length; i++) {
-    const content = contents[i],
-          selection = selections[i]
-
-    if (!content.endsWith('\n') && reverseSelection[i]) {
-      selections[i] = new vscode.Selection(selection.active, selection.anchor)
-    }
-  }
 
   editor.selections = selections
 })
