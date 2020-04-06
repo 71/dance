@@ -296,38 +296,7 @@ export class Extension implements vscode.Disposable {
     if (decorationType === undefined)
       return
 
-    const lines: number[] = [],
-          selections = editor.selections
-
-    let needsCopy = false
-
-    for (let i = 0; i < selections.length; i++) {
-      const selection = selections[i]
-
-      for (let line = selection.start.line; line <= selection.end.line; line++) {
-        if (lines.indexOf(line) === -1) {
-          lines.push(line)
-        } else {
-          // There is some overlap, so we need a copy
-          needsCopy = true
-        }
-      }
-    }
-
-    if (needsCopy) {
-      const ranges: vscode.Range[] = []
-
-      for (let i = 0; i < lines.length; i++) {
-        const pos = new vscode.Position(lines[i], 0),
-              range = new vscode.Range(pos, pos)
-
-        ranges.push(range)
-      }
-
-      editor.setDecorations(decorationType, ranges)
-    } else {
-      editor.setDecorations(decorationType, selections)
-    }
+    editor.setDecorations(decorationType, [editor.selection])
   }
 
   setEnabled(enabled: boolean, changeConfiguration: boolean) {
