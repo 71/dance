@@ -1,129 +1,93 @@
 // Movement: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags, InputKind } from '.'
+import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
 
-import { TextBuffer } from '../utils/textBuffer'
-import { Direction, Forward, Backward, getAnchorForExtending, getActiveForExtending, forExtending, isSingleCharacter, ExtendBehavior, DoNotExtend, Extend } from '../utils/selections'
+import { CharSet } from '../extension'
+import { Selection, Position, LimitToCurrentLine, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction, CollapseFlags } from '../utils/selections'
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
 // ===============================================================================================
 
-// There was initially a single function for all movements;
-// this was however changed to make sure the logic was as
-// straightforward as possible.
-
 const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
-function atOffset(position: vscode.Position, offset: number, document: vscode.TextDocument) {
-  return document.positionAt(document.offsetAt(position) + offset)
-}
+function moveLeft(state: CommandState, editor: vscode.TextEditor, extend: ExtendBehavior) {
+  const selections = state.selectionSet.selections
+  const offset = state.repetitions
 
-function moveLeft(editor: vscode.TextEditor, extend: ExtendBehavior, offset: number, allowEmptySelections: boolean) {
   preferredColumnsPerEditor.delete(editor)
 
-  let selections = editor.selections.slice(),
-      firstActive = undefined as vscode.Position | undefined
+  let firstActive = undefined as vscode.Position | undefined
 
   for (let i = 0; i < selections.length; i++) {
     const selection = selections[i]
 
-    if (!allowEmptySelections && isSingleCharacter(selection)) {
-      if (extend)
-        selections[i] = new vscode.Selection(selection.end, atOffset(selection.start, -offset, editor.document))
-      else
-        selections[i] = new vscode.Selection(atOffset(selection.end, -offset, editor.document), atOffset(selection.start, -offset, editor.document))
-    } else {
-      const localOffset = !allowEmptySelections && !extend && !selection.isReversed ? offset + 1 : offset
-      const active = atOffset(selection.active, -localOffset, editor.document)
+    selection.active.moveLeftOrGoUp(offset)
 
-      selections[i] = new vscode.Selection(extend ? selection.anchor : active, active)
+    if (selection.active.offset === selection.anchor.offset) {
+      selection.active.moveLeftOrGoUp()
+
+      if (extend)
+        selection.anchor.moveRightOrGoDown()
+    } else if (!extend) {
+      selection.collapseToActive(CollapseFlags.DoNotMoveActive)
     }
 
-    if (firstActive === undefined || firstActive.isAfter(selections[i].active))
-      firstActive = selections[i].active
+    const activePosition = selections[i].active.asPosition()
+
+    if (firstActive === undefined || firstActive.isAfter(activePosition))
+      firstActive = activePosition
   }
 
-  editor.selections = selections
+  state.selectionSet.commit(editor)
   editor.revealRange(new vscode.Range(firstActive!, firstActive!))
 }
 
-function moveRight(editor: vscode.TextEditor, extend: ExtendBehavior, offset: number, allowEmptySelections: boolean) {
+function moveRight(state: CommandState, editor: vscode.TextEditor, extend: ExtendBehavior) {
+  const selections = state.selectionSet.selections
+  const offset = state.repetitions
+
   preferredColumnsPerEditor.delete(editor)
 
-  let selections = editor.selections.slice(),
-      lastActive = undefined as vscode.Position | undefined
+  let lastActive = undefined as vscode.Position | undefined
 
   for (let i = 0; i < selections.length; i++) {
     const selection = selections[i]
 
-    if (!allowEmptySelections && isSingleCharacter(selection)) {
-      if (extend)
-        selections[i] = new vscode.Selection(selection.start, atOffset(selection.end, offset, editor.document))
-      else
-        selections[i] = new vscode.Selection(atOffset(selection.start, offset, editor.document), atOffset(selection.end, offset, editor.document))
-    } else {
-      const localOffset = !allowEmptySelections && !extend && !selection.isReversed ? offset - 1 : offset
-      const active = atOffset(selection.active, localOffset, editor.document)
+    selection.active.moveRightOrGoDown(offset)
 
-      selections[i] = new vscode.Selection(extend ? selection.anchor : active, active)
+    if (selection.active.offset === selection.anchor.offset) {
+      selection.active.moveRightOrGoDown()
+
+      if (extend)
+        selection.anchor.moveLeftOrGoUp()
+    } else if (!extend) {
+      selection.collapseToActive(CollapseFlags.DoNotMoveActive)
     }
 
-    if (lastActive === undefined || lastActive.isBefore(selections[i].active))
-      lastActive = selections[i].active
+    const activePosition = selections[i].active.asPosition()
+
+    if (lastActive === undefined || lastActive.isBefore(activePosition))
+      lastActive = activePosition
   }
 
-  editor.selections = selections
+  state.selectionSet.commit(editor)
   editor.revealRange(new vscode.Range(lastActive!, lastActive!))
 }
 
-function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
-  let preferredColumns = preferredColumnsPerEditor.get(editor)
-
-  if (preferredColumns === undefined)
-    preferredColumnsPerEditor.set(editor, preferredColumns = [])
-
-  let selections = editor.selections,
-      firstPosition = undefined as vscode.Position | undefined
-
-  if (preferredColumns.length !== selections.length) {
-    preferredColumns.length = 0
-
-    for (let i = 0; i < selections.length; i++)
-      preferredColumns.push(selections[i].active.character)
-  }
-
-  for (let i = 0; i < selections.length; i++) {
-    const selection = expand && !allowEmptySelections ? forExtending(selections[i], Backward) : selections[i]
-    let { active } = selection
-
-    if (active.line === 0)
-      continue
-
-    if (selections === editor.selections)
-      selections = selections.slice()
-
-    active = new vscode.Position(Math.max(active.line - mult, 0), preferredColumns[i])
-    selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
-
-    if (firstPosition === undefined || firstPosition.isAfter(active))
-      firstPosition = active
-  }
-
-  editor.selections = selections
-  editor.revealRange(new vscode.Range(firstPosition!, firstPosition!))
-}
-
-function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
-  let preferredColumns = preferredColumnsPerEditor.get(editor)
-
-  if (preferredColumns === undefined)
-    preferredColumnsPerEditor.set(editor, preferredColumns = [])
-
+function moveVertical(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
+  const selections = state.selectionSet.selections
+  const diff = state.repetitions * direction
   const lastLine = editor.document.lineCount - 1
-  let selections = editor.selections,
-      lastPosition = undefined as vscode.Position | undefined
+
+  let preferredColumns = preferredColumnsPerEditor.get(editor)
+
+  if (preferredColumns === undefined)
+    preferredColumnsPerEditor.set(editor, preferredColumns = [])
+
+  let revealPosition = undefined as vscode.Position | undefined
+  let revealPositionOffset = 0
 
   if (preferredColumns.length !== selections.length) {
     preferredColumns.length = 0
@@ -133,341 +97,444 @@ function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allo
   }
 
   for (let i = 0; i < selections.length; i++) {
-    const selection = expand && !allowEmptySelections ? forExtending(selections[i], Forward) : selections[i]
-    let { active } = selection
+    const selection = selections[i]
+    const { active } = selection
+    const targetLine = selection.activeLine + diff
 
-    if (active.line === lastLine)
-      continue
+    if (targetLine < 0) {
+      active.toDocumentStart()
+    } else if (targetLine > lastLine) {
+      active.toDocumentEnd()
+    } else {
+      active.updateForNewPosition(new vscode.Position(targetLine, preferredColumns[i]))
+    }
 
-    if (selections === editor.selections)
-      selections = selections.slice()
+    if (!extend)
+      selection.collapseToActive(CollapseFlags.DoNotMoveActive)
 
-    active = new vscode.Position(Math.min(active.line + mult, lastLine), preferredColumns[i])
-    selections[i] = new vscode.Selection(expand ? selection.anchor : active, active)
-
-    if (lastPosition === undefined || lastPosition.isBefore(active))
-      lastPosition = active
+    // Forward (going down): equivalent to active.isBefore(revealPosition)
+    // Backward (going up) : equivalent to active.isAfter(revealPosition)
+    if (revealPosition === undefined || active.offset * direction < revealPositionOffset * direction) {
+      revealPosition = active.asPosition()
+      revealPositionOffset = active.offset
+    }
   }
 
-  editor.selections = selections
-  editor.revealRange(new vscode.Range(lastPosition!, lastPosition!))
+  state.selectionSet.commit(editor)
+  editor.revealRange(new vscode.Range(revealPosition!, revealPosition!))
 }
 
 // Move/extend left/down/up/right
-registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor, DoNotExtend, currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveLeft(editor,      Extend, currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor, DoNotExtend, currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) => moveRight(editor,      Extend, currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>    moveUp(editor, false, currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>    moveUp(editor, true , currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveDown(editor, false, currentCount || 1, ctx.allowEmptySelections))
-registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, { currentCount }, _, ctx) =>  moveDown(editor, true , currentCount || 1, ctx.allowEmptySelections))
+registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, state) =>     moveLeft(state, editor,           DoNotExtend))
+registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, state) =>     moveLeft(state, editor,                Extend))
+registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, state) =>    moveRight(state, editor,           DoNotExtend))
+registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, state) =>    moveRight(state, editor,                Extend))
+registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, state) => moveVertical(state, editor, Backward, DoNotExtend))
+registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, state) => moveVertical(state, editor, Backward,      Extend))
+registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, state) => moveVertical(state, editor,  Forward, DoNotExtend))
+registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, state) => moveVertical(state, editor,  Forward,      Extend))
 
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
 // ===============================================================================================
 
-function registerSelectTo(commandName: Command, diff: number, extend: boolean, direction: Direction) {
-  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, { currentCount, input: key }) => {
-    editor.selections = editor.selections.map(selection => {
-      const active = getActiveForExtending(selection, direction)
+function registerSelectTo(commandName: Command, diff: number, extend: ExtendBehavior, direction: Direction) {
+  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, { selectionSet: selections, repetitions, input: key }) => {
+    selections.update(editor, selection => {
+      const active = selection.active
+      const searchOffset = direction === Backward ? -2 : 1
 
       let line = active.line
-      let idx = direction === Backward
-        ? editor.document.lineAt(line).text.lastIndexOf(key, active.character - 1 - diff)
-        : editor.document.lineAt(line).text.indexOf(key, active.character + 1 - diff)
+      let character = active.character + searchOffset as number | undefined
 
-      for (let i = currentCount || 1; i > 0; i--) {
-        while (idx === -1) {
-          // There is no initial match, so we check the surrounding lines
+      if (selection.isNonDirectional && !selection.isReversed)
+        character!--
 
-          if (direction === Backward) {
-            if (line-- === 0)
-              return selection // No match
-          } else {
-            if (++line === editor.document.lineCount)
-              return selection // No match
+      for (let i = repetitions; i > 0; i--) {
+        for (;;) {
+          const text = editor.document.lineAt(line).text
+          const idx = direction === Backward ? text.lastIndexOf(key, character) : text.indexOf(key, character)
+
+          if (idx !== -1) {
+            character = idx + searchOffset
+
+            break
           }
 
-          const { text } = editor.document.lineAt(line)
+          // No match on this line, let's keep going.
+          const isDocumentEdge = direction === Backward
+            ? line-- === 0
+            : ++line === editor.document.lineCount
 
-          idx = direction === Backward ? text.lastIndexOf(key) : text.indexOf(key)
+          if (isDocumentEdge)
+            // ... except if we've reached the start or end of the document.
+            return
+
+          character = direction === Backward ? undefined : 0
         }
       }
 
-      return new vscode.Selection(extend ? getAnchorForExtending(selection, direction) : active, new vscode.Position(line, idx + diff))
+      if (!extend) {
+        selection.collapseToActive(CollapseFlags.DoNotMoveActive)
+
+        if (direction === Backward && diff === 1)
+          selection.anchor.moveRightOrGoDown(1)
+      }
+
+      active.updateForNewPosition(new vscode.Position(line, character! - searchOffset + diff))
     })
   })
 }
 
-registerSelectTo(Command.selectToIncluded      , 1, false, Forward)
-registerSelectTo(Command.selectToIncludedExtend, 1, true , Forward)
-registerSelectTo(Command.selectToExcluded      , 0, false, Forward)
-registerSelectTo(Command.selectToExcludedExtend, 0, true , Forward)
+registerSelectTo(Command.selectToIncluded      , 1, DoNotExtend, Forward)
+registerSelectTo(Command.selectToIncludedExtend, 1, Extend     , Forward)
+registerSelectTo(Command.selectToExcluded      , 0, DoNotExtend, Forward)
+registerSelectTo(Command.selectToExcludedExtend, 0, Extend     , Forward)
 
-registerSelectTo(Command.selectToIncludedBackwards      , 0, false, Backward)
-registerSelectTo(Command.selectToIncludedExtendBackwards, 0, true , Backward)
-registerSelectTo(Command.selectToExcludedBackwards      , 1, false, Backward)
-registerSelectTo(Command.selectToExcludedExtendBackwards, 1, true , Backward)
+registerSelectTo(Command.selectToIncludedBackwards      , 0, DoNotExtend, Backward)
+registerSelectTo(Command.selectToIncludedExtendBackwards, 0, Extend     , Backward)
+registerSelectTo(Command.selectToExcludedBackwards      , 1, DoNotExtend, Backward)
+registerSelectTo(Command.selectToExcludedExtendBackwards, 1, Extend     , Backward)
 
 
 // Move / extend to word begin / end (w, b, e, W, B, E, alt+[wbe], alt+[WBE])
 // ===============================================================================================
 
-function isPunctuation(c: string) {
-  return !isAlphaWord(c) && !isBlank(c)
-}
-
-export function isAlphaWord(c: string) {
-  return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || (c === '_') || (c === '-')
-}
-
-function isNonWsWord(c: string) {
-  return c !== ' ' && c !== '\t'
-}
-
-function isBlank(c: string) {
-  return c === ' ' || c === '\t'
-}
-
-function skipWhile(document: vscode.TextDocument, pos: vscode.Position, direction: Direction, dontSkipLine: boolean, cond: (c: string) => boolean) {
-  const diff = direction as number
-
-  let { line } = pos
-
-  while (line >= 0 && line < document.lineCount) {
-    let { text } = document.lineAt(line)
-    let character = line === pos.line
-      ? (direction === Backward ? pos.character - 1 : pos.character)
-      : (direction === Backward ? text.length - 1   : 0)
-
-    while (character >= 0 && character < text.length) {
-      if (!cond(text[character]) || (dontSkipLine && direction === Backward && character === 0))
-        return new vscode.Position(line, character)
-
-      character += diff
-
-      if (dontSkipLine && direction === Forward && character === text.length)
-        return new vscode.Position(line, character)
-    }
-
-    line += diff
-  }
-
-  return undefined
-}
-
-function skipEmptyLines(document: vscode.TextDocument, pos: vscode.Position, direction: Direction) {
+function skipEmptyLines(pos: Position, document: vscode.TextDocument, direction: Direction) {
   let { line } = pos
 
   if (!document.lineAt(line).isEmptyOrWhitespace)
-    return pos
+    return true
 
-  let lineInfo: vscode.TextLine
+  let textLine: vscode.TextLine
 
-  while ((lineInfo = document.lineAt(line)).isEmptyOrWhitespace) {
-    if (direction === Backward) {
+  if (direction === Backward) {
+    while ((textLine = document.lineAt(line)).isEmptyOrWhitespace) {
       if (line-- === 0)
-        return undefined
-    } else {
-      if (++line === document.lineCount)
-        return undefined
+        return false
     }
+
+    pos.updateForNewPosition(textLine.range.end)
+  } else {
+    while ((textLine = document.lineAt(line)).isEmptyOrWhitespace) {
+      if (++line === document.lineCount)
+        return false
+    }
+
+    pos.updateForNewPosition(textLine.range.start)
   }
 
-  return direction === Backward ? lineInfo.range.end : lineInfo.range.start
+  return true
 }
 
+/**
+ * Returns the position that should be used to start searching for a pattern
+ * starting at the given position in the given direction.
+ *
+ * For single-character selections, this will return `selection.end` for `Forward`
+ * and `selection.start` for `Backward`.
+ * For other selections, this will return `selection.active`.
+ */
+function toSearchStart(position: Position, selection: Selection, direction: Direction) {
+  if (direction === Forward) {
+    if (selection.isNonDirectional)
+      position.inheritPosition(selection.end)
+    else
+      position.inheritPosition(selection.active)
+  } else {
+    position.moveLeftOrStop()
+  }
+}
 
-function registerToNextWord(commandName: Command, extend: boolean, end: boolean, isWord: (c: string) => boolean) {
-  registerCommand(commandName, CommandFlags.ChangeSelections, (editor, state) => {
-    editor.selections = editor.selections.map(selection => {
-      const anchor = extend ? getAnchorForExtending(selection, Forward) : getActiveForExtending(selection, Forward),
-            endPosition = editor.document.lineAt(editor.document.lineCount - 1).rangeIncludingLineBreak.end,
-            defaultSelection = new vscode.Selection(anchor, endPosition)
+function categorize(charCode: number, isBlank: (charCode: number) => boolean, isWord: (charCode: number) => boolean) {
+  return isWord(charCode) ? 'word' : charCode === 0 || isBlank(charCode) ? 'blank' : 'punct'
+}
+
+function toInclusiveSelectionStart(cursor: Position.Cursor, selection: Selection, direction: Direction) {
+  if (selection.isNonDirectional) {
+    if (direction === Forward)
+      cursor.position.inheritPosition(selection.start)
+    else
+      cursor.position.inheritPosition(selection.end)
+  } else {
+    if (direction === Forward)
+      selection.active.moveLeftOrStop()
+    else
+      selection.active.moveRightOrStop()
+  }
+
+  cursor.notifyPositionUpdated()
+
+  return cursor
+}
+
+function skipFirstCharacter(cursor: Position.Cursor, direction: Direction, isBlank: (charCode: number) => boolean, isWord: (charCode: number) => boolean) {
+  const character = cursor.position.character,
+        text = cursor.textLine.text
+
+  const shouldSkip = direction === Forward
+    ? character + 1 < text.length && categorize(text.charCodeAt(character), isBlank, isWord) !== categorize(text.charCodeAt(character + 1), isBlank, isWord)
+    : character > 0 && categorize(text.charCodeAt(character), isBlank, isWord) !== categorize(text.charCodeAt(character - 1), isBlank, isWord)
+
+  if (shouldSkip)
+    cursor.skip(direction)
+}
+
+function registerToNextWord(commandName: Command, extend: ExtendBehavior, end: boolean, wordCharset: CharSet) {
+  registerCommand(commandName, CommandFlags.ChangeSelections, (editor, state, _, ctx) => {
+    const { document } = editor
+    const isWord        = ctx.getCharSetFunction(wordCharset, document),
+          isBlank       = ctx.getCharSetFunction(CharSet.Blank, document),
+          isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
+
+    state.selectionSet.update(editor, selection => {
+      if (extend)
+        selection.prepareExtensionTowards(Forward)
+      else
+        selection.prepareSelectionTowards(Forward)
+
+      const { anchor, active } = selection
+      const defaultSelection = {
+              active: { offset: state.selectionSet.endOffset, position: state.selectionSet.end },
+              anchor: anchor.save(),
+            }
 
       for (let i = state.currentCount || 1; i > 0; i--) {
-        let pos = skipEmptyLines(editor.document, getActiveForExtending(selection, Forward), Forward)
+        toSearchStart(active, selection, Forward)
 
-        if (pos === undefined)
-          return defaultSelection
+        const startOffset = active.offset
 
-        const wordStart = extend ? anchor : pos
+        if (!skipEmptyLines(active, document, Forward))
+          return selection.restore(defaultSelection)
+
+        const cursor = active.cursor()
+        const firstCharacterCursor = extend ? anchor.cursor() : active.offset === startOffset ? toInclusiveSelectionStart(cursor, selection, Forward) : cursor
+
+        if (!extend) {
+          skipFirstCharacter(firstCharacterCursor, Forward, isBlank, isWord)
+
+          anchor.inheritPosition(active)
+        }
 
         if (end) {
-          pos = skipWhile(editor.document, pos, Forward, false, isBlank)
-
-          if (pos === undefined)
-            return defaultSelection
+          if (!cursor.skipWhile(Forward, isBlank))
+            return selection.restore(defaultSelection)
         }
 
-        let ch = editor.document.lineAt(pos).text[pos.character]
+        const moved = isWord(cursor.character)
+          ? cursor.skipWhile(Forward, isWord, true)
+          : cursor.skipWhile(Forward, isPunctuation, true)
 
-        if (isWord(ch))
-          pos = skipWhile(editor.document, pos, Forward, true, isWord)
-        else if (isPunctuation(ch))
-          pos = skipWhile(editor.document, pos, Forward, true, isPunctuation)
-
-        if (pos === undefined)
-          return defaultSelection
+        if (!moved)
+          return selection.restore(defaultSelection)
 
         if (!end) {
-          pos = skipWhile(editor.document, pos, Forward, false, isBlank)
-
-          if (pos === undefined)
-            return defaultSelection
+          if (!cursor.skipWhile(Forward, isBlank))
+            return selection.restore(defaultSelection)
         }
-
-        selection = new vscode.Selection(wordStart, pos)
       }
-
-      return selection
     })
   })
 }
 
-function registerToPreviousWord(commandName: Command, extend: boolean, isWord: (c: string) => boolean) {
-  registerCommand(commandName, CommandFlags.ChangeSelections, (editor, state) => {
-    editor.selections = editor.selections.map(selection => {
-      const anchor = extend ? getAnchorForExtending(selection, Backward) : getActiveForExtending(selection, Backward),
-            startPosition = new vscode.Position(0, 0),
-            defaultSelection = new vscode.Selection(anchor, startPosition)
+function registerToPreviousWord(commandName: Command, extend: ExtendBehavior, wordCharset: CharSet) {
+  registerCommand(commandName, CommandFlags.ChangeSelections, (editor, state, _, ctx) => {
+    const { document } = editor
+    const isWord        = ctx.getCharSetFunction(wordCharset, document),
+          isBlank       = ctx.getCharSetFunction(CharSet.Blank, document),
+          isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
+
+    state.selectionSet.update(editor, selection => {
+      if (extend)
+        selection.prepareExtensionTowards(Backward)
+      else
+        selection.prepareSelectionTowards(Backward)
+
+      const { anchor, active } = selection
+      const defaultSelection = {
+              active: { offset: 0, position: new vscode.Position(0, 0) },
+              anchor: anchor.save(),
+            }
 
       for (let i = state.currentCount || 1; i > 0; i--) {
-        let pos = skipEmptyLines(editor.document, getActiveForExtending(selection, Backward), Backward)
+        toSearchStart(active, selection, Backward)
 
-        if (pos === undefined)
-          return defaultSelection
+        const startOffset = active.offset
 
-        const wordStart = extend ? anchor : pos
+        if (!skipEmptyLines(active, document, Backward))
+          return selection.restore(defaultSelection)
 
-        pos = skipWhile(editor.document, pos, Backward, true, isBlank)
+        const cursor = active.cursor()
+        const firstCharacterCursor = extend ? anchor.cursor() : active.offset === startOffset ? toInclusiveSelectionStart(cursor, selection, Backward) : cursor
 
-        if (pos === undefined)
-          return defaultSelection
+        if (!extend) {
+          skipFirstCharacter(firstCharacterCursor, Backward, isBlank, isWord)
 
-        let ch = editor.document.lineAt(pos).text[pos.character]
+          anchor.inheritPosition(active)
+        }
 
-        if (isWord(ch))
-          pos = skipWhile(editor.document, pos, Backward, true, isWord)
-        else if (isPunctuation(ch))
-          pos = skipWhile(editor.document, pos, Backward, true, isPunctuation)
+        if (!cursor.skipWhile(Backward, isBlank, true))
+          return selection.restore(defaultSelection)
 
-        if (pos === undefined)
-          return defaultSelection
+        const moved = isWord(cursor.character)
+          ? cursor.skipWhile(Backward, isWord, true, LimitToCurrentLine.Accept)
+          : cursor.skipWhile(Backward, isPunctuation, true, LimitToCurrentLine.Accept)
 
-        selection = new vscode.Selection(wordStart, pos.character === 0 ? pos : pos.translate(0, 1))
+        if (!moved)
+          return selection.restore(defaultSelection)
+
+        if (!extend)
+          anchor.moveRightOrStop()
+
+        if (active.character > 0)
+          active.moveRightOrStop()
       }
-
-      return selection
     })
   })
 }
 
-registerToNextWord(Command.selectWord         , false, false, isAlphaWord)
-registerToNextWord(Command.selectWordExtend   , true , false, isAlphaWord)
-registerToNextWord(Command.selectWordAlt      , false, false, isNonWsWord)
-registerToNextWord(Command.selectWordAltExtend, true , false, isNonWsWord)
+registerToNextWord(Command.selectWord         , DoNotExtend, false, CharSet.Word)
+registerToNextWord(Command.selectWordExtend   ,      Extend, false, CharSet.Word)
+registerToNextWord(Command.selectWordAlt      , DoNotExtend, false, CharSet.NonBlank)
+registerToNextWord(Command.selectWordAltExtend,      Extend, false, CharSet.NonBlank)
 
-registerToNextWord(Command.selectWordEnd         , false, true, isAlphaWord)
-registerToNextWord(Command.selectWordEndExtend   , true , true, isAlphaWord)
-registerToNextWord(Command.selectWordAltEnd      , false, true, isNonWsWord)
-registerToNextWord(Command.selectWordAltEndExtend, true , true, isNonWsWord)
+registerToNextWord(Command.selectWordEnd         , DoNotExtend, true, CharSet.Word)
+registerToNextWord(Command.selectWordEndExtend   ,      Extend, true, CharSet.Word)
+registerToNextWord(Command.selectWordAltEnd      , DoNotExtend, true, CharSet.NonBlank)
+registerToNextWord(Command.selectWordAltEndExtend,      Extend, true, CharSet.NonBlank)
 
-registerToPreviousWord(Command.selectWordPrevious         , false, isAlphaWord)
-registerToPreviousWord(Command.selectWordPreviousExtend   , true , isAlphaWord)
-registerToPreviousWord(Command.selectWordAltPrevious      , false, isNonWsWord)
-registerToPreviousWord(Command.selectWordAltPreviousExtend, true , isNonWsWord)
+registerToPreviousWord(Command.selectWordPrevious         , DoNotExtend, CharSet.Word)
+registerToPreviousWord(Command.selectWordPreviousExtend   ,      Extend, CharSet.Word)
+registerToPreviousWord(Command.selectWordAltPrevious      , DoNotExtend, CharSet.NonBlank)
+registerToPreviousWord(Command.selectWordAltPreviousExtend,      Extend, CharSet.NonBlank)
 
 
 // Line selecting key bindings (x, X, alt+[xX], home, end)
 // ===============================================================================================
 
-registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { selectionSet: selections, currentCount }) => {
   if (currentCount === 0 || currentCount === 1) {
-    editor.selections = editor.selections.map(x => {
-      const line = editor.document.lineAt(x.active)
+    selections.update(editor, selection => {
+      const newAnchor = new vscode.Position(selection.activeLine, 0),
+            moveAnchor = !newAnchor.isEqual(selection.anchor.asPosition())
 
-      return new vscode.Selection(line.rangeIncludingLineBreak.start, line.rangeIncludingLineBreak.end)
+      if (moveAnchor)
+        selection.anchor.updateForNewPosition(newAnchor)
+
+      if (!selection.active.isLineBreak(selection.anchor)) {
+        selection.active.toLineEndIncludingLineBreak()
+      } else if (!moveAnchor) {
+        selection.anchor.toNextLineStart()
+        selection.active.toNextLineStart()
+      }
     })
   } else {
-    editor.selections = editor.selections.map(x => {
-      const line = editor.document.lineAt(Math.min(x.active.line + currentCount - 1, editor.document.lineCount - 1))
+    selections.update(editor, selection => {
+      const lineRange = editor.document.lineAt(Math.min(selection.activeLine + currentCount - 1, editor.document.lineCount - 1)).rangeIncludingLineBreak
 
-      return new vscode.Selection(line.rangeIncludingLineBreak.start, line.rangeIncludingLineBreak.end)
+      selection.anchor.updateForNewPositionFast(selection.anchor.lineOffset, lineRange.start)
+      selection.active.updateForNewPosition(lineRange.end)
     })
   }
 })
 
-registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor, { selectionSet: selections, currentCount }) => {
   if (currentCount === 0 || currentCount === 1) {
-    editor.selections = editor.selections.map(x => {
-      const line = editor.document.lineAt(x.active)
+    selections.update(editor, selection => {
+      if (selection.isSingleLine)
+        selection.anchor.toLineStart()
 
-      return new vscode.Selection(x.anchor.with(undefined, 0), line.rangeIncludingLineBreak.end)
+      selection.active.toLineEndIncludingLineBreak()
     })
   } else {
-    editor.selections = editor.selections.map(x => {
-      const line = editor.document.lineAt(Math.min(x.active.line + currentCount - 1, editor.document.lineCount - 1))
+    selections.update(editor, selection => {
+      const lineRange = editor.document.lineAt(Math.min(selection.active.line + currentCount - 1, editor.document.lineCount - 1)).rangeIncludingLineBreak
 
-      return new vscode.Selection(x.anchor.with(undefined, 0), line.rangeIncludingLineBreak.end)
+      if (selection.isSingleLine)
+        selection.anchor.toLineStart()
+
+      selection.active.updateForNewPosition(lineRange.end)
     })
   }
 })
 
-registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, editor => {
-  editor.selections = editor.selections.map(x => {
-    const active = getActiveForExtending(x, Backward)
-
-    return new vscode.Selection(active, new vscode.Position(active.line, 0))
+registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
+  selections.update(editor, selection => {
+    selection.prepareSelectionTowards(Backward)
+    selection.active.toLineStart()
   })
 })
 
-registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, editor => {
-  editor.selections = editor.selections.map(x => {
-    const { anchor, active } = forExtending(x, Backward)
-
-    return new vscode.Selection(anchor, new vscode.Position(active.line, 0))
+registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
+  selections.update(editor, selection => {
+    selection.prepareExtensionTowards(Backward)
+    selection.active.toLineStart()
   })
 })
 
-registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, editor => {
-  editor.selections = editor.selections.map(x => {
-    const active = getActiveForExtending(x, Forward),
-          line = editor.document.lineAt(active)
-
-    return new vscode.Selection(active, line.range.end)
+registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
+  selections.update(editor, selection => {
+    selection.prepareSelectionTowards(Forward)
+    selection.active.toLineEnd()
   })
 })
 
-registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, editor => {
-  editor.selections = editor.selections.map(x => {
-    const { anchor, active } = forExtending(x, Forward),
-          line = editor.document.lineAt(active)
-
-    return new vscode.Selection(anchor, line.range.end)
+registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
+  selections.update(editor, selection => {
+    selection.prepareExtensionTowards(Forward)
+    selection.active.toLineEnd()
   })
 })
 
-registerCommand(Command.expandLines, CommandFlags.ChangeSelections, editor => {
-  editor.selections = editor.selections.map(x => {
-    const anchorLine = editor.document.lineAt(x.start),
-          activeLine = editor.document.lineAt(x.end),
-          anchor = anchorLine.range.start,
-          active = activeLine.rangeIncludingLineBreak.end
+registerCommand(Command.expandLines, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
+  selections.update(editor, selection => {
+    selection.start.toLineStart()
 
-    return x.isReversed && !x.isEmpty
-      ? new vscode.Selection(active, anchor)
-      : new vscode.Selection(anchor, active)
+    if (!selection.end.isLineBreak(selection.start))
+      selection.end.toLineEnd()
   })
 })
 
-registerCommand(Command.trimLines, CommandFlags.ChangeSelections, editor => {
-  editor.selections = editor.selections.map(x => {
-    const start = x.start.character === 0 ? x.start : x.start.translate(1, 0)
-    const end   = x.end.character === editor.document.lineAt(x.end).range.end.character ? x.end : x.end.translate(-1, 0)
+registerCommand(Command.trimLines, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
+  selections.modify(editor, (selection, _, builder) => {
+    const { start, end, isReversed } = selection
 
-    return x.isReversed ? new vscode.Selection(end, start) : new vscode.Selection(start, end)
+    if (!start.isLineStart()) {
+      if (start.isLastLine())
+        return
+
+      start.updateForNewPosition(new vscode.Position(start.line + 1, 0))
+    }
+
+    if (!end.isLineEnd()) {
+      if (end.isFirstLine())
+        return
+
+      end.updateForNewPosition(start.lineOffset - 1)
+    }
+
+    if (start.offset <= end.offset) {
+      if (isReversed)
+        selection.reverse()
+
+      builder.push(selection)
+    }
+  })
+})
+
+registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }, _, ctx) => {
+  selections.modify(editor, (selection, _, builder) => {
+    const isBlank = ctx.getCharSetFunction(CharSet.Blank, editor.document)
+
+    const startOffset = selection.start.offset + (ctx.allowEmptySelections ? 1 : 0),
+          endOffset = selection.end.offset - (ctx.allowEmptySelections ? 1 : 0)
+
+    selection.start.cursor().skipWhile(Forward, (ch, offset) => isBlank(ch) && offset < endOffset)
+    selection.end.cursor().skipWhile(Backward, (ch, offset) => isBlank(ch) && offset > startOffset)
+
+    if (selection.start.offset < selection.end.offset) {
+      builder.push(selection)
+    }
   })
 })
 
@@ -475,147 +542,87 @@ registerCommand(Command.trimLines, CommandFlags.ChangeSelections, editor => {
 // Select enclosing (m, M, alt+[mM])
 // ===============================================================================================
 
-const enclosingChars = '(){}[]'
+const enclosingChars = new Uint8Array(Array.from('(){}[]', ch => ch.charCodeAt(0)))
 
-function indexOfEnclosingChar(line: string, position = 0) {
-  for (let i = position; i < line.length; i++) {
-    const ch = line[i]
-    const idx = enclosingChars.indexOf(ch)
-
-    if (idx !== -1)
-      return i
-  }
-
-  return -1
-}
-
-function lastIndexOfEnclosingChar(line: string, position = line.length) {
-  if (position === 0)
-    return -1
-
-  for (let i = position - 1; i >= 0; i--) {
-    const ch = line[i]
-    const idx = enclosingChars.indexOf(ch)
-
-    if (idx !== -1)
-      return i
-  }
-
-  return -1
-}
-
-function registerToEnclosing(command: Command, extend: boolean, backwards: boolean) {
+function registerToEnclosing(command: Command, extend: ExtendBehavior, direction: Direction) {
   registerCommand(command, CommandFlags.ChangeSelections, (editor, state) => {
-    editor.selections = editor.selections.map(selection => {
-      let line = selection.active.line
-      let text = editor.document.lineAt(line).text
+    state.selectionSet.update(editor, selection => {
+      const activeCursor = selection.active.cursor()
 
-      let idx = backwards
-        ? lastIndexOfEnclosingChar(text, selection.active.character)
-        : indexOfEnclosingChar(text, selection.active.character)
-
-      for (let i = state.currentCount || 1; i > 0; i--) {
-        while (idx === -1) {
-          // There is no initial match, so we check the surrounding lines
-
-          if (backwards) {
-            if (--line === -1)
-              return selection // No match
-          } else {
-            if (++line === editor.document.lineCount)
-              return selection // No match
-          }
-
-          text = editor.document.lineAt(line).text
-          idx = backwards ? lastIndexOfEnclosingChar(text) : indexOfEnclosingChar(text)
-        }
+      if (!activeCursor.skipUntil(direction, ch => enclosingChars.indexOf(ch) !== -1)) {
+        return
       }
 
-      const enclosingChar = text[idx],
+      const enclosingChar = activeCursor.textLine.text.charCodeAt(activeCursor.position.character),
             idxOfEnclosingChar = enclosingChars.indexOf(enclosingChar)
 
-      let enclosingCharPos = new vscode.Position(line, idx),
-          balance = 0,
-          matchingOffset = 0,
-          buffer = new TextBuffer(editor.document, enclosingCharPos)
+      const anchor = selection.anchor,
+            prevAnchorOffset = selection.anchor.offset,
+            prevAnchorPosition = selection.anchor.asPosition()
+
+      selection.anchor.inheritPosition(selection.active)
+
+      const anchorCursor = anchor.cursor()
+
+      let balance = 0
 
       if (idxOfEnclosingChar & 1) {
         // Odd enclosingChar index <=> enclosingChar is closing character
-        //                         <=> we go backwards looking for the opening character
-        const opening = enclosingChars[idxOfEnclosingChar - 1]
+        //                         <=> we go backward looking for the opening character
+        const openingChar = enclosingChars[idxOfEnclosingChar - 1]
 
-        for (let i = -1;; i--) {
-          const ch = buffer.char(i)
-
-          if (ch === undefined) {
-            matchingOffset = i + 1
-            break
-          } else if (ch === enclosingChar) {
+        anchorCursor.skipWhile(Backward, charCode => {
+          if (charCode === openingChar && balance-- === 0) {
+            return false
+          } else if (charCode === enclosingChar) {
             balance++
-          } else if (ch === opening && balance !== 0) {
-            balance--
-          } else if (ch === opening) {
-            matchingOffset = i
-            break
           }
-        }
 
-        enclosingCharPos = enclosingCharPos.translate(0, 1)
+          return true
+        }, false)
 
-        const anchor = extend
-          ? (backwards
-              ? (selection.anchor.isBefore(enclosingCharPos) ? enclosingCharPos : selection.anchor)
-              : (selection.anchor.isAfter(enclosingCharPos) ? selection.anchor : enclosingCharPos))
-          : enclosingCharPos
-
-        return backwards
-          ? new vscode.Selection(anchor, buffer.position(matchingOffset)!)
-          : new vscode.Selection(buffer.position(matchingOffset)!, anchor)
+        // Also include the closing character.
+        selection.active.moveRightOrStop()
       } else {
         // Even enclosingChar index <=> enclosingChar is opening character
-        //                          <=> we go forwards looking for the closing character
-        const closing = enclosingChars[idxOfEnclosingChar + 1]
+        //                          <=> we go forward looking for the closing character
+        const closingChar = enclosingChars[idxOfEnclosingChar + 1]
 
-        for (let i = 1;; i++) {
-          const ch = buffer.char(i)
-
-          if (ch === undefined) {
-            matchingOffset = i
-            break
-          } else if (ch === enclosingChar) {
-            balance--
-          } else if (ch === closing && balance !== 0) {
+        anchorCursor.skip(Forward)
+        const found = anchorCursor.skipWhile(Forward, charCode => {
+          if (charCode === closingChar && balance-- === 0) {
+            return false
+          } else if (charCode === enclosingChar) {
             balance++
-          } else if (ch === closing) {
-            matchingOffset = i + 1
-            break
           }
+
+          return true
+        })
+
+        if (found) {
+          anchorCursor.skip(Forward)
         }
-
-        const anchor = extend
-          ? (backwards
-              ? (selection.anchor.isAfter(enclosingCharPos) ? enclosingCharPos : selection.anchor)
-              : (selection.anchor.isBefore(enclosingCharPos) ? selection.anchor : enclosingCharPos))
-          : enclosingCharPos
-
-        return backwards
-          ? new vscode.Selection(buffer.position(matchingOffset)!, anchor)
-          : new vscode.Selection(anchor, buffer.position(matchingOffset)!)
       }
+
+      if (extend) {
+        anchor.updateForNewPositionFast(prevAnchorOffset, prevAnchorPosition)
+      }
+
+      selection.direction = direction
     })
   })
 }
 
-registerToEnclosing(Command.selectEnclosing               , false, false)
-registerToEnclosing(Command.selectEnclosingExtend         , true , false)
-registerToEnclosing(Command.selectEnclosingBackwards      , false, true )
-registerToEnclosing(Command.selectEnclosingExtendBackwards, true , true )
+registerToEnclosing(Command.selectEnclosing               , DoNotExtend, Forward)
+registerToEnclosing(Command.selectEnclosingExtend         ,      Extend, Forward)
+registerToEnclosing(Command.selectEnclosingBackwards      , DoNotExtend, Backward)
+registerToEnclosing(Command.selectEnclosingExtendBackwards,      Extend, Backward)
 
 
 // Move up/down (ctrl-[bfud])
 // ===============================================================================================
 
-function registerMoveLines(command: Command, direction: 'up' | 'down', extend: boolean, computeTranslation: (editor: vscode.TextEditor) => number) {
+function registerMoveLines(command: Command, direction: 'up' | 'down', extend: ExtendBehavior, computeTranslation: (editor: vscode.TextEditor) => number) {
   registerCommand(command, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
     const translation = computeTranslation(editor)
 
@@ -635,23 +642,23 @@ function getHeight(editor: vscode.TextEditor) {
   return visibleRange.end.line - visibleRange.start.line
 }
 
-registerMoveLines(Command.upPage          , 'up', false, editor => getHeight(editor))
-registerMoveLines(Command.upPageExtend    , 'up', true , editor => getHeight(editor))
-registerMoveLines(Command.upHalfPage      , 'up', false, editor => getHeight(editor) / 2)
-registerMoveLines(Command.upHalfPageExtend, 'up', true , editor => getHeight(editor) / 2)
+registerMoveLines(Command.upPage          , 'up', DoNotExtend, editor => getHeight(editor))
+registerMoveLines(Command.upPageExtend    , 'up',      Extend, editor => getHeight(editor))
+registerMoveLines(Command.upHalfPage      , 'up', DoNotExtend, editor => getHeight(editor) / 2 | 0)
+registerMoveLines(Command.upHalfPageExtend, 'up',      Extend, editor => getHeight(editor) / 2 | 0)
 
-registerMoveLines(Command.downPage          , 'down', false, editor => getHeight(editor))
-registerMoveLines(Command.downPageExtend    , 'down', true , editor => getHeight(editor))
-registerMoveLines(Command.downHalfPage      , 'down', false, editor => getHeight(editor) / 2)
-registerMoveLines(Command.downHalfPageExtend, 'down', true , editor => getHeight(editor) / 2)
+registerMoveLines(Command.downPage          , 'down', DoNotExtend, editor => getHeight(editor))
+registerMoveLines(Command.downPageExtend    , 'down',      Extend, editor => getHeight(editor))
+registerMoveLines(Command.downHalfPage      , 'down', DoNotExtend, editor => getHeight(editor) / 2 | 0)
+registerMoveLines(Command.downHalfPageExtend, 'down',      Extend, editor => getHeight(editor) / 2 | 0)
 
 
 // Other bindings (%)
 // ===============================================================================================
 
-registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, editor => {
-  const start = new vscode.Position(0, 0)
-  const end   = editor.document.lineAt(editor.document.lineCount - 1).range.end
+registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
+  const selection = selectionSet.selections[0]
 
-  editor.selection = new vscode.Selection(start, end)
+  selection.anchor.toDocumentStart()
+  selection.active.toDocumentEnd()
 })

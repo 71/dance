@@ -3,6 +3,7 @@ import * as vscode from 'vscode'
 import { commands, Mode }      from './commands/index'
 import { HistoryManager }      from './history'
 import { Register, Registers } from './registers'
+import { SelectionSet }  from './utils/selections'
 
 
 /** Name of the extension, used in commands and settings. */
@@ -138,6 +139,26 @@ class ModeConfiguration {
   }
 }
 
+const blankCharacters =
+  '\r\n\t ' + String.fromCharCode(0xa0, 0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x2028, 0x2029, 0x202f, 0x205f, 0x3000)
+
+/**
+ * A character set.
+ */
+export const enum CharSet {
+  /** Whether the set should be inverted when checking for existence. */
+  Invert      = 0b001,
+  /** Blank characters (whitespace), such as ' \t\n'. */
+  Blank       = 0b010,
+  /** Punctuation characters, such as '.,;'. */
+  Punctuation = 0b100,
+
+  /** Word character (neither blank nor punctuation). */
+  Word = Invert | Blank | Punctuation,
+  /** Non-blank character (either word or punctuation). */
+  NonBlank = Invert | Blank,
+}
+
 /**
  * Global state of the extension.
  */
@@ -163,6 +184,7 @@ export class Extension implements vscode.Disposable {
   readonly statusBarItem: vscode.StatusBarItem
 
   readonly modeMap = new WeakMap<vscode.TextDocument, Mode>()
+  readonly selectionSets = [] as SelectionSet[]
 
   readonly registers = new Registers()
   readonly history   = new HistoryManager()
@@ -296,38 +318,12 @@ export class Extension implements vscode.Disposable {
     if (decorationType === undefined)
       return
 
-    const lines: number[] = [],
-          selections = editor.selections
+    const selection = editor.selection
 
-    let needsCopy = false
-
-    for (let i = 0; i < selections.length; i++) {
-      const selection = selections[i]
-
-      for (let line = selection.start.line; line <= selection.end.line; line++) {
-        if (lines.indexOf(line) === -1) {
-          lines.push(line)
-        } else {
-          // There is some overlap, so we need a copy
-          needsCopy = true
-        }
-      }
-    }
-
-    if (needsCopy) {
-      const ranges: vscode.Range[] = []
-
-      for (let i = 0; i < lines.length; i++) {
-        const pos = new vscode.Position(lines[i], 0),
-              range = new vscode.Range(pos, pos)
-
-        ranges.push(range)
-      }
-
-      editor.setDecorations(decorationType, ranges)
-    } else {
-      editor.setDecorations(decorationType, selections)
-    }
+    if (selection.end.character === 0 && selection.end.line > 0 && !this.allowEmptySelections)
+      editor.setDecorations(decorationType, [new vscode.Range(selection.start, selection.end.with(selection.end.line - 1, Number.MAX_SAFE_INTEGER))])
+    else
+      editor.setDecorations(decorationType, [selection])
   }
 
   setEnabled(enabled: boolean, changeConfiguration: boolean) {
@@ -367,6 +363,8 @@ export class Extension implements vscode.Disposable {
 
       if (changeConfiguration)
         vscode.workspace.getConfiguration(extensionName).update('enabled', false)
+
+      this.selectionSets.splice(0)
     } else {
       this.statusBarItem.show()
 
@@ -385,6 +383,20 @@ export class Extension implements vscode.Disposable {
 
       this.subscriptions.push(
         vscode.window.onDidChangeTextEditorSelection(e => {
+          let hasMatchingSelectionSet = false
+
+          for (const selectionSet of this.selectionSets) {
+            if (selectionSet.forEditor(e.textEditor)) {
+              hasMatchingSelectionSet = true
+              selectionSet.updateAfterSelectionsChanged(e)
+              break
+            }
+          }
+
+          if (!hasMatchingSelectionSet) {
+            this.selectionSets.push(SelectionSet.from(this, e.textEditor))
+          }
+
           const mode = this.modeMap.get(e.textEditor.document)
 
           if (mode === Mode.Insert)
@@ -415,6 +427,27 @@ export class Extension implements vscode.Disposable {
               handler()
           }
         }),
+
+        vscode.window.onDidChangeVisibleTextEditors(e => {
+          for (const editor of e) {
+            if (!this.selectionSets.some(x => x.forEditor(editor)))
+              this.selectionSets.push(SelectionSet.from(this, editor))
+          }
+        }),
+
+        vscode.workspace.onDidCloseTextDocument(e => {
+          for (let i = 0; i < this.selectionSets.length; i++) {
+            if (this.selectionSets[i].document === e)
+              this.selectionSets.splice(i--, 1)
+          }
+        }),
+
+        vscode.workspace.onDidChangeTextDocument(e => {
+          for (const selectionSet of this.selectionSets) {
+            if (selectionSet.document === e.document)
+              selectionSet.updateAfterDocumentChanged(e)
+          }
+        }),
       )
 
       for (let i = 0; i < commands.length; i++)
@@ -422,6 +455,8 @@ export class Extension implements vscode.Disposable {
 
       if (changeConfiguration)
         vscode.workspace.getConfiguration(extensionName).update('enabled', true)
+
+      this.selectionSets.push(...vscode.window.visibleTextEditors.map(x => SelectionSet.from(this, x)))
     }
 
     return this.enabled = enabled
@@ -444,7 +479,14 @@ export class Extension implements vscode.Disposable {
     for (let i = 0; i < editor.selections.length; i++) {
       const selection = editor.selections[i]
 
-      if (selection.isEmpty) {
+      if (selection.anchor.character === selection.active.character + 1 && selection.isSingleLine) {
+        if (normalizedSelections === undefined) {
+          // Change needed. Allocate the new array and copy what we have so far.
+          normalizedSelections = editor.selections.slice(0, i)
+        }
+
+        normalizedSelections.push(new vscode.Selection(selection.active, selection.anchor))
+      } else if (selection.isEmpty) {
         if (normalizedSelections === undefined) {
           // Change needed. Allocate the new array and copy what we have so far.
           normalizedSelections = editor.selections.slice(0, i)
@@ -453,8 +495,8 @@ export class Extension implements vscode.Disposable {
         const active = selection.active
 
         if (active.character >= editor.document.lineAt(active.line).range.end.character) {
-          // Selection is at line end. Just keep it that way.
-          normalizedSelections.push(selection)
+          // Selection is at line end. Select line break.
+          normalizedSelections.push(new vscode.Selection(active, new vscode.Position(active.line + 1, 0)))
         } else {
           const offset = editor.document.offsetAt(selection.active)
           const nextPos = editor.document.positionAt(offset + 1)
@@ -474,6 +516,29 @@ export class Extension implements vscode.Disposable {
 
     if (normalizedSelections !== undefined)
       editor.selections = normalizedSelections
+  }
+
+  get activeSelections() {
+    return this.getSelectionsForEditor(vscode.window.activeTextEditor!)
+  }
+
+  getSelectionsForEditor(editor: vscode.TextEditor, disableCheck = false) {
+    for (const selectionSet of this.selectionSets) {
+      if (selectionSet.forEditor(editor)) {
+        if (!disableCheck) {
+          console.assert(selectionSet.selections.length === editor.selections.length
+                      && selectionSet.selections.every((selection, i) => selection.eq(editor.selections[i])))
+        }
+
+        return selectionSet
+      }
+    }
+
+    const selectionSet = SelectionSet.from(this, editor)
+
+    this.selectionSets.push(selectionSet)
+
+    return selectionSet
   }
 
   dispose() {
@@ -500,6 +565,57 @@ export class Extension implements vscode.Disposable {
 
     if (triggerNow) {
       handler(this.configuration.get(section, defaultValue))
+    }
+  }
+
+  /**
+   * Returns a string containing all the characters belonging to the given charset.
+   */
+  getCharacters(charSet: CharSet, document: vscode.TextDocument) {
+    let characters = ''
+
+    if (charSet & CharSet.Blank) {
+      characters += blankCharacters
+    }
+
+    if (charSet & CharSet.Punctuation) {
+      const wordSeparators = vscode.workspace.getConfiguration('editor', { languageId: document.languageId }).get('wordSeparators')
+
+      if (typeof wordSeparators === 'string')
+        characters += wordSeparators
+    }
+
+    return characters
+  }
+
+  /**
+   * Returns an array containing all the characters belonging to the given charset.
+   */
+  getCharCodes(charSet: CharSet, document: vscode.TextDocument) {
+    const characters = this.getCharacters(charSet, document),
+          charCodes = new Uint32Array(characters.length)
+
+    for (let i = 0; i < characters.length; i++) {
+      charCodes[i] = characters.charCodeAt(i)
+    }
+
+    return charCodes
+  }
+
+  /**
+   * Returns a function that tests whether a character belongs to the given charset.
+   */
+  getCharSetFunction(charSet: CharSet, document: vscode.TextDocument) {
+    const charCodes = this.getCharCodes(charSet, document)
+
+    if (charSet & CharSet.Invert) {
+      return function(this: Uint32Array, charCode: number) {
+        return this.indexOf(charCode) === -1
+      }.bind(charCodes)
+    } else {
+      return function(this: Uint32Array, charCode: number) {
+        return this.indexOf(charCode) !== -1
+      }.bind(charCodes)
     }
   }
 }

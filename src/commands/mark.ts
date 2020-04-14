@@ -1,5 +1,7 @@
 // Marks: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
 import { Command, registerCommand, CommandFlags, InputKind } from '.'
+import { SelectionSet } from '../utils/selections'
+import { Register } from '../registers'
 
 
 registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, undefined, (_, { input: key }, __, ctx) => {
@@ -29,13 +31,29 @@ const combineOpts = [
 
 // }
 
-// registerCommand(Command.marksSaveSelections, async (editor, state) => {
-//   const register = state.currentRegister || state.registers.caret
-// })
+const marksByRegister = new Map<Register, WeakMap<SelectionSet, SelectionSet.Copy>>()
 
-// registerCommand(Command.marksRestoreSelections, async (editor, state) => {
-//   const register = state.currentRegister || state.registers.caret
-// })
+function marksForRegister(register: Register) {
+  let map = marksByRegister.get(register)
+
+  if (map === undefined)
+    marksByRegister.set(register, map = new WeakMap())
+
+  return map
+}
+
+registerCommand(Command.marksSaveSelections, CommandFlags.None, (_, { currentRegister, selectionSet: selections }, __, ctx) => {
+  const marks = marksForRegister(currentRegister ?? ctx.registers.caret)
+
+  marks.get(selections)?.forget()
+  marks.set(selections, selections.copy())
+})
+
+registerCommand(Command.marksRestoreSelections, CommandFlags.ChangeSelections, async (editor, { currentRegister, selectionSet: selections }, _, ctx) => {
+  const marks = marksForRegister(currentRegister ?? ctx.registers.caret)
+
+  marks.get(selections)?.commit(editor)
+})
 
 // registerCommand(Command.marksCombineSelectionsFromCurrent, async (editor, state) => {
 

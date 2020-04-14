@@ -1,30 +1,28 @@
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags, CommandDescriptor, Mode } from '.'
+import { registerCommand, Command, CommandFlags, CommandDescriptor } from '.'
+import { CollapseFlags } from '../utils/selections'
 
 
-registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
-  editor.selections = editor.selections.map(x => new vscode.Selection(x.start, x.start))
+registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
+  selectionSet.update(editor, selection => selection.end.inheritPosition(selection.start))
 })
 
-registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
-  editor.selections = editor.selections.map(x => new vscode.Selection(x.end, x.end))
+registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
+  selectionSet.update(editor, selection => selection.start.inheritPosition(selection.end))
 })
 
-registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
-  editor.selections = editor.selections.map(x => {
-    const activeLine = editor.document.lineAt(x.active.line)
-    const anchor = activeLine.range.start.with(undefined, activeLine.firstNonWhitespaceCharacterIndex)
-
-    return new vscode.Selection(anchor, anchor)
+registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
+  selectionSet.update(editor, selection => {
+    selection.active.toLineFirstNonWhitespaceCharacter()
+    selection.anchor.inheritPosition(selection.active)
   })
 })
 
-registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, editor => {
-  editor.selections = editor.selections.map(x => {
-    const anchor = editor.document.lineAt(x.active.line).range.end
-
-    return new vscode.Selection(anchor, anchor)
+registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet: selectionSet }) => {
+  selectionSet.update(editor, selection => {
+    selection.active.toLineEnd()
+    selection.anchor.inheritPosition(selection.active)
   })
 })
 
@@ -36,31 +34,35 @@ registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.Swi
   return vscode.commands.executeCommand('editor.action.insertLineAfter')
 })
 
-registerCommand(Command.newLineAbove, CommandFlags.Edit, editor => builder => {
+registerCommand(Command.newLineAbove, CommandFlags.Edit, (editor, { selectionSet }) => editor.edit(builder => {
   const newLine = editor.document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n'
   const processedLines = new Set<number>()
 
-  for (const selection of editor.selections) {
-    if (processedLines.has(selection.start.line))
-      continue
+  const selections = selectionSet.selections,
+        len = selections.length
 
-    processedLines.add(selection.start.line)
-    builder.insert(selection.start.with(undefined, 0), newLine)
+  for (let i = 0; i < len; i++) {
+    const startLine = selections[i].startLine
+
+    if (processedLines.size !== processedLines.add(startLine).size)
+      builder.insert(new vscode.Position(startLine, 0), newLine)
   }
-})
+}).then(() => undefined))
 
-registerCommand(Command.newLineBelow, CommandFlags.Edit, editor => builder => {
+registerCommand(Command.newLineBelow, CommandFlags.Edit, (editor, { selectionSet }) => editor.edit(builder => {
   const newLine = editor.document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n'
   const processedLines = new Set<number>()
 
-  for (const selection of editor.selections) {
-    if (processedLines.has(selection.end.line))
-      continue
+  const selections = selectionSet.selections,
+        len = selections.length
 
-    processedLines.add(selection.end.line)
-    builder.insert(editor.document.lineAt(selection.end).rangeIncludingLineBreak.end, newLine)
+  for (let i = 0; i < len; i++) {
+    const endLine = selections[i].endLine
+
+    if (processedLines.size !== processedLines.add(endLine).size)
+      builder.insert(editor.document.lineAt(endLine).rangeIncludingLineBreak.end, newLine)
   }
-})
+}).then(() => undefined))
 
 registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _, ctx) => {
   const hist = ctx.history.for(editor.document)
@@ -95,7 +97,7 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _
 
   let end = i
 
-  return (builder: vscode.TextEditorEdit) => {
+  await editor.edit(builder => {
     for (let i = state.currentCount || 1; i > 0; i--) {
       for (let j = start; j <= end; j++) {
         const state = hist.commands[j][1],
@@ -113,5 +115,5 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _
         }
       }
     }
-  }
+  })
 })

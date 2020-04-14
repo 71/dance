@@ -201,7 +201,12 @@ registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Tex
   const outputs = await pipeInput(state.input, editor)
 
   displayErrors(outputs)
-  editor.selections = editor.selections.filter((_, i) => !outputs[i].err && outputs[i].val !== 'false')
+  state.selectionSet.modify(editor, (selection, i, builder) => {
+    const output = outputs[i]
+
+    if (!output.err && output.val !== 'false')
+      builder.push(selection)
+  })
 })
 
 registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, inputBoxOptions, async (editor, state) => {
@@ -216,10 +221,12 @@ registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBox
   if (displayErrors(outputs))
     return
 
-  return (builder: vscode.TextEditorEdit) => {
+  await editor.edit(builder => {
+    const selections = state.selectionSet.selections
+
     for (let i = 0; i < outputs.length; i++)
-      builder.replace(editor.selections[i], outputs[i].val!)
-  }
+      builder.replace(selections[i].asSelection(), outputs[i].val!)
+  })
 })
 
 registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
@@ -228,10 +235,10 @@ registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxO
   if (displayErrors(outputs))
     return
 
-  return (builder: vscode.TextEditorEdit) => {
+  await editor.edit(builder => {
     for (let i = 0; i < outputs.length; i++)
       builder.insert(editor.selections[i].end, outputs[i].val!)
-  }
+  })
 })
 
 registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
@@ -240,8 +247,8 @@ registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBox
   if (displayErrors(outputs))
     return
 
-  return (builder: vscode.TextEditorEdit) => {
+  await editor.edit(builder => {
     for (let i = 0; i < outputs.length; i++)
       builder.insert(editor.selections[i].start, outputs[i].val!)
-  }
+  })
 })

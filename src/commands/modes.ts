@@ -6,11 +6,9 @@ import { registerCommand, setRemainingNormalCommands, Command, CommandFlags, Mod
 registerCommand(Command.setInsert, CommandFlags.SwitchToInsert, () => {})
 registerCommand(Command.setNormal, CommandFlags.SwitchToNormal, () => {})
 
-registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsert, (_, state, __, ctx) => {
-  let count = state.currentCount || 1
-
+registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsert, (_, { repetitions }, __, ctx) => {
   let subscription = vscode.commands.registerCommand('type', (...args) => {
-    if (--count === 0) {
+    if (--repetitions === 0) {
       subscription.dispose()
       ctx.setMode(Mode.Normal)
     }

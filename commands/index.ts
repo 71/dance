@@ -414,6 +414,19 @@ export const trimLines: ICommand & { readonly id: 'dance.trimLines' } = {
   ],
 }
 /**
+ * Trim whitespace at beginning and end of selections.
+ *
+ * Default key: `_` (`dance.mode == 'normal'`).
+ */
+export const trimSelections: ICommand & { readonly id: 'dance.trimSelections' } = {
+  id         : 'dance.trimSelections',
+  title      : 'Trim selections',
+  description: 'Trim whitespace at beginning and end of selections.',
+  keybindings: [
+    { key: '_', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/**
  * Select the word and following whitespaces on the right of the end of each selection.
  *
  * Default key: `W` (`dance.mode == 'normal'`).
@@ -2157,6 +2170,8 @@ export const commands = {
   expandLines,
   /** Trim selections to only contain full lines (not including last end-of-line). */
   trimLines,
+  /** Trim whitespace at beginning and end of selections. */
+  trimSelections,
   /** Select the word and following whitespaces on the right of the end of each selection. */
   selectWord,
   /** Select preceding whitespaces and the word on the left of the end of each selection. */
@@ -2483,6 +2498,8 @@ export const enum Command {
   expandLines = 'dance.expandLines',
   /** Trim selections to only contain full lines (not including last end-of-line). */
   trimLines = 'dance.trimLines',
+  /** Trim whitespace at beginning and end of selections. */
+  trimSelections = 'dance.trimSelections',
   /** Select the word and following whitespaces on the right of the end of each selection. */
   selectWord = 'dance.select.word',
   /** Select preceding whitespaces and the word on the left of the end of each selection. */

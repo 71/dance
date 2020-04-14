@@ -1,0 +1,233 @@
+import * as assert from 'assert'
+import * as fs     from 'fs'
+import * as path   from 'path'
+import * as vscode from 'vscode'
+
+import { Command } from '../../commands'
+import { state } from '../../src/extension'
+import { keypress } from '../../src/utils/prompt'
+
+export namespace testCommands {
+  export interface Mutation {
+    readonly commands: readonly (string | { readonly command: string, readonly args: any[] })[]
+    readonly contentAfterMutation: string
+  }
+
+  export interface Options {
+    readonly initialContent: string
+    readonly mutations: readonly Mutation[]
+  }
+}
+
+const regexp = /(\|)?{(\d+)}/g
+
+function getPlainContent(templatedContent: string) {
+  return templatedContent.replace(regexp, '')
+}
+
+function getSelections(document: vscode.TextDocument, templatedContent: string) {
+  const anchorPositions = [] as vscode.Position[]
+  const activePositions = [] as vscode.Position[]
+
+  let match: RegExpExecArray | null = null
+  let diff = 0
+
+  while (match = regexp.exec(templatedContent)) {
+    const index = +match[2]
+
+    if (match[1] === '|') {
+      activePositions[index] = document.positionAt(match.index - diff)
+
+      if (anchorPositions[index] === undefined)
+        anchorPositions[index] = activePositions[index]
+    } else {
+      anchorPositions[index] = document.positionAt(match.index - diff)
+    }
+
+    diff += match[0].length
+  }
+
+  return Array.from(anchorPositions, (anchor, i) => new vscode.Selection(anchor, activePositions[i]))
+}
+
+function stringifySelection(document: vscode.TextDocument, selection: vscode.Selection) {
+  const content = document.getText()
+  const startOffset = document.offsetAt(selection.start),
+        endOffset = document.offsetAt(selection.end),
+        [startString, endString] = selection.isReversed ? ['|', '<'] : ['>', '|']
+
+  if (selection.isEmpty)
+    return content.substring(0, startOffset) + '|' + content.substring(startOffset)
+  else
+    return content.substring(0, startOffset) + startString + content.substring(startOffset, endOffset) + endString + content.substring(endOffset)
+}
+
+async function testCommands(editor: vscode.TextEditor, { initialContent, mutations }: testCommands.Options) {
+  const content = getPlainContent(initialContent)
+  const document = editor.document
+
+  await editor.edit(builder => builder.replace(new vscode.Range(new vscode.Position(0, 0), document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end), content))
+
+  // Set up initial selections.
+  const initialSelections = getSelections(document, initialContent)
+
+  editor.selections = initialSelections
+
+  state
+    .getSelectionsForEditor(editor, true)
+    .updateAfterSelectionsChanged({ selections: editor.selections, textEditor: editor, kind: vscode.TextEditorSelectionChangeKind.Command })
+
+  // For each mutation...
+  let mutationIndex = 1
+
+  for (const { commands, contentAfterMutation } of mutations) {
+    // Execute commands.
+    for (let i = 0; i < commands.length; i++) {
+      const command = commands[i]
+      const { command: commandName, args } = typeof command === 'string' ? { command, args: [] } : command
+
+      const promise = vscode.commands.executeCommand(commandName, ...args)
+
+      while (i < commands.length - 1 && typeof commands[i + 1] === 'string' && (commands[i + 1] as string).startsWith('type:')) {
+        await new Promise(resolve => {
+          setTimeout(() => {
+            vscode.commands.executeCommand('type', { text: (commands[i + 1] as string)[5] }).then(resolve)
+          }, 20)
+        })
+
+        i++
+      }
+
+      await promise
+    }
+
+    // Ensure resulting text is valid.
+    let prefix = mutations.length === 1 ? '' : `After ${mutationIndex} mutation(s):\n  `
+
+    const expectedContent = getPlainContent(contentAfterMutation)
+
+    assert.strictEqual(document.getText(), expectedContent, `${prefix}Document text is not as expected.`)
+
+    // Set up expected selections.
+    const expectedSelections = getSelections(document, contentAfterMutation)
+
+    // Ensure resulting selections are right.
+    assert.strictEqual(editor.selections.length, expectedSelections.length,
+      `${prefix}Expected ${expectedSelections.length} selection(s), but had ${editor.selections.length}.`)
+
+    for (let i = 0; i < expectedSelections.length; i++) {
+      if (editor.selections[i].isEqual(expectedSelections[i])) {
+        continue
+      }
+
+      const expected = stringifySelection(document, expectedSelections[i])
+      const actual = stringifySelection(document, editor.selections[i])
+
+      assert.strictEqual(actual, expected, `${prefix}Expected selections #${i} to match ('>' is anchor, '|' is cursor).`)
+      assert.fail()
+    }
+
+    mutationIndex++
+  }
+}
+
+suite('Commands', function() {
+  let document: vscode.TextDocument
+  let editor: vscode.TextEditor
+
+  this.beforeAll(async () => {
+    document = await vscode.workspace.openTextDocument()
+    editor = await vscode.window.showTextDocument(document)
+  })
+
+  test('mutation tests work correctly', async function() {
+    await testCommands(editor, {
+      initialContent: `|{0}foo`,
+      mutations: [
+        { contentAfterMutation: `{0}f|{0}oo`,
+          commands: [Command.rightExtend],
+        },
+      ],
+    })
+  })
+
+  test('mutation tests catch errors correctly', async function() {
+    try {
+      await testCommands(editor, {
+        initialContent: `|{0}foo`,
+        mutations: [
+          { contentAfterMutation: `|{0}foo`,
+            commands: [Command.rightExtend],
+          },
+        ],
+      })
+    } catch (err) {
+      if (err instanceof Error && err.message === `Expected selections #0 to match ('>' is anchor, '|' is cursor).`)
+        return
+
+      throw err
+    }
+
+    assert.fail(`Expected error.`)
+  })
+
+  const basedir = this.file!.replace('\\out\\', '\\').replace('/out/', '/').replace('.test.js', '')
+
+  for (const file of fs.readdirSync(basedir)) {
+    const fullPath = path.join(basedir, file)
+    const friendlyPath = fullPath.substr(/dance.test.suite/.exec(fullPath)!.index)
+
+    const content = fs.readFileSync(fullPath, { encoding: 'utf8' })
+    const sections = content.split(/(^\/\/== [\w\.]+ > [\w\.]+$\n(?:^\/\/= .+$\n)+)/gm)
+    const nodes = new Map<string, string>()
+    const results = new Map<string, Promise<boolean>>()
+    const initialContent = sections[0].trim() + '\n'
+
+    nodes.set('root', initialContent)
+    nodes.set('0', initialContent)
+    results.set('root', Promise.resolve(true))
+    results.set('0', Promise.resolve(true))
+
+    for (let i = 1; i < sections.length; i += 2) {
+      const metadata = sections[i],
+            content = sections[i + 1]
+
+      const [full, from, to] = /^\/\/== ([\w\.]+) > ([\w\.]+)$/m.exec(metadata)!
+      const commands = metadata.substr(full.length).split('\n').map(x => x.substr(3).trim()).filter(x => x)
+      const contentAfterMutation = content.trim() + '\n'
+      const initialContent = nodes.get(from)!
+
+      assert(typeof initialContent === 'string')
+      assert(!nodes.has(to))
+
+      let setSuccess: (success: boolean) => void
+
+      nodes.set(to, contentAfterMutation)
+      results.set(to, new Promise<boolean>(resolve => setSuccess = resolve))
+
+      test(`commands from ${from} to ${to} in ${friendlyPath} are applied correctly`, async function() {
+        if (!await results.get(from)!) {
+          setSuccess(false)
+          this.skip()
+        }
+
+        let success = false
+
+        try {
+          await testCommands(editor, {
+            initialContent,
+            mutations: [
+              { contentAfterMutation,
+                commands,
+              },
+            ],
+          })
+
+          success = true
+        } finally {
+          setSuccess(success)
+        }
+      })
+    }
+  }
+})

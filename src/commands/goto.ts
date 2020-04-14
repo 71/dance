@@ -2,9 +2,8 @@ import * as vscode from 'vscode'
 import * as path   from 'path'
 import * as fs     from 'fs'
 
-import { registerCommand, Command, CommandFlags, InputKind } from '.'
-
-import { Extension } from '../extension'
+import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
+import { Selection, ExtendBehavior, CollapseFlags, Position, DoNotExtend, Extend } from '../utils/selections'
 
 
 const jumps: [string, string][] = [
@@ -23,43 +22,43 @@ const jumps: [string, string][] = [
   ['.', 'go to last buffer modification position'],
 ]
 
-function executeGoto(gotoType: number, editor: vscode.TextEditor, extend: boolean) {
+function executeGoto(gotoType: number, editor: vscode.TextEditor, state: CommandState, extend: ExtendBehavior) {
   switch (gotoType) {
     case 0: // go to line start
-      executeGotoLine(editor, extend, 'start')
+      executeGotoLine(editor, state, extend, 'start')
       break
 
     case 1: // go to line end
-      executeGotoLine(editor, extend, 'end')
+      executeGotoLine(editor, state, extend, 'end')
       break
 
     case 2: // go to non-blank line start
-      executeGotoLine(editor, extend, 'first')
+      executeGotoLine(editor, state, extend, 'first')
       break
 
     case 3: // go to first line
     case 4: // go to first line
-      executeGotoFirstLine(editor, extend)
+      executeGotoFirstLine(editor, state, extend)
       break
 
     case 5: // go to last line
-      executeGotoLastLine(editor, extend)
+      executeGotoLastLine(editor, state, extend)
       break
 
     case 6: // go to last char of last line
-      executeGotoLastLine(editor, extend, true)
+      executeGotoLastLine(editor, state, extend, true)
       break
 
     case 7: // go to first displayed line
-      executeGotoDisplayLine(editor, extend, 'top')
+      executeGotoDisplayLine(editor, state, extend, 'top')
       break
 
     case 8: // go to middle displayed line
-      executeGotoDisplayLine(editor, extend, 'center')
+      executeGotoDisplayLine(editor, state, extend, 'center')
       break
 
     case 9: // go to last displayed line
-      executeGotoDisplayLine(editor, extend, 'bottom')
+      executeGotoDisplayLine(editor, state, extend, 'bottom')
       break
 
     case 10: // go to previous buffer
@@ -72,10 +71,11 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, extend: boolea
         if (!exists)
           return
 
-        let remaining = editor.selections.length
+        const selections = state.selectionSet.selections
+        let remaining = selections.length
 
-        for (const selection of editor.selections) {
-          const filename = editor.document.getText(selection)
+        for (const selection of selections) {
+          const filename = selection.getText()
           const filepath = path.resolve(basePath, filename)
 
           fs.exists(filepath, exists => {
@@ -95,71 +95,106 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, extend: boolea
   return
 }
 
-function executeGotoLine(editor: vscode.TextEditor, extend: boolean, position: 'first' | 'end' | 'start' | 'default') {
-  const getCharacter = {
-    first(x: vscode.Selection) {
-      return editor.document.lineAt(x.active.line).firstNonWhitespaceCharacterIndex
-    },
-    end(x: vscode.Selection) {
-      return editor.document.lineAt(x.active.line).range.end.character
-    },
-    start() {
-      return 0
-    },
-    default() {
-      return 0
-    },
-  }[position]
+const pickGetCharacter = {
+  first(x: Selection) {
+    return x.activeTextLine().firstNonWhitespaceCharacterIndex
+  },
+  end(x: Selection) {
+    return x.activeTextLine().range.end.character
+  },
+  start() {
+    return 0
+  },
+  default() {
+    return 0
+  },
+}
 
-  editor.selections = editor.selections.map(x => {
-    const npos = new vscode.Position(x.active.line, getCharacter(x))
-    return new vscode.Selection(extend ? x.anchor : npos, npos)
+function executeGotoLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: ExtendBehavior, position: 'first' | 'end' | 'start' | 'default') {
+  const getCharacter = pickGetCharacter[position]
+
+  selectionSet.update(editor, selection => {
+    selection.active.updateForNewPosition(new vscode.Position(selection.activeLine, getCharacter(selection)))
+
+    if (!extend)
+      selection.collapseToActive(CollapseFlags.DoNotMoveActive)
   })
 }
 
-function executeGotoDisplayLine(editor: vscode.TextEditor, extend: boolean, position: 'top' | 'center' | 'bottom' | 'default') {
-  const newLine = {
-    top() {
-      return editor.visibleRanges[0].start.line
-    },
-    center() {
-      return (editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2
-    },
-    bottom() {
-      return editor.visibleRanges[0].end.line
-    },
-    default() {
-      return 0
-    },
-  }[position]()
+const pickNewLine = {
+  top(editor: vscode.TextEditor) {
+    return editor.visibleRanges[0].start.line
+  },
+  center(editor: vscode.TextEditor) {
+    return (editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2
+  },
+  bottom(editor: vscode.TextEditor) {
+    return editor.visibleRanges[0].end.line
+  },
+  default() {
+    return 0
+  },
+}
 
-  const newActive = new vscode.Position(newLine, 0)
+function executeGotoDisplayLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: ExtendBehavior, position: 'top' | 'center' | 'bottom' | 'default') {
+  const newLine = pickNewLine[position](editor),
+        newActive = new vscode.Position(newLine, 0)
 
   if (extend) {
-    editor.selections = editor.selections.map(x => {
-      return new vscode.Selection(x.anchor, newActive)
+    selectionSet.update(editor, selection => {
+      selection.active.updateForNewPosition(newActive)
     })
   } else {
-    editor.selections = [new vscode.Selection(newActive, newActive)]
+    selectionSet.updateAll(editor, selections => {
+      selections[0].active.updateForNewPosition(newActive)
+      selections[0].anchor.updateForNewPosition(newActive)
+
+      selections.length = 1
+    })
   }
 }
 
-function executeGotoFirstLine(editor: vscode.TextEditor, extend: boolean) {
-  const nanch = extend
-    ? editor.selections.map(x => x.anchor).reduce((prev, current) => prev.isAfter(current) ? prev : current)
-    : new vscode.Position(0, 0)
+function executeGotoFirstLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: boolean) {
+  selectionSet.updateAll(editor, selections => {
+    const selection = selections[0]
 
-  editor.selections = [new vscode.Selection(nanch, new vscode.Position(0, 0))]
+    selection.active.toDocumentStart()
+
+    if (extend) {
+      const newAnchor = selections
+        .map(x => x.anchor)
+        .reduce((furthestFromStart, current) => furthestFromStart.offset > current.offset ? furthestFromStart : current)
+
+      selection.anchor.inheritPosition(newAnchor)
+    } else {
+      selection.collapseToActive(CollapseFlags.MoveActiveAfter)
+    }
+
+    selections.length = 1
+  })
 }
 
-function executeGotoLastLine(editor: vscode.TextEditor, extend: boolean, gotoLastChar: boolean = false) {
-  const lastLine = editor.document.lineCount - 1
-  const npos = new vscode.Position(lastLine, gotoLastChar ? editor.document.lineAt(lastLine).range.end.character : 0)
-  const nanch = extend
-    ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isBefore(current) ? prev : current))
-    : npos
+function executeGotoLastLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: ExtendBehavior, gotoLastChar: boolean = false) {
+  selectionSet.updateAll(editor, selections => {
+    const selection = selections[0]
 
-  editor.selections = [new vscode.Selection(nanch, npos)]
+    if (gotoLastChar)
+      selection.active.updateForNewPositionFast(selectionSet.endOffset, selectionSet.end)
+    else
+      selection.active.updateForNewPosition(new vscode.Position(selectionSet.end.line - 1, 0))
+
+    if (extend) {
+      const newAnchor = selections
+        .map(x => x.anchor)
+        .reduce((furthestFromEnd, current) => furthestFromEnd.offset < current.offset ? furthestFromEnd : current)
+
+      selection.anchor.inheritPosition(newAnchor)
+    } else {
+      selection.collapseToActive(CollapseFlags.MoveActiveAfter)
+    }
+
+    selections.length = 1
+  })
 }
 
 
@@ -170,11 +205,16 @@ registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneIt
     if (line >= editor.document.lineCount)
       line = editor.document.lineCount - 1
 
-    editor.selection = new vscode.Selection(new vscode.Position(line, 0), new vscode.Position(line, 0))
+    state.selectionSet.updateAll(editor, selections => {
+      const selection = selections[0]
 
-    return
+      selections.length = 1
+
+      selection.active.updateForNewPosition(new vscode.Position(line, 0))
+      selection.collapseToActive(CollapseFlags.MoveActiveAfter)
+    })
   } else {
-    return executeGoto(state.input, editor, false)
+    executeGoto(state.input, editor, state, DoNotExtend)
   }
 })
 
@@ -185,10 +225,14 @@ registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.Lis
     if (line >= editor.document.lineCount)
       line = editor.document.lineCount - 1
 
-    editor.selection = new vscode.Selection(editor.selection.anchor, new vscode.Position(line, 0))
+    state.selectionSet.updateAll(editor, selections => {
+      const selection = selections[0]
 
-    return
+      selections.length = 1
+
+      selection.active.updateForNewPosition(new vscode.Position(line, 0))
+    })
   } else {
-    return executeGoto(state.input, editor, true)
+    executeGoto(state.input, editor, state, Extend)
   }
 })

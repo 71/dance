@@ -170,6 +170,11 @@ trimLines:
   descr: Trim selections to only contain full lines (not including last end-of-line).
   keys: s-a-x (normal)
 
+trimSelections:
+  title: Trim selections
+  descr: Trim whitespace at beginning and end of selections.
+  keys: _ (normal)
+
 
 # Select word (move.ts)
 # ================================================================================================
@@ -300,7 +305,7 @@ selections.align.copy:
   keys: 's-a-7 (normal)'
 
 
-# Changes (changes.ts)
+# Yank & Paste (yankPaste.ts)
 # ================================================================================================
 
 delete.yank:
@@ -357,6 +362,10 @@ paste.replace.every:
   title: Replace with every
   descr: Replace selections with every yanked text.
   keys: s-a-r (normal)
+
+
+# Changes (changes.ts)
+# ================================================================================================
 
 replace.characters:
   title: Replace character

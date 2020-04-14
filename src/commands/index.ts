@@ -4,6 +4,7 @@ import { Command }   from '../../commands'
 import { Extension } from '../extension'
 import { Register }  from '../registers'
 
+import { SelectionSet }                          from '../utils/selections'
 import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
 
 export import Command = Command
@@ -41,13 +42,27 @@ export const enum CommandFlags {
 }
 
 export class CommandState<Input extends InputKind = any> {
-  constructor(readonly currentCount: number, readonly currentRegister: Register | undefined, readonly input: InputTypeMap[Input]) {}
+  /**
+   * The number of times that a command should be repeated.
+   *
+   * Equivalent to `currentCount === 0 ? 1 : currentCount`.
+   */
+  get repetitions() {
+    const count = this.currentCount
+
+    return count === 0 ? 1 : count
+  }
+
+  constructor(
+    readonly selectionSet: SelectionSet,
+    readonly currentCount: number,
+    readonly currentRegister: Register | undefined,
+    readonly input: InputTypeMap[Input],
+  ) {}
 }
 
-export type EditAction =
-  (builder: vscode.TextEditorEdit) => void
 export type Action<Input extends InputKind> =
-  (editor: vscode.TextEditor, state: CommandState<Input>, undoStops: { undoStopBefore: boolean, undoStopAfter: boolean }, ctx: Extension) => void | EditAction | Thenable<void | EditAction | undefined>
+  (editor: vscode.TextEditor, state: CommandState<Input>, undoStops: { undoStopBefore: boolean, undoStopAfter: boolean }, ctx: Extension) => void | Thenable<void | undefined>
 
 export const enum InputKind {
   None,
@@ -75,7 +90,7 @@ export interface InputDescrMap {
   [InputKind.ListOneItem]: [string, string][]
   [InputKind.ListManyItems]: [string, string][]
   [InputKind.RegExp]: string
-  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editor: vscode.TextEditor, state: Extension) => void }
+  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editor: vscode.TextEditor, selections: SelectionSet, extension: Extension) => void }
   [InputKind.Key]: undefined
   [InputKind.ListOneItemOrCount]: [string, string][]
 }
@@ -98,6 +113,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   async execute(state: Extension, editor: vscode.TextEditor) {
     const history = state.history.for(editor.document)
     const flags = this.flags
+    const selectionSet = state.getSelectionsForEditor(editor)
 
     let input: InputTypeMap[Input] | undefined = undefined
 
@@ -121,7 +137,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         const inputDescr = this.inputDescr as InputDescrMap[InputKind.Text]
 
         if (inputDescr.setup !== undefined)
-          inputDescr.setup(editor, state)
+          inputDescr.setup(editor, selectionSet, state)
 
         input = await prompt(inputDescr) as any
         break
@@ -138,7 +154,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     if (this.input !== InputKind.None && input === undefined)
       return
 
-    const commandState = new CommandState<Input>(state.currentCount, state.currentRegister, input as any)
+    const commandState = new CommandState<Input>(selectionSet, state.currentCount, state.currentRegister, input as any)
 
     if (!(flags & CommandFlags.IgnoreInHistory))
       history.addCommand(this, commandState)
@@ -150,9 +166,6 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     if (result !== undefined) {
       if (typeof result === 'object' && typeof result.then === 'function')
         result = await result
-
-      if (typeof result === 'function')
-        await editor.edit(result)
     }
 
     if (flags & CommandFlags.SwitchToInsert) {
@@ -247,8 +260,10 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     return vscode.commands.registerCommand(this.command, () => {
       const editor = vscode.window.activeTextEditor
 
-      if (editor !== undefined)
-        this.execute(state, editor)
+      if (editor === undefined)
+        return
+
+      return this.execute(state, editor)
     })
   }
 }
@@ -281,9 +296,9 @@ import './insert'
 import './mark'
 import './modes'
 import './move'
-import './multiple'
 import './pipe'
 import './rotate'
 import './search'
 import './select'
 import './selectObject'
+import './yankPaste'

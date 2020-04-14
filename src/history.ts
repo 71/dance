@@ -33,7 +33,7 @@ export class DocumentHistory {
   readonly commands = [] as [CommandDescriptor<any>, CommandState<any>][]
   readonly changes = new WeakMap<CommandState<any>, vscode.TextDocumentContentChangeEvent[]>()
 
-  handleChanges(changes: vscode.TextDocumentContentChangeEvent[]) {
+  handleChanges(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
     if (this.commands.length === 0)
       return
 
@@ -41,7 +41,7 @@ export class DocumentHistory {
     const allChanges = this.changes.get(commandState)
 
     if (allChanges === undefined)
-      this.changes.set(commandState, changes)
+      this.changes.set(commandState, changes.slice())
     else
       allChanges.push(...changes)
   }

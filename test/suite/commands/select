@@ -1,0 +1,27 @@
+{0}f|{0}oo
+bar
+baz
+
+//== 0 > 1
+//= dance.select.line
+{0}foo
+|{0}bar
+baz
+
+//== 0 > 1.x
+//= dance.select.line.extend
+{0}foo
+|{0}bar
+baz
+
+//== 1 > 2
+//= dance.select.line
+foo
+{0}bar
+|{0}baz
+
+//== 1.x > 2.x
+//= dance.select.line.extend
+{0}foo
+bar
+|{0}baz

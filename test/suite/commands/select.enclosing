@@ -1,0 +1,41 @@
+{ hello: 1,
+  world: {
+    foo: [
+      [ {0}1|{0}, 2, 3, ],
+    ],
+    bar: ({1}42|{1}),
+  },
+}
+
+//== 0 > 1
+//= dance.select.enclosing
+{ hello: 1,
+  world: {
+    foo: [
+      {0}[ 1, 2, 3, ]|{0},
+    ],
+    bar: {1}(42)|{1},
+  },
+}
+
+//== 1 > 2
+//= dance.select.enclosing
+{ hello: 1,
+  world: {1}{
+    foo: {0}[
+      [ 1, 2, 3, ],
+    ]|{0},
+    bar: (42),
+  }|{1},
+}
+
+//== 2 > 3
+//= dance.select.enclosing
+{1}{ hello: 1,
+  world: {
+    foo: [
+      [ 1, 2, 3, ],
+    ],
+    bar: {0}(42)|{0},
+  },
+}|{1}
