@@ -1256,7 +1256,7 @@ export class SelectionSet {
   /**
    * Performs an update on each selection using the provided function.
    */
-  update(editor: vscode.TextEditor, f: (selection: Selection, i: number) => void) {
+  updateEach(editor: vscode.TextEditor, f: (selection: Selection, i: number) => void) {
     const selections = this.selections,
           len = selections.length
 

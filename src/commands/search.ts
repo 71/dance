@@ -278,7 +278,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
       // match by adding a ^, and then fallback to the default search routine
       if (extend) {
         if (direction === Backward)
-          selections.update(editor, selection => {
+          selections.updateEach(editor, selection => {
             const endSave = selection.end.save()
             const found = searchBackward(selection, selection.anchor, regex, true)
 
@@ -287,7 +287,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
             }
           })
         else
-          selections.update(editor, selection => {
+          selections.updateEach(editor, selection => {
             const startSave = selection.start.save()
             const found = search(selection, selection.active, regex, true)
 
@@ -297,9 +297,9 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
           })
       } else {
         if (direction === Backward) {
-          selections.update(editor, selection => searchBackward(selection, selection.anchor, regex, true))
+          selections.updateEach(editor, selection => searchBackward(selection, selection.anchor, regex, true))
         } else {
-          selections.update(editor, selection => search(selection, selection.active, regex, true))
+          selections.updateEach(editor, selection => search(selection, selection.active, regex, true))
         }
       }
 

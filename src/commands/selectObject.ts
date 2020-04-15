@@ -470,7 +470,7 @@ function performObjectSelect(editor: vscode.TextEditor, state: CommandState, inn
 
   const count = state.currentCount || 1
 
-  state.selectionSet.update(editor, selection => {
+  state.selectionSet.updateEach(editor, selection => {
     const prevStart = selection.start.copy(selection.set),
           prevEnd = selection.end.copy(selection.set),
           { active, start, end } = selection

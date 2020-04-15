@@ -5,22 +5,22 @@ import { CollapseFlags } from '../utils/selections'
 
 
 registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
-  selectionSet.update(editor, selection => selection.end.inheritPosition(selection.start))
+  selectionSet.updateEach(editor, selection => selection.end.inheritPosition(selection.start))
 })
 
 registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
-  selectionSet.update(editor, selection => selection.start.inheritPosition(selection.end))
+  selectionSet.updateEach(editor, selection => selection.start.inheritPosition(selection.end))
 })
 
 registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
-  selectionSet.update(editor, selection => {
+  selectionSet.updateEach(editor, selection => {
     selection.active.toLineFirstNonWhitespaceCharacter()
     selection.anchor.inheritPosition(selection.active)
   })
 })
 
 registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet: selectionSet }) => {
-  selectionSet.update(editor, selection => {
+  selectionSet.updateEach(editor, selection => {
     selection.active.toLineEnd()
     selection.anchor.inheritPosition(selection.active)
   })

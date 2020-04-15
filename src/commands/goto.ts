@@ -113,7 +113,7 @@ const pickGetCharacter = {
 function executeGotoLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: ExtendBehavior, position: 'first' | 'end' | 'start' | 'default') {
   const getCharacter = pickGetCharacter[position]
 
-  selectionSet.update(editor, selection => {
+  selectionSet.updateEach(editor, selection => {
     selection.active.updateForNewPosition(new vscode.Position(selection.activeLine, getCharacter(selection)))
 
     if (!extend)
@@ -141,7 +141,7 @@ function executeGotoDisplayLine(editor: vscode.TextEditor, { selectionSet }: Com
         newActive = new vscode.Position(newLine, 0)
 
   if (extend) {
-    selectionSet.update(editor, selection => {
+    selectionSet.updateEach(editor, selection => {
       selection.active.updateForNewPosition(newActive)
     })
   } else {

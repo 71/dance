@@ -2,6 +2,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags } from '.'
+import { Selection } from '../utils/selections'
 
 
 registerCommand(Command.join, CommandFlags.Edit, () => {
@@ -9,26 +10,31 @@ registerCommand(Command.join, CommandFlags.Edit, () => {
 })
 
 registerCommand(Command.joinSelect, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, { selectionSet }, undoStops) => {
-  const newSelections = [] as vscode.Selection[]
+  // Select all line endings.
+  selectionSet.modify(editor, (selection, _, builder) => {
+    const { startLine, endLine } = selection
 
-  await editor.edit(builder => {
-    for (const selection of editor.selections) {
-      let startLine = editor.document.lineAt(selection.start.line)
-      let startPosition = startLine.range.start
+    selection.anchor.updateForNewPosition(new vscode.Position(startLine, editor.document.lineAt(startLine).text.length))
+    selection.active.updateForNewPosition(new vscode.Position(startLine + 1, 0))
 
-      for (let i = selection.start.line; i <= selection.end.line; i++) {
-        const line = editor.document.lineAt(i)
-        const eol = new vscode.Range(line.range.end, line.rangeIncludingLineBreak.end)
+    builder.push(selection)
 
-        startPosition = startPosition.translate(0, line.range.end.character + (i === selection.start.line ? 0 : 1))
+    for (let line = startLine + 1; line < endLine; line++) {
+      const { text } = editor.document.lineAt(line)
 
-        builder.replace(eol, ' ')
-        newSelections.push(new vscode.Selection(startPosition, startPosition.translate(0, 1)))
-      }
+      const anchor = new vscode.Position(line, text.length),
+            active = new vscode.Position(line + 1, 0)
+
+      builder.push(Selection.from(selectionSet, new vscode.Selection(anchor, active)))
     }
-  }, undoStops)
+  })
 
-  editor.selections = newSelections
+  // Replace all line endings by spaces.
+  await editor.edit(builder => {
+    for (const selection of selectionSet.selections) {
+      builder.replace(selection.asRange(), ' ')
+    }
+  })
 })
 
 

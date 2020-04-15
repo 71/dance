@@ -140,7 +140,7 @@ registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, sta
 
 function registerSelectTo(commandName: Command, diff: number, extend: ExtendBehavior, direction: Direction) {
   registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, { selectionSet: selections, repetitions, input: key }) => {
-    selections.update(editor, selection => {
+    selections.updateEach(editor, selection => {
       const active = selection.active
       const searchOffset = direction === Backward ? -2 : 1
 
@@ -287,7 +287,7 @@ function registerToNextWord(commandName: Command, extend: ExtendBehavior, end: b
           isBlank       = ctx.getCharSetFunction(CharSet.Blank, document),
           isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
 
-    state.selectionSet.update(editor, selection => {
+    state.selectionSet.updateEach(editor, selection => {
       if (extend)
         selection.prepareExtensionTowards(Forward)
       else
@@ -344,7 +344,7 @@ function registerToPreviousWord(commandName: Command, extend: ExtendBehavior, wo
           isBlank       = ctx.getCharSetFunction(CharSet.Blank, document),
           isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
 
-    state.selectionSet.update(editor, selection => {
+    state.selectionSet.updateEach(editor, selection => {
       if (extend)
         selection.prepareExtensionTowards(Backward)
       else
@@ -414,7 +414,7 @@ registerToPreviousWord(Command.selectWordAltPreviousExtend,      Extend, CharSet
 
 registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { selectionSet: selections, currentCount }) => {
   if (currentCount === 0 || currentCount === 1) {
-    selections.update(editor, selection => {
+    selections.updateEach(editor, selection => {
       const newAnchor = new vscode.Position(selection.activeLine, 0),
             moveAnchor = !newAnchor.isEqual(selection.anchor.asPosition())
 
@@ -429,7 +429,7 @@ registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { se
       }
     })
   } else {
-    selections.update(editor, selection => {
+    selections.updateEach(editor, selection => {
       const lineRange = editor.document.lineAt(Math.min(selection.activeLine + currentCount - 1, editor.document.lineCount - 1)).rangeIncludingLineBreak
 
       selection.anchor.updateForNewPositionFast(selection.anchor.lineOffset, lineRange.start)
@@ -440,14 +440,14 @@ registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { se
 
 registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor, { selectionSet: selections, currentCount }) => {
   if (currentCount === 0 || currentCount === 1) {
-    selections.update(editor, selection => {
+    selections.updateEach(editor, selection => {
       if (selection.isSingleLine)
         selection.anchor.toLineStart()
 
       selection.active.toLineEndIncludingLineBreak()
     })
   } else {
-    selections.update(editor, selection => {
+    selections.updateEach(editor, selection => {
       const lineRange = editor.document.lineAt(Math.min(selection.active.line + currentCount - 1, editor.document.lineCount - 1)).rangeIncludingLineBreak
 
       if (selection.isSingleLine)
@@ -459,35 +459,35 @@ registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor
 })
 
 registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => {
+  selections.updateEach(editor, selection => {
     selection.prepareSelectionTowards(Backward)
     selection.active.toLineStart()
   })
 })
 
 registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => {
+  selections.updateEach(editor, selection => {
     selection.prepareExtensionTowards(Backward)
     selection.active.toLineStart()
   })
 })
 
 registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => {
+  selections.updateEach(editor, selection => {
     selection.prepareSelectionTowards(Forward)
     selection.active.toLineEnd()
   })
 })
 
 registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => {
+  selections.updateEach(editor, selection => {
     selection.prepareExtensionTowards(Forward)
     selection.active.toLineEnd()
   })
 })
 
 registerCommand(Command.expandLines, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => {
+  selections.updateEach(editor, selection => {
     selection.start.toLineStart()
 
     if (!selection.end.isLineBreak(selection.start))
@@ -546,7 +546,7 @@ const enclosingChars = new Uint8Array(Array.from('(){}[]', ch => ch.charCodeAt(0
 
 function registerToEnclosing(command: Command, extend: ExtendBehavior, direction: Direction) {
   registerCommand(command, CommandFlags.ChangeSelections, (editor, state) => {
-    state.selectionSet.update(editor, selection => {
+    state.selectionSet.updateEach(editor, selection => {
       const activeCursor = selection.active.cursor()
 
       if (!activeCursor.skipUntil(direction, ch => enclosingChars.indexOf(ch) !== -1)) {

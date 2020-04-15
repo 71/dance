@@ -131,7 +131,7 @@ async function testCommands(editor: vscode.TextEditor, { initialContent, mutatio
   }
 }
 
-suite('Commands', function() {
+suite('Running commands', function() {
   let document: vscode.TextDocument
   let editor: vscode.TextEditor
 
@@ -171,13 +171,16 @@ suite('Commands', function() {
     assert.fail(`Expected error.`)
   })
 
-  const basedir = this.file!.replace('\\out\\', '\\').replace('/out/', '/').replace('.test.js', '')
+  const basedir = this.file!.replace('\\out\\', '\\').replace('/out/', '/').replace('.test.js', ''),
+        fileNames = fs.readdirSync(basedir),
+        longestFileName = fileNames.reduce((longest, curr) => curr.length > longest.length ? curr : longest),
+        fileNamePadding = longestFileName.length
 
-  for (const file of fs.readdirSync(basedir)) {
-    const fullPath = path.join(basedir, file)
+  for (const file of fileNames) {
+    const fullPath = path.join(basedir, file.padEnd(fileNamePadding))
     const friendlyPath = fullPath.substr(/dance.test.suite/.exec(fullPath)!.index)
 
-    const content = fs.readFileSync(fullPath, { encoding: 'utf8' })
+    const content = fs.readFileSync(fullPath.trimRight(), { encoding: 'utf8' })
     const sections = content.split(/(^\/\/== [\w\.]+ > [\w\.]+$\n(?:^\/\/= .+$\n)+)/gm)
     const nodes = new Map<string, string>()
     const results = new Map<string, Promise<boolean>>()
@@ -188,6 +191,16 @@ suite('Commands', function() {
     results.set('root', Promise.resolve(true))
     results.set('0', Promise.resolve(true))
 
+    // Find longest section name for padding.
+    let longestSectionNameLength = 0
+
+    for (let i = 1; i < sections.length; i += 2) {
+      const [_, sectionIn, sectionOut] = /^\/\/== ([\w\.]+) > ([\w\.]+)$/m.exec(sections[i])!
+
+      longestSectionNameLength = Math.max(longestSectionNameLength, sectionIn.length, sectionOut.length)
+    }
+
+    // Run all tests in the file.
     for (let i = 1; i < sections.length; i += 2) {
       const metadata = sections[i],
             content = sections[i + 1]
@@ -205,7 +218,7 @@ suite('Commands', function() {
       nodes.set(to, contentAfterMutation)
       results.set(to, new Promise<boolean>(resolve => setSuccess = resolve))
 
-      test(`commands from ${from} to ${to} in ${friendlyPath} are applied correctly`, async function() {
+      test(`${friendlyPath}: mutation ${from.padEnd(longestSectionNameLength)} > ${to.padEnd(longestSectionNameLength)} is applied correctly`, async function() {
         if (!await results.get(from)!) {
           setSuccess(false)
           this.skip()

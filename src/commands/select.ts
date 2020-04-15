@@ -6,19 +6,19 @@ import { Selection, Position, Direction, Forward, Backward } from '../utils/sele
 
 
 registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => selection.anchor.inheritPosition(selection.active))
+  selections.updateEach(editor, selection => selection.anchor.inheritPosition(selection.active))
 })
 
 registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => selection.anchor.swap(selection.active))
+  selections.updateEach(editor, selection => selection.anchor.swap(selection.active))
 })
 
 registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => selection.isReversed ? selection.anchor.swap(selection.active) : undefined)
+  selections.updateEach(editor, selection => selection.isReversed ? selection.anchor.swap(selection.active) : undefined)
 })
 
 registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.update(editor, selection => selection.isReversed ? undefined : selection.anchor.swap(selection.active))
+  selections.updateEach(editor, selection => selection.isReversed ? undefined : selection.anchor.swap(selection.active))
 })
 
 registerCommand(Command.selectionsMerge, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
