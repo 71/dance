@@ -98,7 +98,9 @@ function findSentenceStart(origin: Position, isWord: (charCode: number) => boole
   if (!cursor.skipWhile(Backward, charCode => charCode === SPACE))
     return true
 
-  let lastCharOffset = 0, lastLine = 0, lastChar = 0
+  let lastCharOffset = 0,
+      lastLine = 0,
+      lastChar = 0
   let hadLf = false
 
   cursor.skipUntil(Backward, (charCode, offset, line, char) => {

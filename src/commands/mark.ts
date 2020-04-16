@@ -49,7 +49,7 @@ registerCommand(Command.marksSaveSelections, CommandFlags.None, (_, { currentReg
   marks.set(selections, selections.copy())
 })
 
-registerCommand(Command.marksRestoreSelections, CommandFlags.ChangeSelections, async (editor, { currentRegister, selectionSet: selections }, _, ctx) => {
+registerCommand(Command.marksRestoreSelections, CommandFlags.ChangeSelections, (editor, { currentRegister, selectionSet: selections }, _, ctx) => {
   const marks = marksForRegister(currentRegister ?? ctx.registers.caret)
 
   marks.get(selections)?.commit(editor)

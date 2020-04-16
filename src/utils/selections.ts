@@ -458,6 +458,7 @@ export class Position {
     this._offset = offset
     this._position = position
 
+    // eslint-disable-next-line no-constant-condition
     if (true) {
       const document = this.set.document,
             offsetFromGivenPosition = document.offsetAt(position),

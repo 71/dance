@@ -188,7 +188,7 @@ suite('Running commands', function() {
 
     const content = fs.readFileSync(fullPath.trimRight(), { encoding: 'utf8' })
         .replace(/^\/\/[^=].*\n/gm, '')   // Remove //-comments.
-    const sections = content.split(/(^\/\/== [\w\.]+(?: > [\w\.]+)?$\n(?:^\/\/= .+$\n)*)/gm)
+    const sections = content.split(/(^\/\/== [\w.]+(?: > [\w.]+)?$\n(?:^\/\/= .+$\n)*)/gm)
     const nodes = new Map<string, string>()
     const results = new Map<string, Promise<boolean>>()
     const initialContent = sections[0].trim() + '\n'
@@ -202,7 +202,7 @@ suite('Running commands', function() {
     let longestSectionNameLength = 0
 
     for (let i = 1; i < sections.length; i += 2) {
-      const [_, sectionIn, sectionOut] = /^\/\/== ([\w\.]+)(?: > ([\w\.]+))?$/m.exec(sections[i])!
+      const [_, sectionIn, sectionOut] = /^\/\/== ([\w.]+)(?: > ([\w.]+))?$/m.exec(sections[i])!
 
       longestSectionNameLength = Math.max(longestSectionNameLength, sectionIn.length, sectionOut?.length ?? 0)
     }
@@ -212,7 +212,7 @@ suite('Running commands', function() {
       const metadata = sections[i],
             content = sections[i + 1]
 
-      const [full, from, to] = /^\/\/== ([\w\.]+)(?: > ([\w\.]+))?$/m.exec(metadata)!
+      const [full, from, to] = /^\/\/== ([\w.]+)(?: > ([\w.]+))?$/m.exec(metadata)!
       const commands = metadata.substr(full.length).split('\n').map(x => x.substr(3).trim()).filter(x => x)
       const contentAfterMutation = content.trim() + '\n'
       const initialContent = nodes.get(from)!
