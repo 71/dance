@@ -181,6 +181,7 @@ suite('Running commands', function() {
     const friendlyPath = fullPath.substr(/dance.test.suite/.exec(fullPath)!.index)
 
     const content = fs.readFileSync(fullPath.trimRight(), { encoding: 'utf8' })
+        .replace(/^\/\/[^=].*\r?\n/gm, "")   // Remove //-comments.
     const sections = content.split(/(^\/\/== [\w\.]+(?: > [\w\.]+)?$\n(?:^\/\/= .+$\n)*)/gm)
     const nodes = new Map<string, string>()
     const results = new Map<string, Promise<boolean>>()
