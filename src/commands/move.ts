@@ -77,9 +77,10 @@ function moveRight(state: CommandState, editor: vscode.TextEditor, extend: Exten
 }
 
 function moveVertical(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
-  const selections = state.selectionSet.selections
+  const selections = state.selectionSet.selections,
+        document = editor.document
   const diff = state.repetitions * direction
-  const lastLine = editor.document.lineCount - 1
+  const lastLine = document.lineCount - 1
 
   let preferredColumns = preferredColumnsPerEditor.get(editor)
 
@@ -92,8 +93,15 @@ function moveVertical(state: CommandState, editor: vscode.TextEditor, direction:
   if (preferredColumns.length !== selections.length) {
     preferredColumns.length = 0
 
-    for (let i = 0; i < selections.length; i++)
-      preferredColumns.push(selections[i].active.character)
+    for (let i = 0; i < selections.length; i++) {
+      const selection = selections[i]
+      let character = selection.active.character
+
+      if (selection.isActiveLineBreak)
+        character = document.lineAt(selection.active.line - 1).text.length + 1
+
+      preferredColumns.push(character)
+    }
   }
 
   for (let i = 0; i < selections.length; i++) {
@@ -107,6 +115,9 @@ function moveVertical(state: CommandState, editor: vscode.TextEditor, direction:
       active.toDocumentEnd()
     } else {
       active.updateForNewPosition(new vscode.Position(targetLine, preferredColumns[i]))
+
+      if (active.character === 0 && !selection.canBeEmpty)
+        active.moveRightOrGoDown()
     }
 
     if (!extend)
@@ -175,10 +186,12 @@ function registerSelectTo(commandName: Command, diff: number, extend: ExtendBeha
       }
 
       if (!extend) {
-        selection.collapseToActive(CollapseFlags.DoNotMoveActive)
+        const selectionDirection = selection.direction
 
-        if (direction === Backward && diff === 1)
-          selection.anchor.moveRightOrGoDown(1)
+        selection.anchor.inheritPosition(selection.active)
+
+        if (selectionDirection === direction)
+          selection.anchor.moveOrContinue(1, -direction)
       }
 
       active.updateForNewPosition(new vscode.Position(line, character! - searchOffset + diff))

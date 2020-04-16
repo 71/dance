@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandDescriptor } from '.'
-import { CollapseFlags } from '../utils/selections'
+import { SelectionSet } from '../utils/selections'
 
 
 registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
@@ -19,18 +19,35 @@ registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | Command
   })
 })
 
-registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet: selectionSet }) => {
+registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
   selectionSet.updateEach(editor, selection => {
     selection.active.toLineEnd()
     selection.anchor.inheritPosition(selection.active)
   })
 })
 
-registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsert, () => {
+function normalizeSelectionsForLineInsertion(editor: vscode.TextEditor, selectionSet: SelectionSet) {
+  if (!selectionSet.enforceNonEmptySelections)
+    return
+
+  for (const selection of selectionSet.selections) {
+    if (selection.active.character === 0 && !selection.isReversed) {
+      selection.moveLeftOrGoUp()
+    }
+  }
+
+  selectionSet.commit(editor)
+}
+
+registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
+  normalizeSelectionsForLineInsertion(editor, selectionSet)
+
   return vscode.commands.executeCommand('editor.action.insertLineBefore')
 })
 
-registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsert, () => {
+registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
+  normalizeSelectionsForLineInsertion(editor, selectionSet)
+
   return vscode.commands.executeCommand('editor.action.insertLineAfter')
 })
 
@@ -42,10 +59,10 @@ registerCommand(Command.newLineAbove, CommandFlags.Edit, (editor, { selectionSet
         len = selections.length
 
   for (let i = 0; i < len; i++) {
-    const startLine = selections[i].startLine
+    const activeLine = selections[i].activeLine
 
-    if (processedLines.size !== processedLines.add(startLine).size)
-      builder.insert(new vscode.Position(startLine, 0), newLine)
+    if (processedLines.size !== processedLines.add(activeLine).size)
+      builder.insert(new vscode.Position(activeLine, 0), newLine)
   }
 }).then(() => undefined))
 
@@ -57,10 +74,10 @@ registerCommand(Command.newLineBelow, CommandFlags.Edit, (editor, { selectionSet
         len = selections.length
 
   for (let i = 0; i < len; i++) {
-    const endLine = selections[i].endLine
+    const activeLine = selections[i].activeLine
 
-    if (processedLines.size !== processedLines.add(endLine).size)
-      builder.insert(editor.document.lineAt(endLine).rangeIncludingLineBreak.end, newLine)
+    if (processedLines.size !== processedLines.add(activeLine).size)
+      builder.insert(editor.document.lineAt(activeLine).rangeIncludingLineBreak.end, newLine)
   }
 }).then(() => undefined))
 

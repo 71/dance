@@ -478,8 +478,11 @@ export class Extension implements vscode.Disposable {
 
     for (let i = 0; i < editor.selections.length; i++) {
       const selection = editor.selections[i]
+      const isReversedOneCharacterSelection = selection.isSingleLine
+        ? (selection.anchor.character === selection.active.character + 1)
+        : (selection.anchor.character === 0 && selection.anchor.line === selection.active.line + 1 && editor.document.lineAt(selection.active).text.length === selection.active.character)
 
-      if (selection.anchor.character === selection.active.character + 1 && selection.isSingleLine) {
+      if (isReversedOneCharacterSelection) {
         if (normalizedSelections === undefined) {
           // Change needed. Allocate the new array and copy what we have so far.
           normalizedSelections = editor.selections.slice(0, i)

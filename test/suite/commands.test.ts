@@ -14,6 +14,7 @@ export namespace testCommands {
   }
 
   export interface Options {
+    readonly allowEmpty: boolean
     readonly initialContent: string
     readonly mutations: readonly Mutation[]
   }
@@ -62,7 +63,9 @@ function stringifySelection(document: vscode.TextDocument, selection: vscode.Sel
     return content.substring(0, startOffset) + startString + content.substring(startOffset, endOffset) + endString + content.substring(endOffset)
 }
 
-async function testCommands(editor: vscode.TextEditor, { initialContent, mutations }: testCommands.Options) {
+async function testCommands(editor: vscode.TextEditor, { initialContent, mutations, allowEmpty }: testCommands.Options) {
+  state.allowEmptySelections = allowEmpty
+
   const content = getPlainContent(initialContent)
   const document = editor.document
 
@@ -142,6 +145,7 @@ suite('Running commands', function() {
 
   test('mutation tests work correctly', async function() {
     await testCommands(editor, {
+      allowEmpty: false,
       initialContent: `|{0}foo`,
       mutations: [
         { contentAfterMutation: `{0}f|{0}oo`,
@@ -154,6 +158,7 @@ suite('Running commands', function() {
   test('mutation tests catch errors correctly', async function() {
     try {
       await testCommands(editor, {
+        allowEmpty: false,
         initialContent: `|{0}foo`,
         mutations: [
           { contentAfterMutation: `|{0}foo`,
@@ -179,9 +184,10 @@ suite('Running commands', function() {
   for (const file of fileNames) {
     const fullPath = path.join(basedir, file.padEnd(fileNamePadding))
     const friendlyPath = fullPath.substr(/dance.test.suite/.exec(fullPath)!.index)
+    const allowEmpty = file.endsWith('.allowempty')
 
     const content = fs.readFileSync(fullPath.trimRight(), { encoding: 'utf8' })
-        .replace(/^\/\/[^=].*\r?\n/gm, "")   // Remove //-comments.
+        .replace(/^\/\/[^=].*\n/gm, '')   // Remove //-comments.
     const sections = content.split(/(^\/\/== [\w\.]+(?: > [\w\.]+)?$\n(?:^\/\/= .+$\n)*)/gm)
     const nodes = new Map<string, string>()
     const results = new Map<string, Promise<boolean>>()
@@ -238,6 +244,7 @@ suite('Running commands', function() {
 
         try {
           await testCommands(editor, {
+            allowEmpty,
             initialContent,
             mutations: [
               { contentAfterMutation,

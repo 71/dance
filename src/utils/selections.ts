@@ -442,7 +442,7 @@ export class Position {
       this._position = this.set.document.positionAt(position)
     } else {
       this._offset = this.set.document.offsetAt(position)
-      this._position = position
+      this._position = this.set.document.positionAt(this._offset)
     }
   }
 
@@ -655,27 +655,14 @@ export namespace Position {
  */
 export const enum CollapseFlags {
   /**
-   * Move the active position before or after the anchor in order to maintain the direction
-   * of the selection before the collapsing.
+   * Do not move the active position.
    */
-  MoveActive       = 0b0000,
-
-  /**
-   * Do not move the active position, instead collapsing the anchor to the character
-   * before (respectively after) the active position, depending on whether the anchor is initially
-   * before (respectively after) the active position.
-   */
-  DoNotMoveActive  = 0b0011,
-
-  /**
-   * Move the active position one character before the anchor.
-   */
-  MoveActiveBefore = 0b0001,
+  DoNotMoveActive = 1,
 
   /**
    * Move the active position one character after the anchor.
    */
-  MoveActiveAfter  = 0b0010,
+  MoveActiveAfter = 2,
 }
 
 /**
@@ -703,6 +690,14 @@ export class Selection {
     return !this.set.enforceNonEmptySelections
   }
 
+  get isActiveLineBreak() {
+    return this.active.character === 0 && this.anchor.offset < this.active.offset
+  }
+
+  get isAnchorLineBreak() {
+    return this.anchor.character === 0 && this.anchor.offset > this.active.offset
+  }
+
   get start() {
     return this.anchor.offset > this.active.offset ? this.active : this.anchor
   }
@@ -713,22 +708,18 @@ export class Selection {
 
   /** Returns the line of the `active` position, adjusting the result when a full line is selected. */
   get activeLine() {
-    const { character, line } = this.active.asPosition()
-
-    if (character === 0 && line > 0 && this.active.offset > this.anchor.offset && !this.canBeEmpty)
-      return line - 1
+    if (this.isActiveLineBreak)
+      return this.active.line - 1
     else
-      return line
+      return this.active.line
   }
 
   /** Returns the line of the `anchor` position, adjusting the result when a full line is selected. */
   get anchorLine() {
-    const { character, line } = this.active.asPosition()
-
-    if (character === 0 && line > 0 && this.active.offset > this.anchor.offset && !this.canBeEmpty)
-      return line - 1
+    if (this.isAnchorLineBreak)
+      return this.anchor.line - 1
     else
-      return line
+      return this.anchor.line
   }
 
   /** Returns the line of the `start` position. */
@@ -740,7 +731,7 @@ export class Selection {
   get endLine() {
     const { character, line } = this.end.asPosition()
 
-    if (character === 0 && line > 0 && !this.canBeEmpty)
+    if (character === 0 && line > 0 && !this.isEmpty)
       return line - 1
     else
       return line
@@ -938,22 +929,16 @@ export class Selection {
    * behavior.
    */
   collapseToActive(flags: CollapseFlags) {
-    const direction = this.direction
-
     this.anchor.inheritPosition(this.active)
 
     if (this.canBeEmpty) {
       return
     }
 
-    if (flags & CollapseFlags.DoNotMoveActive) {
-      this.anchor.moveOrContinue(1, -direction)
-    } else if (flags & CollapseFlags.MoveActiveAfter) {
-      this.active.moveRightOrGoDown()
-    } else if (flags & CollapseFlags.MoveActiveBefore) {
-      this.active.moveLeftOrGoUp()
+    if (flags === CollapseFlags.DoNotMoveActive) {
+      this.anchor.moveLeftOrGoUp()
     } else {
-      this.active.moveOrContinue(1, direction)
+      this.active.moveRightOrGoDown()
     }
   }
 
