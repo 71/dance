@@ -38,3 +38,10 @@ foo
 {0}
 |{0}bar
 baz
+
+//== 4 > 6
+//= dance.up.extend
+foo
+|{0}
+b{0}ar
+baz

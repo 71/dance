@@ -39,3 +39,14 @@ console|{0}.{0}log()
 //== prev.1 > prev.2
 //= dance.select.word.previous
 |{0}console{0}.log()
+
+//== prev.3
+foo
+
+{0}b|{0}ar
+
+//== prev.3 > prev.4
+//= dance.select.word.previous
+|{0}foo{0}
+
+bar
