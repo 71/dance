@@ -2,6 +2,13 @@
 bar
 baz
 
+//== 0 > wholebuffer
+//= dance.select.buffer
+{0}foo
+bar
+baz
+|{0}
+
 //== 0 > 1
 //= dance.select.line
 {0}foo

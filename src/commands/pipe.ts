@@ -1,13 +1,9 @@
 // Pipes: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes-through-external-programs
 import * as cp     from 'child_process'
-import * as util   from 'util'
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
-
-
-const exec = util.promisify(cp.exec)
-const replaceMap = { '\n': '\\n', '\r': '\\r', '"': '\\"' }
+import { TextDecoder } from 'util'
 
 function getShell() {
   let os: string
@@ -26,20 +22,28 @@ function getShell() {
   const config = vscode.workspace.getConfiguration('terminal')
 
   return config.get<string | null>(`integrated.automationShell.${os}`)
-      ?? config.get<string | null>(`integrated.shell.${os}`)
       ?? process.env.SHELL
       ?? undefined
 }
 
 function execWithInput(command: string, input: string) {
-  const shell = getShell()
+  return new Promise((resolve, reject) => {
+    const shell = getShell() ?? true,
+          child = cp.spawn(command, { shell, stdio: 'pipe' }),
+          decoder = new TextDecoder('utf8')
 
-  input = input.replace(/[\n\r"]/g, s => replaceMap[s as '\n' | '\r' | '"'])
-  command = `echo "${input}" | ${command}`
+    let stdout = '',
+        stderr = ''
 
-  return exec(command, { shell })
-          .then(x => ({ err: x.stderr, val: x.stdout.trimRight() }))
-          .catch((e: cp.ExecException) => ({ err: e.message }))
+    child.stdout.on('data', chunk => stdout += decoder.decode(chunk))
+    child.stderr.on('data', chunk => stderr += decoder.decode(chunk))
+    child.stdin.end(input, 'utf-8')
+
+    child.once('error', err => reject({ err }))
+    child.once('exit', code => code === 0
+      ? resolve({ val: stdout.trimRight() })
+      : reject({ err: `Command exited with error ${code}: ${stderr.length > 0 ? stderr.trimRight() : '<No error output>'}` }))
+  })
 }
 
 function parseRegExp(regexp: string) {
@@ -96,7 +100,7 @@ function pipe(command: string, selections: string[]) {
     // Shell
     command = command.substr(1)
 
-    return Promise.all(selections.map(selection => execWithInput(command, selection.trim())))
+    return Promise.all(selections.map(selection => execWithInput(command, selection)))
   } else if (command.startsWith('/')) {
     // RegExp replace
     const [regexp, replacement] = parseRegExp(command) as [RegExp, string] // Safe to do; since the input is validated

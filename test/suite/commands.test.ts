@@ -4,8 +4,7 @@ import * as path   from 'path'
 import * as vscode from 'vscode'
 
 import { Command } from '../../commands'
-import { state } from '../../src/extension'
-import { keypress } from '../../src/utils/prompt'
+import { state }   from '../../src/extension'
 
 export namespace testCommands {
   export interface Mutation {
@@ -23,7 +22,7 @@ export namespace testCommands {
 const regexp = /(\|)?{(\d+)}/g
 
 function getPlainContent(templatedContent: string) {
-  return templatedContent.replace(regexp, '')
+  return templatedContent.replace(regexp, '').trimRight()
 }
 
 function getSelections(document: vscode.TextDocument, templatedContent: string) {
@@ -214,7 +213,7 @@ suite('Running commands', function() {
 
       const [full, from, to] = /^\/\/== ([\w.]+)(?: > ([\w.]+))?$/m.exec(metadata)!
       const commands = metadata.substr(full.length).split('\n').map(x => x.substr(3).trim()).filter(x => x)
-      const contentAfterMutation = content.trim() + '\n'
+      const contentAfterMutation = content
       const initialContent = nodes.get(from)!
 
       if (to === undefined) {

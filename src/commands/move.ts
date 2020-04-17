@@ -669,9 +669,11 @@ registerMoveLines(Command.downHalfPageExtend, 'down',      Extend, editor => get
 // Other bindings (%)
 // ===============================================================================================
 
-registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
+registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, (editor, { selectionSet }) => {
   const selection = selectionSet.selections[0]
 
   selection.anchor.toDocumentStart()
   selection.active.toDocumentEnd()
+
+  selectionSet.commit(editor)
 })
