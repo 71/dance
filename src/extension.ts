@@ -499,7 +499,21 @@ export class Extension implements vscode.Disposable {
 
         if (active.character >= editor.document.lineAt(active.line).range.end.character) {
           // Selection is at line end. Select line break.
-          normalizedSelections.push(new vscode.Selection(active, new vscode.Position(active.line + 1, 0)))
+          if (active.line === editor.document.lineCount - 1) {
+            // Selection is at the very end of the document as well. Select the last character instead.
+            if (active.character === 0) {
+              if (active.line === 0) {
+                // There is no character in this document, so we give up on normalizing.
+                continue
+              } else {
+                normalizedSelections.push(new vscode.Selection(new vscode.Position(active.line - 1, Number.MAX_SAFE_INTEGER), active))
+              }
+            } else {
+              normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active))
+            }
+          } else {
+            normalizedSelections.push(new vscode.Selection(active, new vscode.Position(active.line + 1, 0)))
+          }
         } else {
           const offset = editor.document.offsetAt(selection.active)
           const nextPos = editor.document.positionAt(offset + 1)
@@ -509,7 +523,7 @@ export class Extension implements vscode.Disposable {
             normalizedSelections.push(new vscode.Selection(active.translate(0, 1), active))
           } else {
             // Selection is at the very end of the document. Select the last character instead.
-            normalizedSelections.push(new vscode.Selection(active, active.translate(0, -1)))
+            normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active))
           }
         }
       } else if (normalizedSelections !== undefined) {

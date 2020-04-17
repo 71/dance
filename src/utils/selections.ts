@@ -438,8 +438,8 @@ export class Position {
    */
   updateForNewPosition(position: vscode.Position | number) {
     if (typeof position === 'number') {
-      this._offset = position
-      this._position = this.set.document.positionAt(position)
+      this._offset = Math.min(Math.max(0, position), this.set.endOffset)
+      this._position = this.set.document.positionAt(this._offset)
     } else {
       this._offset = this.set.document.offsetAt(position)
       this._position = this.set.document.positionAt(this._offset)
