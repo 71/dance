@@ -128,7 +128,7 @@ export class SelectionHelper {
         return new vscode.Selection(oldSelection.anchor, document.positionAt(active + offset))
       }
     } else {
-      const shouldCoverActive = (mode === MoveMode.ToCoverChar || (mode === MoveMode.To && this.allowEmpty))
+      const shouldCoverActive = (mode === MoveMode.ToCoverChar || mode === MoveMode.To)
       const offset = shouldCoverActive ? 0 : 1
       if (!oldSelection.isReversed && this.allowNonDirectional) {
         // BEFORE: ab<cd|e ==> AFTER: a|bc>de.
