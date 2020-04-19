@@ -91,61 +91,53 @@ registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, sta
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
 // ===============================================================================================
+const noSkip: SkipFunc = from => from
+
+const selectToNextCharacter: (diff: number, direction: Direction) => SelectFunc = (diff, direction) => (from, { editor, repetitions, state }) => {
+  const key = state.input as string
+  const active = editor.document.positionAt(from)
+  const searchOffset = direction === Backward ? -2 : 1
+
+  let line = active.line
+  let character = active.character + searchOffset as number | undefined
+
+  for (let i = repetitions; i > 0; i--) {
+    for (;;) {
+      const text = editor.document.lineAt(line).text
+      const idx = direction === Backward ? text.lastIndexOf(key, character) : text.indexOf(key, character)
+
+      if (idx !== -1) {
+        character = idx + searchOffset
+
+        break
+      }
+
+      // No match on this line, let's keep going.
+      const isDocumentEdge = direction === Backward
+        ? line-- === 0
+        : ++line === editor.document.lineCount
+
+      if (isDocumentEdge)
+        // ... except if we've reached the start or end of the document.
+        return from
+
+      character = direction === Backward ? undefined : 0
+    }
+  }
+  return editor.document.offsetAt(new vscode.Position(line, character! - searchOffset + diff))
+}
 
 function registerSelectTo(commandName: Command, diff: number, extend: ExtendBehavior, direction: Direction) {
-  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, { selectionSet: selections, repetitions, input: key }) => {
-    selections.updateEach(editor, selection => {
-      const active = selection.active
-      const searchOffset = direction === Backward ? -2 : 1
-
-      let line = active.line
-      let character = active.character + searchOffset as number | undefined
-
-      if (selection.isNonDirectional && !selection.isReversed)
-        character!--
-
-      for (let i = repetitions; i > 0; i--) {
-        for (;;) {
-          const text = editor.document.lineAt(line).text
-          const idx = direction === Backward ? text.lastIndexOf(key, character) : text.indexOf(key, character)
-
-          if (idx !== -1) {
-            character = idx + searchOffset
-
-            break
-          }
-
-          // No match on this line, let's keep going.
-          const isDocumentEdge = direction === Backward
-            ? line-- === 0
-            : ++line === editor.document.lineCount
-
-          if (isDocumentEdge)
-            // ... except if we've reached the start or end of the document.
-            return
-
-          character = direction === Backward ? undefined : 0
-        }
-      }
-
-      if (!extend) {
-        const selectionDirection = selection.direction
-
-        selection.anchor.inheritPosition(selection.active)
-
-        if (selectionDirection === direction)
-          selection.anchor.moveOrContinue(1, -direction)
-      }
-
-      active.updateForNewPosition(new vscode.Position(line, character! - searchOffset + diff))
-    })
+  const selectFunc = selectToNextCharacter(diff, direction)
+  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (_, { selectionHelper }) => {
+    selectionHelper.moveEach(noSkip, selectFunc, extend)
   })
 }
 
-registerSelectTo(Command.selectToIncluded      , 1, DoNotExtend, Forward)
-registerSelectTo(Command.selectToIncludedExtend, 1, Extend     , Forward)
-registerSelectTo(Command.selectToExcluded      , 0, DoNotExtend, Forward)
-registerSelectTo(Command.selectToExcludedExtend, 0, Extend     , Forward)
+registerSelectTo(Command.selectToIncluded      ,  0, DoNotExtend, Forward)
+registerSelectTo(Command.selectToIncludedExtend,  0, Extend     , Forward)
+registerSelectTo(Command.selectToExcluded      , -1, DoNotExtend, Forward)
+registerSelectTo(Command.selectToExcludedExtend, -1, Extend     , Forward)
 
 registerSelectTo(Command.selectToIncludedBackwards      , 0, DoNotExtend, Backward)
 registerSelectTo(Command.selectToIncludedExtendBackwards, 0, Extend     , Backward)
@@ -155,6 +147,7 @@ registerSelectTo(Command.selectToExcludedExtendBackwards, 1, Extend     , Backwa
 
 // Move / extend to word begin / end (w, b, e, W, B, E, alt+[wbe], alt+[WBE])
 // ===============================================================================================
+
 
 function skipEmptyLines(pos: Position, document: vscode.TextDocument, direction: Direction) {
   let { line } = pos

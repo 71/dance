@@ -99,8 +99,8 @@ export class SelectionHelper {
       )
     } else {
       return new vscode.Selection(
-        this.context.editor.document.positionAt(activeChar + 1),
-        this.context.editor.document.positionAt(anchorChar),
+        this.context.editor.document.positionAt(anchorChar + 1),
+        this.context.editor.document.positionAt(activeChar),
       )
     }
   }
