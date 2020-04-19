@@ -3,7 +3,6 @@ import * as cp     from 'child_process'
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
-import { TextDecoder } from 'util'
 
 function getShell() {
   let os: string
@@ -29,14 +28,13 @@ function getShell() {
 function execWithInput(command: string, input: string) {
   return new Promise((resolve, reject) => {
     const shell = getShell() ?? true,
-          child = cp.spawn(command, { shell, stdio: 'pipe' }),
-          decoder = new TextDecoder('utf8')
+          child = cp.spawn(command, { shell, stdio: 'pipe' })
 
     let stdout = '',
         stderr = ''
 
-    child.stdout.on('data', chunk => stdout += decoder.decode(chunk))
-    child.stderr.on('data', chunk => stderr += decoder.decode(chunk))
+    child.stdout.on('data', (chunk: Buffer) => stdout += chunk.toString('utf-8'))
+    child.stderr.on('data', (chunk: Buffer) => stderr += chunk.toString('utf-8'))
     child.stdin.end(input, 'utf-8')
 
     child.once('error', err => reject({ err }))
@@ -205,7 +203,8 @@ registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Tex
   const outputs = await pipeInput(state.input, editor)
 
   displayErrors(outputs)
-  state.selectionSet.modify(editor, (selection, i, builder) => {
+
+  state.selectionSet.updateWithBuilder((builder, selection, i) => {
     const output = outputs[i]
 
     if (!output.err && output.val !== 'false')
@@ -219,7 +218,7 @@ registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, inputBoxO
   displayErrors(outputs)
 })
 
-registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBoxOptionsWithReplacement, async (editor, state) => {
+registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBoxOptionsWithReplacement, async (editor, state, undoStops) => {
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))
@@ -230,10 +229,10 @@ registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBox
 
     for (let i = 0; i < outputs.length; i++)
       builder.replace(selections[i].asSelection(), outputs[i].val!)
-  })
+  }, undoStops)
 })
 
-registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
+registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state, undoStops) => {
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))
@@ -242,10 +241,10 @@ registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxO
   await editor.edit(builder => {
     for (let i = 0; i < outputs.length; i++)
       builder.insert(editor.selections[i].end, outputs[i].val!)
-  })
+  }, undoStops)
 })
 
-registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
+registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state, undoStops) => {
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))
@@ -254,5 +253,5 @@ registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBox
   await editor.edit(builder => {
     for (let i = 0; i < outputs.length; i++)
       builder.insert(editor.selections[i].start, outputs[i].val!)
-  })
+  }, undoStops)
 })

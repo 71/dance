@@ -145,9 +145,9 @@ suite('Running commands', function() {
   test('mutation tests work correctly', async function() {
     await testCommands(editor, {
       allowEmpty: false,
-      initialContent: `|{0}foo`,
+      initialContent: `{0}f|{0}oo`,
       mutations: [
-        { contentAfterMutation: `{0}f|{0}oo`,
+        { contentAfterMutation: `{0}fo|{0}o`,
           commands: [Command.rightExtend],
         },
       ],

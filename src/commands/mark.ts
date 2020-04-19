@@ -1,7 +1,7 @@
 // Marks: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
 import { Command, registerCommand, CommandFlags, InputKind } from '.'
-import { SelectionSet } from '../utils/selections'
 import { Register } from '../registers'
+import { SelectionSet } from '../utils/selectionSet'
 
 
 registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, undefined, (_, { input: key }, __, ctx) => {

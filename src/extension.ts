@@ -3,7 +3,8 @@ import * as vscode from 'vscode'
 import { commands, Mode }      from './commands/index'
 import { HistoryManager }      from './history'
 import { Register, Registers } from './registers'
-import { SelectionSet }  from './utils/selections'
+import { SelectionSet }        from './utils/selectionSet'
+import { assert } from './utils/assert'
 
 
 /** Name of the extension, used in commands and settings. */
@@ -169,7 +170,6 @@ export class Extension implements vscode.Disposable {
   enabled: boolean = false
 
   allowEmptySelections: boolean = true
-  private normalizeTimeoutToken: NodeJS.Timeout | undefined = undefined
 
   typeCommand: vscode.Disposable | undefined = undefined
   changeEditorCommand: vscode.Disposable | undefined = undefined
@@ -180,7 +180,6 @@ export class Extension implements vscode.Disposable {
   ignoreSelectionChanges = false
 
   readonly subscriptions: vscode.Disposable[] = []
-
   readonly statusBarItem: vscode.StatusBarItem
 
   readonly modeMap = new WeakMap<vscode.TextDocument, Mode>()
@@ -191,6 +190,8 @@ export class Extension implements vscode.Disposable {
 
   readonly insertMode = ModeConfiguration.insert()
   readonly normalMode = ModeConfiguration.normal()
+
+  cancellationTokenSource?: vscode.CancellationTokenSource
 
   constructor() {
     this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100)
@@ -250,13 +251,6 @@ export class Extension implements vscode.Disposable {
       return Promise.resolve()
 
     this.modeMap.set(editor.document, mode)
-
-    if (mode === Mode.Normal) {
-      // Force selection to be non-empty when switching to normal. This is only
-      // necessary because we do not restore selections yet.
-      // TODO: Remove this once https://github.com/71/dance/issues/31 is fixed.
-      this.normalizeSelections(editor)
-    }
 
     if (mode === Mode.Insert) {
       this.clearDecorations(editor, this.normalMode.decorationType)
@@ -321,7 +315,7 @@ export class Extension implements vscode.Disposable {
     const selection = editor.selection
 
     if (selection.end.character === 0 && selection.end.line > 0 && !this.allowEmptySelections)
-      editor.setDecorations(decorationType, [new vscode.Range(selection.start, selection.end.with(selection.end.line - 1, Number.MAX_SAFE_INTEGER))])
+      editor.setDecorations(decorationType, [new vscode.Range(selection.start, selection.end.with(selection.end.line - 1, 0))])
     else
       editor.setDecorations(decorationType, [selection])
   }
@@ -383,6 +377,8 @@ export class Extension implements vscode.Disposable {
 
       this.subscriptions.push(
         vscode.window.onDidChangeTextEditorSelection(e => {
+          this.cancellationTokenSource?.dispose()
+
           let hasMatchingSelectionSet = false
 
           for (const selectionSet of this.selectionSets) {
@@ -399,24 +395,14 @@ export class Extension implements vscode.Disposable {
 
           const mode = this.modeMap.get(e.textEditor.document)
 
+          if (mode === Mode.Awaiting) {
+            this.setEditorMode(e.textEditor, Mode.Normal)
+          }
+
           if (mode === Mode.Insert)
             this.setDecorations(e.textEditor, this.insertMode.decorationType)
           else
             this.setDecorations(e.textEditor, this.normalMode.decorationType)
-
-          if (this.normalizeTimeoutToken !== undefined) {
-            clearTimeout(this.normalizeTimeoutToken)
-            this.normalizeTimeoutToken = undefined
-          }
-
-          if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
-            this.normalizeTimeoutToken = setTimeout(() => {
-              this.normalizeSelections(e.textEditor)
-              this.normalizeTimeoutToken = undefined
-            }, 200)
-          } else {
-            this.normalizeSelections(e.textEditor)
-          }
         }),
 
         vscode.workspace.onDidChangeConfiguration(e => {
@@ -462,79 +448,6 @@ export class Extension implements vscode.Disposable {
     return this.enabled = enabled
   }
 
-  /**
-   * Make all selections in the editor non-empty by selecting at least one character.
-   */
-  normalizeSelections(editor: vscode.TextEditor) {
-    if (this.allowEmptySelections || this.ignoreSelectionChanges)
-      return
-
-    if (this.modeMap.get(editor.document) !== Mode.Normal)
-      return
-
-    // Since this is called every time when selection changes, avoid allocations
-    // unless really needed and iterate manually without using helper functions.
-    let normalizedSelections: vscode.Selection[] | undefined = undefined
-
-    for (let i = 0; i < editor.selections.length; i++) {
-      const selection = editor.selections[i]
-      const isReversedOneCharacterSelection = selection.isSingleLine
-        ? (selection.anchor.character === selection.active.character + 1)
-        : (selection.anchor.character === 0 && selection.anchor.line === selection.active.line + 1 && editor.document.lineAt(selection.active).text.length === selection.active.character)
-
-      if (isReversedOneCharacterSelection) {
-        if (normalizedSelections === undefined) {
-          // Change needed. Allocate the new array and copy what we have so far.
-          normalizedSelections = editor.selections.slice(0, i)
-        }
-
-        normalizedSelections.push(new vscode.Selection(selection.active, selection.anchor))
-      } else if (selection.isEmpty) {
-        if (normalizedSelections === undefined) {
-          // Change needed. Allocate the new array and copy what we have so far.
-          normalizedSelections = editor.selections.slice(0, i)
-        }
-
-        const active = selection.active
-
-        if (active.character >= editor.document.lineAt(active.line).range.end.character) {
-          // Selection is at line end. Select line break.
-          if (active.line === editor.document.lineCount - 1) {
-            // Selection is at the very end of the document as well. Select the last character instead.
-            if (active.character === 0) {
-              if (active.line === 0) {
-                // There is no character in this document, so we give up on normalizing.
-                continue
-              } else {
-                normalizedSelections.push(new vscode.Selection(new vscode.Position(active.line - 1, Number.MAX_SAFE_INTEGER), active))
-              }
-            } else {
-              normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active))
-            }
-          } else {
-            normalizedSelections.push(new vscode.Selection(active, new vscode.Position(active.line + 1, 0)))
-          }
-        } else {
-          const offset = editor.document.offsetAt(selection.active)
-          const nextPos = editor.document.positionAt(offset + 1)
-
-          if (nextPos.isAfter(selection.active)) {
-            // Move anchor to select 1 character after, but keep the cursor position.
-            normalizedSelections.push(new vscode.Selection(active.translate(0, 1), active))
-          } else {
-            // Selection is at the very end of the document. Select the last character instead.
-            normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active))
-          }
-        }
-      } else if (normalizedSelections !== undefined) {
-        normalizedSelections.push(selection)
-      }
-    }
-
-    if (normalizedSelections !== undefined)
-      editor.selections = normalizedSelections
-  }
-
   get activeSelections() {
     return this.getSelectionsForEditor(vscode.window.activeTextEditor!)
   }
@@ -543,8 +456,8 @@ export class Extension implements vscode.Disposable {
     for (const selectionSet of this.selectionSets) {
       if (selectionSet.forEditor(editor)) {
         if (!disableCheck) {
-          console.assert(selectionSet.selections.length === editor.selections.length
-                      && selectionSet.selections.every((selection, i) => selection.eq(editor.selections[i])))
+          assert(selectionSet.selections.length === editor.selections.length
+              && selectionSet.selections.every((selection, i) => selection.eq(editor.selections[i])))
         }
 
         return selectionSet

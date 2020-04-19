@@ -2,39 +2,84 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags } from '.'
-import { Selection } from '../utils/selections'
+import { Selection, Position, EmptyPosition, SelectionSet } from '../utils/selectionSet'
 
 
-registerCommand(Command.join, CommandFlags.Edit, () => {
-  return vscode.commands.executeCommand('editor.action.joinLines')
-})
-
-registerCommand(Command.joinSelect, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, { selectionSet }, undoStops) => {
+async function joinSelect(editor: vscode.TextEditor, selectionSet: SelectionSet, undoStops: { undoStopBefore: boolean, undoStopAfter: boolean }) {
   // Select all line endings.
-  selectionSet.modify(editor, (selection, _, builder) => {
-    const { startLine, endLine } = selection
+  selectionSet.updateWithBuilder((builder, selection) => {
+    const { startLine, endLine, canBeEmpty } = selection
 
-    selection.anchor.updateForNewPosition(new vscode.Position(startLine, editor.document.lineAt(startLine).text.length))
-    selection.active.updateForNewPosition(new vscode.Position(startLine + 1, 0))
+    selection.anchor.toLineBreak(startLine)
+    selection.active.inheritPosition(selection.anchor)
 
     builder.push(selection)
 
     for (let line = startLine + 1; line < endLine; line++) {
       const { text } = editor.document.lineAt(line)
 
-      const anchor = new vscode.Position(line, text.length),
-            active = new vscode.Position(line + 1, 0)
+      if (canBeEmpty) {
+        const anchor = EmptyPosition.fromCoord(selectionSet, line, text.length),
+              active = EmptyPosition.fromCoord(selectionSet, line + 1, 0)
 
-      builder.push(Selection.from(selectionSet, new vscode.Selection(anchor, active)))
+        builder.push(Selection.fromFast(anchor, active))
+      } else {
+        const anchor = Position.fromCoord(selectionSet, line, text.length),
+              active = anchor.copy()
+
+        builder.push(Selection.fromFast(anchor, active))
+      }
     }
   })
+  selectionSet.commit(editor)
 
   // Replace all line endings by spaces.
   await editor.edit(builder => {
     for (const selection of selectionSet.selections) {
       builder.replace(selection.asRange(), ' ')
     }
-  })
+  }, undoStops)
+}
+
+registerCommand(Command.join, CommandFlags.Edit, async (editor, { selectionSet }, undoStops) => {
+  // Save selections from start of file.
+  const selectionOffsets = [] as number[],
+        selections = selectionSet.selections
+
+  for (let i = 0; i < selections.length; i++) {
+    const selection = selections[i]
+
+    selectionOffsets.push(selection.start.offset, selection.length * selection.direction)
+  }
+
+  // Join lines.
+  await joinSelect(editor, selectionSet, undoStops)
+
+  // Restore selections.
+  selectionSet.selections.length = 0
+
+  for (let i = 0; i < selectionOffsets.length; i += 2) {
+    const start = Position.fromOffset(selectionSet, selectionOffsets[i]),
+          length = selectionOffsets[i + 1]
+
+    if (length < 0) {
+      const end = Position.fromOffset(selectionSet, start.offset - length),
+            anchor = end,
+            active = start
+
+      selectionSet.selections.push(Selection.fromFast(anchor, active))
+    } else {
+      const end = Position.fromOffset(selectionSet, start.offset + length),
+            anchor = start,
+            active = end
+
+      selectionSet.selections.push(Selection.fromFast(anchor, active))
+    }
+  }
+})
+
+registerCommand(Command.joinSelect, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, { selectionSet }, undoStops) => {
+  return joinSelect(editor, selectionSet, undoStops)
 })
 
 

@@ -1,28 +1,28 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandDescriptor } from '.'
-import { SelectionSet } from '../utils/selections'
+import { SelectionSet } from '../utils/selectionSet'
 
 
-registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
-  selectionSet.updateEach(editor, selection => selection.end.inheritPosition(selection.start))
+registerCommand(Command.insertBefore, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore, (_, { selectionSet }) => {
+  selectionSet.updateEach(selection => selection.end.inheritPosition(selection.start))
 })
 
-registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
-  selectionSet.updateEach(editor, selection => selection.start.inheritPosition(selection.end))
+registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter, (_, { selectionSet }) => {
+  selectionSet.updateEach(selection => selection.start.inheritPosition(selection.end))
 })
 
-registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
-  selectionSet.updateEach(editor, selection => {
-    selection.active.toLineFirstNonWhitespaceCharacter()
-    selection.anchor.inheritPosition(selection.active)
+registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore, (_, { selectionSet }) => {
+  selectionSet.updateEach(selection => {
+    selection.active.toFirstNonWhitespaceCharacter()
+    selection.collapseToActive()
   })
 })
 
-registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
-  selectionSet.updateEach(editor, selection => {
-    selection.active.toLineEnd()
-    selection.anchor.inheritPosition(selection.active)
+registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter, (_, { selectionSet }) => {
+  selectionSet.updateEach(selection => {
+    selection.active.toEndCharacter()
+    selection.collapseToActive()
   })
 })
 
@@ -30,22 +30,20 @@ function normalizeSelectionsForLineInsertion(editor: vscode.TextEditor, selectio
   if (!selectionSet.enforceNonEmptySelections)
     return
 
-  for (const selection of selectionSet.selections) {
-    if (selection.active.character === 0 && !selection.isReversed) {
-      selection.moveLeftOrGoUp()
-    }
-  }
+  editor.selections = selectionSet.selections.map(selection => {
+    const position = selection.active.beforePosition()
 
-  selectionSet.commit(editor)
+    return new vscode.Selection(position, position)
+  })
 }
 
-registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
+registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, (editor, { selectionSet }) => {
   normalizeSelectionsForLineInsertion(editor, selectionSet)
 
   return vscode.commands.executeCommand('editor.action.insertLineBefore')
 })
 
-registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsert, (editor, { selectionSet }) => {
+registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, (editor, { selectionSet }) => {
   normalizeSelectionsForLineInsertion(editor, selectionSet)
 
   return vscode.commands.executeCommand('editor.action.insertLineAfter')
@@ -88,7 +86,7 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _
   let i = hist.commands.length - 1
 
   for (; i >= 0; i--) {
-    if (hist.commands[i][0].flags & CommandFlags.SwitchToInsert) {
+    if (hist.commands[i][0].flags & CommandFlags.SwitchToInsertBefore) {
       switchToInsert = hist.commands[i]
       break
     }

@@ -1,9 +1,9 @@
-import * as vscode from 'vscode'
-import * as path   from 'path'
 import * as fs     from 'fs'
+import * as path   from 'path'
+import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { Selection, ExtendBehavior, CollapseFlags, Position, DoNotExtend, Extend } from '../utils/selections'
+import { Selection, ExtendBehavior, DoNotExtend, Extend } from '../utils/selectionSet'
 
 
 const jumps: [string, string][] = [
@@ -25,28 +25,28 @@ const jumps: [string, string][] = [
 function executeGoto(gotoType: number, editor: vscode.TextEditor, state: CommandState, extend: ExtendBehavior) {
   switch (gotoType) {
     case 0: // go to line start
-      executeGotoLine(editor, state, extend, 'start')
+      executeGotoLine(state, extend, 'start')
       break
 
     case 1: // go to line end
-      executeGotoLine(editor, state, extend, 'end')
+      executeGotoLine(state, extend, 'end')
       break
 
     case 2: // go to non-blank line start
-      executeGotoLine(editor, state, extend, 'first')
+      executeGotoLine(state, extend, 'first')
       break
 
     case 3: // go to first line
     case 4: // go to first line
-      executeGotoFirstLine(editor, state, extend)
+      executeGotoFirstLine(state, extend)
       break
 
     case 5: // go to last line
-      executeGotoLastLine(editor, state, extend)
+      executeGotoLastLine(state, extend)
       break
 
     case 6: // go to last char of last line
-      executeGotoLastLine(editor, state, extend, true)
+      executeGotoLastLine(state, extend, true)
       break
 
     case 7: // go to first displayed line
@@ -97,10 +97,10 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, state: Command
 
 const pickGetCharacter = {
   first(x: Selection) {
-    return x.activeTextLine().firstNonWhitespaceCharacterIndex
+    return x.active.textLine().firstNonWhitespaceCharacterIndex
   },
   end(x: Selection) {
-    return x.activeTextLine().range.end.character
+    return x.active.textLine().text.length
   },
   start() {
     return 0
@@ -110,14 +110,14 @@ const pickGetCharacter = {
   },
 }
 
-function executeGotoLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: ExtendBehavior, position: 'first' | 'end' | 'start' | 'default') {
+function executeGotoLine({ selectionSet }: CommandState, extend: ExtendBehavior, position: 'first' | 'end' | 'start' | 'default') {
   const getCharacter = pickGetCharacter[position]
 
-  selectionSet.updateEach(editor, selection => {
-    selection.active.updateForNewPosition(new vscode.Position(selection.activeLine, getCharacter(selection)))
+  selectionSet.updateEach(selection => {
+    selection.active.updateFromPosition(new vscode.Position(selection.activeLine, getCharacter(selection)))
 
     if (!extend)
-      selection.collapseToActive(CollapseFlags.DoNotMoveActive)
+      selection.collapseToActive()
   })
 }
 
@@ -137,28 +137,26 @@ const pickNewLine = {
 }
 
 function executeGotoDisplayLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: ExtendBehavior, position: 'top' | 'center' | 'bottom' | 'default') {
-  const newLine = pickNewLine[position](editor),
-        newActive = new vscode.Position(newLine, 0)
+  const newLine = pickNewLine[position](editor)
 
   if (extend) {
-    selectionSet.updateEach(editor, selection => {
-      selection.active.updateForNewPosition(newActive)
+    selectionSet.updateEach(selection => {
+      selection.active.update(newLine, 0)
     })
   } else {
-    selectionSet.updateAll(editor, selections => {
-      selections[0].active.updateForNewPosition(newActive)
-      selections[0].anchor.updateForNewPosition(newActive)
-
+    selectionSet.updateAll(selections => {
       selections.length = 1
+      selections[0].active.update(newLine, 0)
+      selections[0].anchor.update(newLine, 0)
     })
   }
 }
 
-function executeGotoFirstLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: boolean) {
-  selectionSet.updateAll(editor, selections => {
+function executeGotoFirstLine({ selectionSet }: CommandState, extend: boolean) {
+  selectionSet.updateAll(selections => {
     const selection = selections[0]
 
-    selection.active.toDocumentStart()
+    selection.active.toDocumentFirstCharacter()
 
     if (extend) {
       const newAnchor = selections
@@ -167,21 +165,21 @@ function executeGotoFirstLine(editor: vscode.TextEditor, { selectionSet }: Comma
 
       selection.anchor.inheritPosition(newAnchor)
     } else {
-      selection.collapseToActive(CollapseFlags.MoveActiveAfter)
+      selection.collapseToActive()
     }
 
     selections.length = 1
   })
 }
 
-function executeGotoLastLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: ExtendBehavior, gotoLastChar: boolean = false) {
-  selectionSet.updateAll(editor, selections => {
+function executeGotoLastLine({ selectionSet }: CommandState, extend: ExtendBehavior, gotoLastChar: boolean = false) {
+  selectionSet.updateAll(selections => {
     const selection = selections[0]
 
     if (gotoLastChar)
-      selection.active.updateForNewPositionFast(selectionSet.endOffset, selectionSet.end)
+      selection.active.toDocumentLastCharacter()
     else
-      selection.active.updateForNewPosition(new vscode.Position(selectionSet.end.line - 1, 0))
+      selection.active.update(selectionSet.end.line - 1, 0)
 
     if (extend) {
       const newAnchor = selections
@@ -190,7 +188,7 @@ function executeGotoLastLine(editor: vscode.TextEditor, { selectionSet }: Comman
 
       selection.anchor.inheritPosition(newAnchor)
     } else {
-      selection.collapseToActive(CollapseFlags.MoveActiveAfter)
+      selection.collapseToActive()
     }
 
     selections.length = 1
@@ -198,39 +196,33 @@ function executeGotoLastLine(editor: vscode.TextEditor, { selectionSet }: Comman
 }
 
 
-registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state, _, __) => {
+registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state) => {
   if (state.input === null) {
     let line = state.currentCount - 1
 
     if (line >= editor.document.lineCount)
       line = editor.document.lineCount - 1
 
-    state.selectionSet.updateAll(editor, selections => {
-      const selection = selections[0]
-
+    state.selectionSet.updateAll(selections => {
       selections.length = 1
-
-      selection.active.updateForNewPosition(new vscode.Position(line, 0))
-      selection.collapseToActive(CollapseFlags.MoveActiveAfter)
+      selections[0].active.update(line, 0)
+      selections[0].collapseToActive()
     })
   } else {
     executeGoto(state.input, editor, state, DoNotExtend)
   }
 })
 
-registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state, _, __) => {
+registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state) => {
   if (state.input === null) {
     let line = state.currentCount - 1
 
     if (line >= editor.document.lineCount)
       line = editor.document.lineCount - 1
 
-    state.selectionSet.updateAll(editor, selections => {
-      const selection = selections[0]
-
+    state.selectionSet.updateAll(selections => {
       selections.length = 1
-
-      selection.active.updateForNewPosition(new vscode.Position(line, 0))
+      selections[0].active.update(line, 0)
     })
   } else {
     executeGoto(state.input, editor, state, Extend)

@@ -2,19 +2,15 @@ import * as vscode from 'vscode'
 
 import { CommandState, registerCommand, Command, CommandFlags, InputKind } from '.'
 import { Extension } from '../extension'
-import { Selection, SelectionSet } from '../utils/selections'
+import { SelectionSet } from '../utils/selectionSet'
 
 function getRegister(state: CommandState<any>, ctx: Extension) {
   return state.currentRegister || ctx.registers.dquote
 }
 
-function deleteSelection(builder: vscode.TextEditorEdit, selection: Selection) {
-  return builder.delete(selection.asSelection())
-}
-
 function deleteSelections(builder: vscode.TextEditorEdit, { selections }: SelectionSet) {
   for (let i = 0; i < selections.length; i++)
-    deleteSelection(builder, selections[i])
+    builder.delete(selections[i].asRange())
 }
 
 registerCommand(Command.deleteYank, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
@@ -27,7 +23,7 @@ registerCommand(Command.deleteYank, CommandFlags.Edit, async (editor, state, und
   await editor.edit(builder => deleteSelections(builder, selections), undoStops)
 })
 
-registerCommand(Command.deleteInsertYank, CommandFlags.Edit | CommandFlags.SwitchToInsert, async (editor, state, undoStops, ctx) => {
+registerCommand(Command.deleteInsertYank, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, async (editor, state, undoStops, ctx) => {
   const reg = getRegister(state, ctx)
   const selections = state.selectionSet
 
@@ -41,7 +37,7 @@ registerCommand(Command.deleteNoYank, CommandFlags.Edit, (editor, { selectionSet
   return editor.edit(builder => deleteSelections(builder, selections), undoStops).then(() => undefined)
 })
 
-registerCommand(Command.deleteInsertNoYank, CommandFlags.Edit | CommandFlags.SwitchToInsert, (editor, { selectionSet: selections }, undoStops) => {
+registerCommand(Command.deleteInsertNoYank, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, (editor, { selectionSet: selections }, undoStops) => {
   return editor.edit(builder => deleteSelections(builder, selections), undoStops).then(() => undefined)
 })
 
@@ -95,7 +91,7 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, und
       if (content.endsWith('\n'))
         builder.insert(new vscode.Position(selection.endLine + 1, 0), content)
       else
-        builder.insert(selection.end.asPosition(), content)
+        builder.insert(selection.end.afterPosition() ?? selection.end.beforePosition(), content)
 
       selectionLengths.push(selection.length)
     }
@@ -110,7 +106,6 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, und
 })
 
 registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const selections = state.selectionSet.selections
   const contents = await getContentsToPaste(editor, state, ctx)
 
   if (contents === undefined)
@@ -119,18 +114,17 @@ registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, un
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i],
-            selection = selections[i]
+            selection = editor.selections[i]
 
       if (content.endsWith('\n'))
-        builder.insert(selection.start.asPosition().with(undefined, 0), content)
+        builder.insert(selection.start.with(undefined, 0), content)
       else
-        builder.insert(selection.start.asPosition(), content)
+        builder.insert(selection.start, content)
     }
   }, undoStops)
 })
 
 registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const selections = state.selectionSet.selections
   const contents = await getContentsToPaste(editor, state, ctx)
 
   if (contents === undefined)
@@ -141,12 +135,12 @@ registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | Comman
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i],
-            selection = selections[i]
+            selection = editor.selections[i]
 
       if (content.endsWith('\n'))
-        builder.insert(selection.end.asPosition().with(selection.endLine + 1, 0), content)
+        builder.insert(selection.end.with(selection.end.line + 1, 0), content)
       else
-        builder.insert(selection.end.asPosition(), content)
+        builder.insert(selection.end, content)
 
       reverseSelection.push(selection.isEmpty)
     }
@@ -157,15 +151,12 @@ registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | Comman
     const content = contents[i]
 
     if (!content.endsWith('\n') && reverseSelection[i]) {
-      selections[i].reverse()
+      state.selectionSet.selections[i].reverse()
     }
   }
-
-  state.selectionSet.commit(editor)
 })
 
 registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const selections = state.selectionSet.selections
   const contents = await getContentsToPaste(editor, state, ctx)
 
   if (contents === undefined)
@@ -174,18 +165,17 @@ registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | Comma
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i],
-            selection = selections[i]
+            selection = editor.selections[i]
 
       if (content.endsWith('\n'))
-        builder.replace(selection.start.asPosition().with(undefined, 0), content)
+        builder.replace(selection.start.with(undefined, 0), content)
       else
-        builder.replace(selection.start.asPosition(), content)
+        builder.replace(selection.start, content)
     }
   }, undoStops)
 })
 
-registerCommand(Command.pasteReplace, CommandFlags.Edit, async (editor, state, _, ctx) => {
-  const selections = state.selectionSet.selections
+registerCommand(Command.pasteReplace, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
   const contents = await getContentsToPaste(editor, state, ctx)
 
   if (contents === undefined)
@@ -194,14 +184,14 @@ registerCommand(Command.pasteReplace, CommandFlags.Edit, async (editor, state, _
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i],
-            selection = selections[i]
+            selection = editor.selections[i]
 
-      builder.replace(selection.asRange(), content)
+      builder.replace(selection, content)
     }
-  })
+  }, undoStops)
 })
 
-registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async (editor, state, _, ctx) => {
+registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
   const selections = state.selectionSet.selections
   const contents = await getRegister(state, ctx).get(editor)
 
@@ -211,26 +201,26 @@ registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async (editor, sta
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++)
       builder.replace(selections[i].asRange(), contents[i])
-  })
+  }, undoStops)
 })
 
 
-registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, undefined, async (editor, { currentCount, input: key, selectionSet: selections }) => {
+registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, undefined, async (editor, { currentCount, input: key }, undoStops) => {
   const string = key.repeat(currentCount || 1)
 
   await editor.edit(builder => {
-    for (const selection of selections.selections) {
+    for (const selection of editor.selections) {
       let i = selection.start.line
 
       if (selection.end.line === i) {
         // A single line-selection; replace the selection directly
-        builder.replace(selection.asRange(), string.repeat(selection.end.character - selection.start.character))
+        builder.replace(selection, string.repeat(selection.end.character - selection.start.character))
 
         continue
       }
 
       // Replace in first line
-      const firstLine = editor.document.lineAt(i).range.with(selection.start.asPosition())
+      const firstLine = editor.document.lineAt(i).range.with(selection.start)
 
       builder.replace(firstLine, string.repeat(firstLine.end.character - firstLine.start.character))
 
@@ -242,9 +232,9 @@ registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, und
       }
 
       // Replace in last line
-      const lastLine = editor.document.lineAt(i).range.with(undefined, selection.end.asPosition())
+      const lastLine = editor.document.lineAt(i).range.with(undefined, selection.end)
 
       builder.replace(lastLine, string.repeat(lastLine.end.character - lastLine.start.character))
     }
-  })
+  }, undoStops)
 })

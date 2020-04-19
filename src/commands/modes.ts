@@ -3,10 +3,10 @@ import * as vscode from 'vscode'
 import { registerCommand, setRemainingNormalCommands, Command, CommandFlags, Mode } from '.'
 
 
-registerCommand(Command.setInsert, CommandFlags.SwitchToInsert, () => {})
+registerCommand(Command.setInsert, CommandFlags.SwitchToInsertBefore, () => {})
 registerCommand(Command.setNormal, CommandFlags.SwitchToNormal, () => {})
 
-registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsert, (_, { repetitions }, __, ctx) => {
+registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsertBefore, (_, { repetitions }, __, ctx) => {
   let subscription = vscode.commands.registerCommand('type', (...args) => {
     if (--repetitions === 0) {
       subscription.dispose()

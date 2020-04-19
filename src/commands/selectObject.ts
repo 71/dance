@@ -1,10 +1,9 @@
 // Objects: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
 import * as vscode from 'vscode'
 
-import { Position, Direction, Forward, ExtendBehavior, Backward } from '../utils/selections'
-
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
 import { CharSet } from '../extension'
+import { Position, Direction, Forward, ExtendBehavior, Backward, Cursor } from '../utils/selectionSet'
 
 
 const objectTypePromptItems: [string, string][] = [
@@ -56,16 +55,19 @@ function findPairObject(origin: Position, direction: Direction, start: number, e
   const cursor = origin.cursor()
   let balance = start === end || direction === Backward ? -1 : 1
 
-  const found = cursor.skipUntil(direction, charCode => {
+  const found = cursor.skipWhile(direction, charCode => {
     if (charCode === start)
       balance++
     else if (charCode === end)
       balance--
     else
-      return false
+      return true
 
-    return balance === 0
-  }, direction === Forward)
+    return balance !== 0
+  }, {
+    select: direction === Forward ? Cursor.Select.Current : Cursor.Select.Previous,
+    restorePositionIfNeverSatisfied: true,
+  })
 
   if (found && inner === (direction === Backward)) {
     cursor.skip(Forward)
@@ -76,7 +78,10 @@ function findPairObject(origin: Position, direction: Direction, start: number, e
 
 function findObjectWithChars(origin: Position, direction: Direction, inner: boolean, ok: (charCode: number) => boolean) {
   const cursor = origin.cursor()
-  const found = cursor.skipUntil(direction, charCode => !ok(charCode), direction === Forward)
+  const found = cursor.skipWhile(direction, ok, {
+    select: direction === Forward ? Cursor.Select.Current : Cursor.Select.Previous,
+    restorePositionIfNeverSatisfied: true,
+  })
 
   if (!found)
     return false
@@ -103,24 +108,27 @@ function findSentenceStart(origin: Position, isWord: (charCode: number) => boole
       lastChar = 0
   let hadLf = false
 
-  cursor.skipUntil(Backward, (charCode, offset, line, char) => {
+  cursor.skipWhile(Backward, (charCode, offset, line, char) => {
     if (charCode === LF) {
       if (hadLf)
-        return true
+        return false
 
       hadLf = true
     } else if (punctCharCodes.indexOf(charCode) !== -1) {
-      return true
+      return false
     } else if (isWord(charCode)) {
       lastCharOffset = offset, lastLine = line, lastChar = char
     } else {
       hadLf = false
     }
 
-    return false
-  }, false)
+    return true
+  }, {
+    select: Cursor.Select.Previous,
+    restorePositionIfNeverSatisfied: true,
+  })
 
-  cursor.position.updateForNewPositionFast(lastCharOffset, new vscode.Position(lastLine, lastChar))
+  cursor.position.updateFast(lastCharOffset, lastLine, lastChar)
   cursor.notifyPositionUpdated()
 
   return true
@@ -170,7 +178,7 @@ function findParagraphStart(origin: Position, inner: boolean) {
     lineNumber--
   }
 
-  cursor.position.updateForNewPosition(document.lineAt(lineNumber + 1).range.start)
+  cursor.position.update(lineNumber + 1, 0)
   cursor.notifyPositionUpdated()
 
   return true
@@ -193,9 +201,9 @@ function findParagraphEnd(origin: Position, inner: boolean) {
   }
 
   if (lineNumber === lineCount)
-    cursor.position.updateForNewPosition(document.lineAt(lineNumber - 1).range.end)
+    cursor.position.update(lineNumber - 1, document.lineAt(lineNumber - 1).text.length)
   else
-    cursor.position.updateForNewPosition(document.lineAt(lineNumber).range.start)
+    cursor.position.update(lineNumber, 0)
 
   cursor.notifyPositionUpdated()
 
@@ -209,7 +217,7 @@ function findIndentBlockStart(origin: Position) {
 
   while (textLine.isEmptyOrWhitespace) {
     if (textLine.lineNumber === 0) {
-      cursor.position.updateForNewPosition(textLine.range.start)
+      cursor.position.update(0, 0)
       cursor.notifyPositionUpdated()
 
       return true
@@ -219,7 +227,7 @@ function findIndentBlockStart(origin: Position) {
   }
 
   const indent = textLine.firstNonWhitespaceCharacterIndex
-  let lastValidPosition = textLine.range.start
+  let lastValidLine = textLine.lineNumber
 
   for (;;) {
     if (textLine.lineNumber === 0)
@@ -229,13 +237,13 @@ function findIndentBlockStart(origin: Position) {
       if (textLine.firstNonWhitespaceCharacterIndex < indent)
         break
 
-      lastValidPosition = textLine.range.start
+      lastValidLine = 0
     }
 
     textLine = document.lineAt(textLine.lineNumber - 1)
   }
 
-  cursor.position.updateForNewPosition(lastValidPosition)
+  cursor.position.update(lastValidLine, 0)
   cursor.notifyPositionUpdated()
 
   return true
@@ -249,7 +257,7 @@ function findIndentBlockEnd(origin: Position) {
 
   while (textLine.isEmptyOrWhitespace) {
     if (textLine.lineNumber === lastLine) {
-      cursor.position.updateForNewPosition(textLine.range.end)
+      cursor.position.updateFromPosition(textLine.range.end)
       cursor.notifyPositionUpdated()
 
       return true
@@ -275,7 +283,7 @@ function findIndentBlockEnd(origin: Position) {
     textLine = document.lineAt(textLine.lineNumber + 1)
   }
 
-  cursor.position.updateForNewPosition(lastValidPosition)
+  cursor.position.updateFromPosition(lastValidPosition)
   cursor.notifyPositionUpdated()
 
   return true
@@ -472,7 +480,7 @@ function performObjectSelect(editor: vscode.TextEditor, state: CommandState, inn
 
   const count = state.currentCount || 1
 
-  state.selectionSet.updateEach(editor, selection => {
+  state.selectionSet.updateEach(selection => {
     const prevStart = selection.start.copy(selection.set),
           prevEnd = selection.end.copy(selection.set),
           { active, start, end } = selection

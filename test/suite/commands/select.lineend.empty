@@ -45,3 +45,10 @@ foo
 |{0}
 b{0}ar
 baz
+
+//== 6 > 7
+//= dance.up.extend
+|{0}foo
+
+b{0}ar
+baz

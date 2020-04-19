@@ -2,10 +2,9 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
-
 import { Extension, CharSet } from '../extension'
-import { WritableRegister }   from '../registers'
-import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Selection, Position, SelectionSet } from '../utils/selections'
+import { WritableRegister } from '../registers'
+import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Selection, Position, SelectionSet } from '../utils/selectionSet'
 
 
 function isMultilineRegExp(regex: string) {
@@ -43,7 +42,7 @@ function isMultilineRegExp(regex: string) {
 }
 
 function moveForwardBy(position: Position, offset: number, text: string, add = 0) {
-  let { line, character } = position
+  let { line, column: character } = position
 
   for (let i = 0; i < offset; i++) {
     const ch = text[i + add]
@@ -60,11 +59,11 @@ function moveForwardBy(position: Position, offset: number, text: string, add = 0
     }
   }
 
-  position.updateForNewPositionFast(position.offset + offset, new vscode.Position(line, character))
+  position.updateFast(position.offset + offset, line, character)
 }
 
 function moveBackwardBy(position: Position, offset: number, text: string, add = 0) {
-  let { line, character } = position
+  let { line, column: character } = position
 
   for (let i = text.length - 1; i >= offset; i--) {
     const ch = text[i + add]
@@ -92,7 +91,7 @@ function moveBackwardBy(position: Position, offset: number, text: string, add = 
     character = offset - startOfLine
   }
 
-  position.updateForNewPositionFast(position.offset - offset, new vscode.Position(line, character - 1))
+  position.updateFast(position.offset - offset, line, character - 1)
 }
 
 // TODO: Should search strings be limited to the range between the current selection
@@ -102,7 +101,7 @@ function search(selection: Selection, start: Position, regex: RegExp, allowWrap:
   const document = selection.document
 
   if (regex.multiline) {
-    const text = document.getText(document.lineAt(document.lineCount - 1).range.with(start.asPosition()))
+    const text = document.getText(document.lineAt(document.lineCount - 1).range.with(start.afterPosition()))
     const match = regex.exec(text)
 
     if (match !== null) {
@@ -118,14 +117,14 @@ function search(selection: Selection, start: Position, regex: RegExp, allowWrap:
     {
       // Custom processing for first line.
       const line = document.lineAt(start.line),
-            match = regex.exec(line.text.substr(start.character))
+            match = regex.exec(line.text.substr(start.column))
 
       if (match !== null) {
         const length = match[0].length
 
-        selection.anchor.updateForNewPosition(new vscode.Position(start.line, start.character + match.index))
+        selection.anchor.update(start.line, start.column + match.index)
         selection.active.inheritPosition(selection.anchor)
-        selection.active.updateForNewPositionFast(selection.anchor.offset + length, selection.anchor.asPosition().translate(0, length))
+        selection.active.updateFast(selection.anchor.offset + length, start.line, match.index + length)
 
         return true
       }
@@ -140,9 +139,9 @@ function search(selection: Selection, start: Position, regex: RegExp, allowWrap:
 
       const length = match[0].length
 
-      selection.anchor.updateForNewPosition(new vscode.Position(line, match.index))
+      selection.anchor.update(line, match.index)
       selection.active.inheritPosition(selection.anchor)
-      selection.active.updateForNewPositionFast(selection.anchor.offset + length, selection.anchor.asPosition().translate(0, length))
+      selection.active.updateFast(selection.anchor.offset + length, line, match.index + length)
 
       return true
     }
@@ -151,7 +150,7 @@ function search(selection: Selection, start: Position, regex: RegExp, allowWrap:
   if (!allowWrap)
     return false
 
-  selection.active.toDocumentStart()
+  selection.active.toDocumentFirstCharacter()
   selection.anchor.inheritPosition(selection.active)
 
   return search(selection, start, regex, false)
@@ -179,7 +178,7 @@ function searchBackward(selection: Selection, end: Position, regex: RegExp, allo
   const document = selection.document
 
   if (regex.multiline) {
-    const text = document.getText(new vscode.Range(new vscode.Position(0, 0), end.asPosition()))
+    const text = document.getText(new vscode.Range(new vscode.Position(0, 0), end.beforePosition()))
     const match = execFromEnd(regex, text)
 
     if (match !== null) {
@@ -195,14 +194,14 @@ function searchBackward(selection: Selection, end: Position, regex: RegExp, allo
     {
       // Custom processing for first line.
       const line = document.lineAt(end.line),
-            match = execFromEnd(regex, line.text.substr(0, end.character))
+            match = execFromEnd(regex, line.text.substr(0, end.column))
 
       if (match !== null) {
         const length = match[0].length
 
-        selection.anchor.updateForNewPosition(new vscode.Position(end.line, match.index))
+        selection.anchor.update(end.line, match.index)
         selection.active.inheritPosition(selection.anchor)
-        selection.active.updateForNewPositionFast(selection.anchor.offset + length, selection.anchor.asPosition().translate(0, length))
+        selection.active.updateFast(selection.anchor.offset + length, end.line, match.index + length)
 
         return true
 
@@ -218,9 +217,9 @@ function searchBackward(selection: Selection, end: Position, regex: RegExp, allo
 
       const length = match[0].length
 
-      selection.anchor.updateForNewPosition(new vscode.Position(line, match.index))
+      selection.anchor.update(line, match.index)
       selection.active.inheritPosition(selection.anchor)
-      selection.active.updateForNewPositionFast(selection.anchor.offset + length, selection.anchor.asPosition().translate(0, length))
+      selection.active.updateFast(selection.anchor.offset + length, line, match.index + length)
 
       return true
     }
@@ -229,7 +228,7 @@ function searchBackward(selection: Selection, end: Position, regex: RegExp, allo
   if (!allowWrap)
     return false
 
-  selection.active.toDocumentEnd()
+  selection.active.toDocumentLastCharacter()
   selection.anchor.inheritPosition(selection.active)
 
   return searchBackward(selection, end, regex, false)
@@ -278,7 +277,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
       // match by adding a ^, and then fallback to the default search routine
       if (extend) {
         if (direction === Backward)
-          selections.updateEach(editor, selection => {
+          selections.updateEach(selection => {
             const endSave = selection.end.save()
             const found = searchBackward(selection, selection.anchor, regex, true)
 
@@ -287,7 +286,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
             }
           })
         else
-          selections.updateEach(editor, selection => {
+          selections.updateEach(selection => {
             const startSave = selection.start.save()
             const found = search(selection, selection.active, regex, true)
 
@@ -297,9 +296,9 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
           })
       } else {
         if (direction === Backward) {
-          selections.updateEach(editor, selection => searchBackward(selection, selection.anchor, regex, true))
+          selections.updateEach(selection => searchBackward(selection, selection.anchor, regex, true))
         } else {
-          selections.updateEach(editor, selection => search(selection, selection.active, regex, true))
+          selections.updateEach(selection => search(selection, selection.active, regex, true))
         }
       }
 
@@ -381,7 +380,7 @@ function registerNextCommand(command: Command, direction: Direction, replace: bo
       : search(selection, selection.anchor, regex, true)
 
     if (found && !replace)
-      selections.updateAll(editor, selections => selections.unshift(selection))
+      selections.updateAll(selections => selections.unshift(selection))
   })
 }
 

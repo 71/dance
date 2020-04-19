@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags } from '.'
-import { Selection } from '../utils/selections'
+import { Selection } from '../utils/selectionSet'
 
 
 function rotateSelections(selections: Selection[]) {
@@ -24,16 +24,7 @@ function rotateSelectionsBackwards(selections: Selection[]) {
   selections[0] = lastSelection
 }
 
-registerCommand(Command.rotate, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.updateAll(editor, rotateSelections)
-})
-
-registerCommand(Command.rotateBackwards, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }) => {
-  selections.updateAll(editor, rotateSelectionsBackwards)
-})
-
-
-function rotateSelectionsContent(editor: vscode.TextEditor) {
+function rotateSelectionsContent(editor: vscode.TextEditor, undoStops: { undoStopBefore: boolean, undoStopAfter: boolean }) {
   return editor.edit(builder => {
     const { document: doc, selections } = editor
 
@@ -41,10 +32,10 @@ function rotateSelectionsContent(editor: vscode.TextEditor) {
       builder.replace(selections[i + 1], doc.getText(selections[i]))
 
     builder.replace(selections[0], doc.getText(selections[selections.length - 1]))
-  })
+  }, undoStops)
 }
 
-function rotateSelectionsContentBackwards(editor: vscode.TextEditor) {
+function rotateSelectionsContentBackwards(editor: vscode.TextEditor, undoStops: { undoStopBefore: boolean, undoStopAfter: boolean }) {
   return editor.edit(builder => {
     const { document, selections } = editor
 
@@ -52,16 +43,23 @@ function rotateSelectionsContentBackwards(editor: vscode.TextEditor) {
       builder.replace(selections[i], document.getText(selections[i + 1]))
 
     builder.replace(selections[selections.length - 1], document.getText(selections[0]))
-  })
+  }, undoStops)
 }
 
-registerCommand(Command.rotateContentOnly, CommandFlags.Edit, editor => rotateSelectionsContent(editor).then(() => {}))
-registerCommand(Command.rotateContentOnlyBackwards, CommandFlags.Edit, editor => rotateSelectionsContentBackwards(editor).then(() => {}))
+registerCommand(Command.rotate, CommandFlags.ChangeSelections, (_, { selectionSet }) =>
+  selectionSet.updateAll(rotateSelections))
 
-registerCommand(Command.rotateContent, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, { selectionSet: selections }) => {
-  return rotateSelectionsContent(editor).then(() => selections.updateAll(editor, rotateSelections))
-})
+registerCommand(Command.rotateBackwards, CommandFlags.ChangeSelections, (_, { selectionSet }) =>
+  selectionSet.updateAll(rotateSelectionsBackwards))
 
-registerCommand(Command.rotateContentBackwards, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, { selectionSet: selections }) => {
-  return rotateSelectionsContentBackwards(editor).then(() => selections.updateAll(editor, rotateSelectionsBackwards))
-})
+registerCommand(Command.rotateContentOnly, CommandFlags.Edit, (editor, _, undoStops) =>
+  rotateSelectionsContent(editor, undoStops).then(() => {}))
+
+registerCommand(Command.rotateContentOnlyBackwards, CommandFlags.Edit, (editor, _, undoStops) =>
+  rotateSelectionsContentBackwards(editor, undoStops).then(() => {}))
+
+registerCommand(Command.rotateContent, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, { selectionSet }, undoStops) =>
+  rotateSelectionsContent(editor, undoStops).then(() => selectionSet.updateAll(rotateSelections)))
+
+registerCommand(Command.rotateContentBackwards, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, { selectionSet }, undoStops) =>
+  rotateSelectionsContentBackwards(editor, undoStops).then(() => selectionSet.updateAll(rotateSelectionsBackwards)))

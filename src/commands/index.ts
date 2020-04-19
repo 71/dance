@@ -1,10 +1,9 @@
 import * as vscode from 'vscode'
 
-import { Command }   from '../../commands'
+import { Command } from '../../commands'
 import { Extension } from '../extension'
-import { Register }  from '../registers'
-
-import { SelectionSet }                          from '../utils/selections'
+import { Register } from '../registers'
+import { SelectionSet, CollapseFlags } from '../utils/selectionSet'
 import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
 
 export import Command = Command
@@ -25,20 +24,23 @@ export const enum CommandFlags {
   /** Switch to normal mode after operation. */
   SwitchToNormal = 1 << 1,
 
-  /** Switch to insert mode after operation. */
-  SwitchToInsert = 1 << 2,
+  /** Switch to insert mode after operation before the cursor. */
+  SwitchToInsertBefore = 1 << 2,
+
+  /** Switch to insert mode after operation after the cursor. */
+  SwitchToInsertAfter = 1 << 3,
 
   /** Restore previous mode after operation. */
-  RestoreMode = 1 << 3,
+  RestoreMode = 1 << 4,
 
   /** Ignores the command in history. */
-  IgnoreInHistory = 1 << 4,
+  IgnoreInHistory = 1 << 5,
 
   /** Edits the content of the editor. */
-  Edit = 1 << 5,
+  Edit = 1 << 6,
 
   /** Changes the current selections. */
-  ChangeSelections = 1 << 6,
+  ChangeSelections = 1 << 7,
 }
 
 export class CommandState<Input extends InputKind = any> {
@@ -114,24 +116,30 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     const history = state.history.for(editor.document)
     const flags = this.flags
     const selectionSet = state.getSelectionsForEditor(editor)
+    const cts = new vscode.CancellationTokenSource()
+
+    if (state.cancellationTokenSource !== undefined)
+      state.cancellationTokenSource.dispose()
+
+    state.cancellationTokenSource = cts
 
     let input: InputTypeMap[Input] | undefined = undefined
 
     switch (this.input) {
       case InputKind.RegExp:
-        input = await promptRegex(this.inputDescr as string) as any
+        input = await promptRegex(this.inputDescr as string, cts.token) as any
         break
       case InputKind.ListOneItem:
-        input = await promptInList(false, this.inputDescr as [string, string][]) as any
+        input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
         break
       case InputKind.ListOneItemOrCount:
         if (state.currentCount === 0)
-          input = await promptInList(false, this.inputDescr as [string, string][]) as any
+          input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
         else
           input = null as any
         break
       case InputKind.ListManyItems:
-        input = await promptInList(true, this.inputDescr as [string, string][]) as any
+        input = await promptInList(true, this.inputDescr as [string, string][], cts.token) as any
         break
       case InputKind.Text:
         const inputDescr = this.inputDescr as InputDescrMap[InputKind.Text]
@@ -139,13 +147,13 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         if (inputDescr.setup !== undefined)
           inputDescr.setup(editor, selectionSet, state)
 
-        input = await prompt(inputDescr) as any
+        input = await prompt(inputDescr, cts.token) as any
         break
       case InputKind.Key:
         const prevMode = state.getMode()
 
         await state.setMode(Mode.Awaiting)
-        input = await keypress() as any
+        input = await keypress(cts.token) as any
         await state.setMode(prevMode)
 
         break
@@ -168,7 +176,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         result = await result
     }
 
-    if (flags & CommandFlags.SwitchToInsert) {
+    if (flags & CommandFlags.SwitchToInsertBefore || flags & CommandFlags.SwitchToInsertAfter) {
       await state.setMode(Mode.Insert)
     } else if (flags & CommandFlags.SwitchToNormal) {
       await state.setMode(Mode.Normal)
@@ -191,8 +199,12 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       remainingNormalCommands--
     }
 
+    const insert = flags & CommandFlags.SwitchToInsertBefore ? 'before'
+                 : flags & CommandFlags.SwitchToInsertAfter  ? 'after'
+                 : undefined
+    selectionSet.commit(editor, insert)
+
     state.ignoreSelectionChanges = false
-    state.normalizeSelections(editor)
   }
 
   /**
@@ -247,7 +259,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
           await editor.edit(result, undoStops)
       }
 
-      if (descr.flags & CommandFlags.SwitchToInsert)
+      if (descr.flags & CommandFlags.SwitchToInsertBefore)
         currentMode = Mode.Insert
       else if (descr.flags & CommandFlags.SwitchToNormal)
         currentMode = Mode.Normal
@@ -300,5 +312,6 @@ import './pipe'
 import './rotate'
 import './search'
 import './select'
+import './selections'
 import './selectObject'
 import './yankPaste'
