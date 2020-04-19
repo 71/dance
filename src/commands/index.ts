@@ -1,10 +1,10 @@
 import * as vscode from 'vscode'
 
-import { Command }   from '../../commands'
+import { Command, selectionsAlign }   from '../../commands'
 import { Extension } from '../extension'
 import { Register }  from '../registers'
 
-import { SelectionSet }                          from '../utils/selections'
+import { SelectionSet, ExtendBehavior, Backward, Direction, Forward } from '../utils/selections'
 import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
 
 export import Command = Command
@@ -41,6 +41,114 @@ export const enum CommandFlags {
   ChangeSelections = 1 << 6,
 }
 
+export type SelectionContext = {
+  readonly editor: vscode.TextEditor,
+  readonly state: CommandState,
+  readonly repetitions: number,
+  readonly helper: SelectionHelper,
+  readonly extension: Extension,
+}
+
+export type SkipFunc = (from: number, context: SelectionContext, i: number) => number;
+export type SelectFunc = (from: number, context: SelectionContext, i: number) => number;
+
+export class SelectionHelper {
+  context!: SelectionContext;
+  get allowEmpty() {
+    return this.context.extension.allowEmptySelections
+  }
+  get allowNonDirectional() {
+    return !this.context.extension.allowEmptySelections
+  }
+
+  moveEach(skip: SkipFunc, select: SelectFunc, extend: ExtendBehavior): void {
+    const newSelections: vscode.Selection[] = []
+    const editor = this.context.editor
+    for (let i = 0; i < editor.selections.length; i++) {
+      const startAt = this.activeOffset(editor.selections[i])
+      const skipTo = skip(startAt, this.context, i)
+      const endAt = select(skipTo, this.context, i)
+      if (extend) {
+        newSelections.push(this.extendToInclude(editor.selections[i], endAt))
+      } else {
+        newSelections.push(this.createSelectionBetween(skipTo, endAt))
+      }
+    }
+    editor.selections = newSelections
+  }
+
+  activeOffset(selection: vscode.Selection) {
+    if (!this.allowNonDirectional) return this.context.editor.document.offsetAt(selection.active)
+    if (selection.isEmpty) return this.context.editor.document.offsetAt(selection.active)
+    if (selection.isReversed) {
+      return this.context.editor.document.offsetAt(selection.active)
+    } else {
+      return this.context.editor.document.offsetAt(selection.active) - 1
+    }
+  }
+  createSelectionBetween(anchorChar: number, activeChar: number): vscode.Selection {
+    if (!this.allowNonDirectional) {
+      return new vscode.Selection(
+        this.context.editor.document.positionAt(anchorChar),
+        this.context.editor.document.positionAt(activeChar),
+      )
+    } else if (anchorChar <= activeChar) {
+      return new vscode.Selection(
+        this.context.editor.document.positionAt(anchorChar),
+        this.context.editor.document.positionAt(activeChar + 1),
+      )
+    } else {
+      return new vscode.Selection(
+        this.context.editor.document.positionAt(activeChar + 1),
+        this.context.editor.document.positionAt(anchorChar),
+      )
+    }
+  }
+  extendToInclude(oldSelection: vscode.Selection, activeChar: number): vscode.Selection {
+    const document = this.context.editor.document
+    const oldAnchorOffset = document.offsetAt(oldSelection.anchor)
+    if (oldAnchorOffset <= activeChar) {
+      if (oldSelection.isReversed && this.allowNonDirectional) {
+        // BEFORE: |abc>de ==> AFTER: ab<cd|e or ab<c|de (single char forward).
+        // Note that we need to decrement anchor to include the first char.
+        const newAnchor = document.positionAt(oldAnchorOffset - 1)
+        return new vscode.Selection(newAnchor, document.positionAt(activeChar + 1))
+      } else {
+        // BEFORE:    |abc>de ==> AFTER: abc<d|e or abc<|de (empty).
+        // OR BEFORE: <abc|de ==> AFTER: <abcd|e.
+        const includeBoundary = this.allowNonDirectional ? 1 : 0
+        return new vscode.Selection(oldSelection.anchor, document.positionAt(activeChar + includeBoundary))
+      }
+    } else {
+      if (!oldSelection.isReversed && this.allowNonDirectional) {
+        // BEFORE: ab<cd|e ==> AFTER: a|bc>de.
+        // Note that we need to increment anchor to include the last char.
+        const newAnchor = document.positionAt(oldAnchorOffset + 1)
+        return new vscode.Selection(newAnchor, document.positionAt(activeChar))
+      } else if (oldAnchorOffset === activeChar + 1 && this.allowNonDirectional) {
+        // BEFORE: a|bc>de ==> AFTER: ab<c|de (FORCE single char forward).
+        return new vscode.Selection(document.positionAt(activeChar), oldSelection.anchor)
+      } else {
+        // BEFORE:    ab<cd|e ==> AFTER: a|b>cde.
+        // OR BEFORE: ab|cd>e ==> AFTER: a|bcd>e.
+        return new vscode.Selection(oldSelection.anchor, document.positionAt(activeChar))
+      }
+    }
+  }
+
+  /** DEBUG ONLY method to visualize an offset. DO NOT leave calls in code. */
+  _visualizeOffset(offset: number): string {
+    const position = this.context.editor.document.positionAt(offset)
+    return this._visualizePosition(position)
+  }
+
+  /** DEBUG ONLY method to visualize a position. DO NOT leave calls in code. */
+  _visualizePosition(position: vscode.Position): string {
+    const text = this.context.editor.document.lineAt(position.line).text
+    return position.line + ':  ' + text.substr(0, position.character) + '|' + text.substr(position.character)
+  }
+}
+
 export class CommandState<Input extends InputKind = any> {
   /**
    * The number of times that a command should be repeated.
@@ -55,11 +163,13 @@ export class CommandState<Input extends InputKind = any> {
 
   constructor(
     readonly selectionSet: SelectionSet,
+    readonly selectionHelper: SelectionHelper,
     readonly currentCount: number,
     readonly currentRegister: Register | undefined,
     readonly input: InputTypeMap[Input],
   ) {}
 }
+
 
 export type Action<Input extends InputKind> =
   (editor: vscode.TextEditor, state: CommandState<Input>, undoStops: { undoStopBefore: boolean, undoStopAfter: boolean }, ctx: Extension) => void | Thenable<void | undefined>
@@ -106,6 +216,8 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     readonly inputDescr: InputDescrMap[Input],
     readonly action : Action<Input>,
   ) {}
+
+  selectionHelper = new SelectionHelper();
 
   /**
    * Executes the command completely, prompting the user for input and saving history entries if needed.
@@ -154,7 +266,14 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     if (this.input !== InputKind.None && input === undefined)
       return
 
-    const commandState = new CommandState<Input>(selectionSet, state.currentCount, state.currentRegister, input as any)
+    const commandState = new CommandState<Input>(selectionSet, this.selectionHelper, state.currentCount, state.currentRegister, input as any)
+    this.selectionHelper.context = {
+      editor,
+      repetitions: state.currentCount === 0 ? 1 : state.currentCount,
+      state: commandState,
+      helper: this.selectionHelper,
+      extension: state,
+    }
 
     if (!(flags & CommandFlags.IgnoreInHistory))
       history.addCommand(this, commandState)
