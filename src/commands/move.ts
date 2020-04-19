@@ -1,7 +1,7 @@
 // Movement: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags, InputKind, CommandState, SkipFunc, SelectFunc } from '.'
+import { registerCommand, Command, CommandFlags, InputKind, CommandState, SkipFunc, SelectFunc, MoveMode } from '.'
 
 import { CharSet } from '../extension'
 import { Selection, Position, LimitToCurrentLine, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction, CollapseFlags } from '../utils/selections'
@@ -25,7 +25,7 @@ const skipByOffsetForward: SkipFunc = skipByOffset(Forward)
 function moveHorizontal(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
   preferredColumnsPerEditor.delete(editor)
   const skip = direction === Forward ? skipByOffsetForward : skipByOffsetBackward
-  state.selectionHelper.moveEach(skip, selectCurrent, extend)
+  state.selectionHelper.moveEach(MoveMode.To, skip, selectCurrent, extend)
   revealActiveTowards(direction, editor)
 }
 
@@ -74,7 +74,7 @@ function moveVertical(state: CommandState, editor: vscode.TextEditor, direction:
   }
 
   const skip = direction === Forward ? skipByLineForward : skipByLineBackward
-  state.selectionHelper.moveEach(skip, selectCurrent, extend)
+  state.selectionHelper.moveEach(MoveMode.To, skip, selectCurrent, extend)
   revealActiveTowards(direction, editor)
 }
 
@@ -93,7 +93,7 @@ registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, sta
 // ===============================================================================================
 const noSkip: SkipFunc = from => from
 
-const selectToNextCharacter: (diff: number, direction: Direction) => SelectFunc = (diff, direction) => (from, { editor, repetitions, state }) => {
+const selectToNextCharacter: (direction: Direction) => SelectFunc = (direction) => (from, { editor, repetitions, state }) => {
   const key = state.input as string
   const active = editor.document.positionAt(from)
   const searchOffset = direction === Backward ? -2 : 1
@@ -124,25 +124,25 @@ const selectToNextCharacter: (diff: number, direction: Direction) => SelectFunc 
       character = direction === Backward ? undefined : 0
     }
   }
-  return editor.document.offsetAt(new vscode.Position(line, character! - searchOffset + diff))
+  return editor.document.offsetAt(new vscode.Position(line, character! - searchOffset))
 }
 
-function registerSelectTo(commandName: Command, diff: number, extend: ExtendBehavior, direction: Direction) {
-  const selectFunc = selectToNextCharacter(diff, direction)
+function registerSelectTo(commandName: Command, moveMode: MoveMode, extend: ExtendBehavior, direction: Direction) {
+  const selectFunc = selectToNextCharacter(direction)
   registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (_, { selectionHelper }) => {
-    selectionHelper.moveEach(noSkip, selectFunc, extend)
+    selectionHelper.moveEach(moveMode, noSkip, selectFunc, extend)
   })
 }
 
-registerSelectTo(Command.selectToIncluded      ,  0, DoNotExtend, Forward)
-registerSelectTo(Command.selectToIncludedExtend,  0, Extend     , Forward)
-registerSelectTo(Command.selectToExcluded      , -1, DoNotExtend, Forward)
-registerSelectTo(Command.selectToExcludedExtend, -1, Extend     , Forward)
+registerSelectTo(Command.selectToIncluded      ,  MoveMode.ToCoverChar, DoNotExtend, Forward)
+registerSelectTo(Command.selectToIncludedExtend,  MoveMode.ToCoverChar, Extend     , Forward)
+registerSelectTo(Command.selectToExcluded      ,  MoveMode.  UntilChar, DoNotExtend, Forward)
+registerSelectTo(Command.selectToExcludedExtend,  MoveMode.  UntilChar, Extend     , Forward)
 
-registerSelectTo(Command.selectToIncludedBackwards      , 0, DoNotExtend, Backward)
-registerSelectTo(Command.selectToIncludedExtendBackwards, 0, Extend     , Backward)
-registerSelectTo(Command.selectToExcludedBackwards      , 1, DoNotExtend, Backward)
-registerSelectTo(Command.selectToExcludedExtendBackwards, 1, Extend     , Backward)
+registerSelectTo(Command.selectToIncludedBackwards      ,  MoveMode.ToCoverChar, DoNotExtend, Backward)
+registerSelectTo(Command.selectToIncludedExtendBackwards,  MoveMode.ToCoverChar, Extend     , Backward)
+registerSelectTo(Command.selectToExcludedBackwards      ,  MoveMode.  UntilChar, DoNotExtend, Backward)
+registerSelectTo(Command.selectToExcludedExtendBackwards,  MoveMode.  UntilChar, Extend     , Backward)
 
 
 // Move / extend to word begin / end (w, b, e, W, B, E, alt+[wbe], alt+[WBE])

@@ -466,6 +466,7 @@ export class Extension implements vscode.Disposable {
    * Make all selections in the editor non-empty by selecting at least one character.
    */
   normalizeSelections(editor: vscode.TextEditor) {
+    return // Disabled for now for easier development.
     if (this.allowEmptySelections || this.ignoreSelectionChanges)
       return
 
