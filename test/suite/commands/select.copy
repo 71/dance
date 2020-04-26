@@ -1,0 +1,17 @@
+{0}f|{0}oo
+bar
+baz
+
+//== 0 > 1
+//= dance.select.copy
+{0}f|{0}oo
+{1}b|{1}ar
+baz
+
+//== 1 > 2
+//= dance.select.copy
+{0}f|{0}oo
+{1}b|{1}ar
+{2}b|{2}az
+
+// TODO: More tests for edge cases like next line is not long enough, etc.
