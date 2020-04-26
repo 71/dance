@@ -3,6 +3,7 @@ import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandState } from '.'
 import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction, Anchor } from '../utils/selectionSet'
+import { MoveMode, SelectFunc, SkipFunc, SelectionHelper, Coord } from '../utils/selectionHelper'
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
@@ -10,124 +11,80 @@ import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction, Anch
 
 const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
-function moveLeft(state: CommandState, editor: vscode.TextEditor, anchor: Anchor) {
-  const offset = state.repetitions
+const selectCurrent: SelectFunc = (from) => from
 
-  preferredColumnsPerEditor.delete(editor)
-
-  let firstActiveLine = undefined as number | undefined,
-      firstActiveColumn = 0,
-      firstActiveOffset = 0
-
-  state.selectionSet.updateEachPosition(anchor, active => {
-    active.moveLeftOrGoUp(offset)
-
-    if (firstActiveLine === undefined || firstActiveOffset > active.offset) {
-      firstActiveLine = active.line
-      firstActiveColumn = active.column
-      firstActiveOffset = active.offset
-    }
-  })
-
-  state.selectionSet.commit(editor)
-
-  const firstActive = new vscode.Position(firstActiveLine!, firstActiveColumn)
-
-  editor.revealRange(new vscode.Range(firstActive, firstActive))
+const skipByOffset: (direction: Direction) => SkipFunc = (direction) => (from, helper) => {
+  const toOffset = helper.offsetAt(from) + helper.state.repetitions * direction
+  return helper.coordAt(toOffset)
 }
 
-function moveRight(state: CommandState, editor: vscode.TextEditor, anchor: Anchor) {
-  const offset = state.repetitions
+const skipByOffsetBackward: SkipFunc = skipByOffset(Backward)
+const skipByOffsetForward: SkipFunc = skipByOffset(Forward)
 
+function moveHorizontal(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
   preferredColumnsPerEditor.delete(editor)
-
-  let lastActiveLine = undefined as number | undefined,
-      lastActiveColumn = 0,
-      lastActiveOffset = 0
-
-  state.selectionSet.updateEachPosition(anchor, active => {
-    active.moveRightOrGoDown(offset)
-
-    if (lastActiveLine === undefined || lastActiveOffset < active.offset) {
-      lastActiveLine = active.line
-      lastActiveColumn = active.column
-      lastActiveOffset = active.offset
-    }
-  })
-
-  state.selectionSet.commit(editor)
-
-  const lastActive = new vscode.Position(lastActiveLine!, lastActiveColumn)
-
-  editor.revealRange(new vscode.Range(lastActive, lastActive))
+  const skip = direction === Forward ? skipByOffsetForward : skipByOffsetBackward
+  SelectionHelper.for(editor, state).moveEach(MoveMode.To, skip, selectCurrent, extend)
+  revealActiveTowards(direction, editor)
 }
 
-function moveVertical(state: CommandState, editor: vscode.TextEditor, direction: Direction, anchor: Anchor) {
-  const selections = state.selectionSet.selections,
-        document = editor.document
-  const diff = state.repetitions * direction
-  const lastLine = document.lineCount - 1
+function revealActiveTowards(direction: Direction, editor: vscode.TextEditor) {
+  let revealPosition = undefined as vscode.Position | undefined
+  for (let i = 0; i < editor.selections.length; i++) {
+    const activePosition = editor.selections[i].active
 
-  // Compute preferred columns.
+    if (revealPosition === undefined || revealPosition.compareTo(activePosition) * direction > 0)
+      revealPosition = activePosition
+  }
+  editor.revealRange(new vscode.Range(revealPosition!, revealPosition!))
+}
+
+const skipByLine: (direction: Direction) => SkipFunc = (direction) => (from, helper, i) => {
+  const targetLine = from.line + helper.state.repetitions * direction
+
+  if (targetLine < 0) {
+    return helper.coordAt(0)
+  } else if (targetLine > helper.editor.document.lineCount - 1) {
+    return helper.editor.document.lineAt(helper.editor.document.lineCount - 1).range.end
+  } else {
+    const preferredColumns = preferredColumnsPerEditor.get(helper.editor)!
+    return new Coord(targetLine, preferredColumns[i])
+  }
+}
+
+const skipByLineBackward = skipByLine(Backward)
+const skipByLineForward = skipByLine(Forward)
+
+function moveVertical(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
   let preferredColumns = preferredColumnsPerEditor.get(editor)
+  const selectionHelper = SelectionHelper.for(editor, state)
 
   if (preferredColumns === undefined)
     preferredColumnsPerEditor.set(editor, preferredColumns = [])
 
-  let revealLine = undefined as number | undefined,
-      revealColumn = 0,
-      revealOffset = 0
-
-  if (preferredColumns.length !== selections.length) {
+  if (preferredColumns.length !== editor.selections.length) {
     preferredColumns.length = 0
+    for (let i = 0; i < editor.selections.length; i++) {
+      const column = selectionHelper.activeCoord(editor.selections[i]).character
 
-    for (let i = 0; i < selections.length; i++) {
-      preferredColumns.push(selections[i].active.column)
+      preferredColumns.push(column)
     }
   }
 
-  // Replace selections.
-  for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i]
-    const { active } = selection
-    const targetLine = selection.activeLine + diff
-
-    if (targetLine < 0) {
-      active.toDocumentFirstCharacter()
-    } else if (targetLine > lastLine) {
-      active.toDocumentLastCharacter()
-    } else {
-      active.update(targetLine, preferredColumns[i])
-    }
-
-    if (anchor !== Anchor.Extend)
-      selection.collapseToActive()
-
-    // Forward (going down): equivalent to active.isBefore(revealPosition).
-    // Backward (going up) : equivalent to active.isAfter(revealPosition).
-    if (revealLine === undefined || active.offset * direction < revealOffset * direction) {
-      revealLine = active.line
-      revealColumn = active.column
-      revealOffset = active.offset
-    }
-  }
-
-  state.selectionSet.commit(editor)
-
-  const revealPosition = new vscode.Position(revealLine!, revealColumn)
-
-  editor.revealRange(new vscode.Range(revealPosition, revealPosition))
+  const skip = direction === Forward ? skipByLineForward : skipByLineBackward
+  selectionHelper.moveEach(MoveMode.To, skip, selectCurrent, extend)
+  revealActiveTowards(direction, editor)
 }
 
 // Move/extend left/down/up/right
-registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, state) =>     moveLeft(state, editor,           Anchor.InheritActive))
-registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, state) =>     moveLeft(state, editor,           Anchor.Extend))
-registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, state) =>    moveRight(state, editor,           Anchor.InheritActive))
-registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, state) =>    moveRight(state, editor,           Anchor.Extend))
-registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, state) => moveVertical(state, editor, Backward, Anchor.InheritActive))
-registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, state) => moveVertical(state, editor, Backward, Anchor.Extend))
-registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, state) => moveVertical(state, editor,  Forward, Anchor.InheritActive))
-registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, state) => moveVertical(state, editor,  Forward, Anchor.Extend))
+registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor, Backward, DoNotExtend))
+registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor, Backward,      Extend))
+registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor,  Forward, DoNotExtend))
+registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor,  Forward,      Extend))
+registerCommand(Command.up         , CommandFlags.ChangeSelections, (editor, state) =>   moveVertical(state, editor, Backward, DoNotExtend))
+registerCommand(Command.upExtend   , CommandFlags.ChangeSelections, (editor, state) =>   moveVertical(state, editor, Backward,      Extend))
+registerCommand(Command.down       , CommandFlags.ChangeSelections, (editor, state) =>   moveVertical(state, editor,  Forward, DoNotExtend))
+registerCommand(Command.downExtend , CommandFlags.ChangeSelections, (editor, state) =>   moveVertical(state, editor,  Forward,      Extend))
 
 
 // Move up/down (ctrl-[bfud])

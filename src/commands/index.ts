@@ -60,6 +60,7 @@ export class CommandState<Input extends InputKind = any> {
     readonly currentCount: number,
     readonly currentRegister: Register | undefined,
     readonly input: InputTypeMap[Input],
+    readonly allowEmptySelections: boolean,
   ) {}
 }
 
@@ -162,7 +163,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     if (this.input !== InputKind.None && input === undefined)
       return
 
-    const commandState = new CommandState<Input>(selectionSet, state.currentCount, state.currentRegister, input as any)
+    const commandState = new CommandState<Input>(selectionSet, state.currentCount, state.currentRegister, input as any, state.allowEmptySelections)
 
     if (!(flags & CommandFlags.IgnoreInHistory))
       history.addCommand(this, commandState)

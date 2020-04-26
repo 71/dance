@@ -4,69 +4,62 @@ import * as vscode from 'vscode'
 import { CommandState, registerCommand, Command, CommandFlags, InputKind } from '.'
 import { CharSet } from '../extension'
 import { Direction, Anchor, Backward, Forward, ExtendBehavior, LimitToCurrentLine, DoNotExtend, Extend, Position, Cursor } from '../utils/selectionSet'
-
+import { MoveMode, SkipFunc, SelectFunc, SelectionHelper, Coord } from '../utils/selectionHelper'
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
 // ===============================================================================================
+const noSkip: SkipFunc = from => from
 
-function selectTo({ selectionSet, repetitions, input: key }: CommandState, direction: Direction, anchor: Anchor, includeMatch: boolean) {
-  selectionSet.updateEachPosition(anchor, active => {
-    const document = active.document,
-          searchOffset = direction
+const selectToNextCharacter: (direction: Direction) => SelectFunc = (direction) => (from, helper) => {
+  const key = helper.state.input as string
+  const active = from
+  const searchOffset = direction === Backward ? -2 : 1
 
-    let line = active.line,
-        column = active.column + searchOffset as number | undefined
+  let line = active.line
+  let character = active.character + searchOffset as number | undefined
 
-    for (let i = repetitions; i > 0; i--) {
-      for (;;) {
-        const text = document.lineAt(line).text
-        const idx = direction === Backward ? text.lastIndexOf(key, column) : text.indexOf(key, column)
+  for (let i = helper.state.repetitions; i > 0; i--) {
+    for (;;) {
+      const text = helper.editor.document.lineAt(line).text
+      const idx = direction === Backward ? text.lastIndexOf(key, character) : text.indexOf(key, character)
 
-        if (idx !== -1) {
-          column = idx + searchOffset
+      if (idx !== -1) {
+        character = idx + searchOffset
 
-          break
-        }
-
-        // No match on this line, let's keep going.
-        const isDocumentEdge = direction === Backward
-          ? line-- === 0
-          : ++line === document.lineCount
-
-        if (isDocumentEdge)
-          // ... except if we've reached the start or end of the document.
-          return false
-
-        column = direction === Backward ? undefined : 0
+        break
       }
+
+      // No match on this line, let's keep going.
+      const isDocumentEdge = direction === Backward
+        ? line-- === 0
+        : ++line === helper.editor.document.lineCount
+
+      if (isDocumentEdge)
+        // ... except if we've reached the start or end of the document.
+        return from
+
+      character = direction === Backward ? undefined : 0
     }
+  }
+  return new Coord(line, character! - searchOffset)
+}
 
-    if (!includeMatch)
-      column! -= direction
-
-    active.update(line, column! - searchOffset)
-
-    return true
+function registerSelectTo(commandName: Command, moveMode: MoveMode, extend: ExtendBehavior, direction: Direction) {
+  const selectFunc = selectToNextCharacter(direction)
+  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, state) => {
+    SelectionHelper.for(editor, state).moveEach(moveMode, noSkip, selectFunc, extend)
   })
 }
 
-registerCommand(Command.selectToIncluded      , CommandFlags.ChangeSelections, InputKind.Key, undefined,
-                (_, state) => selectTo(state, Forward, Anchor.IncludeActive, true))
-registerCommand(Command.selectToIncludedExtend, CommandFlags.ChangeSelections, InputKind.Key, undefined,
-                (_, state) => selectTo(state, Forward, Anchor.Extend       , true))
-registerCommand(Command.selectToExcluded      , CommandFlags.ChangeSelections, InputKind.Key, undefined,
-                (_, state) => selectTo(state, Forward, Anchor.IncludeActive, false))
-registerCommand(Command.selectToExcludedExtend, CommandFlags.ChangeSelections, InputKind.Key, undefined,
-                (_, state) => selectTo(state, Forward, Anchor.Extend       , false))
+registerSelectTo(Command.selectToIncluded      ,  MoveMode.ToCoverChar, DoNotExtend, Forward)
+registerSelectTo(Command.selectToIncludedExtend,  MoveMode.ToCoverChar, Extend     , Forward)
+registerSelectTo(Command.selectToExcluded      ,  MoveMode.  UntilChar, DoNotExtend, Forward)
+registerSelectTo(Command.selectToExcludedExtend,  MoveMode.  UntilChar, Extend     , Forward)
 
-registerCommand(Command.selectToIncludedBackwards      , CommandFlags.ChangeSelections, InputKind.Key, undefined,
-                (_, state) => selectTo(state, Backward, Anchor.IncludeActive, true))
-registerCommand(Command.selectToIncludedExtendBackwards, CommandFlags.ChangeSelections, InputKind.Key, undefined,
-                (_, state) => selectTo(state, Backward, Anchor.Extend       , true))
-registerCommand(Command.selectToExcludedBackwards      , CommandFlags.ChangeSelections, InputKind.Key, undefined,
-                (_, state) => selectTo(state, Backward, Anchor.IncludeActive, false))
-registerCommand(Command.selectToExcludedExtendBackwards, CommandFlags.ChangeSelections, InputKind.Key, undefined,
-                (_, state) => selectTo(state, Backward, Anchor.Extend       , false))
+registerSelectTo(Command.selectToIncludedBackwards      ,  MoveMode.ToCoverChar, DoNotExtend, Backward)
+registerSelectTo(Command.selectToIncludedExtendBackwards,  MoveMode.ToCoverChar, Extend     , Backward)
+registerSelectTo(Command.selectToExcludedBackwards      ,  MoveMode.  UntilChar, DoNotExtend, Backward)
+registerSelectTo(Command.selectToExcludedExtendBackwards,  MoveMode.  UntilChar, Extend     , Backward)
 
 
 // Move / extend to word begin / end (w, b, e, W, B, E, alt+[wbe], alt+[WBE])
