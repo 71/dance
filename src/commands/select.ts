@@ -10,56 +10,62 @@ import { MoveMode, SkipFunc, SelectFunc, SelectionHelper, Coord } from '../utils
 // ===============================================================================================
 const noSkip: SkipFunc = from => from
 
-const selectToNextCharacter: (direction: Direction) => SelectFunc = (direction) => (from, helper) => {
-  const key = helper.state.input as string
-  const active = from
-  const searchOffset = direction === Backward ? -2 : 1
+function selectToNextCharacter(direction: Direction, include: boolean): SelectFunc {
+  return (from, helper) => {
+    const key = helper.state.input as string
+    const active = from
 
-  let line = active.line
-  let character = active.character + searchOffset as number | undefined
+    let line = active.line
+    let character: number | undefined = active.character
 
-  for (let i = helper.state.repetitions; i > 0; i--) {
-    for (;;) {
-      const text = helper.editor.document.lineAt(line).text
-      const idx = direction === Backward ? text.lastIndexOf(key, character) : text.indexOf(key, character)
+    for (let i = helper.state.repetitions; i > 0; i--) {
+      for (;;) {
+        const text = helper.editor.document.lineAt(line).text
+        if (character === undefined) character = text.length
+        const idx: number = direction === Backward ? text.lastIndexOf(key, character - 1) : text.indexOf(key, character + 1)
 
-      if (idx !== -1) {
-        character = idx + searchOffset
+        if (idx !== -1) {
+          character = idx
 
-        break
+          break
+        }
+
+        // No match on this line, let's keep going.
+        const isDocumentEdge = direction === Backward
+          ? line-- === 0
+          : ++line === helper.editor.document.lineCount
+
+        if (isDocumentEdge)
+          // ... except if we've reached the start or end of the document.
+          return from
+
+        character = direction === Backward ? undefined : 0
       }
-
-      // No match on this line, let's keep going.
-      const isDocumentEdge = direction === Backward
-        ? line-- === 0
-        : ++line === helper.editor.document.lineCount
-
-      if (isDocumentEdge)
-        // ... except if we've reached the start or end of the document.
-        return from
-
-      character = direction === Backward ? undefined : 0
+    }
+    if (include) {
+      return new Coord(line, character!)
+    } else {
+      return new Coord(line, character! + (direction === Backward ? 1 : -1))
     }
   }
-  return new Coord(line, character! - searchOffset)
 }
 
-function registerSelectTo(commandName: Command, moveMode: MoveMode, extend: ExtendBehavior, direction: Direction) {
-  const selectFunc = selectToNextCharacter(direction)
+function registerSelectTo(commandName: Command, include: boolean, extend: ExtendBehavior, direction: Direction) {
+  const selectFunc = selectToNextCharacter(direction, include)
   registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, state) => {
-    SelectionHelper.for(editor, state).moveEach(moveMode, noSkip, selectFunc, extend)
+    SelectionHelper.for(editor, state).moveEach(MoveMode.ToCoverChar, noSkip, selectFunc, extend)
   })
 }
 
-registerSelectTo(Command.selectToIncluded      ,  MoveMode.ToCoverChar, DoNotExtend, Forward)
-registerSelectTo(Command.selectToIncludedExtend,  MoveMode.ToCoverChar, Extend     , Forward)
-registerSelectTo(Command.selectToExcluded      ,  MoveMode.  UntilChar, DoNotExtend, Forward)
-registerSelectTo(Command.selectToExcludedExtend,  MoveMode.  UntilChar, Extend     , Forward)
+registerSelectTo(Command.selectToIncluded      ,  true, DoNotExtend, Forward)
+registerSelectTo(Command.selectToIncludedExtend,  true, Extend     , Forward)
+registerSelectTo(Command.selectToExcluded      , false, DoNotExtend, Forward)
+registerSelectTo(Command.selectToExcludedExtend, false, Extend     , Forward)
 
-registerSelectTo(Command.selectToIncludedBackwards      ,  MoveMode.ToCoverChar, DoNotExtend, Backward)
-registerSelectTo(Command.selectToIncludedExtendBackwards,  MoveMode.ToCoverChar, Extend     , Backward)
-registerSelectTo(Command.selectToExcludedBackwards      ,  MoveMode.  UntilChar, DoNotExtend, Backward)
-registerSelectTo(Command.selectToExcludedExtendBackwards,  MoveMode.  UntilChar, Extend     , Backward)
+registerSelectTo(Command.selectToIncludedBackwards      ,  true, DoNotExtend, Backward)
+registerSelectTo(Command.selectToIncludedExtendBackwards,  true, Extend     , Backward)
+registerSelectTo(Command.selectToExcludedBackwards      , false, DoNotExtend, Backward)
+registerSelectTo(Command.selectToExcludedExtendBackwards, false, Extend     , Backward)
 
 
 // Move / extend to word begin / end (w, b, e, W, B, E, alt+[wbe], alt+[WBE])
