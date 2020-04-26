@@ -3,6 +3,7 @@ import * as cp     from 'child_process'
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
+import { SelectionHelper } from '../utils/selectionHelper'
 
 function getShell() {
   let os: string
@@ -204,12 +205,16 @@ registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Tex
 
   displayErrors(outputs)
 
-  state.selectionSet.updateWithBuilder((builder, selection, i) => {
+  const selections = [] as vscode.Selection[]
+
+  for (let i = 0; i < outputs.length; i++) {
     const output = outputs[i]
 
     if (!output.err && output.val !== 'false')
-      builder.push(selection)
-  })
+      selections.push(editor.selections[i])
+  }
+
+  editor.selections = selections
 })
 
 registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, inputBoxOptions, async (editor, state) => {
@@ -225,10 +230,10 @@ registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBox
     return
 
   await editor.edit(builder => {
-    const selections = state.selectionSet.selections
+    const selections = editor.selections
 
     for (let i = 0; i < outputs.length; i++)
-      builder.replace(selections[i].asSelection(), outputs[i].val!)
+      builder.replace(selections[i], outputs[i].val!)
   }, undoStops)
 })
 
@@ -238,10 +243,27 @@ registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxO
   if (displayErrors(outputs))
     return
 
+  const selections = editor.selections,
+        selectionLengths = [] as number[],
+        selectionHelper = SelectionHelper.for(editor, state)
+
   await editor.edit(builder => {
-    for (let i = 0; i < outputs.length; i++)
-      builder.insert(editor.selections[i].end, outputs[i].val!)
+    for (let i = 0; i < outputs.length; i++) {
+      const content = outputs[i].val!,
+            selection = selections[i]
+
+      builder.insert(selection.end, content)
+
+      selectionLengths.push(selectionHelper.selectionLength(selection))
+    }
   }, undoStops)
+
+  // Restore selections that were extended automatically.
+  for (let i = 0; i < outputs.length; i++) {
+    selections[i] = selectionHelper.selectionFromLength(selections[i].anchor, selectionLengths[i])
+  }
+
+  editor.selections = selections
 })
 
 registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state, undoStops) => {
