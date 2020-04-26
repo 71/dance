@@ -203,7 +203,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     const insert = flags & CommandFlags.SwitchToInsertBefore ? 'before'
                  : flags & CommandFlags.SwitchToInsertAfter  ? 'after'
                  : undefined
-    selectionSet.commit(editor, insert)
+    // selectionSet.commit(editor, insert)
 
     state.ignoreSelectionChanges = false
   }

@@ -379,6 +379,7 @@ export class Extension implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(e => {
           this.cancellationTokenSource?.dispose()
 
+          /* Interferes with moving using SelectionHelper
           let hasMatchingSelectionSet = false
 
           for (const selectionSet of this.selectionSets) {
@@ -392,6 +393,7 @@ export class Extension implements vscode.Disposable {
           if (!hasMatchingSelectionSet) {
             this.selectionSets.push(SelectionSet.from(this, e.textEditor))
           }
+          */
 
           const mode = this.modeMap.get(e.textEditor.document)
 
