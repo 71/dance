@@ -64,8 +64,13 @@ export class CommandState<Input extends InputKind = any> {
   ) {}
 }
 
+export interface UndoStops {
+  readonly undoStopBefore: boolean
+  readonly undoStopAfter: boolean
+}
+
 export type Action<Input extends InputKind> =
-  (editor: vscode.TextEditor, state: CommandState<Input>, undoStops: { undoStopBefore: boolean, undoStopAfter: boolean }, ctx: Extension) => void | Thenable<void | undefined>
+  (editor: vscode.TextEditor, state: CommandState<Input>, undoStops: UndoStops, ctx: Extension) => void | Thenable<void | undefined>
 
 export const enum InputKind {
   None,

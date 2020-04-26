@@ -7,11 +7,11 @@ export class SelectionHelper {
     // TODO: Caching
     return new SelectionHelper(editor, state)
   }
+
+  readonly allowNonDirectional = !this.state.allowEmptySelections
+
   get allowEmpty(): boolean {
-    return this.state.allowEmptySelections
-  }
-  get allowNonDirectional(): boolean {
-    return !this.state.allowEmptySelections
+    return !this.allowNonDirectional
   }
 
   /**
@@ -114,6 +114,29 @@ export class SelectionHelper {
   offsetAt(coord: Coord): CoordOffset {
     // TODO: Caching
     return this.editor.document.offsetAt(coord)
+  }
+
+  endLine(selection: vscode.Selection) {
+    if (!this.allowEmpty && selection.end === selection.active && selection.end.character === 0)
+      return selection.end.line - 1
+    else
+      return selection.end.line
+  }
+
+  /**
+   * The selection length of the given selection, as defined by `offsetAt(active) - offsetAt(anchor)`.
+   *
+   * If the selection is reversed, the selection length is negative.
+   */
+  selectionLength(selection: vscode.Selection) {
+    if (selection.isSingleLine)
+      return selection.active.character - selection.anchor.character
+
+    return this.offsetAt(selection.active) - this.offsetAt(selection.anchor)
+  }
+
+  selectionFromLength(anchorCoord: Coord, length: number) {
+    return new vscode.Selection(anchorCoord, this.coordAt(this.offsetAt(anchorCoord) + length))
   }
 
   /** DEBUG ONLY method to visualize an offset. DO NOT leave calls in code. */
