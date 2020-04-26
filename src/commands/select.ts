@@ -421,9 +421,8 @@ registerCommand(Command.selectEnclosingExtendBackwards, CommandFlags.ChangeSelec
 // Other bindings (%)
 // ===============================================================================================
 
-registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  const selection = selectionSet.selections[0]
+registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, (editor) => {
+  const lastLine = editor.document.lineAt(editor.document.lineCount - 1)
 
-  selection.anchor.toDocumentFirstCharacter()
-  selection.active.toDocumentLastCharacter()
+  editor.selections = [new vscode.Selection(0, 0, lastLine.lineNumber, lastLine.text.length)]
 })

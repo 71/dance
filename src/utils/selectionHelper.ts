@@ -1,6 +1,30 @@
 import * as vscode from 'vscode'
 import { CommandState } from '../commands'
-import { ExtendBehavior } from './selectionSet'
+
+/**
+ * Direction of an operation.
+ */
+export const enum Direction {
+  /** Forward direction (`1`). */
+  Forward = 1,
+  /** Backward direction (`-1`). */
+  Backward = -1,
+}
+
+/**
+ * Whether or not an operation should expend a selection.
+ */
+export type ExtendBehavior = boolean
+
+/** Forward direction. */
+export const Forward = Direction.Forward
+/** Backward direction. */
+export const Backward = Direction.Backward
+
+/** Do extend. */
+export const Extend = true as ExtendBehavior
+/** Do not extend. */
+export const DoNotExtend = false as ExtendBehavior
 
 export class SelectionHelper {
   static for(editor: vscode.TextEditor, state: CommandState): SelectionHelper {

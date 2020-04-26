@@ -2,26 +2,64 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { Selection, Position, Direction, Forward, Backward } from '../utils/selectionSet'
+import { Forward, Direction, Backward } from '../utils/selectionHelper'
 
 
 // Swap cursors (;, a-;, a-:)
 // ===============================================================================================
 
-registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEach(selection => selection.anchor.inheritPosition(selection.active))
+registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (editor) => {
+  const selections = editor.selections,
+        len = selections.length
+
+  for (let i = 0; i < len; i++) {
+    const active = selections[i].active
+
+    selections[i] = new vscode.Selection(active, active)
+  }
+
+  editor.selections = selections
 })
 
-registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEach(selection => selection.anchor.swap(selection.active))
+registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, (editor) => {
+  const selections = editor.selections,
+        len = selections.length
+
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i]
+
+    selections[i] = new vscode.Selection(selection.active, selection.anchor)
+  }
+
+  editor.selections = selections
 })
 
-registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEach(selection => selection.isReversed ? selection.anchor.swap(selection.active) : undefined)
+registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, (editor) => {
+  const selections = editor.selections,
+        len = selections.length
+
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i]
+
+    if (selection.isReversed)
+      selections[i] = new vscode.Selection(selection.active, selection.anchor)
+  }
+
+  editor.selections = selections
 })
 
-registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEach(selection => selection.isReversed ? undefined : selection.anchor.swap(selection.active))
+registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, (editor) => {
+  const selections = editor.selections,
+        len = selections.length
+
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i]
+
+    if (!selection.isReversed)
+      selections[i] = new vscode.Selection(selection.active, selection.anchor)
+  }
+
+  editor.selections = selections
 })
 
 
@@ -32,8 +70,14 @@ registerCommand(Command.selectionsAlign, CommandFlags.Edit, (editor, _, undoStop
   const startChar = editor.selections.reduce((max, sel) => sel.start.character > max ? sel.start.character : max, 0)
 
   return editor.edit(builder => {
-    for (const selection of editor.selections)
+    const selections = editor.selections,
+          len = selections.length
+
+    for (let i = 0; i < len; i++) {
+      const selection = selections[i]
+
       builder.insert(selection.start, ' '.repeat(startChar - selection.start.character))
+    }
   }, undoStops).then(() => undefined)
 })
 
@@ -42,11 +86,14 @@ registerCommand(Command.selectionsAlignCopy, CommandFlags.Edit, (editor, state, 
   const sourceIndent = editor.document.lineAt(sourceSelection.start).firstNonWhitespaceCharacterIndex
 
   return editor.edit(builder => {
-    for (let i = 0; i < editor.selections.length; i++) {
+    const selections = editor.selections,
+          len = selections.length
+
+    for (let i = 0; i < len; i++) {
       if (i === sourceSelection.start.line)
         continue
 
-      const line = editor.document.lineAt(editor.selections[i].start)
+      const line = editor.document.lineAt(selections[i].start)
       const indent = line.firstNonWhitespaceCharacterIndex
 
       if (indent > sourceIndent)
@@ -54,87 +101,91 @@ registerCommand(Command.selectionsAlignCopy, CommandFlags.Edit, (editor, state, 
       else if (indent < sourceIndent)
         builder.insert(line.range.start, ' '.repeat(indent - sourceIndent))
     }
-  }, undoStops).then(() => undefined)
+  }, undoStops).then(() => void 0)
 })
 
 
 // Clear, filter (spc, a-spc, a-k, a-K)
 // ===============================================================================================
 
-registerCommand(Command.selectionsClear, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateWithBuilder((builder, selection, i) => {
-    if (i === 0)
-      builder.push(selection)
-  })
+registerCommand(Command.selectionsClear, CommandFlags.ChangeSelections, (editor) => {
+  editor.selections = [editor.selection]
 })
 
-registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  if (selectionSet.selections.length > 1) {
-    selectionSet.updateWithBuilder((builder, selection, i) => {
-      if (i !== 0)
-        builder.push(selection)
-    })
+registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, (editor) => {
+  const selections = editor.selections
+
+  if (selections.length > 1) {
+    selections.shift()
+    editor.selections = selections
   }
 })
 
-registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', (_, { input: regex, selectionSet }) => {
-  selectionSet.updateAll(selections => {
-    const newSelections = selections.filter(selection => regex.test(selection.getText()))
+registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', (editor, { input: regex }) => {
+  const document = editor.document,
+        newSelections = editor.selections.filter(selection => regex.test(document.getText(selection)))
 
-    if (newSelections.length === 0)
-      selections.splice(1)
-    else
-      selections.splice(0, selections.length, ...newSelections)
-  })
+  if (newSelections.length > 0)
+    editor.selections = newSelections
 })
 
-registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', (_, { input: regex, selectionSet }) => {
-  selectionSet.updateAll(selections => {
-    const newSelections = selections.filter(selection => !regex.test(selection.getText()))
+registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', (editor, { input: regex }) => {
+  const document = editor.document,
+        newSelections = editor.selections.filter(selection => !regex.test(document.getText(selection)))
 
-    if (newSelections.length === 0)
-      selections.splice(1)
-    else
-      selections.splice(0, selections.length, ...newSelections)
-  })
+  if (newSelections.length > 0)
+    editor.selections = newSelections
 })
 
 
 // Select within, split (s, S)
 // ===============================================================================================
 
-registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', (_, { input: regex, selectionSet }) => {
-  selectionSet.updateWithBuilder((builder, selection, _) => {
-    const selectionText = selection.getText(),
-          selectionStartOffset = selection.start.offset
+registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', (editor, { input: regex }) => {
+  const { document, selections } = editor,
+        len = selections.length,
+        newSelections = [] as vscode.Selection[]
+
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i],
+          selectionText = document.getText(selection),
+          selectionStartOffset = document.offsetAt(selection.start)
 
     let match: RegExpExecArray | null
 
     while (match = regex.exec(selectionText)) {
-      const anchor = Position.fromOffset(selection.set, selectionStartOffset + match.index)
-      const active = Position.fromOffset(selection.set, selectionStartOffset + match.index + match[0].length)
+      const anchor = document.positionAt(selectionStartOffset + match.index)
+      const active = document.positionAt(selectionStartOffset + match.index + match[0].length)
 
-      builder.push(Selection.fromFast(anchor, active))
+      newSelections.push(new vscode.Selection(anchor, active))
 
       if (match[0].length === 0)
         regex.lastIndex++
     }
-  })
+  }
+
+  if (newSelections.length > 0)
+    editor.selections = newSelections
 })
 
-registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', (editor, { input: regex, selectionSet }) => {
-  selectionSet.updateWithBuilder((builder, selection, _) => {
-    const selectionText = selection.getText(),
-          selectionStartOffset = selection.start.offset
+registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', (editor, { input: regex }) => {
+  const { document, selections } = editor,
+        len = selections.length,
+        newSelections = [] as vscode.Selection[]
+
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i],
+          selectionText = document.getText(selection),
+          selectionStartOffset = document.offsetAt(selection.start)
 
     let match: RegExpExecArray | null
     let index = 0
 
     while (match = regex.exec(selectionText)) {
-      const anchor = Position.fromOffset(selection.set, selectionStartOffset + index)
-      const active = Position.fromOffset(selection.set, selectionStartOffset + match.index)
+      const anchor = document.positionAt(selectionStartOffset + index)
+      const active = document.positionAt(selectionStartOffset + match.index)
 
-      builder.push(Selection.fromFast(anchor, active))
+      newSelections.push(new vscode.Selection(anchor, active))
 
       index = match.index + match[0].length
 
@@ -142,144 +193,111 @@ registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 
         regex.lastIndex++
     }
 
-    selection.active.inheritPosition(selection.end)
-    selection.anchor.updateOffset(selectionStartOffset + index)
+    newSelections.push(new vscode.Selection(document.positionAt(selectionStartOffset + index), selection.end))
+  }
 
-    builder.push(selection)
-  })
+  editor.selections = newSelections
 })
 
 
 // Split lines, select first & last, merge (a-s, a-S, a-_)
 // ===============================================================================================
 
-registerCommand(Command.splitLines, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateWithBuilder((builder, selection) => {
+registerCommand(Command.splitLines, CommandFlags.ChangeSelections, (editor) => {
+  const selections = editor.selections,
+        len = selections.length,
+        newSelections = [] as vscode.Selection[]
+
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i]
+
     if (selection.isSingleLine) {
-      builder.unshift(selection)
+      newSelections.unshift(selection)
 
       return
     }
 
     const startLine = selection.start.line,
-          startIndex = builder.length,
-          direction = selection.direction
+          startIndex = newSelections.length,
+          isReversed = selection.isReversed
 
     // Compute end line.
-    const endAnchor = selection.end.copy(),
-          endActive = selection.end.copy()
+    const endAnchor = selection.end.with(undefined, 0),
+          endActive = selection.end
 
-    endAnchor.toFirstCharacter()
-
-    const endSelection = Selection.fromFast(endAnchor, endActive)
+    const endSelection = new vscode.Selection(endAnchor, endActive)
 
     // Add start line.
-    selection.end.toLineBreak(startLine)
-
-    builder.push(selection)
+    newSelections.push(new vscode.Selection(selection.start, selection.start.with(undefined, Number.MAX_SAFE_INTEGER)))
 
     // Add intermediate lines.
     for (let line = startLine + 1; line < selection.end.line; line++) {
-      const anchor = selection.end.copy(),
-            active = selection.end.copy()
+      const anchor = new vscode.Position(line, 0),
+            active = new vscode.Position(line, Number.MAX_SAFE_INTEGER)
 
-      anchor.toFirstCharacter(line)
-      active.toLineBreak(line)
-
-      builder.unshift(Selection.fromFast(anchor, active))
+      newSelections.unshift(new vscode.Selection(anchor, active))
     }
 
     // Add end line.
-    builder.unshift(endSelection)
+    newSelections.unshift(endSelection)
 
     // Restore direction of each line.
-    for (let i = startIndex; i < builder.length; i++) {
-      builder[i].direction = direction
+    if (isReversed) {
+      for (let i = startIndex; i < newSelections.length; i++) {
+        newSelections[i] = new vscode.Selection(selections[i].active, selections[i].anchor)
+      }
     }
-  })
+  }
+
+  editor.selections = newSelections
 })
 
-registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateWithBuilder((builder, selection) => {
-    if (selection.length < 2) {
-      builder.push(selection)
-    } else {
-      const startSelection = selection,
-            endSelection = selection.copy()
+registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, (editor) => {
+  const { document, selections } = editor,
+        len = selections.length,
+        newSelections = [] as vscode.Selection[]
 
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i],
+          selectionStartOffset = document.offsetAt(selection.start),
+          selectionEndOffset = document.offsetAt(selection.end)
+
+    if (selectionEndOffset - selectionStartOffset < 2) {
+      newSelections.push(selection)
+    } else {
       // Select start character.
       {
-        const { start, end } = startSelection
+        const start = selection.start,
+              end = document.positionAt(document.offsetAt(start) + 1)
 
-        if (start.isLastCharacter()) {
-          end.inheritPosition(start)
-        } else {
-          end.updateOffset(start.offset + 1)
-        }
+        newSelections.push(new vscode.Selection(start, end))
       }
 
       // Select end character.
       {
-        const { start, end } = endSelection
+        const end = selection.end,
+              start = document.positionAt(document.offsetAt(end) - 1)
 
-        if (end.isFirstCharacter()) {
-          start.inheritPosition(end)
-        } else {
-          start.updateFast(end.offset - 1, end.line, end.column - 1)
-        }
-      }
-
-      builder.push(startSelection, endSelection)
-    }
-  })
-})
-
-registerCommand(Command.selectionsMerge, CommandFlags.ChangeSelections, (_, { selectionSet: selections }) => {
-  selections.updateAll(selections => {
-    // VS Code automatically merges overlapping selections, so here
-    // all we have to do is to merge non-overlapping contiguous selections
-    for (let i = 0, len = selections.length; i < len; i++) {
-      const refSel = selections[i]
-      const refLine = refSel.start.textLine()
-
-      if (refSel.end.column !== refLine.range.end.character)
-        // Not at the end of the line? We don't care.
-        continue
-
-      for (let j = 0; j < len; j++) {
-        if (i === j)
-          continue
-
-        const cmpSel = selections[j]
-
-        if (cmpSel.start.column !== 0)
-          // Not at the beginning of the line? We don't care.
-          continue
-
-        selections.splice(j, 1)
-        selections[i--].end.inheritPosition(cmpSel.end)
-        len--
-
-        break
+        newSelections.push(new vscode.Selection(start, end))
       }
     }
-  })
+  }
+
+  editor.selections = newSelections
 })
 
 
 // Copy selections (C, a-C)
 // ===============================================================================================
 
-function tryCopySelection(selection: Selection, newActiveLine: number) {
-  const document = selection.document
-
-  const active = selection.active.beforePosition(),
-        anchor = selection.anchor.beforePosition()
+function tryCopySelection(document: vscode.TextDocument, selection: vscode.Selection, newActiveLine: number) {
+  const active = selection.active,
+        anchor = selection.anchor
 
   if (active.line === anchor.line) {
     const newLine = document.lineAt(newActiveLine)
 
-    return newLine.range.end.character >= selection.end.column
+    return newLine.text.length >= selection.end.character
       ? new vscode.Selection(anchor.with(newActiveLine), active.with(newActiveLine))
       : undefined
   }
@@ -301,8 +319,8 @@ function tryCopySelection(selection: Selection, newActiveLine: number) {
 
   const newSelection = new vscode.Selection(anchor.with(newAnchorLine), active.with(newActiveLine))
   const hasOverlap =
-       !(selection.start.line < newSelection.start.line || (selection.end.line === newSelection.start.line && selection.end.column < newSelection.start.character))
-    && !(newSelection.start.line < selection.start.line || (newSelection.end.line === selection.start.line && newSelection.end.character < selection.start.column))
+       !(selection.start.line < newSelection.start.line || (selection.end.line === newSelection.start.line && selection.end.character < newSelection.start.character))
+    && !(newSelection.start.line < selection.start.line || (newSelection.end.line === selection.start.line && newSelection.end.character < selection.start.character))
 
   if (hasOverlap)
     return undefined
@@ -310,21 +328,29 @@ function tryCopySelection(selection: Selection, newActiveLine: number) {
   return newSelection
 }
 
-function copySelections(editor: vscode.TextEditor, { repetitions, selectionSet: selections }: CommandState, direction: Direction) {
-  selections.updateWithBuilder((builder, selection, _) => {
-    const lastLine = editor.document.lineCount
+function copySelections(editor: vscode.TextEditor, { repetitions }: CommandState, direction: Direction) {
+  const newSelections = [] as vscode.Selection[],
+        selections = editor.selections,
+        len = selections.length,
+        lastLine = editor.document.lineCount,
+        document = editor.document
+
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i]
 
     for (let i = 0, currentLine = selection.active.line + direction; i < repetitions && currentLine >= 0 && currentLine < lastLine;) {
-      const copiedSelection = tryCopySelection(selection, currentLine)
+      const copiedSelection = tryCopySelection(document, selection, currentLine)
 
       if (copiedSelection !== undefined) {
-        builder.push(Selection.fromSelection(selection.set, copiedSelection))
+        newSelections.push(copiedSelection)
         i++
       }
 
       currentLine += direction
     }
-  })
+  }
+
+  editor.selections = newSelections
 }
 
 registerCommand(Command.selectCopy         , CommandFlags.ChangeSelections, (editor, state) => copySelections(editor, state, Forward))
