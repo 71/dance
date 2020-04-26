@@ -159,8 +159,6 @@ export type SelectFunc = (from: Coord, helper: SelectionHelper, i: number) => Co
 export enum MoveMode {
   /** Move to cover the character at offset / after position. */
   ToCoverChar,
-  /** Move to touch, but not cover the character at offset / after position. */
-  UntilChar,
   /**
    * Move so that:
    * - If !allowEmpty, exactly the same as ToCoverChar.
