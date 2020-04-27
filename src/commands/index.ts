@@ -56,7 +56,7 @@ export class CommandState<Input extends InputKind = any> {
   }
 
   constructor(
-    readonly selectionSet: SelectionSet,
+    readonly extension: Extension,
     readonly currentCount: number,
     readonly currentRegister: Register | undefined,
     readonly input: InputTypeMap[Input],
@@ -98,7 +98,7 @@ export interface InputDescrMap {
   [InputKind.ListOneItem]: [string, string][]
   [InputKind.ListManyItems]: [string, string][]
   [InputKind.RegExp]: string
-  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editor: vscode.TextEditor, selections: SelectionSet, extension: Extension) => void }
+  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editor: vscode.TextEditor, extension: Extension) => void }
   [InputKind.Key]: undefined
   [InputKind.ListOneItemOrCount]: [string, string][]
 }
@@ -121,7 +121,6 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   async execute(state: Extension, editor: vscode.TextEditor) {
     const history = state.history.for(editor.document)
     const flags = this.flags
-    const selectionSet = state.getSelectionsForEditor(editor, !!'disableCheck')
     const cts = new vscode.CancellationTokenSource()
 
     if (state.cancellationTokenSource !== undefined)
@@ -151,7 +150,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         const inputDescr = this.inputDescr as InputDescrMap[InputKind.Text]
 
         if (inputDescr.setup !== undefined)
-          inputDescr.setup(editor, selectionSet, state)
+          inputDescr.setup(editor, state)
 
         input = await prompt(inputDescr, cts.token) as any
         break
@@ -168,7 +167,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     if (this.input !== InputKind.None && input === undefined)
       return
 
-    const commandState = new CommandState<Input>(selectionSet, state.currentCount, state.currentRegister, input as any, state.allowEmptySelections)
+    const commandState = new CommandState<Input>(state, state.currentCount, state.currentRegister, input as any, state.allowEmptySelections)
 
     if (!(flags & CommandFlags.IgnoreInHistory))
       history.addCommand(this, commandState)

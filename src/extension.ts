@@ -521,29 +521,6 @@ export class Extension implements vscode.Disposable {
       editor.selections = normalizedSelections
   }
 
-  get activeSelections() {
-    return this.getSelectionsForEditor(vscode.window.activeTextEditor!)
-  }
-
-  getSelectionsForEditor(editor: vscode.TextEditor, disableCheck = false) {
-    for (const selectionSet of this.selectionSets) {
-      if (selectionSet.forEditor(editor)) {
-        if (!disableCheck) {
-          assert(selectionSet.selections.length === editor.selections.length
-              && selectionSet.selections.every((selection, i) => selection.eq(editor.selections[i])))
-        }
-
-        return selectionSet
-      }
-    }
-
-    const selectionSet = SelectionSet.from(this, editor)
-
-    this.selectionSets.push(selectionSet)
-
-    return selectionSet
-  }
-
   dispose() {
     this.history.dispose()
     this.statusBarItem.dispose()
