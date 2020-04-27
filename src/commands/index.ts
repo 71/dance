@@ -184,6 +184,19 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
     if (flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter)) {
       await state.setMode(Mode.Insert)
+
+      const selections = editor.selections,
+            len = selections.length
+
+      for (let i = 0; i < len; i++) {
+        const position = flags & CommandFlags.SwitchToInsertBefore
+          ? selections[i].start
+          : selections[i].end
+
+        selections[i] = new vscode.Selection(position, position)
+      }
+
+      editor.selections = selections
     } else if (flags & CommandFlags.SwitchToNormal) {
       await state.setMode(Mode.Normal)
     }

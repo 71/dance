@@ -3,8 +3,13 @@ import * as vscode from 'vscode'
 import { registerCommand, setRemainingNormalCommands, Command, CommandFlags, Mode } from '.'
 
 
-registerCommand(Command.setInsert, CommandFlags.SwitchToInsertBefore, () => {})
-registerCommand(Command.setNormal, CommandFlags.SwitchToNormal, () => {})
+registerCommand(Command.setInsert, CommandFlags.SwitchToInsertBefore, () => {
+  // Nop.
+})
+
+registerCommand(Command.setNormal, CommandFlags.SwitchToNormal, () => {
+  // Nop.
+})
 
 registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsertBefore, (_, { repetitions }, __, ctx) => {
   let subscription = vscode.commands.registerCommand('type', (...args) => {
@@ -17,8 +22,6 @@ registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsertBefore, (_, { repe
   })
 })
 
-registerCommand(Command.tmpNormal, CommandFlags.SwitchToNormal, (_, state) => {
-  let count = state.currentCount || 1
-
-  setRemainingNormalCommands(count)
+registerCommand(Command.tmpNormal, CommandFlags.SwitchToNormal, (_, { repetitions }) => {
+  setRemainingNormalCommands(repetitions)
 })
