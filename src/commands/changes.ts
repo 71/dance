@@ -2,84 +2,44 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags } from '.'
-import { Selection, Position, EmptyPosition, SelectionSet } from '../utils/selectionSet'
 
 
-async function joinSelect(editor: vscode.TextEditor, selectionSet: SelectionSet, undoStops: { undoStopBefore: boolean, undoStopAfter: boolean }) {
-  // Select all line endings.
-  selectionSet.updateWithBuilder((builder, selection) => {
-    const { startLine, endLine, canBeEmpty } = selection
-
-    selection.anchor.toLineBreak(startLine)
-    selection.active.inheritPosition(selection.anchor)
-
-    builder.push(selection)
-
-    for (let line = startLine + 1; line < endLine; line++) {
-      const { text } = editor.document.lineAt(line)
-
-      if (canBeEmpty) {
-        const anchor = EmptyPosition.fromCoord(selectionSet, line, text.length),
-              active = EmptyPosition.fromCoord(selectionSet, line + 1, 0)
-
-        builder.push(Selection.fromFast(anchor, active))
-      } else {
-        const anchor = Position.fromCoord(selectionSet, line, text.length),
-              active = anchor.copy()
-
-        builder.push(Selection.fromFast(anchor, active))
-      }
-    }
-  })
-  selectionSet.commit(editor)
-
-  // Replace all line endings by spaces.
-  await editor.edit(builder => {
-    for (const selection of selectionSet.selections) {
-      builder.replace(selection.asRange(), ' ')
-    }
-  }, undoStops)
-}
-
-registerCommand(Command.join, CommandFlags.Edit, async (editor, { selectionSet }, undoStops) => {
-  // Save selections from start of file.
-  const selectionOffsets = [] as number[],
-        selections = selectionSet.selections
-
-  for (let i = 0; i < selections.length; i++) {
-    const selection = selections[i]
-
-    selectionOffsets.push(selection.start.offset, selection.length * selection.direction)
-  }
-
-  // Join lines.
-  await joinSelect(editor, selectionSet, undoStops)
-
-  // Restore selections.
-  selectionSet.selections.length = 0
-
-  for (let i = 0; i < selectionOffsets.length; i += 2) {
-    const start = Position.fromOffset(selectionSet, selectionOffsets[i]),
-          length = selectionOffsets[i + 1]
-
-    if (length < 0) {
-      const end = Position.fromOffset(selectionSet, start.offset - length),
-            anchor = end,
-            active = start
-
-      selectionSet.selections.push(Selection.fromFast(anchor, active))
-    } else {
-      const end = Position.fromOffset(selectionSet, start.offset + length),
-            anchor = start,
-            active = end
-
-      selectionSet.selections.push(Selection.fromFast(anchor, active))
-    }
-  }
+registerCommand(Command.join, CommandFlags.Edit, () => {
+  return vscode.commands.executeCommand('editor.action.joinLines').then(() => void 0)
 })
 
-registerCommand(Command.joinSelect, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, { selectionSet }, undoStops) => {
-  return joinSelect(editor, selectionSet, undoStops)
+registerCommand(Command.joinSelect, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, _, undoStops) => {
+  // Select all line endings.
+  const selections = editor.selections,
+        len = selections.length,
+        newSelections = [] as vscode.Selection[],
+        document = editor.document
+
+  for (let i = 0; i < len; i++) {
+    const selection = selections[i],
+          startLine = selection.start.line,
+          endLine = selection.end.line,
+          startAnchor = new vscode.Position(startLine, Number.MAX_SAFE_INTEGER),
+          startActive = new vscode.Position(startLine + 1, document.lineAt(startLine + 1).firstNonWhitespaceCharacterIndex)
+
+    newSelections.push(new vscode.Selection(startAnchor, startActive))
+
+    for (let line = startLine + 1; line < endLine; line++) {
+      const anchor = new vscode.Position(line, Number.MAX_SAFE_INTEGER),
+            active = new vscode.Position(line + 1, document.lineAt(line + 1).firstNonWhitespaceCharacterIndex)
+
+      newSelections.push(new vscode.Selection(anchor, active))
+    }
+  }
+
+  editor.selections = newSelections
+
+  // Replace all line endings by spaces.
+  return editor.edit(builder => {
+    for (const selection of editor.selections) {
+      builder.replace(selection, ' ')
+    }
+  }, undoStops).then(() => void 0)
 })
 
 
@@ -117,19 +77,19 @@ function indent(editor: vscode.TextEditor, ignoreEmpty: boolean) {
 
       builder.insert(new vscode.Position(i, 0), indent)
     }
-  }).then(() => undefined)
+  }).then(() => void 0)
 }
 
 registerCommand(Command.indent         , CommandFlags.Edit, editor => indent(editor, true))
 registerCommand(Command.indentWithEmpty, CommandFlags.Edit, editor => indent(editor, false))
 
-function deindent(editor: vscode.TextEditor, currentCount: number, further: boolean) {
+function deindent(editor: vscode.TextEditor, repetitions: number, further: boolean) {
   return editor.edit(builder => {
     const doc = editor.document
     const tabSize = editor.options.tabSize as number
 
     // Number of blank characters needed to deindent:
-    const needed = (currentCount || 1) * tabSize
+    const needed = repetitions * tabSize
 
     for (const i of getSelectionsLines(editor.selections)) {
       const line = doc.lineAt(i),
@@ -157,11 +117,11 @@ function deindent(editor: vscode.TextEditor, currentCount: number, further: bool
       if (j !== 0)
         builder.delete(line.range.with(undefined, line.range.start.translate(0, j)))
     }
-  }).then(() => undefined)
+  }).then(() => void 0)
 }
 
-registerCommand(Command.deindent       , CommandFlags.Edit, (editor, state) => deindent(editor, state.currentCount, false))
-registerCommand(Command.deindentFurther, CommandFlags.Edit, (editor, state) => deindent(editor, state.currentCount, true))
+registerCommand(Command.deindent       , CommandFlags.Edit, (editor, { repetitions }) => deindent(editor, repetitions, false))
+registerCommand(Command.deindentFurther, CommandFlags.Edit, (editor, { repetitions }) => deindent(editor, repetitions, true))
 
 
 registerCommand(Command.toLowerCase, CommandFlags.Edit, editor => editor.edit(builder => {
@@ -170,7 +130,7 @@ registerCommand(Command.toLowerCase, CommandFlags.Edit, editor => editor.edit(bu
   for (const selection of editor.selections) {
     builder.replace(selection, doc.getText(selection).toLocaleLowerCase())
   }
-}).then(() => undefined))
+}).then(() => void 0))
 
 registerCommand(Command.toUpperCase, CommandFlags.Edit, editor => editor.edit(builder => {
   const doc = editor.document
@@ -178,7 +138,7 @@ registerCommand(Command.toUpperCase, CommandFlags.Edit, editor => editor.edit(bu
   for (const selection of editor.selections) {
     builder.replace(selection, doc.getText(selection).toLocaleUpperCase())
   }
-}).then(() => undefined))
+}).then(() => void 0))
 
 registerCommand(Command.swapCase, CommandFlags.Edit, editor => editor.edit(builder => {
   const doc = editor.document
@@ -196,4 +156,4 @@ registerCommand(Command.swapCase, CommandFlags.Edit, editor => editor.edit(build
 
     builder.replace(selection, builtText)
   }
-}).then(() => undefined))
+}).then(() => void 0))
