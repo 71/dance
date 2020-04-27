@@ -534,7 +534,13 @@ export class Position {
    * Returns the `vscode.TextLine` of the line of the character.
    */
   textLine() {
-    return this.set.document.lineAt(this.line)
+    try {
+      return this.set.document.lineAt(this.line)
+    } catch (e) {
+      // Stub this out to avoid errors thrown during command prework.
+      console.error(e.message)
+      return this.set.document.lineAt(0)
+    }
   }
 
   /**

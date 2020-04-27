@@ -121,7 +121,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   async execute(state: Extension, editor: vscode.TextEditor) {
     const history = state.history.for(editor.document)
     const flags = this.flags
-    const selectionSet = state.getSelectionsForEditor(editor)
+    const selectionSet = state.getSelectionsForEditor(editor, !!'disableCheck')
     const cts = new vscode.CancellationTokenSource()
 
     if (state.cancellationTokenSource !== undefined)
