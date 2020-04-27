@@ -182,7 +182,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         result = await result
     }
 
-    if (flags & CommandFlags.SwitchToInsertBefore || flags & CommandFlags.SwitchToInsertAfter) {
+    if (flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter)) {
       await state.setMode(Mode.Insert)
     } else if (flags & CommandFlags.SwitchToNormal) {
       await state.setMode(Mode.Normal)
@@ -191,6 +191,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     if (flags & CommandFlags.ChangeSelections) {
       // Scroll to cursor if needed
       const position = editor.selection.active
+
       editor.revealRange(new vscode.Range(position, position))
     }
 
@@ -205,12 +206,8 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       remainingNormalCommands--
     }
 
-    const insert = flags & CommandFlags.SwitchToInsertBefore ? 'before'
-                 : flags & CommandFlags.SwitchToInsertAfter  ? 'after'
-                 : undefined
-    // selectionSet.commit(editor, insert)
-
     state.ignoreSelectionChanges = false
+    state.normalizeSelections(editor)
   }
 
   /**
@@ -265,7 +262,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
           await editor.edit(result, undoStops)
       }
 
-      if (descr.flags & CommandFlags.SwitchToInsertBefore)
+      if (descr.flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter))
         currentMode = Mode.Insert
       else if (descr.flags & CommandFlags.SwitchToNormal)
         currentMode = Mode.Normal

@@ -5,6 +5,7 @@ import { HistoryManager }      from './history'
 import { Register, Registers } from './registers'
 import { SelectionSet }        from './utils/selectionSet'
 import { assert } from './utils/assert'
+import { SavedSelection } from './utils/savedSelection'
 
 
 /** Name of the extension, used in commands and settings. */
@@ -184,6 +185,7 @@ export class Extension implements vscode.Disposable {
 
   readonly modeMap = new WeakMap<vscode.TextDocument, Mode>()
   readonly selectionSets = [] as SelectionSet[]
+  readonly savedSelections = new WeakMap<vscode.TextDocument, SavedSelection[]>()
 
   readonly registers = new Registers()
   readonly history   = new HistoryManager()
@@ -191,6 +193,7 @@ export class Extension implements vscode.Disposable {
   readonly insertMode = ModeConfiguration.insert()
   readonly normalMode = ModeConfiguration.normal()
 
+  private normalizeTimeoutToken: NodeJS.Timeout | undefined = undefined
   cancellationTokenSource?: vscode.CancellationTokenSource
 
   constructor() {
@@ -269,6 +272,8 @@ export class Extension implements vscode.Disposable {
 
       editor.options.lineNumbers = this.normalMode.lineNumbers
       editor.options.cursorStyle = this.normalMode.cursorStyle
+
+      this.normalizeSelections(editor)
     }
 
     if (vscode.window.activeTextEditor === editor)
@@ -314,10 +319,13 @@ export class Extension implements vscode.Disposable {
 
     const selection = editor.selection
 
-    if (selection.end.character === 0 && selection.end.line > 0 && !this.allowEmptySelections)
+    if (selection.end.character === 0 && selection.end.line > 0 && !this.allowEmptySelections) {
       editor.setDecorations(decorationType, [new vscode.Range(selection.start, selection.end.with(selection.end.line - 1, 0))])
-    else
+      editor.options.cursorStyle = vscode.TextEditorCursorStyle.LineThin
+    } else {
       editor.setDecorations(decorationType, [selection])
+      editor.options.cursorStyle = this.modeMap.get(editor.document) === Mode.Insert ? this.insertMode.cursorStyle : this.normalMode.cursorStyle
+    }
   }
 
   setEnabled(enabled: boolean, changeConfiguration: boolean) {
@@ -379,22 +387,6 @@ export class Extension implements vscode.Disposable {
         vscode.window.onDidChangeTextEditorSelection(e => {
           this.cancellationTokenSource?.dispose()
 
-          /* Interferes with moving using SelectionHelper
-          let hasMatchingSelectionSet = false
-
-          for (const selectionSet of this.selectionSets) {
-            if (selectionSet.forEditor(e.textEditor)) {
-              hasMatchingSelectionSet = true
-              selectionSet.updateAfterSelectionsChanged(e)
-              break
-            }
-          }
-
-          if (!hasMatchingSelectionSet) {
-            this.selectionSets.push(SelectionSet.from(this, e.textEditor))
-          }
-          */
-
           const mode = this.modeMap.get(e.textEditor.document)
 
           if (mode === Mode.Awaiting) {
@@ -405,6 +397,33 @@ export class Extension implements vscode.Disposable {
             this.setDecorations(e.textEditor, this.insertMode.decorationType)
           else
             this.setDecorations(e.textEditor, this.normalMode.decorationType)
+
+          if (this.normalizeTimeoutToken !== undefined) {
+            clearTimeout(this.normalizeTimeoutToken)
+            this.normalizeTimeoutToken = undefined
+          }
+
+          if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
+            this.normalizeTimeoutToken = setTimeout(() => {
+              this.normalizeSelections(e.textEditor)
+              this.normalizeTimeoutToken = undefined
+            }, 200)
+          } else {
+            this.normalizeSelections(e.textEditor)
+          }
+        }),
+
+        vscode.workspace.onDidChangeTextDocument(e => {
+          const savedSelections = this.savedSelections.get(e.document)
+
+          if (savedSelections !== undefined) {
+            for (let i = 0; i < savedSelections.length; i++) {
+              const savedSelection = savedSelections[i]
+
+              for (let j = 0; j < e.contentChanges.length; j++)
+                savedSelection.updateAfterDocumentChanged(e.contentChanges[j])
+            }
+          }
         }),
 
         vscode.workspace.onDidChangeConfiguration(e => {
@@ -413,27 +432,6 @@ export class Extension implements vscode.Disposable {
           for (const [section, handler] of this.configurationChangeHandlers.entries()) {
             if (e.affectsConfiguration(section))
               handler()
-          }
-        }),
-
-        vscode.window.onDidChangeVisibleTextEditors(e => {
-          for (const editor of e) {
-            if (!this.selectionSets.some(x => x.forEditor(editor)))
-              this.selectionSets.push(SelectionSet.from(this, editor))
-          }
-        }),
-
-        vscode.workspace.onDidCloseTextDocument(e => {
-          for (let i = 0; i < this.selectionSets.length; i++) {
-            if (this.selectionSets[i].document === e)
-              this.selectionSets.splice(i--, 1)
-          }
-        }),
-
-        vscode.workspace.onDidChangeTextDocument(e => {
-          for (const selectionSet of this.selectionSets) {
-            if (selectionSet.document === e.document)
-              selectionSet.updateAfterDocumentChanged(e)
           }
         }),
       )
@@ -448,6 +446,79 @@ export class Extension implements vscode.Disposable {
     }
 
     return this.enabled = enabled
+  }
+
+  /**
+   * Make all selections in the editor non-empty by selecting at least one character.
+   */
+  normalizeSelections(editor: vscode.TextEditor) {
+    if (this.allowEmptySelections || this.ignoreSelectionChanges)
+      return
+
+    if (this.modeMap.get(editor.document) !== Mode.Normal)
+      return
+
+    // Since this is called every time when selection changes, avoid allocations
+    // unless really needed and iterate manually without using helper functions.
+    let normalizedSelections: vscode.Selection[] | undefined = undefined
+
+    for (let i = 0; i < editor.selections.length; i++) {
+      const selection = editor.selections[i]
+      const isReversedOneCharacterSelection = selection.isSingleLine
+        ? (selection.anchor.character === selection.active.character + 1)
+        : (selection.anchor.character === 0 && selection.anchor.line === selection.active.line + 1 && editor.document.lineAt(selection.active).text.length === selection.active.character)
+
+      if (isReversedOneCharacterSelection) {
+        if (normalizedSelections === undefined) {
+          // Change needed. Allocate the new array and copy what we have so far.
+          normalizedSelections = editor.selections.slice(0, i)
+        }
+
+        normalizedSelections.push(new vscode.Selection(selection.active, selection.anchor))
+      } else if (selection.isEmpty) {
+        if (normalizedSelections === undefined) {
+          // Change needed. Allocate the new array and copy what we have so far.
+          normalizedSelections = editor.selections.slice(0, i)
+        }
+
+        const active = selection.active
+
+        if (active.character >= editor.document.lineAt(active.line).range.end.character) {
+          // Selection is at line end. Select line break.
+          if (active.line === editor.document.lineCount - 1) {
+            // Selection is at the very end of the document as well. Select the last character instead.
+            if (active.character === 0) {
+              if (active.line === 0) {
+                // There is no character in this document, so we give up on normalizing.
+                continue
+              } else {
+                normalizedSelections.push(new vscode.Selection(new vscode.Position(active.line - 1, Number.MAX_SAFE_INTEGER), active))
+              }
+            } else {
+              normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active))
+            }
+          } else {
+            normalizedSelections.push(new vscode.Selection(active, new vscode.Position(active.line + 1, 0)))
+          }
+        } else {
+          const offset = editor.document.offsetAt(selection.active)
+          const nextPos = editor.document.positionAt(offset + 1)
+
+          if (nextPos.isAfter(selection.active)) {
+            // Move anchor to select 1 character after, but keep the cursor position.
+            normalizedSelections.push(new vscode.Selection(active.translate(0, 1), active))
+          } else {
+            // Selection is at the very end of the document. Select the last character instead.
+            normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active))
+          }
+        }
+      } else if (normalizedSelections !== undefined) {
+        normalizedSelections.push(selection)
+      }
+    }
+
+    if (normalizedSelections !== undefined)
+      editor.selections = normalizedSelections
   }
 
   get activeSelections() {
@@ -548,6 +619,38 @@ export class Extension implements vscode.Disposable {
       return function(this: Uint32Array, charCode: number) {
         return this.indexOf(charCode) !== -1
       }.bind(charCodes)
+    }
+  }
+
+  /**
+   * Saves the given selection, tracking changes to the given document and updating
+   * the selection correspondingly over time.
+   */
+  saveSelection(document: vscode.TextDocument, selection: vscode.Selection) {
+    const savedSelection = new SavedSelection(document, selection),
+          savedSelections = this.savedSelections.get(document)
+
+    if (savedSelections === undefined)
+      this.savedSelections.set(document, [savedSelection])
+    else
+      savedSelections.push(savedSelection)
+
+    return savedSelection
+  }
+
+  /**
+   * Forgets the given saved selections.
+   */
+  forgetSelections(document: vscode.TextDocument, selections: readonly SavedSelection[]) {
+    const savedSelections = this.savedSelections.get(document)
+
+    if (savedSelections !== undefined) {
+      for (let i = 0; i < selections.length; i++) {
+        const index = savedSelections.indexOf(selections[i])
+
+        if (index !== -1)
+          savedSelections.splice(index, 1)
+      }
     }
   }
 }
