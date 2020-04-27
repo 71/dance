@@ -307,14 +307,14 @@ function tryCopySelection(document: vscode.TextDocument, selection: vscode.Selec
   if (newAnchorLine < 0 || newAnchorLine >= document.lineCount)
     return undefined
 
-  const newAnchorLineInfo = document.lineAt(newAnchorLine)
+  const newAnchorTextLine = document.lineAt(newAnchorLine)
 
-  if (anchor.character > newAnchorLineInfo.range.end.character)
+  if (anchor.character > newAnchorTextLine.text.length)
     return undefined
 
-  const newActiveLineInfo = document.lineAt(newActiveLine)
+  const newActiveTextLine = document.lineAt(newActiveLine)
 
-  if (active.character > newActiveLineInfo.range.end.character)
+  if (active.character > newActiveTextLine.text.length)
     return undefined
 
   const newSelection = new vscode.Selection(anchor.with(newAnchorLine), active.with(newActiveLine))
@@ -337,6 +337,8 @@ function copySelections(editor: vscode.TextEditor, { repetitions }: CommandState
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i]
+
+    newSelections.push(selection)
 
     for (let i = 0, currentLine = selection.active.line + direction; i < repetitions && currentLine >= 0 && currentLine < lastLine;) {
       const copiedSelection = tryCopySelection(document, selection, currentLine)
