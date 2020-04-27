@@ -340,7 +340,7 @@ function copySelections(editor: vscode.TextEditor, { repetitions }: CommandState
     for (let i = 0, currentLine = selection.active.line + direction; i < repetitions && currentLine >= 0 && currentLine < lineCount;) {
       const copiedSelection = tryCopySelection(document, selection, currentLine)
 
-      if (copiedSelection !== undefined) {
+      if (copiedSelection !== undefined && !selections.some(s => s.contains(copiedSelection))) {
         selections.push(copiedSelection)
         i++
       }
