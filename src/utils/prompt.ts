@@ -8,7 +8,7 @@ export function prompt(opts: vscode.InputBoxOptions, cancellationToken?: vscode.
 export function promptRegex(flags?: string) {
   return prompt({
     prompt: 'Selection RegExp',
-    validateInput(input) {
+    validateInput(input: string) {
       try {
         new RegExp(input)
 

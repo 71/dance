@@ -156,7 +156,7 @@ function displayErrors(errors: { err?: string }[]) {
 
 
 const getInputBoxOptions = (expectReplacement: boolean) => ({
-  validateInput(input) {
+  validateInput(input: string) {
     if (input.trim().length === 0)
       return 'The given command cannot be empty.'
 

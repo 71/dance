@@ -217,7 +217,7 @@ function registerSearchCommand(command: Command, backward: boolean, extend: bool
         targetRegister
     },
 
-    validateInput(input) {
+    validateInput(input: string) {
       if (input.length === 0)
         return 'RegExp cannot be empty.'
 

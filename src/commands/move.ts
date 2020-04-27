@@ -46,7 +46,8 @@ function moveLeft(editor: vscode.TextEditor, extend: ExtendBehavior, offset: num
   }
 
   editor.selections = selections
-  editor.revealRange(new vscode.Range(firstActive!, firstActive!))
+  if (firstActive !== undefined)
+    editor.revealRange(new vscode.Range(firstActive, firstActive))
 }
 
 function moveRight(editor: vscode.TextEditor, extend: ExtendBehavior, offset: number, allowEmptySelections: boolean) {
@@ -75,7 +76,8 @@ function moveRight(editor: vscode.TextEditor, extend: ExtendBehavior, offset: nu
   }
 
   editor.selections = selections
-  editor.revealRange(new vscode.Range(lastActive!, lastActive!))
+  if (lastActive !== undefined)
+    editor.revealRange(new vscode.Range(lastActive, lastActive))
 }
 
 function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
@@ -112,7 +114,8 @@ function moveUp(editor: vscode.TextEditor, expand: boolean, mult: number, allowE
   }
 
   editor.selections = selections
-  editor.revealRange(new vscode.Range(firstPosition!, firstPosition!))
+  if (firstPosition !== undefined)
+    editor.revealRange(new vscode.Range(firstPosition, firstPosition))
 }
 
 function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allowEmptySelections: boolean) {
@@ -150,7 +153,8 @@ function moveDown(editor: vscode.TextEditor, expand: boolean, mult: number, allo
   }
 
   editor.selections = selections
-  editor.revealRange(new vscode.Range(lastPosition!, lastPosition!))
+  if (lastPosition !== undefined)
+    editor.revealRange(new vscode.Range(lastPosition, lastPosition))
 }
 
 // Move/extend left/down/up/right
