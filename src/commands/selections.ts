@@ -329,22 +329,19 @@ function tryCopySelection(document: vscode.TextDocument, selection: vscode.Selec
 }
 
 function copySelections(editor: vscode.TextEditor, { repetitions }: CommandState, direction: Direction) {
-  const newSelections = [] as vscode.Selection[],
-        selections = editor.selections,
+  const selections = editor.selections,
         len = selections.length,
-        lastLine = editor.document.lineCount,
-        document = editor.document
+        document = editor.document,
+        lineCount = document.lineCount
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i]
 
-    newSelections.push(selection)
-
-    for (let i = 0, currentLine = selection.active.line + direction; i < repetitions && currentLine >= 0 && currentLine < lastLine;) {
+    for (let i = 0, currentLine = selection.active.line + direction; i < repetitions && currentLine >= 0 && currentLine < lineCount;) {
       const copiedSelection = tryCopySelection(document, selection, currentLine)
 
       if (copiedSelection !== undefined) {
-        newSelections.push(copiedSelection)
+        selections.push(copiedSelection)
         i++
       }
 
@@ -352,7 +349,7 @@ function copySelections(editor: vscode.TextEditor, { repetitions }: CommandState
     }
   }
 
-  editor.selections = newSelections
+  editor.selections = selections
 }
 
 registerCommand(Command.selectCopy         , CommandFlags.ChangeSelections, (editor, state) => copySelections(editor, state, Forward))
