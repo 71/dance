@@ -32,3 +32,44 @@ foo
 {0}foo
 bar
 |{0}baz
+
+//== 4
+hel{0}lo
+world
+  m|{0}y
+    friends,
+  and welcome
+
+//== 4 > 4.select
+//= dance.select.line
+{0}hello
+world
+  my
+|{0}    friends,
+  and welcome
+
+//== 4 > 4.extend
+//= dance.select.line.extend
+hel{0}lo
+world
+  my
+|{0}    friends,
+  and welcome
+
+//== 4 > 4.select.withcount
+//= dance.count.2
+//= dance.select.line
+hello
+world
+  my
+{0}    friends,
+|{0}  and welcome
+
+//== 4 > 4.extend.withcount
+//= dance.count.2
+//= dance.select.line.extend
+hel{0}lo
+world
+  my
+    friends,
+|{0}  and welcome

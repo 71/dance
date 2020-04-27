@@ -75,10 +75,6 @@ async function testCommands(editor: vscode.TextEditor, { initialContent, mutatio
 
   editor.selections = initialSelections
 
-  state
-    .getSelectionsForEditor(editor, true)
-    .updateAfterSelectionsChanged({ selections: editor.selections, textEditor: editor, kind: vscode.TextEditorSelectionChangeKind.Command })
-
   // For each mutation...
   let mutationIndex = 1
 
