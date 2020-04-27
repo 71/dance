@@ -228,52 +228,65 @@ registerCommand(Command.selectWordAltPreviousExtend, CommandFlags.ChangeSelectio
 // Line selecting key bindings (x, X, alt+[xX], home, end)
 // ===============================================================================================
 
-registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { selectionSet, currentCount }) => {
+registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+  const selections = editor.selections,
+        len = selections.length
+
   if (currentCount === 0 || currentCount === 1) {
-    selectionSet.updateEach(({ active, anchor, start, end }) => {
-      const isFullLine = start.line === end.line && start.isFirstCharacter() && end.isLineBreak()
+    for (let i = 0; i < len; i++) {
+      const selection = selections[i],
+            isFullLine = selection.start.line === selection.end.line - 1 && selection.start.character === 0 && selection.end.character === 0
 
-      if (isFullLine) {
-        anchor.toNextLineFirstCharacter()
-        active.toLineBreak(active.line + 1)
-      } else {
-        anchor.toFirstCharacter()
-        active.toLineBreak()
-      }
-    })
+      selections[i] = isFullLine
+        ? new vscode.Selection(selection.active.line, 0, selection.active.line + 1, 0)
+        : new vscode.Selection(selection.anchor.line, 0, selection.active.line + 1, 0)
+    }
   } else {
-    selectionSet.updateEach(({ active, anchor }) => {
-      const targetLine = Math.min(active.line + currentCount - 1, editor.document.lineCount - 1)
+    for (let i = 0; i < len; i++) {
+      const selection = selections[i],
+            targetLine = Math.min(selection.active.line + currentCount - 1, editor.document.lineCount - 1)
 
-      anchor.toFirstCharacter(targetLine)
-      active.toLineBreak(targetLine)
-    })
+      selections[i] = new vscode.Selection(targetLine, 0, targetLine + 1, 0)
+    }
   }
+
+  editor.selections = selections
 })
 
-registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor, { selectionSet: selections, currentCount }) => {
+registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor, { currentCount, allowEmptySelections }) => {
+  const selections = editor.selections,
+        len = selections.length
+
   if (currentCount === 0 || currentCount === 1) {
-    selections.updateEach(({ active, anchor }) => {
-      if (active.line === anchor.line) {
-        anchor.toFirstCharacter()
-      }
+    for (let i = 0; i < len; i++) {
+      const selection = selections[i],
+            isSameLine = selection.isSingleLine || (selection.active.character === 0 && selection.active.line === selection.anchor.line + 1)
 
-      if (active.isLineBreak())
-        active.toLineBreak(active.line + 1)
-      else
-        active.toLineBreak()
-    })
+      const anchor = isSameLine
+        ? selection.anchor.with(undefined, 0)
+        : selection.anchor
+      const active = selection.active.character === 0 && !allowEmptySelections && !selection.isReversed
+        ? selection.active.translate(1)
+        : new vscode.Position(selection.active.line + 1, 0)
+
+      selections[i] = new vscode.Selection(anchor, active)
+    }
   } else {
-    selections.updateEach(({ active, anchor }) => {
-      const targetLine = Math.min(active.line + currentCount - 1, editor.document.lineCount - 1)
+    for (let i = 0; i < len; i++) {
+      const selection = selections[i],
+            targetLine = Math.min(selection.active.line + currentCount - 1, editor.document.lineCount - 1),
+            isSameLine = selection.isSingleLine || (selection.active.character === 0 && selection.active.line === selection.anchor.line + 1)
 
-      if (active.line === anchor.line) {
-        anchor.toFirstCharacter()
-      }
+      const anchor = isSameLine
+        ? selection.anchor.with(undefined, 0)
+        : selection.anchor
+      const active = new vscode.Position(targetLine + 1, 0)
 
-      active.toLineBreak(targetLine)
-    })
+      selections[i] = new vscode.Selection(anchor, active)
+    }
   }
+
+  editor.selections = selections
 })
 
 registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
