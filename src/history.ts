@@ -41,7 +41,7 @@ export class DocumentHistory {
     const allChanges = this.changes.get(commandState)
 
     if (allChanges === undefined)
-      this.changes.set(commandState, changes)
+      this.changes.set(commandState, [...changes])
     else
       allChanges.push(...changes)
   }
