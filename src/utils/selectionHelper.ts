@@ -80,6 +80,40 @@ export class SelectionHelper {
     editor.selections = newSelections
   }
 
+  moveEachX(mode: MoveMode, moveFunc: MoveFunc, extend: ExtendBehavior): void {
+    const newSelections: vscode.Selection[] = []
+    const editor = this.editor
+    for (let i = 0; i < editor.selections.length; i++) {
+      const startAt = this.activeCoord(editor.selections[i])
+      console.log('START', this._visualizeCoord(startAt))
+      const moveResult = moveFunc(startAt, this, i)
+      if (moveResult === null) continue
+      // Avoid array destructuring which is not fully optimized yet in V8.
+      // See: http://bit.ly/array-destructuring-for-multi-value-returns
+      const skipTo = moveResult[0],
+            endAt = moveResult[1]
+      console.log(' SKIP', this._visualizeCoord(skipTo))
+      console.log(' END-', this._visualizeCoord(endAt))
+      if (extend) {
+        newSelections.push(this.extend(editor.selections[i], mode, endAt))
+      } else {
+        // TODO: Optimize
+        const skipCoordOffset = this.offsetAt(skipTo)
+        newSelections.push(this.extend(
+          new vscode.Selection(skipTo, this.allowEmpty
+            ? skipTo : this.coordAt(skipCoordOffset + 1)),
+          mode,
+          endAt))
+      }
+    }
+    if (newSelections.length === 0) {
+      console.warn('No selections remaining.')
+      // TODO: Provide fallback instead of cancelling the whole movement.
+    } else {
+      editor.selections = newSelections
+    }
+  }
+
   extend(oldSelection: vscode.Selection, mode: MoveMode, toCoord: Coord): vscode.Selection {
     const active = this.offsetAt(toCoord)
     const document = this.editor.document
@@ -178,8 +212,13 @@ export class SelectionHelper {
   /** DEBUG ONLY method to visualize a Coord. DO NOT leave calls in code. */
   _visualizeCoord(coord: Coord): string {
     const text = this.editor.document.lineAt(coord.line).text
-    const c = text[coord.character]
-    return coord.line + ':  ' + text.substr(0, coord.character) + `[${c}]` + text.substr(coord.character + 1)
+    let visualLine
+    if (coord.character === text.length) {
+      visualLine = text + '⏎'
+    } else {
+      visualLine = text.substr(0, coord.character) + `[${text[coord.character]}]` + text.substr(coord.character + 1)
+    }
+    return `L${coord.line}:  ${visualLine}`
   }
 
   private constructor( public readonly editor: vscode.TextEditor, public readonly state: CommandState) {}
@@ -202,6 +241,7 @@ export type CoordOffset = number
 
 export type SkipFunc = (from: Coord, helper: SelectionHelper, i: number) => Coord;
 export type SelectFunc = (from: Coord, helper: SelectionHelper, i: number) => Coord;
+export type MoveFunc = (from: Coord, helper: SelectionHelper, i: number) => [Coord, Coord] | null;
 
 export enum MoveMode {
   /** Move to cover the character at offset / after position. */
