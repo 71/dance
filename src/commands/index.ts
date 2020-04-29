@@ -41,6 +41,9 @@ export const enum CommandFlags {
 
   /** Changes the current selections. */
   ChangeSelections = 1 << 7,
+
+  /** Do not reset preferred columns for moving up and down. */
+  DoNotResetPreferredColumns = 1 << 8,
 }
 
 export class CommandState<Input extends InputKind = any> {
@@ -166,6 +169,10 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
     if (this.input !== InputKind.None && input === undefined)
       return
+
+    if (!(this.flags & CommandFlags.DoNotResetPreferredColumns)) {
+      preferredColumnsPerEditor.delete(editor)
+    }
 
     const commandState = new CommandState<Input>(state, state.currentCount, state.currentRegister, input as any, state.allowEmptySelections)
 
@@ -329,4 +336,5 @@ import './search'
 import './select'
 import './selections'
 import './selectObject'
-import './yankPaste'
+import './yankPaste'import { preferredColumnsPerEditor } from './move'
+
