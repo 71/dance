@@ -51,7 +51,7 @@ function moveToNextCharacter(direction: Direction, include: boolean): MoveFunc {
 function registerSelectTo(commandName: Command, include: boolean, extend: ExtendBehavior, direction: Direction) {
   const moveFunc = moveToNextCharacter(direction, include)
   registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, state) => {
-    SelectionHelper.for(editor, state).moveEachX(moveFunc, extend)
+    SelectionHelper.for(editor, state).moveEach(moveFunc, extend)
   })
 }
 
@@ -96,7 +96,7 @@ function selectByWord(editor: vscode.TextEditor, state: CommandState, extend: Ex
         isBlank       = ctx.getCharSetFunction(CharSet.Blank, document),
         isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
 
-  helper.moveEachX((from) => {
+  helper.moveEach((from) => {
     let maybeAnchor = undefined,
         active  = from
     for (let i = repetitions; i > 0; i--) {

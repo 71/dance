@@ -55,32 +55,7 @@ export class SelectionHelper {
     }
   }
 
-  moveEach(mode: MoveMode, skip: SkipFunc, select: SelectFunc, extend: ExtendBehavior): void {
-    const newSelections: vscode.Selection[] = []
-    const editor = this.editor
-    for (let i = 0; i < editor.selections.length; i++) {
-      const startAt = this.activeCoord(editor.selections[i])
-      console.log('START', this._visualizeCoord(startAt))
-      const skipTo = skip(startAt, this, i)
-      console.log(' SKIP', this._visualizeCoord(skipTo))
-      const endAt = select(skipTo, this, i)
-      console.log(' END-', this._visualizeCoord(endAt))
-      if (extend) {
-        newSelections.push(this.extendLegacy(editor.selections[i], mode, endAt))
-      } else {
-        // TODO: Optimize
-        const skipCoordOffset = this.offsetAt(skipTo)
-        newSelections.push(this.extendLegacy(
-          new vscode.Selection(skipTo, this.allowEmpty
-            ? skipTo : this.coordAt(skipCoordOffset + 1)),
-          mode,
-          endAt))
-      }
-    }
-    editor.selections = newSelections
-  }
-
-  moveEachX(moveFunc: MoveFunc, extend: ExtendBehavior): void {
+  moveEach(moveFunc: MoveFunc, extend: ExtendBehavior): void {
     const newSelections: vscode.Selection[] = []
     const editor = this.editor
     let acceptOverflow = true
@@ -90,7 +65,8 @@ export class SelectionHelper {
       const moveResult = moveFunc(startAt, this, i)
       if (typeof moveResult.maybeAnchor === 'object')
         console.log('ANCHOR?', this._visualizeCoord(moveResult.maybeAnchor))
-      if (moveResult.active) console.log('ACTIVE=', this._visualizeCoord(moveResult.active))
+      if (typeof moveResult.active === 'object')
+        console.log('ACTIVE=', this._visualizeCoord(moveResult.active))
       if (acceptOverflow && !moveResult.overflow) {
         newSelections.length = 0 // Clear all overflow selections so far.
         acceptOverflow = false
@@ -106,12 +82,19 @@ export class SelectionHelper {
 
   evolve(extend: boolean, oldSelection: vscode.Selection, moveResult: MoveResult) {
     if (!moveResult.maybeAnchor) {
-      if (moveResult.active)
+      if (typeof moveResult.active === 'object')
         return this.extend(oldSelection, moveResult.active)
       else
         return oldSelection
     }
     let active = moveResult.active!
+    if (active === 'atOrBefore') {
+      if (moveResult.maybeAnchor === 'oldActive')
+        throw new Error('{anchor: "oldActive", active: "atOrBefore"} is unsupported')
+      if (!this.allowNonDirectional)
+        return new vscode.Selection(extend ? oldSelection.anchor : moveResult.maybeAnchor, moveResult.maybeAnchor)
+      active = moveResult.maybeAnchor
+    }
     if (extend)
       return this.extend(oldSelection, active)
 
@@ -201,42 +184,6 @@ export class SelectionHelper {
     }
   }
 
-  extendLegacy(oldSelection: vscode.Selection, mode: MoveMode, toCoord: Coord): vscode.Selection {
-    const active = this.offsetAt(toCoord)
-    const document = this.editor.document
-    const oldAnchorOffset = document.offsetAt(oldSelection.anchor)
-    if (oldAnchorOffset <= active) {
-      const shouldCoverActive = (mode === MoveMode.ToCoverChar || (mode === MoveMode.To && !this.allowEmpty))
-      const offset = shouldCoverActive ? 1 : 0
-      if (oldSelection.isReversed && this.allowNonDirectional) {
-        // BEFORE: |abc>de ==> AFTER: ab<cd|e or ab<c|de (single char forward).
-        // Note that we need to decrement anchor to include the first char.
-        const newAnchor = document.positionAt(oldAnchorOffset - 1)
-        return new vscode.Selection(newAnchor, document.positionAt(active + offset))
-      } else {
-        // BEFORE:    |abc>de ==> AFTER: abc<d|e or abc<|de (empty).
-        // OR BEFORE: <abc|de ==> AFTER: <abcd|e.
-        return new vscode.Selection(oldSelection.anchor, document.positionAt(active + offset))
-      }
-    } else {
-      const shouldCoverActive = (mode === MoveMode.ToCoverChar || mode === MoveMode.To)
-      const offset = shouldCoverActive ? 0 : 1
-      if (!oldSelection.isReversed && this.allowNonDirectional) {
-        // BEFORE: ab<cd|e ==> AFTER: a|bc>de.
-        // Note that we need to increment anchor to include the last char.
-        const newAnchor = document.positionAt(oldAnchorOffset + 1)
-        return new vscode.Selection(newAnchor, document.positionAt(active + offset))
-      } else if (oldAnchorOffset === active + 1 && this.allowNonDirectional) {
-        // BEFORE: a|bc>de ==> AFTER: ab<c|de (FORCE single char forward).
-        return new vscode.Selection(document.positionAt(active + offset), oldSelection.anchor)
-      } else {
-        // BEFORE:    ab<cd|e ==> AFTER: a|b>cde.
-        // OR BEFORE: ab|cd>e ==> AFTER: a|bcd>e.
-        console.log(oldSelection.anchor, document.positionAt(active + offset))
-        return new vscode.Selection(oldSelection.anchor, document.positionAt(active + offset))
-      }
-    }
-  }
 
   /**
    * Get the line and character of an offset in the document.
@@ -309,7 +256,7 @@ export class SelectionHelper {
     return `L${coord.line}:  ${visualLine}`
   }
 
-  private constructor( public readonly editor: vscode.TextEditor, public readonly state: CommandState) {}
+  private constructor(public readonly editor: vscode.TextEditor, public readonly state: CommandState) {}
 }
 
 /**
@@ -327,21 +274,6 @@ export interface Coord extends vscode.Position {
 export const Coord = vscode.Position // To allow sugar like `new Coord(1, 2)`.
 export type CoordOffset = number
 
-export type SkipFunc = (from: Coord, helper: SelectionHelper, i: number) => Coord;
-export type SelectFunc = (from: Coord, helper: SelectionHelper, i: number) => Coord;
 export type MoveFunc = (from: Coord, helper: SelectionHelper, i: number) => MoveResult;
 
-export type MoveResult = {maybeAnchor: Coord | 'oldActive', active: Coord, overflow?: false} | {overflow: true, active: Coord | undefined, maybeAnchor: Coord | undefined}
-
-export enum MoveMode {
-  /** Move to cover the character at offset / after position. */
-  ToCoverChar,
-  /**
-   * Move so that:
-   * - If !allowEmpty, exactly the same as ToCoverChar.
-   * - If allowEmpty, active is exactly at position / offset. (The selection may
-   *   or may not cover the character at offset / after position, depending on
-   *   the direction of the selection.)
-   */
-  To,
-}
+export type MoveResult = {maybeAnchor: Coord | 'oldActive', active: Coord | 'atOrBefore', overflow?: false} | {overflow: true, active: Coord | undefined, maybeAnchor: Coord | undefined}

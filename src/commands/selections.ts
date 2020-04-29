@@ -2,23 +2,16 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { Forward, Direction, Backward } from '../utils/selectionHelper'
+import { Forward, Direction, Backward, SelectionHelper, DoNotExtend, MoveFunc } from '../utils/selectionHelper'
 
 
 // Swap cursors (;, a-;, a-:)
 // ===============================================================================================
 
-registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (editor) => {
-  const selections = editor.selections,
-        len = selections.length
+const reduceToActive: MoveFunc = from => ({ maybeAnchor: from, active: 'atOrBefore' })
 
-  for (let i = 0; i < len; i++) {
-    const active = selections[i].active
-
-    selections[i] = new vscode.Selection(active, active)
-  }
-
-  editor.selections = selections
+registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (editor, state) => {
+  SelectionHelper.for(editor, state).moveEach(reduceToActive, DoNotExtend)
 })
 
 registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, (editor) => {

@@ -2,8 +2,8 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandState } from '.'
-import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction, Anchor } from '../utils/selectionSet'
-import { MoveMode, SelectFunc, SkipFunc, SelectionHelper, Coord } from '../utils/selectionHelper'
+import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction } from '../utils/selectionSet'
+import { SelectionHelper, Coord, MoveFunc } from '../utils/selectionHelper'
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
@@ -11,20 +11,18 @@ import { MoveMode, SelectFunc, SkipFunc, SelectionHelper, Coord } from '../utils
 
 const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
-const selectCurrent: SelectFunc = (from) => from
-
-const skipByOffset: (direction: Direction) => SkipFunc = (direction) => (from, helper) => {
+const moveByOffset: (direction: Direction) => MoveFunc = (direction) => (from, helper) => {
   const toOffset = helper.offsetAt(from) + helper.state.repetitions * direction
-  return helper.coordAt(toOffset)
+  return { maybeAnchor: helper.coordAt(toOffset), active: 'atOrBefore' }
 }
 
-const skipByOffsetBackward: SkipFunc = skipByOffset(Backward)
-const skipByOffsetForward: SkipFunc = skipByOffset(Forward)
+const moveByOffsetBackward  = moveByOffset(Backward)
+const moveByOffsetForward = moveByOffset(Forward)
 
 function moveHorizontal(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
   preferredColumnsPerEditor.delete(editor)
-  const skip = direction === Forward ? skipByOffsetForward : skipByOffsetBackward
-  SelectionHelper.for(editor, state).moveEach(MoveMode.To, skip, selectCurrent, extend)
+  const moveFunc = direction === Forward ? moveByOffsetForward : moveByOffsetBackward
+  SelectionHelper.for(editor, state).moveEach(moveFunc, extend)
   revealActiveTowards(direction, editor)
 }
 
@@ -39,7 +37,7 @@ function revealActiveTowards(direction: Direction, editor: vscode.TextEditor) {
   editor.revealRange(new vscode.Range(revealPosition!, revealPosition!))
 }
 
-const skipByLine: (direction: Direction) => SkipFunc = (direction) => (from, helper, i) => {
+const moveByLine: (direction: Direction) => MoveFunc = (direction) => (from, helper, i) => {
   const targetLine = from.line + helper.state.repetitions * direction
   let actualLine = targetLine
   if (actualLine < 0)
@@ -47,21 +45,24 @@ const skipByLine: (direction: Direction) => SkipFunc = (direction) => (from, hel
   else if (targetLine > helper.editor.document.lineCount - 1)
     actualLine = helper.editor.document.lineCount
 
-  const preferredColumn = preferredColumnsPerEditor.get(helper.editor)![i]
-  if (preferredColumn <= 0)
-    return new Coord(actualLine, 0)
-
   const lineLen = helper.editor.document.lineAt(actualLine).text.length
-  if (lineLen === 0)
-    return new Coord(actualLine, 0) // Select the line break on an empty line.
-  if (preferredColumn >= lineLen)
-    return new Coord(actualLine, lineLen - 1)
+  if (lineLen === 0) {
+    // Select the line break on an empty line.
+    return { maybeAnchor: new Coord(actualLine, 0), active: 'atOrBefore' }
+  }
 
-  return new Coord(actualLine, preferredColumn)
+  const preferredColumn = preferredColumnsPerEditor.get(helper.editor)![i]
+  if (preferredColumn >= lineLen) {
+    if (helper.state.allowEmptySelections)
+      return { maybeAnchor: new Coord(actualLine, lineLen), active: 'atOrBefore' }
+    else
+      return { maybeAnchor: new Coord(actualLine, lineLen - 1), active: 'atOrBefore' }
+  }
+  return { maybeAnchor: new Coord(actualLine, preferredColumn), active: 'atOrBefore' }
 }
 
-const skipByLineBackward = skipByLine(Backward)
-const skipByLineForward = skipByLine(Forward)
+const moveByLineBackward = moveByLine(Backward)
+const moveByLineForward = moveByLine(Forward)
 
 function moveVertical(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
   let preferredColumns = preferredColumnsPerEditor.get(editor)
@@ -79,8 +80,8 @@ function moveVertical(state: CommandState, editor: vscode.TextEditor, direction:
     }
   }
 
-  const skip = direction === Forward ? skipByLineForward : skipByLineBackward
-  selectionHelper.moveEach(MoveMode.To, skip, selectCurrent, extend)
+  const moveFunc = direction === Forward ? moveByLineForward : moveByLineBackward
+  selectionHelper.moveEach(moveFunc, extend)
   revealActiveTowards(direction, editor)
 }
 
