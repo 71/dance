@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { CommandState, registerCommand, Command, CommandFlags, InputKind } from '.'
 import { CharSet, Extension } from '../extension'
 import { Direction, Anchor, Backward, Forward, ExtendBehavior, LimitToCurrentLine, DoNotExtend, Extend, Position, Cursor } from '../utils/selectionSet'
-import { SelectionHelper, Coord, MoveFunc } from '../utils/selectionHelper'
+import { SelectionHelper, Coord, MoveFunc, OldActive } from '../utils/selectionHelper'
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
 // ===============================================================================================
@@ -44,7 +44,7 @@ function moveToNextCharacter(direction: Direction, include: boolean): MoveFunc {
     if (!include) {
       character += (direction === Backward ? 1 : -1)
     }
-    return { maybeAnchor: 'oldActive', active: new Coord(line, character) }
+    return { maybeAnchor: OldActive, active: new Coord(line, character) }
   }
 }
 

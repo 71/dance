@@ -3,7 +3,7 @@ import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandState } from '.'
 import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction } from '../utils/selectionSet'
-import { SelectionHelper, Coord, MoveFunc } from '../utils/selectionHelper'
+import { SelectionHelper, Coord, MoveFunc, AtOrBefore } from '../utils/selectionHelper'
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
@@ -13,7 +13,7 @@ const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
 const moveByOffset: (direction: Direction) => MoveFunc = (direction) => (from, helper) => {
   const toOffset = helper.offsetAt(from) + helper.state.repetitions * direction
-  return { maybeAnchor: helper.coordAt(toOffset), active: 'atOrBefore' }
+  return { maybeAnchor: helper.coordAt(toOffset), active: AtOrBefore }
 }
 
 const moveByOffsetBackward  = moveByOffset(Backward)
@@ -48,17 +48,17 @@ const moveByLine: (direction: Direction) => MoveFunc = (direction) => (from, hel
   const lineLen = helper.editor.document.lineAt(actualLine).text.length
   if (lineLen === 0) {
     // Select the line break on an empty line.
-    return { maybeAnchor: new Coord(actualLine, 0), active: 'atOrBefore' }
+    return { maybeAnchor: new Coord(actualLine, 0), active: AtOrBefore }
   }
 
   const preferredColumn = preferredColumnsPerEditor.get(helper.editor)![i]
   if (preferredColumn >= lineLen) {
     if (helper.state.allowEmptySelections)
-      return { maybeAnchor: new Coord(actualLine, lineLen), active: 'atOrBefore' }
+      return { maybeAnchor: new Coord(actualLine, lineLen), active: AtOrBefore }
     else
-      return { maybeAnchor: new Coord(actualLine, lineLen - 1), active: 'atOrBefore' }
+      return { maybeAnchor: new Coord(actualLine, lineLen - 1), active: AtOrBefore }
   }
-  return { maybeAnchor: new Coord(actualLine, preferredColumn), active: 'atOrBefore' }
+  return { maybeAnchor: new Coord(actualLine, preferredColumn), active: AtOrBefore }
 }
 
 const moveByLineBackward = moveByLine(Backward)

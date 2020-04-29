@@ -88,9 +88,9 @@ export class SelectionHelper {
         return oldSelection
     }
     let active = moveResult.active!
-    if (active === 'atOrBefore') {
-      if (moveResult.maybeAnchor === 'oldActive')
-        throw new Error('{anchor: "oldActive", active: "atOrBefore"} is unsupported')
+    if (active === AtOrBefore) {
+      if (moveResult.maybeAnchor === OldActive)
+        throw new Error('{anchor: OldActive, active: AtOrBefore} is unsupported')
       if (!this.allowNonDirectional)
         return new vscode.Selection(extend ? oldSelection.anchor : moveResult.maybeAnchor, moveResult.maybeAnchor)
       active = moveResult.maybeAnchor
@@ -98,17 +98,17 @@ export class SelectionHelper {
     if (extend)
       return this.extend(oldSelection, active)
 
-    const oldActive = this.activeCoord(oldSelection)
+    const oldActiveCoord = this.activeCoord(oldSelection)
     let anchor = moveResult.maybeAnchor
-    if (anchor === 'oldActive') {
+    if (anchor === OldActive) {
       if (!this.allowNonDirectional) {
         let activePos = oldSelection.active.isBeforeOrEqual(active) ?
           this.coordAt(this.offsetAt(active) + 1) : active
         return new vscode.Selection(oldSelection.active, activePos)
       }
-      anchor = oldActive
+      anchor = oldActiveCoord
     }
-    return this.selectionBetween(anchor, active, oldActive)
+    return this.selectionBetween(anchor, active, oldActiveCoord)
   }
 
   /**
@@ -274,6 +274,8 @@ export interface Coord extends vscode.Position {
 export const Coord = vscode.Position // To allow sugar like `new Coord(1, 2)`.
 export type CoordOffset = number
 
+export const OldActive = 'oldActive'
+export const AtOrBefore = 'atOrBefore'
 export type MoveFunc = (from: Coord, helper: SelectionHelper, i: number) => MoveResult;
 
-export type MoveResult = {maybeAnchor: Coord | 'oldActive', active: Coord | 'atOrBefore', overflow?: false} | {overflow: true, active: Coord | undefined, maybeAnchor: Coord | undefined}
+export type MoveResult = {maybeAnchor: Coord | typeof OldActive, active: Coord | typeof AtOrBefore, overflow?: false} | {overflow: true, active: Coord | undefined, maybeAnchor: Coord | undefined}
