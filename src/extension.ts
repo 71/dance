@@ -3,9 +3,7 @@ import * as vscode from 'vscode'
 import { commands, Mode }      from './commands/index'
 import { HistoryManager }      from './history'
 import { Register, Registers } from './registers'
-import { SelectionSet }        from './utils/selectionSet'
-import { assert } from './utils/assert'
-import { SavedSelection } from './utils/savedSelection'
+import { SavedSelection }      from './utils/savedSelection'
 
 
 /** Name of the extension, used in commands and settings. */
@@ -184,7 +182,6 @@ export class Extension implements vscode.Disposable {
   readonly statusBarItem: vscode.StatusBarItem
 
   readonly modeMap = new WeakMap<vscode.TextDocument, Mode>()
-  readonly selectionSets = [] as SelectionSet[]
   readonly savedSelections = new WeakMap<vscode.TextDocument, SavedSelection[]>()
 
   readonly registers = new Registers()
@@ -365,8 +362,6 @@ export class Extension implements vscode.Disposable {
 
       if (changeConfiguration)
         vscode.workspace.getConfiguration(extensionName).update('enabled', false)
-
-      this.selectionSets.splice(0)
     } else {
       this.statusBarItem.show()
 
@@ -441,8 +436,6 @@ export class Extension implements vscode.Disposable {
 
       if (changeConfiguration)
         vscode.workspace.getConfiguration(extensionName).update('enabled', true)
-
-      this.selectionSets.push(...vscode.window.visibleTextEditors.map(x => SelectionSet.from(this, x)))
     }
 
     return this.enabled = enabled
