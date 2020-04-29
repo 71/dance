@@ -5,7 +5,6 @@ import { Extension } from '../extension'
 import { Register } from '../registers'
 import { SelectionSet, CollapseFlags } from '../utils/selectionSet'
 import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
-import { preferredColumnsPerEditor } from './move'
 
 export import Command = Command
 
@@ -305,6 +304,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
 export const commands: CommandDescriptor<any>[] = []
 
+export const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 export let remainingNormalCommands = 0
 
 export function registerCommand(command: Command, flags: CommandFlags, action: Action<InputKind.None>): void

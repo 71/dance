@@ -1,15 +1,13 @@
 // Movement: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags, CommandState } from '.'
+import { registerCommand, Command, CommandFlags, CommandState, preferredColumnsPerEditor } from '.'
 import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction } from '../utils/selectionSet'
 import { SelectionHelper, Coord, MoveFunc, AtOrBefore } from '../utils/selectionHelper'
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
 // ===============================================================================================
-
-export const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
 const moveByOffset: (direction: Direction) => MoveFunc = (direction) => (from, helper) => {
   const toOffset = helper.offsetAt(from) + helper.state.repetitions * direction
