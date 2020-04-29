@@ -43,7 +43,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.select.enclosing` | Select enclosing characters | Select enclosing characters. | `M` (`dance.mode == 'normal'`) |
 | `dance.expandLines` | Extend lines | Extend selections to contain full lines (including end-of-lines). | `Alt+X` (`dance.mode == 'normal'`) |
 | `dance.trimLines` | Trim lines | Trim selections to only contain full lines (not including last end-of-line). | `Shift+Alt+X` (`dance.mode == 'normal'`) |
-| `dance.trimSelections` | Trim selections | Trim whitespace at beginning and end of selections. | `_` (`dance.mode == 'normal'`) |
+| `dance.trimSelections` | Trim selections | Trim whitespace at beginning and end of selections. | `Shift+-` (`dance.mode == 'normal'`) |
 | `dance.select.word` | Select to next word start | Select the word and following whitespaces on the right of the end of each selection. | `W` (`dance.mode == 'normal'`) |
 | `dance.select.word.previous` | Select to previous word start | Select preceding whitespaces and the word on the left of the end of each selection. | `B` (`dance.mode == 'normal'`) |
 | `dance.select.word.end` | Select to next word end | Select preceding whitespaces and the word on the right of the end of each selection. | `E` (`dance.mode == 'normal'`) |

@@ -416,14 +416,14 @@ export const trimLines: ICommand & { readonly id: 'dance.trimLines' } = {
 /**
  * Trim whitespace at beginning and end of selections.
  *
- * Default key: `_` (`dance.mode == 'normal'`).
+ * Default key: `Shift+-` (`dance.mode == 'normal'`).
  */
 export const trimSelections: ICommand & { readonly id: 'dance.trimSelections' } = {
   id         : 'dance.trimSelections',
   title      : 'Trim selections',
   description: 'Trim whitespace at beginning and end of selections.',
   keybindings: [
-    { key: '_', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'Shift+-', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /**

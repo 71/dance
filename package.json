@@ -1320,7 +1320,7 @@
       },
       {
         "command": "dance.trimSelections",
-        "key": "_",
+        "key": "Shift+-",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

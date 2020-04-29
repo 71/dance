@@ -173,7 +173,7 @@ trimLines:
 trimSelections:
   title: Trim selections
   descr: Trim whitespace at beginning and end of selections.
-  keys: _ (normal)
+  keys: s-- (normal)
 
 
 # Select word (move.ts)
