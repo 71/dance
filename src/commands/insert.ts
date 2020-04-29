@@ -12,7 +12,7 @@ registerCommand(Command.insertAfter, CommandFlags.ChangeSelections | CommandFlag
   // Nop.
 })
 
-registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore, (editor) => {
+registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore, ({ editor }) => {
   const selections = editor.selections,
         len = selections.length
 
@@ -26,7 +26,7 @@ registerCommand(Command.insertLineStart, CommandFlags.ChangeSelections | Command
   editor.selections = selections
 })
 
-registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter, (editor) => {
+registerCommand(Command.insertLineEnd, CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter, ({ editor }) => {
   const selections = editor.selections,
         len = selections.length
 
@@ -50,27 +50,28 @@ function normalizeSelectionsForLineInsertion(editor: vscode.TextEditor) {
   })
 }
 
-registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, (editor, { allowEmptySelections }) => {
+registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, ({ editor }, { allowEmptySelections }) => {
   if (!allowEmptySelections)
     normalizeSelectionsForLineInsertion(editor)
 
   return vscode.commands.executeCommand('editor.action.insertLineBefore')
 })
 
-registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, (editor, { allowEmptySelections }) => {
+registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, ({ editor }, { allowEmptySelections }) => {
   if (!allowEmptySelections)
     normalizeSelectionsForLineInsertion(editor)
 
   return vscode.commands.executeCommand('editor.action.insertLineAfter')
 })
 
-registerCommand(Command.newLineAbove, CommandFlags.Edit, (editor, state, undoStops) => editor.edit(builder => {
+registerCommand(Command.newLineAbove, CommandFlags.Edit, (editorState, state, undoStops) => editorState.editor.edit(builder => {
+  const { editor } = editorState
   const newLine = editor.document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n'
   const processedLines = new Set<number>()
 
   const selections = editor.selections,
         len = selections.length,
-        selectionHelper = SelectionHelper.for(editor, state)
+        selectionHelper = SelectionHelper.for(editorState, state)
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i],
@@ -81,13 +82,14 @@ registerCommand(Command.newLineAbove, CommandFlags.Edit, (editor, state, undoSto
   }
 }, undoStops).then(() => void 0))
 
-registerCommand(Command.newLineBelow, CommandFlags.Edit, (editor, state, undoStops) => editor.edit(builder => {
+registerCommand(Command.newLineBelow, CommandFlags.Edit, (editorState, state, undoStops) => editorState.editor.edit(builder => {
+  const { editor } = editorState
   const newLine = editor.document.eol === vscode.EndOfLine.LF ? '\n' : '\r\n'
   const processedLines = new Set<number>()
 
   const selections = editor.selections,
         len = selections.length,
-        selectionHelper = SelectionHelper.for(editor, state)
+        selectionHelper = SelectionHelper.for(editorState, state)
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i],
@@ -98,15 +100,15 @@ registerCommand(Command.newLineBelow, CommandFlags.Edit, (editor, state, undoSto
   }
 }, undoStops).then(() => void 0))
 
-registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _, ctx) => {
-  const hist = ctx.history.for(editor.document)
+registerCommand(Command.repeatInsert, CommandFlags.Edit, async ({ editor }, state) => {
+  const editorState = state.extension.getEditorState(editor)
 
-  let switchToInsert: undefined | typeof hist.commands[0]
-  let i = hist.commands.length - 1
+  let switchToInsert: undefined | typeof editorState.recordedCommands[0]
+  let i = editorState.recordedCommands.length - 1
 
   for (; i >= 0; i--) {
-    if (hist.commands[i][0].flags & CommandFlags.SwitchToInsertBefore) {
-      switchToInsert = hist.commands[i]
+    if (editorState.recordedCommands[i].descriptor.flags & CommandFlags.SwitchToInsertBefore) {
+      switchToInsert = editorState.recordedCommands[i]
       break
     }
   }
@@ -115,11 +117,11 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _
     return
 
   let start = i
-  let switchToNormal: undefined | typeof hist.commands[0]
+  let switchToNormal: undefined | typeof editorState.recordedCommands[0]
 
-  for (i++; i < hist.commands.length; i++) {
-    if (hist.commands[i][0].flags & CommandFlags.SwitchToNormal) {
-      switchToNormal = hist.commands[i]
+  for (i++; i < editorState.recordedCommands.length; i++) {
+    if (editorState.recordedCommands[i].descriptor.flags & CommandFlags.SwitchToNormal) {
+      switchToNormal = editorState.recordedCommands[i]
       break
     }
   }
@@ -127,15 +129,15 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async (editor, state, _
   if (switchToNormal === undefined)
     return
 
-  await CommandDescriptor.execute(ctx, editor, ...hist.commands[start])
+  await CommandDescriptor.execute(editorState, editorState.recordedCommands[start])
 
   let end = i
 
   await editor.edit(builder => {
     for (let i = state.currentCount || 1; i > 0; i--) {
       for (let j = start; j <= end; j++) {
-        const state = hist.commands[j][1],
-              changes = hist.changes.get(state)
+        const commandState = editorState.recordedCommands[j],
+              changes = commandState.followingChanges
 
         if (changes === undefined)
           continue

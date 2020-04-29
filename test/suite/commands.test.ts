@@ -63,7 +63,8 @@ function stringifySelection(document: vscode.TextDocument, selection: vscode.Sel
 }
 
 async function testCommands(editor: vscode.TextEditor, { initialContent, mutations, allowEmpty }: testCommands.Options) {
-  state.allowEmptySelections = allowEmpty
+  // @ts-ignore
+  state._allowEmptySelections = allowEmpty
 
   const content = getPlainContent(initialContent)
   const document = editor.document

@@ -8,7 +8,7 @@ registerCommand(Command.join, CommandFlags.Edit, () => {
   return vscode.commands.executeCommand('editor.action.joinLines').then(() => void 0)
 })
 
-registerCommand(Command.joinSelect, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, _, undoStops) => {
+registerCommand(Command.joinSelect, CommandFlags.ChangeSelections | CommandFlags.Edit, ({ editor }, _, undoStops) => {
   // Select all line endings.
   const selections = editor.selections,
         len = selections.length,
@@ -80,8 +80,8 @@ function indent(editor: vscode.TextEditor, ignoreEmpty: boolean) {
   }).then(() => void 0)
 }
 
-registerCommand(Command.indent         , CommandFlags.Edit, editor => indent(editor, true))
-registerCommand(Command.indentWithEmpty, CommandFlags.Edit, editor => indent(editor, false))
+registerCommand(Command.indent         , CommandFlags.Edit, ({ editor }) => indent(editor, true))
+registerCommand(Command.indentWithEmpty, CommandFlags.Edit, ({ editor }) => indent(editor, false))
 
 function deindent(editor: vscode.TextEditor, repetitions: number, further: boolean) {
   return editor.edit(builder => {
@@ -120,11 +120,11 @@ function deindent(editor: vscode.TextEditor, repetitions: number, further: boole
   }).then(() => void 0)
 }
 
-registerCommand(Command.deindent       , CommandFlags.Edit, (editor, { repetitions }) => deindent(editor, repetitions, false))
-registerCommand(Command.deindentFurther, CommandFlags.Edit, (editor, { repetitions }) => deindent(editor, repetitions, true))
+registerCommand(Command.deindent       , CommandFlags.Edit, ({ editor }, { repetitions }) => deindent(editor, repetitions, false))
+registerCommand(Command.deindentFurther, CommandFlags.Edit, ({ editor }, { repetitions }) => deindent(editor, repetitions, true))
 
 
-registerCommand(Command.toLowerCase, CommandFlags.Edit, editor => editor.edit(builder => {
+registerCommand(Command.toLowerCase, CommandFlags.Edit, ({ editor }) => editor.edit(builder => {
   const doc = editor.document
 
   for (const selection of editor.selections) {
@@ -132,7 +132,7 @@ registerCommand(Command.toLowerCase, CommandFlags.Edit, editor => editor.edit(bu
   }
 }).then(() => void 0))
 
-registerCommand(Command.toUpperCase, CommandFlags.Edit, editor => editor.edit(builder => {
+registerCommand(Command.toUpperCase, CommandFlags.Edit, ({ editor }) => editor.edit(builder => {
   const doc = editor.document
 
   for (const selection of editor.selections) {
@@ -140,7 +140,7 @@ registerCommand(Command.toUpperCase, CommandFlags.Edit, editor => editor.edit(bu
   }
 }).then(() => void 0))
 
-registerCommand(Command.swapCase, CommandFlags.Edit, editor => editor.edit(builder => {
+registerCommand(Command.swapCase, CommandFlags.Edit, ({ editor }) => editor.edit(builder => {
   const doc = editor.document
 
   for (const selection of editor.selections) {

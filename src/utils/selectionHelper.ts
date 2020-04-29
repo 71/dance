@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { CommandState } from '../commands'
+import { EditorState } from '../state/editor'
 
 /**
  * Direction of an operation.
@@ -27,9 +28,9 @@ export const Extend = true as ExtendBehavior
 export const DoNotExtend = false as ExtendBehavior
 
 export class SelectionHelper {
-  static for(editor: vscode.TextEditor, state: CommandState): SelectionHelper {
+  static for(editorState: EditorState, state: CommandState): SelectionHelper {
     // TODO: Caching
-    return new SelectionHelper(editor, state)
+    return new SelectionHelper(editorState, state)
   }
 
   readonly allowNonDirectional = !this.state.allowEmptySelections
@@ -256,7 +257,11 @@ export class SelectionHelper {
     return `L${coord.line}:  ${visualLine}`
   }
 
-  private constructor(public readonly editor: vscode.TextEditor, public readonly state: CommandState) {}
+  readonly editor: vscode.TextEditor
+
+  private constructor(public readonly editorState: EditorState, public readonly state: CommandState) {
+    this.editor = editorState.editor
+  }
 }
 
 /**

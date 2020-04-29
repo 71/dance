@@ -2,10 +2,11 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
-import { Extension, CharSet } from '../extension'
-import { WritableRegister } from '../registers'
+import { EditorState }        from '../state/editor'
+import { Extension, CharSet } from '../state/extension'
+import { WritableRegister }   from '../registers'
+import { SavedSelection }     from '../utils/savedSelection'
 import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Selection, Position, SelectionSet } from '../utils/selectionSet'
-import { SavedSelection } from '../utils/savedSelection'
 
 
 function isMultilineRegExp(regex: string) {
@@ -203,21 +204,21 @@ function searchBackward(document: vscode.TextDocument, end: vscode.Position, reg
 function registerSearchCommand(command: Command, direction: Direction, extend: ExtendBehavior) {
   let initialSelections: readonly SavedSelection[],
       register: WritableRegister,
-      extension: Extension,
-      document: vscode.TextDocument
+      state: EditorState
 
   registerCommand(command, CommandFlags.ChangeSelections, InputKind.Text, {
     prompt: 'Search RegExp',
 
-    setup(editor, state) {
-      initialSelections = editor.selections.map(selection => state.saveSelection(editor.document, selection))
-      extension = state
-      document = editor.document
+    setup(editorState) {
+      const { documentState, editor, extension } = editorState
 
-      const targetRegister = state.currentRegister
+      initialSelections = editor.selections.map(selection => documentState.saveSelection(selection))
+      state = editorState
+
+      const targetRegister = extension.currentRegister
 
       if (targetRegister === undefined || !targetRegister.canWrite())
-        register = state.registers.slash
+        register = extension.registers.slash
       else
         register = targetRegister
     },
@@ -291,7 +292,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
       return undefined
     },
   }, () => {
-    extension.forgetSelections(document, initialSelections)
+    state.documentState.forgetSelections(initialSelections)
   })
 }
 
@@ -322,14 +323,14 @@ function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, (editor, _, __, state) => {
+registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, ({ editor, extension }) => {
   let text = escapeRegExp(editor.document.getText(editor.selection))
 
-  return setSearchSelection(text, editor, state)
+  return setSearchSelection(text, editor, extension)
 })
 
-registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, (editor, _, __, state) => {
-  const isWord = state.getCharSetFunction(CharSet.Word, editor.document)
+registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, ({ editor, extension }) => {
+  const isWord = extension.getCharSetFunction(CharSet.Word, editor.document)
 
   let text = escapeRegExp(editor.document.getText(editor.selection)),
       firstLine = editor.document.lineAt(editor.selection.start).text,
@@ -346,12 +347,12 @@ registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, (ed
     text = `${text}\\b`
   }
 
-  return setSearchSelection(text, editor, state)
+  return setSearchSelection(text, editor, extension)
 })
 
 function registerNextCommand(command: Command, direction: Direction, replace: boolean) {
-  registerCommand(command, CommandFlags.ChangeSelections, async (editor, { currentRegister }, _, state) => {
-    const regexStr = await (currentRegister ?? state.registers.slash).get(editor)
+  registerCommand(command, CommandFlags.ChangeSelections, async ({ editor, extension }, { currentRegister }) => {
+    const regexStr = await (currentRegister ?? extension.registers.slash).get(editor)
 
     if (regexStr === undefined || regexStr.length === 0)
       return

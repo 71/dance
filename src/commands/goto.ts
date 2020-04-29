@@ -196,7 +196,7 @@ function executeGotoLastLine({ selectionSet }: CommandState, extend: ExtendBehav
 }
 
 
-registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state) => {
+registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, ({ editor }, state) => {
   if (state.input === null) {
     let line = state.currentCount - 1
 
@@ -213,7 +213,7 @@ registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneIt
   }
 })
 
-registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, (editor, state) => {
+registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, ({ editor }, state) => {
   if (state.input === null) {
     let line = state.currentCount - 1
 

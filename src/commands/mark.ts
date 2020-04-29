@@ -6,8 +6,8 @@ import { Register } from '../registers'
 import { SavedSelection } from '../utils/savedSelection'
 
 
-registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, undefined, (_, { input: key }, __, ctx) => {
-  ctx.currentRegister = ctx.registers.get(key)
+registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, undefined, (_, { extension, input: key }) => {
+  extension.currentRegister = extension.registers.get(key)
 })
 
 
@@ -22,18 +22,18 @@ function marksForRegister(register: Register) {
   return map
 }
 
-registerCommand(Command.marksSaveSelections, CommandFlags.None, (editor, { currentRegister }, _, ctx) => {
-  const map = marksForRegister(currentRegister ?? ctx.registers.caret),
+registerCommand(Command.marksSaveSelections, CommandFlags.None, ({ editor, extension, documentState }, { currentRegister }) => {
+  const map = marksForRegister(currentRegister ?? extension.registers.caret),
         existingMarks = map.get(editor.document)
 
   if (existingMarks !== undefined)
-    ctx.forgetSelections(editor.document, existingMarks)
+    documentState.forgetSelections(existingMarks)
 
-  map.set(editor.document, editor.selections.map(selection => ctx.saveSelection(editor.document, selection)))
+  map.set(editor.document, editor.selections.map(selection => documentState.saveSelection(selection)))
 })
 
-registerCommand(Command.marksRestoreSelections, CommandFlags.ChangeSelections, (editor, { currentRegister }, _, ctx) => {
-  const map = marksForRegister(currentRegister ?? ctx.registers.caret),
+registerCommand(Command.marksRestoreSelections, CommandFlags.ChangeSelections, ({ editor, extension }, { currentRegister }) => {
+  const map = marksForRegister(currentRegister ?? extension.registers.caret),
         marks = map.get(editor.document)
 
   if (marks !== undefined)
@@ -128,8 +128,8 @@ function combineSelections(editor: vscode.TextEditor, from: vscode.Selection[], 
   editor.selections = selections
 }
 
-registerCommand(Command.marksCombineSelectionsFromCurrent, CommandFlags.ChangeSelections, InputKind.ListOneItem, combineOpts, (editor, { currentRegister, input }, _, ctx) => {
-  const map = marksForRegister(currentRegister ?? ctx.registers.caret),
+registerCommand(Command.marksCombineSelectionsFromCurrent, CommandFlags.ChangeSelections, InputKind.ListOneItem, combineOpts, ({ editor, extension }, { currentRegister, input }) => {
+  const map = marksForRegister(currentRegister ?? extension.registers.caret),
         marks = map.get(editor.document)
 
   if (marks === undefined)
@@ -138,8 +138,8 @@ registerCommand(Command.marksCombineSelectionsFromCurrent, CommandFlags.ChangeSe
   combineSelections(editor, editor.selections, marks.map(savedSelection => savedSelection.selection(editor.document)), input)
 })
 
-registerCommand(Command.marksCombineSelectionsFromRegister, CommandFlags.ChangeSelections, InputKind.ListOneItem, combineOpts, (editor, { currentRegister, input }, _, ctx) => {
-  const map = marksForRegister(currentRegister ?? ctx.registers.caret),
+registerCommand(Command.marksCombineSelectionsFromRegister, CommandFlags.ChangeSelections, InputKind.ListOneItem, combineOpts, ({ editor, extension }, { currentRegister, input }) => {
+  const map = marksForRegister(currentRegister ?? extension.registers.caret),
         marks = map.get(editor.document)
 
   if (marks === undefined)

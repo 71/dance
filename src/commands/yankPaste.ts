@@ -1,8 +1,9 @@
 import * as vscode from 'vscode'
 
-import { CommandState, registerCommand, Command, CommandFlags, InputKind, UndoStops } from '.'
-import { Extension } from '../extension'
+import { Command, CommandFlags, CommandState, InputKind, registerCommand, UndoStops } from '.'
+import { Extension }       from '../state/extension'
 import { SelectionHelper } from '../utils/selectionHelper'
+
 
 function getRegister(state: CommandState<any>, ctx: Extension) {
   return state.currentRegister || ctx.registers.dquote
@@ -18,8 +19,8 @@ function deleteSelections(editor: vscode.TextEditor, undoStops: UndoStops) {
   }, undoStops)
 }
 
-registerCommand(Command.deleteYank, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const reg = getRegister(state, ctx)
+registerCommand(Command.deleteYank, CommandFlags.Edit, async ({ editor, extension }, state, undoStops) => {
+  const reg = getRegister(state, extension)
 
   if (reg.canWrite())
     await reg.set(editor, editor.selections.map(editor.document.getText))
@@ -27,8 +28,8 @@ registerCommand(Command.deleteYank, CommandFlags.Edit, async (editor, state, und
   await deleteSelections(editor, undoStops)
 })
 
-registerCommand(Command.deleteInsertYank, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, async (editor, state, undoStops, ctx) => {
-  const reg = getRegister(state, ctx)
+registerCommand(Command.deleteInsertYank, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, async ({ editor, extension }, state, undoStops) => {
+  const reg = getRegister(state, extension)
 
   if (reg.canWrite())
     await reg.set(editor, editor.selections.map(editor.document.getText))
@@ -36,16 +37,16 @@ registerCommand(Command.deleteInsertYank, CommandFlags.Edit | CommandFlags.Switc
   await deleteSelections(editor, undoStops)
 })
 
-registerCommand(Command.deleteNoYank, CommandFlags.Edit, (editor, _, undoStops) => {
+registerCommand(Command.deleteNoYank, CommandFlags.Edit, ({ editor }, _, undoStops) => {
   return deleteSelections(editor, undoStops).then(() => undefined)
 })
 
-registerCommand(Command.deleteInsertNoYank, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, (editor, _, undoStops) => {
+registerCommand(Command.deleteInsertNoYank, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, ({ editor }, _, undoStops) => {
   return deleteSelections(editor, undoStops).then(() => undefined)
 })
 
-registerCommand(Command.yank, CommandFlags.None, (editor, state, _, ctx) => {
-  const reg = getRegister(state, ctx)
+registerCommand(Command.yank, CommandFlags.None, ({ editor, extension }, state) => {
+  const reg = getRegister(state, extension)
 
   if (reg.canWrite())
     return reg.set(editor, editor.selections.map(editor.document.getText))
@@ -77,11 +78,12 @@ async function getContentsToPaste(editor: vscode.TextEditor, state: CommandState
   return results
 }
 
-registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const selections = editor.selections,
-        selectionHelper = SelectionHelper.for(editor, state)
+registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editorState, state, undoStops) => {
+  const { editor, extension } = editorState,
+        selections = editor.selections,
+        selectionHelper = SelectionHelper.for(editorState, state)
 
-  const contents = await getContentsToPaste(editor, state, ctx)
+  const contents = await getContentsToPaste(editor, state, extension)
 
   if (contents === undefined)
     return
@@ -110,8 +112,8 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editor, state, und
   editor.selections = selections
 })
 
-registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const contents = await getContentsToPaste(editor, state, ctx)
+registerCommand(Command.pasteBefore, CommandFlags.Edit, async ({ editor, extension }, state, undoStops) => {
+  const contents = await getContentsToPaste(editor, state, extension)
 
   if (contents === undefined)
     return
@@ -129,14 +131,15 @@ registerCommand(Command.pasteBefore, CommandFlags.Edit, async (editor, state, un
   }, undoStops)
 })
 
-registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const contents = await getContentsToPaste(editor, state, ctx)
+registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editorState, state, undoStops) => {
+  const { editor, extension } = editorState,
+        contents = await getContentsToPaste(editor, state, extension)
 
   if (contents === undefined)
     return
 
   const reverseSelection = [] as boolean[],
-        selectionHelper = SelectionHelper.for(editor, state)
+        selectionHelper = SelectionHelper.for(editorState, state)
 
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
@@ -165,8 +168,8 @@ registerCommand(Command.pasteSelectAfter, CommandFlags.ChangeSelections | Comman
   editor.selections = editor.selections  // Force update.
 })
 
-registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const contents = await getContentsToPaste(editor, state, ctx)
+registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | CommandFlags.Edit, async ({ editor, extension }, state, undoStops) => {
+  const contents = await getContentsToPaste(editor, state, extension)
 
   if (contents === undefined)
     return
@@ -184,8 +187,8 @@ registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | Comma
   }, undoStops)
 })
 
-registerCommand(Command.pasteReplace, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
-  const contents = await getContentsToPaste(editor, state, ctx)
+registerCommand(Command.pasteReplace, CommandFlags.Edit, async ({ editor, extension }, state, undoStops) => {
+  const contents = await getContentsToPaste(editor, state, extension)
 
   if (contents === undefined)
     return
@@ -200,9 +203,9 @@ registerCommand(Command.pasteReplace, CommandFlags.Edit, async (editor, state, u
   }, undoStops)
 })
 
-registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async (editor, state, undoStops, ctx) => {
+registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async ({ editor, extension }, state, undoStops) => {
   const selections = editor.selections
-  const contents = await getRegister(state, ctx).get(editor)
+  const contents = await getRegister(state, extension).get(editor)
 
   if (contents === undefined || contents.length !== selections.length)
     return
@@ -214,7 +217,7 @@ registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async (editor, sta
 })
 
 
-registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, undefined, (editor, { repetitions, input: key }, undoStops) => {
+registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, undefined, ({ editor }, { repetitions, input: key }, undoStops) => {
   const string = key.repeat(repetitions)
 
   return editor.edit(builder => {

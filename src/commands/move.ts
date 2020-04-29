@@ -4,6 +4,7 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, CommandState, preferredColumnsPerEditor } from '.'
 import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction } from '../utils/selectionSet'
 import { SelectionHelper, Coord, MoveFunc, AtOrBefore } from '../utils/selectionHelper'
+import { EditorState } from '../state/editor'
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
@@ -17,10 +18,10 @@ const moveByOffset: (direction: Direction) => MoveFunc = (direction) => (from, h
 const moveByOffsetBackward  = moveByOffset(Backward)
 const moveByOffsetForward = moveByOffset(Forward)
 
-function moveHorizontal(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
+function moveHorizontal(state: CommandState, editorState: EditorState, direction: Direction, extend: ExtendBehavior) {
   const moveFunc = direction === Forward ? moveByOffsetForward : moveByOffsetBackward
-  SelectionHelper.for(editor, state).moveEach(moveFunc, extend)
-  revealActiveTowards(direction, editor)
+  SelectionHelper.for(editorState, state).moveEach(moveFunc, extend)
+  revealActiveTowards(direction, editorState.editor)
 }
 
 function revealActiveTowards(direction: Direction, editor: vscode.TextEditor) {
@@ -48,7 +49,7 @@ const moveByLine: (direction: Direction) => MoveFunc = (direction) => (from, hel
     return { maybeAnchor: new Coord(actualLine, 0), active: AtOrBefore }
   }
 
-  const preferredColumn = preferredColumnsPerEditor.get(helper.editor)![i]
+  const preferredColumn = helper.editorState.preferredColumns![i]
   if (preferredColumn >= lineLen) {
     if (helper.allowNonDirectional)
       return { maybeAnchor: new Coord(actualLine, lineLen - 1), active: AtOrBefore }
@@ -61,15 +62,11 @@ const moveByLine: (direction: Direction) => MoveFunc = (direction) => (from, hel
 const moveByLineBackward = moveByLine(Backward)
 const moveByLineForward = moveByLine(Forward)
 
-function moveVertical(state: CommandState, editor: vscode.TextEditor, direction: Direction, extend: ExtendBehavior) {
-  let preferredColumns = preferredColumnsPerEditor.get(editor)
-  const selectionHelper = SelectionHelper.for(editor, state)
+function moveVertical(state: CommandState, editorState: EditorState, direction: Direction, extend: ExtendBehavior) {
+  const { editor, preferredColumns } = editorState,
+        selectionHelper = SelectionHelper.for(editorState, state)
 
-  if (preferredColumns === undefined)
-    preferredColumnsPerEditor.set(editor, preferredColumns = [])
-
-  if (preferredColumns.length !== editor.selections.length) {
-    preferredColumns.length = 0
+  if (preferredColumns.length === 0) {
     for (let i = 0; i < editor.selections.length; i++) {
       const column = selectionHelper.activeCoord(editor.selections[i]).character
 
@@ -83,14 +80,14 @@ function moveVertical(state: CommandState, editor: vscode.TextEditor, direction:
 }
 
 // Move/extend left/down/up/right
-registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor, Backward, DoNotExtend))
-registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor, Backward,      Extend))
-registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor,  Forward, DoNotExtend))
-registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor,  Forward,      Extend))
-registerCommand(Command.up         , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editor, state) => moveVertical(state, editor, Backward, DoNotExtend))
-registerCommand(Command.upExtend   , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editor, state) => moveVertical(state, editor, Backward,      Extend))
-registerCommand(Command.down       , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editor, state) => moveVertical(state, editor,  Forward, DoNotExtend))
-registerCommand(Command.downExtend , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editor, state) => moveVertical(state, editor,  Forward,      Extend))
+registerCommand(Command.left       , CommandFlags.ChangeSelections, (editorState, state) => moveHorizontal(state, editorState, Backward, DoNotExtend))
+registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editorState, state) => moveHorizontal(state, editorState, Backward,      Extend))
+registerCommand(Command.right      , CommandFlags.ChangeSelections, (editorState, state) => moveHorizontal(state, editorState,  Forward, DoNotExtend))
+registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editorState, state) => moveHorizontal(state, editorState,  Forward,      Extend))
+registerCommand(Command.up         , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => moveVertical(state, editorState, Backward, DoNotExtend))
+registerCommand(Command.upExtend   , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => moveVertical(state, editorState, Backward,      Extend))
+registerCommand(Command.down       , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => moveVertical(state, editorState,  Forward, DoNotExtend))
+registerCommand(Command.downExtend , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => moveVertical(state, editorState,  Forward,      Extend))
 
 
 // Move up/down (ctrl-[bfud])
@@ -112,12 +109,12 @@ function getHeight(editor: vscode.TextEditor) {
   return visibleRange.end.line - visibleRange.start.line
 }
 
-registerCommand(Command.upPage            , CommandFlags.ChangeSelections, (editor, { repetitions }) => scrollBy(repetitions,   'up', DoNotExtend, getHeight(editor)))
-registerCommand(Command.upPageExtend      , CommandFlags.ChangeSelections, (editor, { repetitions }) => scrollBy(repetitions,   'up',      Extend, getHeight(editor)))
-registerCommand(Command.upHalfPage        , CommandFlags.ChangeSelections, (editor, { repetitions }) => scrollBy(repetitions,   'up', DoNotExtend, getHeight(editor) / 2 | 0))
-registerCommand(Command.upHalfPageExtend  , CommandFlags.ChangeSelections, (editor, { repetitions }) => scrollBy(repetitions,   'up',      Extend, getHeight(editor) / 2 | 0))
+registerCommand(Command.upPage            , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up', DoNotExtend, getHeight(editor)))
+registerCommand(Command.upPageExtend      , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up',      Extend, getHeight(editor)))
+registerCommand(Command.upHalfPage        , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up', DoNotExtend, getHeight(editor) / 2 | 0))
+registerCommand(Command.upHalfPageExtend  , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up',      Extend, getHeight(editor) / 2 | 0))
 
-registerCommand(Command.downPage          , CommandFlags.ChangeSelections, (editor, { repetitions }) => scrollBy(repetitions, 'down', DoNotExtend, getHeight(editor)))
-registerCommand(Command.downPageExtend    , CommandFlags.ChangeSelections, (editor, { repetitions }) => scrollBy(repetitions, 'down',      Extend, getHeight(editor)))
-registerCommand(Command.downHalfPage      , CommandFlags.ChangeSelections, (editor, { repetitions }) => scrollBy(repetitions, 'down', DoNotExtend, getHeight(editor) / 2 | 0))
-registerCommand(Command.downHalfPageExtend, CommandFlags.ChangeSelections, (editor, { repetitions }) => scrollBy(repetitions, 'down',      Extend, getHeight(editor) / 2 | 0))
+registerCommand(Command.downPage          , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down', DoNotExtend, getHeight(editor)))
+registerCommand(Command.downPageExtend    , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down',      Extend, getHeight(editor)))
+registerCommand(Command.downHalfPage      , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down', DoNotExtend, getHeight(editor) / 2 | 0))
+registerCommand(Command.downHalfPageExtend, CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down',      Extend, getHeight(editor) / 2 | 0))

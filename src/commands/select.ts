@@ -2,9 +2,11 @@
 import * as vscode from 'vscode'
 
 import { CommandState, registerCommand, Command, CommandFlags, InputKind } from '.'
-import { CharSet, Extension } from '../extension'
+import { CharSet, Extension } from '../state/extension'
 import { Direction, Anchor, Backward, Forward, ExtendBehavior, LimitToCurrentLine, DoNotExtend, Extend, Position, Cursor } from '../utils/selectionSet'
 import { SelectionHelper, Coord, MoveFunc, OldActive } from '../utils/selectionHelper'
+import { EditorState } from '../state/editor'
+
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
 // ===============================================================================================
@@ -50,8 +52,8 @@ function moveToNextCharacter(direction: Direction, include: boolean): MoveFunc {
 
 function registerSelectTo(commandName: Command, include: boolean, extend: ExtendBehavior, direction: Direction) {
   const moveFunc = moveToNextCharacter(direction, include)
-  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, state) => {
-    SelectionHelper.for(editor, state).moveEach(moveFunc, extend)
+  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editorState, state) => {
+    SelectionHelper.for(editorState, state).moveEach(moveFunc, extend)
   })
 }
 
@@ -88,13 +90,13 @@ function categorize(charCode: number, isBlank: (charCode: number) => boolean, is
   return isWord(charCode) ? 'word' : charCode === 0 || isBlank(charCode) ? 'blank' : 'punct'
 }
 
-function selectByWord(editor: vscode.TextEditor, state: CommandState, extend: ExtendBehavior, direction: Direction, end: boolean, wordCharset: CharSet, ctx: Extension) {
-  const helper = SelectionHelper.for(editor, state)
-  const { repetitions } = state
-  const document = editor.document
-  const isWord        = ctx.getCharSetFunction(wordCharset, document),
-        isBlank       = ctx.getCharSetFunction(CharSet.Blank, document),
-        isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
+function selectByWord(editorState: EditorState, state: CommandState, extend: ExtendBehavior, direction: Direction, end: boolean, wordCharset: CharSet) {
+  const helper = SelectionHelper.for(editorState, state)
+  const { extension, repetitions } = state
+  const document = editorState.editor.document
+  const isWord        = extension.getCharSetFunction(wordCharset, document),
+        isBlank       = extension.getCharSetFunction(CharSet.Blank, document),
+        isPunctuation = extension.getCharSetFunction(CharSet.Punctuation, document)
 
   helper.moveEach((from) => {
     let maybeAnchor = undefined,
@@ -158,35 +160,32 @@ function selectByWord(editor: vscode.TextEditor, state: CommandState, extend: Ex
 }
 
 
-registerCommand(Command.selectWord                 , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend,  Forward, false, CharSet.Word, ctx))
-registerCommand(Command.selectWordExtend           , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend,  Forward, false, CharSet.Word, ctx))
-registerCommand(Command.selectWordAlt              , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend,  Forward, false, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordAltExtend        , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend,  Forward, false, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordEnd              , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend,  Forward,  true, CharSet.Word, ctx))
-registerCommand(Command.selectWordEndExtend        , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend,  Forward,  true, CharSet.Word, ctx))
-registerCommand(Command.selectWordAltEnd           , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend,  Forward,  true, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordAltEndExtend     , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend,  Forward,  true, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordPrevious         , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend, Backward,  true, CharSet.Word, ctx))
-registerCommand(Command.selectWordPreviousExtend   , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend, Backward,  true, CharSet.Word, ctx))
-registerCommand(Command.selectWordAltPrevious      , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend, Backward,  true, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordAltPreviousExtend, CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend, Backward,  true, CharSet.NonBlank, ctx))
+registerCommand(Command.selectWord                 , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state, DoNotExtend,  Forward, false, CharSet.Word))
+registerCommand(Command.selectWordExtend           , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state,      Extend,  Forward, false, CharSet.Word))
+registerCommand(Command.selectWordAlt              , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state, DoNotExtend,  Forward, false, CharSet.NonBlank))
+registerCommand(Command.selectWordAltExtend        , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state,      Extend,  Forward, false, CharSet.NonBlank))
+registerCommand(Command.selectWordEnd              , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state, DoNotExtend,  Forward,  true, CharSet.Word))
+registerCommand(Command.selectWordEndExtend        , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state,      Extend,  Forward,  true, CharSet.Word))
+registerCommand(Command.selectWordAltEnd           , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state, DoNotExtend,  Forward,  true, CharSet.NonBlank))
+registerCommand(Command.selectWordAltEndExtend     , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state,      Extend,  Forward,  true, CharSet.NonBlank))
+registerCommand(Command.selectWordPrevious         , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state, DoNotExtend, Backward,  true, CharSet.Word))
+registerCommand(Command.selectWordPreviousExtend   , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state,      Extend, Backward,  true, CharSet.Word))
+registerCommand(Command.selectWordAltPrevious      , CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state, DoNotExtend, Backward,  true, CharSet.NonBlank))
+registerCommand(Command.selectWordAltPreviousExtend, CommandFlags.ChangeSelections, (editorState, state) => selectByWord(editorState, state,      Extend, Backward,  true, CharSet.NonBlank))
 
 
 // Line selecting key bindings (x, X, alt+[xX], home, end)
 // ===============================================================================================
 
-registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { currentCount }) => {
+registerCommand(Command.selectLine, CommandFlags.ChangeSelections, ({ editor }, { currentCount }) => {
   const selections = editor.selections,
         len = selections.length
 
   if (currentCount === 0 || currentCount === 1) {
     for (let i = 0; i < len; i++) {
-      const selection = selections[i],
-            isFullLine = selection.start.line === selection.end.line - 1 && selection.start.character === 0 && selection.end.character === 0
+      const selection = selections[i]
 
-      selections[i] = isFullLine
-        ? new vscode.Selection(selection.active.line, 0, selection.active.line + 1, 0)
-        : new vscode.Selection(selection.anchor.line, 0, selection.active.line + 1, 0)
+      selections[i] = new vscode.Selection(selection.active.line, 0, selection.active.line + 1, 0)
     }
   } else {
     for (let i = 0; i < len; i++) {
@@ -200,7 +199,7 @@ registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editor, { cu
   editor.selections = selections
 })
 
-registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor, { currentCount, allowEmptySelections }) => {
+registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, ({ editor }, { currentCount, allowEmptySelections }) => {
   const selections = editor.selections,
         len = selections.length
 
@@ -238,12 +237,12 @@ registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor
 
 const moveToLineBegin: MoveFunc = (from) => ({ active: new Coord(from.line, 0), maybeAnchor: OldActive })
 
-registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editor, state) => {
-  SelectionHelper.for(editor, state).moveEach(moveToLineBegin, DoNotExtend)
+registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editorState, state) => {
+  SelectionHelper.for(editorState, state).moveEach(moveToLineBegin, DoNotExtend)
 })
 
-registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, (editor, state) => {
-  SelectionHelper.for(editor, state).moveEach(moveToLineBegin, Extend)
+registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, (editorState, state) => {
+  SelectionHelper.for(editorState, state).moveEach(moveToLineBegin, Extend)
 })
 
 const moveToLineEnd: MoveFunc = (from, helper) => {
@@ -252,12 +251,12 @@ const moveToLineEnd: MoveFunc = (from, helper) => {
   return { active: new Coord(from.line, newCol), maybeAnchor: OldActive }
 }
 
-registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editor, state) => {
-  SelectionHelper.for(editor, state).moveEach(moveToLineEnd, DoNotExtend)
+registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editorState, state) => {
+  SelectionHelper.for(editorState, state).moveEach(moveToLineEnd, DoNotExtend)
 })
 
-registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, (editor, state) => {
-  SelectionHelper.for(editor, state).moveEach(moveToLineEnd, Extend)
+registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, (editorState, state) => {
+  SelectionHelper.for(editorState, state).moveEach(moveToLineEnd, Extend)
 })
 
 registerCommand(Command.expandLines, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
@@ -294,7 +293,7 @@ registerCommand(Command.trimLines, CommandFlags.ChangeSelections, (_, { selectio
   })
 })
 
-registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editor, { selectionSet: selections }, _, ctx) => {
+registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, ({ editor }, { selectionSet: selections }, _, ctx) => {
   selections.updateWithBuilder((builder, selection) => {
     const isBlank = ctx.getCharSetFunction(CharSet.Blank, editor.document)
 
@@ -389,7 +388,7 @@ registerCommand(Command.selectEnclosingExtendBackwards, CommandFlags.ChangeSelec
 // Other bindings (%)
 // ===============================================================================================
 
-registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, (editor) => {
+registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, ({ editor }) => {
   const lastLine = editor.document.lineAt(editor.document.lineCount - 1)
 
   editor.selections = [new vscode.Selection(0, 0, lastLine.lineNumber, lastLine.text.length)]

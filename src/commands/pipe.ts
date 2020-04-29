@@ -200,7 +200,7 @@ function pipeInput(input: string, editor: vscode.TextEditor) {
   return pipe(input, editor.selections.map(editor.document.getText)) as Thenable<{ val?: string, err?: string }[]>
 }
 
-registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Text, inputBoxOptions, async (editor, state) => {
+registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Text, inputBoxOptions, async ({ editor }, state) => {
   const outputs = await pipeInput(state.input, editor)
 
   displayErrors(outputs)
@@ -217,13 +217,13 @@ registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Tex
   editor.selections = selections
 })
 
-registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, inputBoxOptions, async (editor, state) => {
+registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, inputBoxOptions, async ({ editor }, state) => {
   const outputs = await pipeInput(state.input, editor)
 
   displayErrors(outputs)
 })
 
-registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBoxOptionsWithReplacement, async (editor, state, undoStops) => {
+registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBoxOptionsWithReplacement, async ({ editor }, state, undoStops) => {
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))
@@ -237,7 +237,8 @@ registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBox
   }, undoStops)
 })
 
-registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state, undoStops) => {
+registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editorState, state, undoStops) => {
+  const { editor } = editorState
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))
@@ -245,7 +246,7 @@ registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxO
 
   const selections = editor.selections,
         selectionLengths = [] as number[],
-        selectionHelper = SelectionHelper.for(editor, state)
+        selectionHelper = SelectionHelper.for(editorState, state)
 
   await editor.edit(builder => {
     for (let i = 0; i < outputs.length; i++) {
@@ -266,7 +267,7 @@ registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxO
   editor.selections = selections
 })
 
-registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state, undoStops) => {
+registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async ({ editor }, state, undoStops) => {
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))

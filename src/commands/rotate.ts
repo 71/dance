@@ -49,20 +49,20 @@ function rotateSelectionsContentBackwards(editor: vscode.TextEditor, undoStops: 
   }, undoStops)
 }
 
-registerCommand(Command.rotate, CommandFlags.ChangeSelections, (editor) =>
+registerCommand(Command.rotate, CommandFlags.ChangeSelections, ({ editor }) =>
   rotateSelections(editor))
 
-registerCommand(Command.rotateBackwards, CommandFlags.ChangeSelections, (editor) =>
+registerCommand(Command.rotateBackwards, CommandFlags.ChangeSelections, ({ editor }) =>
   rotateSelectionsBackwards(editor))
 
-registerCommand(Command.rotateContentOnly, CommandFlags.Edit, (editor, _, undoStops) =>
+registerCommand(Command.rotateContentOnly, CommandFlags.Edit, ({ editor }, _, undoStops) =>
   rotateSelectionsContent(editor, undoStops).then(() => {}))
 
-registerCommand(Command.rotateContentOnlyBackwards, CommandFlags.Edit, (editor, _, undoStops) =>
+registerCommand(Command.rotateContentOnlyBackwards, CommandFlags.Edit, ({ editor }, _, undoStops) =>
   rotateSelectionsContentBackwards(editor, undoStops).then(() => {}))
 
-registerCommand(Command.rotateContent, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, _, undoStops) =>
+registerCommand(Command.rotateContent, CommandFlags.ChangeSelections | CommandFlags.Edit, ({ editor }, _, undoStops) =>
   rotateSelectionsContent(editor, undoStops).then(() => rotateSelections(editor)))
 
-registerCommand(Command.rotateContentBackwards, CommandFlags.ChangeSelections | CommandFlags.Edit, (editor, _, undoStops) =>
+registerCommand(Command.rotateContentBackwards, CommandFlags.ChangeSelections | CommandFlags.Edit, ({ editor }, _, undoStops) =>
   rotateSelectionsContentBackwards(editor, undoStops).then(() => rotateSelectionsBackwards(editor)))

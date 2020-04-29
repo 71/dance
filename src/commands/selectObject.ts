@@ -2,7 +2,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { CharSet } from '../extension'
+import { CharSet } from '../state/extension'
 import { Position, Direction, Forward, ExtendBehavior, Backward, Cursor } from '../utils/selectionSet'
 
 
@@ -522,7 +522,7 @@ function registerObjectSelect(command: Command, inner: boolean, extend: boolean,
   // Start === false    : Select only to end
   // Start === undefined: Select to both start and end
 
-  registerCommand(command, CommandFlags.ChangeSelections, InputKind.ListOneItem, objectTypePromptItems, (editor, state) => {
+  registerCommand(command, CommandFlags.ChangeSelections, InputKind.ListOneItem, objectTypePromptItems, ({ editor }, state) => {
     performObjectSelect(editor, state, inner, state.input, extend, start !== false, start !== true)
   })
 }
@@ -538,7 +538,7 @@ registerObjectSelect(Command.objectsSelectToEndInner        , true , false, fals
 registerObjectSelect(Command.objectsSelectToEndExtend       , false, true , false)
 registerObjectSelect(Command.objectsSelectToEndExtendInner  , true , true , false)
 
-registerCommand(Command.objectsSelectRepeat, CommandFlags.ChangeSelections, (editor, state) => {
+registerCommand(Command.objectsSelectRepeat, CommandFlags.ChangeSelections, ({ editor }, state) => {
   if (lastObjectSelectOperation === undefined)
     return
 

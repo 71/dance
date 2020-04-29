@@ -1,21 +1,12 @@
 import * as vscode from 'vscode'
 
-import { Command } from '../../commands'
-import { Extension } from '../extension'
-import { Register } from '../registers'
-import { SelectionSet, CollapseFlags } from '../utils/selectionSet'
+import { Register }        from '../registers'
+import { EditorState }     from '../state/editor'
+import { Extension, Mode } from '../state/extension'
 import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
+import { Command } from '../../commands'
 
 export import Command = Command
-
-export const enum Mode {
-  Disabled = 'disabled',
-
-  Normal = 'normal',
-  Insert = 'insert',
-
-  Awaiting = 'awaiting',
-}
 
 export const enum CommandFlags {
   /** No particular flags. */
@@ -47,6 +38,8 @@ export const enum CommandFlags {
 }
 
 export class CommandState<Input extends InputKind = any> {
+  private readonly _followingChanges = [] as vscode.TextDocumentContentChangeEvent[]
+
   /**
    * The number of times that a command should be repeated.
    *
@@ -58,13 +51,35 @@ export class CommandState<Input extends InputKind = any> {
     return count === 0 ? 1 : count
   }
 
+  /**
+   * The insert-mode changes that were recorded after invoking this command.
+   */
+  get followingChanges() {
+    return this._followingChanges as readonly vscode.TextDocumentContentChangeEvent[]
+  }
+
+  get allowEmptySelections() {
+    return this.extension.allowEmptySelections
+  }
+
+  readonly currentCount: number
+  readonly currentRegister?: Register
+
   constructor(
-    readonly extension: Extension,
-    readonly currentCount: number,
-    readonly currentRegister: Register | undefined,
+    readonly descriptor: CommandDescriptor<Input>,
     readonly input: InputTypeMap[Input],
-    readonly allowEmptySelections: boolean,
-  ) {}
+    readonly extension: Extension,
+  ) {
+    this.currentCount = extension.currentCount
+    this.currentRegister = extension.currentRegister
+  }
+
+  /**
+   * Records the given changes as having happened after this command.
+   */
+  recordFollowingChanges(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
+    this._followingChanges.push(...changes)
+  }
 }
 
 export interface UndoStops {
@@ -73,7 +88,8 @@ export interface UndoStops {
 }
 
 export type Action<Input extends InputKind> =
-  (editor: vscode.TextEditor, state: CommandState<Input>, undoStops: UndoStops, ctx: Extension) => void | Thenable<void | undefined>
+  //(editor: vscode.TextEditor, state: CommandState<Input>, undoStops: UndoStops, ctx: Extension) => void | Thenable<void | undefined>
+  (editorState: EditorState, state: CommandState<Input>, undoStops: UndoStops) => void | Thenable<void | undefined>
 
 export const enum InputKind {
   None,
@@ -101,7 +117,7 @@ export interface InputDescrMap {
   [InputKind.ListOneItem]: [string, string][]
   [InputKind.ListManyItems]: [string, string][]
   [InputKind.RegExp]: string
-  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editor: vscode.TextEditor, extension: Extension) => void }
+  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editorState: EditorState) => void }
   [InputKind.Key]: undefined
   [InputKind.ListOneItemOrCount]: [string, string][]
 }
@@ -121,15 +137,14 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   /**
    * Executes the command completely, prompting the user for input and saving history entries if needed.
    */
-  async execute(state: Extension, editor: vscode.TextEditor) {
-    const history = state.history.for(editor.document)
+  async execute(editorState: EditorState) {
+    const { extension, editor } = editorState
+
     const flags = this.flags
     const cts = new vscode.CancellationTokenSource()
 
-    if (state.cancellationTokenSource !== undefined)
-      state.cancellationTokenSource.dispose()
-
-    state.cancellationTokenSource = cts
+    extension.cancellationTokenSource?.dispose()
+    extension.cancellationTokenSource = cts
 
     let input: InputTypeMap[Input] | undefined = undefined
 
@@ -141,7 +156,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
         break
       case InputKind.ListOneItemOrCount:
-        if (state.currentCount === 0)
+        if (extension.currentCount === 0)
           input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
         else
           input = null as any
@@ -153,16 +168,16 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         const inputDescr = this.inputDescr as InputDescrMap[InputKind.Text]
 
         if (inputDescr.setup !== undefined)
-          inputDescr.setup(editor, state)
+          inputDescr.setup(editorState)
 
         input = await prompt(inputDescr, cts.token) as any
         break
       case InputKind.Key:
-        const prevMode = state.getMode()
+        const prevMode = editorState.mode
 
-        await state.setMode(Mode.Awaiting)
+        editorState.setMode(Mode.Awaiting)
         input = await keypress(cts.token) as any
-        await state.setMode(prevMode)
+        editorState.setMode(prevMode)
 
         break
     }
@@ -171,17 +186,17 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       return
 
     if ((this.flags & CommandFlags.ChangeSelections) && !(this.flags & (CommandFlags.DoNotResetPreferredColumns))) {
-      preferredColumnsPerEditor.delete(editor)
+      editorState.preferredColumns.length = 0
     }
 
-    const commandState = new CommandState<Input>(state, state.currentCount, state.currentRegister, input as any, state.allowEmptySelections)
+    const commandState = new CommandState<Input>(this, input as InputTypeMap[Input], extension)
 
     if (!(flags & CommandFlags.IgnoreInHistory))
-      history.addCommand(this, commandState)
+      editorState.recordCommand(commandState)
 
-    state.ignoreSelectionChanges = true
+    editorState.ignoreSelectionChanges = true
 
-    let result = this.action(editor, commandState, { undoStopBefore: true, undoStopAfter: true }, state)
+    let result = this.action(editorState, commandState, { undoStopBefore: true, undoStopAfter: true })
 
     if (result !== undefined) {
       if (typeof result === 'object' && typeof result.then === 'function')
@@ -189,7 +204,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     }
 
     if (flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter)) {
-      await state.setMode(Mode.Insert)
+      editorState.setMode(Mode.Insert)
 
       const selections = editor.selections,
             len = selections.length
@@ -204,7 +219,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
       editor.selections = selections
     } else if (flags & CommandFlags.SwitchToNormal) {
-      await state.setMode(Mode.Normal)
+      editorState.setMode(Mode.Normal)
     }
 
     if (flags & CommandFlags.ChangeSelections) {
@@ -215,25 +230,26 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     }
 
     if (!this.command.startsWith('dance.count.'))
-      state.currentCount = 0
+      extension.currentCount = 0
 
     if (remainingNormalCommands === 1) {
       remainingNormalCommands = 0
 
-      await state.setMode(Mode.Insert)
+      editorState.setMode(Mode.Insert)
     } else if (remainingNormalCommands > 1) {
       remainingNormalCommands--
     }
 
-    state.ignoreSelectionChanges = false
-    state.normalizeSelections(editor)
+    editorState.ignoreSelectionChanges = false
+    editorState.normalizeSelections()
   }
 
   /**
    * Executes the given command using the given state.
    */
-  static async execute<I extends InputKind>(state: Extension, editor: vscode.TextEditor, descr: CommandDescriptor<I>, commandState: CommandState<I>) {
-    let result = descr.action(editor, commandState, { undoStopBefore: true, undoStopAfter: true }, state)
+  static async execute<I extends InputKind>(editorState: EditorState, commandState: CommandState<I>) {
+    const { editor } = editorState
+    let result = commandState.descriptor.action(editorState, commandState, { undoStopBefore: true, undoStopAfter: true })
 
     if (result !== undefined) {
       if (typeof result === 'object' && typeof result.then === 'function')
@@ -247,31 +263,33 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   /**
    * Executes the given commands as part of a batch operation started by a macro, for example.
    */
-  static async executeMany(state: Extension, editor: vscode.TextEditor, commands: [CommandDescriptor, CommandState<any>][]) {
+  static async executeMany(editorState: EditorState, commands: CommandState<any>[]) {
     // In a batch execution, we don't change modes, and some things are not prompted again.
     // Furthermore, a single entry is added to VS Code's history for the entire batch operation.
     let firstEditIdx = 0,
         lastEditIdx = commands.length - 1
 
     for (let i = 0; i < commands.length; i++)
-      if (commands[i][0].flags & CommandFlags.Edit) {
+      if (commands[i].descriptor.flags & CommandFlags.Edit) {
         firstEditIdx = i
         break
       }
 
     for (let i = commands.length - 1; i >= 0; i--)
-      if (commands[i][0].flags & CommandFlags.Edit) {
+      if (commands[i].descriptor.flags & CommandFlags.Edit) {
         lastEditIdx = i
         break
       }
 
-    let currentMode = state.modeMap.get(editor.document) || Mode.Normal
+    let currentMode = editorState.mode
+    const { editor } = editorState
 
     for (let i = 0; i < commands.length; i++) {
-      const [descr, commandState] = commands[i]
+      const commandState = commands[i],
+            descriptor = commandState.descriptor
       const undoStops = { undoStopBefore: i === firstEditIdx, undoStopAfter: i === lastEditIdx }
 
-      let result = descr.action(editor, commandState, undoStops, state)
+      let result = descriptor.action(editorState, commandState, undoStops)
 
       if (result !== undefined) {
         if (typeof result === 'object' && typeof result.then === 'function')
@@ -281,23 +299,23 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
           await editor.edit(result, undoStops)
       }
 
-      if (descr.flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter))
+      if (descriptor.flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter))
         currentMode = Mode.Insert
-      else if (descr.flags & CommandFlags.SwitchToNormal)
+      else if (descriptor.flags & CommandFlags.SwitchToNormal)
         currentMode = Mode.Normal
     }
 
-    await state.setMode(currentMode)
+    editorState.setMode(currentMode)
   }
 
-  register(state: Extension) {
+  register(extension: Extension) {
     return vscode.commands.registerCommand(this.command, () => {
       const editor = vscode.window.activeTextEditor
 
       if (editor === undefined)
         return
 
-      return this.execute(state, editor)
+      return this.execute(extension.getEditorState(editor).updateEditor(editor))
     })
   }
 }
@@ -338,4 +356,3 @@ import './select'
 import './selections'
 import './selectObject'
 import './yankPaste'
-

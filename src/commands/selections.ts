@@ -10,11 +10,11 @@ import { Forward, Direction, Backward, SelectionHelper, DoNotExtend, MoveFunc, A
 
 const reduceToActive: MoveFunc = from => ({ maybeAnchor: from, active: AtOrBefore })
 
-registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (editor, state) => {
-  SelectionHelper.for(editor, state).moveEach(reduceToActive, DoNotExtend)
+registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (editorState, state) => {
+  SelectionHelper.for(editorState, state).moveEach(reduceToActive, DoNotExtend)
 })
 
-registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, (editor) => {
+registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections,
         len = selections.length
 
@@ -27,7 +27,7 @@ registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, (editor) 
   editor.selections = selections
 })
 
-registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, (editor) => {
+registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections,
         len = selections.length
 
@@ -41,7 +41,7 @@ registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, (edito
   editor.selections = selections
 })
 
-registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, (editor) => {
+registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections,
         len = selections.length
 
@@ -59,7 +59,7 @@ registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, (edit
 // Align (&, a-&)
 // ===============================================================================================
 
-registerCommand(Command.selectionsAlign, CommandFlags.Edit, (editor, _, undoStops) => {
+registerCommand(Command.selectionsAlign, CommandFlags.Edit, ({ editor }, _, undoStops) => {
   const startChar = editor.selections.reduce((max, sel) => sel.start.character > max ? sel.start.character : max, 0)
 
   return editor.edit(builder => {
@@ -74,7 +74,7 @@ registerCommand(Command.selectionsAlign, CommandFlags.Edit, (editor, _, undoStop
   }, undoStops).then(() => undefined)
 })
 
-registerCommand(Command.selectionsAlignCopy, CommandFlags.Edit, (editor, state, undoStops) => {
+registerCommand(Command.selectionsAlignCopy, CommandFlags.Edit, ({ editor }, state, undoStops) => {
   const sourceSelection = editor.selections[state.currentCount - 1] ?? editor.selection
   const sourceIndent = editor.document.lineAt(sourceSelection.start).firstNonWhitespaceCharacterIndex
 
@@ -101,11 +101,11 @@ registerCommand(Command.selectionsAlignCopy, CommandFlags.Edit, (editor, state, 
 // Clear, filter (spc, a-spc, a-k, a-K)
 // ===============================================================================================
 
-registerCommand(Command.selectionsClear, CommandFlags.ChangeSelections, (editor) => {
+registerCommand(Command.selectionsClear, CommandFlags.ChangeSelections, ({ editor }) => {
   editor.selections = [editor.selection]
 })
 
-registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, (editor) => {
+registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections
 
   if (selections.length > 1) {
@@ -114,7 +114,7 @@ registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, (edi
   }
 })
 
-registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', (editor, { input: regex }) => {
+registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', ({ editor }, { input: regex }) => {
   const document = editor.document,
         newSelections = editor.selections.filter(selection => regex.test(document.getText(selection)))
 
@@ -122,7 +122,7 @@ registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, I
     editor.selections = newSelections
 })
 
-registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', (editor, { input: regex }) => {
+registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', ({ editor }, { input: regex }) => {
   const document = editor.document,
         newSelections = editor.selections.filter(selection => !regex.test(document.getText(selection)))
 
@@ -134,7 +134,7 @@ registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, 
 // Select within, split (s, S)
 // ===============================================================================================
 
-registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', (editor, { input: regex }) => {
+registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', ({ editor }, { input: regex }) => {
   const { document, selections } = editor,
         len = selections.length,
         newSelections = [] as vscode.Selection[]
@@ -161,7 +161,7 @@ registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp,
     editor.selections = newSelections
 })
 
-registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', (editor, { input: regex }) => {
+registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', ({ editor }, { input: regex }) => {
   const { document, selections } = editor,
         len = selections.length,
         newSelections = [] as vscode.Selection[]
@@ -196,7 +196,7 @@ registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 
 // Split lines, select first & last, merge (a-s, a-S, a-_)
 // ===============================================================================================
 
-registerCommand(Command.splitLines, CommandFlags.ChangeSelections, (editor) => {
+registerCommand(Command.splitLines, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections,
         len = selections.length,
         newSelections = [] as vscode.Selection[]
@@ -245,7 +245,7 @@ registerCommand(Command.splitLines, CommandFlags.ChangeSelections, (editor) => {
   editor.selections = newSelections
 })
 
-registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, (editor) => {
+registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, ({ editor }) => {
   const { document, selections } = editor,
         len = selections.length,
         newSelections = [] as vscode.Selection[]
@@ -345,5 +345,5 @@ function copySelections(editor: vscode.TextEditor, { repetitions }: CommandState
   editor.selections = selections
 }
 
-registerCommand(Command.selectCopy         , CommandFlags.ChangeSelections, (editor, state) => copySelections(editor, state, Forward))
-registerCommand(Command.selectCopyBackwards, CommandFlags.ChangeSelections, (editor, state) => copySelections(editor, state, Backward))
+registerCommand(Command.selectCopy         , CommandFlags.ChangeSelections, ({ editor }, state) => copySelections(editor, state, Forward))
+registerCommand(Command.selectCopyBackwards, CommandFlags.ChangeSelections, ({ editor }, state) => copySelections(editor, state, Backward))

@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 
-import { registerCommand, setRemainingNormalCommands, Command, CommandFlags, Mode } from '.'
+import { registerCommand, setRemainingNormalCommands, Command, CommandFlags } from '.'
+import { Mode } from '../state/extension'
 
 
 registerCommand(Command.setInsert, CommandFlags.SwitchToInsertBefore, () => {
@@ -11,11 +12,11 @@ registerCommand(Command.setNormal, CommandFlags.SwitchToNormal, () => {
   // Nop.
 })
 
-registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsertBefore, (_, { repetitions }, __, ctx) => {
+registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsertBefore, (editorState, { repetitions }) => {
   let subscription = vscode.commands.registerCommand('type', (...args) => {
     if (--repetitions === 0) {
       subscription.dispose()
-      ctx.setMode(Mode.Normal)
+      editorState.setMode(Mode.Normal)
     }
 
     return vscode.commands.executeCommand('default:type', ...args)

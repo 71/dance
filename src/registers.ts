@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { CommandDescriptor, CommandState } from './commands'
+import { CommandState } from './commands'
 
 
 export interface Register {
@@ -11,8 +11,8 @@ export interface Register {
 }
 
 export interface MacroRegister {
-  getMacro(): [CommandDescriptor<any>, CommandState<any>][] | undefined
-  setMacro(data: [CommandDescriptor<any>, CommandState<any>][]): void
+  getMacro(): CommandState<any>[] | undefined
+  setMacro(data: CommandState<any>[]): void
 }
 
 export interface WritableRegister extends Register {
@@ -21,7 +21,7 @@ export interface WritableRegister extends Register {
 
 export class GeneralPurposeRegister implements Register, WritableRegister, MacroRegister {
   values: string[] | undefined
-  macroCommands: [CommandDescriptor<any>, CommandState<any>][] | undefined
+  macroCommands: CommandState<any>[] | undefined
 
   canWrite() { return !this.readonly }
 
@@ -41,7 +41,7 @@ export class GeneralPurposeRegister implements Register, WritableRegister, Macro
     return this.macroCommands
   }
 
-  setMacro(data: [CommandDescriptor<any>, CommandState<any>][]) {
+  setMacro(data: CommandState<any>[]) {
     this.macroCommands = data
   }
 }
