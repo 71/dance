@@ -4,13 +4,12 @@ import * as vscode from 'vscode'
 import { CommandState, registerCommand, Command, CommandFlags, InputKind } from '.'
 import { CharSet, Extension } from '../extension'
 import { Direction, Anchor, Backward, Forward, ExtendBehavior, LimitToCurrentLine, DoNotExtend, Extend, Position, Cursor } from '../utils/selectionSet'
-import { MoveMode, SkipFunc, SelectFunc, SelectionHelper, Coord } from '../utils/selectionHelper'
+import { SelectionHelper, Coord, MoveFunc } from '../utils/selectionHelper'
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
 // ===============================================================================================
-const noSkip: SkipFunc = from => from
 
-function selectToNextCharacter(direction: Direction, include: boolean): SelectFunc {
+function moveToNextCharacter(direction: Direction, include: boolean): MoveFunc {
   return (from, helper) => {
     const key = helper.state.input as string
     const active = from
@@ -37,23 +36,22 @@ function selectToNextCharacter(direction: Direction, include: boolean): SelectFu
 
         if (isDocumentEdge)
           // ... except if we've reached the start or end of the document.
-          return from
+          return { overflow: true, active: undefined, maybeAnchor: undefined }
 
         character = direction === Backward ? undefined : 0
       }
     }
-    if (include) {
-      return new Coord(line, character!)
-    } else {
-      return new Coord(line, character! + (direction === Backward ? 1 : -1))
+    if (!include) {
+      character += (direction === Backward ? 1 : -1)
     }
+    return { maybeAnchor: 'oldActive', active: new Coord(line, character) }
   }
 }
 
 function registerSelectTo(commandName: Command, include: boolean, extend: ExtendBehavior, direction: Direction) {
-  const selectFunc = selectToNextCharacter(direction, include)
+  const moveFunc = moveToNextCharacter(direction, include)
   registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editor, state) => {
-    SelectionHelper.for(editor, state).moveEach(MoveMode.ToCoverChar, noSkip, selectFunc, extend)
+    SelectionHelper.for(editor, state).moveEachX(moveFunc, extend)
   })
 }
 
@@ -98,7 +96,7 @@ function selectByWord(editor: vscode.TextEditor, state: CommandState, extend: Ex
         isBlank       = ctx.getCharSetFunction(CharSet.Blank, document),
         isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
 
-  helper.moveEachX(MoveMode.ToCoverChar, (from) => {
+  helper.moveEachX((from) => {
     let maybeAnchor = undefined,
         active  = from
     for (let i = repetitions; i > 0; i--) {

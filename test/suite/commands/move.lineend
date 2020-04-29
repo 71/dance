@@ -42,3 +42,23 @@ foo
 bar
 baz
 qux{0}x|{0}x
+
+//== blank.0
+foo
+
+bar{0}
+|{0}
+
+//== blank.0 > blank.1
+//= dance.up
+// The second line is blank, so select its line break.
+// This is the only case where up/down will select line breaks.
+foo
+{0}
+|{0}bar
+
+//== blank.1 > blank.2
+//= dance.up
+fo{0}o|{0}
+
+bar

@@ -41,15 +41,23 @@ function revealActiveTowards(direction: Direction, editor: vscode.TextEditor) {
 
 const skipByLine: (direction: Direction) => SkipFunc = (direction) => (from, helper, i) => {
   const targetLine = from.line + helper.state.repetitions * direction
+  let actualLine = targetLine
+  if (actualLine < 0)
+    actualLine = 0
+  else if (targetLine > helper.editor.document.lineCount - 1)
+    actualLine = helper.editor.document.lineCount
 
-  if (targetLine < 0) {
-    return helper.coordAt(0)
-  } else if (targetLine > helper.editor.document.lineCount - 1) {
-    return helper.editor.document.lineAt(helper.editor.document.lineCount - 1).range.end
-  } else {
-    const preferredColumns = preferredColumnsPerEditor.get(helper.editor)!
-    return new Coord(targetLine, preferredColumns[i])
-  }
+  const preferredColumn = preferredColumnsPerEditor.get(helper.editor)![i]
+  if (preferredColumn <= 0)
+    return new Coord(actualLine, 0)
+
+  const lineLen = helper.editor.document.lineAt(actualLine).text.length
+  if (lineLen === 0)
+    return new Coord(actualLine, 0) // Select the line break on an empty line.
+  if (preferredColumn >= lineLen)
+    return new Coord(actualLine, lineLen - 1)
+
+  return new Coord(actualLine, preferredColumn)
 }
 
 const skipByLineBackward = skipByLine(Backward)
