@@ -2,9 +2,7 @@ import * as vscode from 'vscode'
 import * as path   from 'path'
 import * as fs     from 'fs'
 
-import { registerCommand, Command, CommandFlags, InputKind } from '.'
-
-import { Extension } from '../extension'
+import { registerCommand, Command, CommandFlags, InputKind, subscriptions } from '.'
 
 
 const jumps: [string, string][] = [
@@ -22,6 +20,9 @@ const jumps: [string, string][] = [
   ['f', 'go to file whose name is selected'],
   ['.', 'go to last buffer modification position'],
 ]
+
+// Map of editor to vscode.Position that was last edit position.
+const lastLocations = new Map<vscode.TextEditor, vscode.Position>()
 
 function executeGoto(gotoType: number, editor: vscode.TextEditor, extend: boolean) {
   switch (gotoType) {
@@ -89,7 +90,10 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, extend: boolea
       }))
 
     case 12: // go to last buffer modification position
-      break
+      const p = lastLocations.get(editor)
+      if (p === undefined)
+        break
+      executeGotoPosition(editor, extend, p)
   }
 
   return
@@ -145,16 +149,16 @@ function executeGotoDisplayLine(editor: vscode.TextEditor, extend: boolean, posi
 }
 
 function executeGotoFirstLine(editor: vscode.TextEditor, extend: boolean) {
-  const nanch = extend
-    ? editor.selections.map(x => x.anchor).reduce((prev, current) => prev.isAfter(current) ? prev : current)
-    : new vscode.Position(0, 0)
-
-  editor.selections = [new vscode.Selection(nanch, new vscode.Position(0, 0))]
+  executeGotoPosition(editor, extend, new vscode.Position(0,0))
 }
 
 function executeGotoLastLine(editor: vscode.TextEditor, extend: boolean, gotoLastChar: boolean = false) {
   const lastLine = editor.document.lineCount - 1
   const npos = new vscode.Position(lastLine, gotoLastChar ? editor.document.lineAt(lastLine).range.end.character : 0)
+  executeGotoPosition(editor, extend, npos)
+}
+
+function executeGotoPosition(editor: vscode.TextEditor, extend: boolean, npos: vscode.Position) {
   const nanch = extend
     ? editor.selections.map(x => x.anchor).reduce((prev, current) => (prev.isBefore(current) ? prev : current))
     : npos
@@ -192,3 +196,51 @@ registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.Lis
     return executeGoto(state.input, editor, true)
   }
 })
+
+subscriptions.push(vscode.workspace.onDidChangeTextDocument(e => {
+  const change = e.contentChanges[e.contentChanges.length - 1];
+  if (!change) {
+    return;
+  }
+
+  // Look at all the TextEditors that have this document.
+  vscode.window.visibleTextEditors.filter(editor => {
+    return editor.document === e.document
+  }).forEach(e => {
+    // For all editors that have this document, if they are not tracked, add
+    // them to the list with a default start position.
+    if (!lastLocations.has(e)) {
+      lastLocations.set(e, new vscode.Position(0, 0))
+    }
+  })
+  const start = change.range.start
+  const p = new vscode.Position(start.line, start.character + change.text.length)
+  // Now update the editors that have this document with the latest position.
+  lastLocations.forEach((_, editor) => {
+    if (editor.document === e.document) {
+      lastLocations.set(editor, p)
+    }
+  })
+}))
+
+subscriptions.push(vscode.window.onDidChangeVisibleTextEditors(editors => {
+  // Look through all tracked TextEditor objects. If we can't find a TextEditor
+  // in the new list that was tracked earlier, remove it.
+  lastLocations.forEach((_, e) => {
+    if (!editors.includes(e)) {
+      lastLocations.delete(e)
+    }
+  })
+  editors.forEach(editor => {
+    if (!lastLocations.has(editor)) {
+      // New editor that is not tracked yet. Check if there are any editors
+      // that have the same document open.
+      for (const [e, pos] of lastLocations.entries()) {
+        if (e.document === editor.document) {
+          lastLocations.set(editor, pos)
+          break
+        }
+      }
+    }
+  })
+}))

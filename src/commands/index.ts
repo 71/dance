@@ -254,6 +254,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 }
 
 export const commands: CommandDescriptor<any>[] = []
+export const subscriptions: vscode.Disposable[] = []
 
 export let remainingNormalCommands = 0
 

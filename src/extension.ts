@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { commands, Mode }      from './commands/index'
+import { commands, subscriptions, Mode }      from './commands/index'
 import { HistoryManager }      from './history'
 import { Register, Registers } from './registers'
 
@@ -419,6 +419,8 @@ export class Extension implements vscode.Disposable {
 
       for (let i = 0; i < commands.length; i++)
         this.subscriptions.push(commands[i].register(this))
+      for (let i = 0; i < subscriptions.length; i++)
+        this.subscriptions.push(subscriptions[i])
 
       if (changeConfiguration)
         vscode.workspace.getConfiguration(extensionName).update('enabled', true)
