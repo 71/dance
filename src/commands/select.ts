@@ -71,67 +71,26 @@ registerSelectTo(Command.selectToExcludedExtendBackwards, false, Extend     , Ba
 // Move / extend to word begin / end (w, b, e, W, B, E, alt+[wbe], alt+[WBE])
 // ===============================================================================================
 
-function skipEmptyLines(coord: Coord, document: vscode.TextDocument, direction: Direction): Coord | null {
-  let { line, character } = coord
-  let textLine: vscode.TextLine
+function skipEmptyLines(coord: Coord, document: vscode.TextDocument, direction: Direction): Coord | undefined {
+  let { line } = coord
 
-  if (direction === Backward) {
-    if (character === 0 && line > 0) {
-      line--
-    }
-  } else {
-    if (character === document.lineAt(line).text.length - 1 && line + 1 < document.lineCount) {
-      line++
-    }
-  }
-
-  do {
-    textLine = document.lineAt(line)
-    if (!textLine.isEmptyOrWhitespace) {
-      if (line === coord.line) return coord
+  line += direction
+  while (line >= 0 && line < document.lineCount) {
+    const textLine = document.lineAt(line)
+    if (textLine.text.length > 0) {
       const edge = (direction === Backward) ? textLine.text.length - 1 : 0
       return new Coord(line, edge)
     }
     line += direction
-  } while (line >= 0 && line < document.lineCount)
-  return null
+  }
+  return undefined
 }
 
 function categorize(charCode: number, isBlank: (charCode: number) => boolean, isWord: (charCode: number) => boolean) {
   return isWord(charCode) ? 'word' : charCode === 0 || isBlank(charCode) ? 'blank' : 'punct'
 }
 
-function skipWhile(document: vscode.TextDocument, pos: Coord, direction: Direction, dontSkipLine: boolean, cond: (c: number) => boolean): Coord | undefined {
-  const diff = direction as number
-
-  let { line } = pos
-
-  const posLineText = document.lineAt(line).text
-  if (pos.character < posLineText.length && !cond(posLineText.charCodeAt(pos.character))) return pos
-
-  while (line >= 0 && line < document.lineCount) {
-    let { text } = document.lineAt(line)
-    let character = line === pos.line
-      ? (direction === Backward ? pos.character - 1 : pos.character)
-      : (direction === Backward ? text.length - 1   : 0)
-
-    while (character >= 0 && character < text.length) {
-      if (!cond(text.charCodeAt(character)) || (dontSkipLine && direction === Backward && character === 0))
-        return new vscode.Position(line, character)
-
-      character += diff
-
-      if (dontSkipLine && direction === Forward && character === text.length)
-        return new vscode.Position(line, character)
-    }
-
-    line += diff
-  }
-
-  return undefined
-}
-
-function selectToNextWord(editor: vscode.TextEditor, state: CommandState, extend: ExtendBehavior, end: boolean, wordCharset: CharSet, ctx: Extension) {
+function selectByWord(editor: vscode.TextEditor, state: CommandState, extend: ExtendBehavior, direction: Direction, end: boolean, wordCharset: CharSet, ctx: Extension) {
   const helper = SelectionHelper.for(editor, state)
   const { repetitions } = state
   const document = editor.document
@@ -140,131 +99,77 @@ function selectToNextWord(editor: vscode.TextEditor, state: CommandState, extend
         isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
 
   helper.moveEachX(MoveMode.ToCoverChar, (from) => {
-    let skipAt = from,
-        endAt  = from
+    let maybeAnchor = undefined,
+        active  = from
     for (let i = repetitions; i > 0; i--) {
-      const text = document.lineAt(endAt.line).text
-      if (endAt.line === document.lineCount - 1 && endAt.character === text.length - 1)
-        return null
-
-      // Possibly skip the current character.
-      const column = endAt.character
-
-      const shouldSkip = column >= text.length
-                      || categorize(text.charCodeAt(column), isBlank, isWord) !== categorize(text.charCodeAt(column + 1), isBlank, isWord)
-
-      skipAt = shouldSkip ? helper.coordAt(helper.offsetAt(endAt) + 1) : endAt
-
-      let afterEmptyLines = skipEmptyLines(skipAt, document, Forward)
-      if (afterEmptyLines === null) {
-        return null // TODO: Is this really correct?
+      const text = document.lineAt(active.line).text
+      // 1. Starting from active, try to figure out where scanning should start.
+      if (direction === Forward ? active.character + 1 >= text.length : active.character === 0) {
+        let afterEmptyLines = skipEmptyLines(active, document, direction)
+        if (afterEmptyLines === undefined) {
+          if (direction === Backward && active.line > 0) {
+            // This is a special case in Kakoune and we try to mimic it here.
+            // Instead of overflowing, put maybeAnchor at document start and
+            // active always on the first character on the second line.
+            maybeAnchor = new Coord(0, 0)
+            active = new Coord(1, 0)
+            continue
+          } else {
+            // Otherwise the selection overflows.
+            return { overflow: true, maybeAnchor, active }
+          }
+        }
+        maybeAnchor = afterEmptyLines
       } else {
-        skipAt = afterEmptyLines
+        // Skip current character if it is at boundary. (e.g. "ab[c]  ")
+        const column = active.character
+        const shouldSkip = categorize(text.charCodeAt(column), isBlank, isWord) !== categorize(text.charCodeAt(column + direction), isBlank, isWord)
+        maybeAnchor = shouldSkip ? new Coord(active.line, active.character + direction) : active
       }
 
-      let cur = skipAt
-      const beginCharCode = document.lineAt(endAt).text.charCodeAt(cur.character)
+      active = maybeAnchor
 
+      // 2. Then scan within the current line until the word ends.
+
+      const curLineText = document.lineAt(active).text
+      let nextCol = active.character // The next character to be tested.
       if (end) {
-        const skipResult = skipWhile(document, cur, Forward, false, isBlank)
-        if (!skipResult) return null
-        cur = skipResult
+        // Select the whitespace before word, if any.
+        while (nextCol >= 0 && nextCol < curLineText.length && isBlank(curLineText.charCodeAt(nextCol)))
+          nextCol += direction
       }
-
-      const charCode = end ? document.lineAt(cur.line).text.charCodeAt(cur.character) : beginCharCode
-
-      let skipResult: Coord | undefined = cur
-      if (isWord(charCode))
-        skipResult = skipWhile(document, cur, Forward, false, isWord)
-      else if (isPunctuation(charCode))
-        skipResult = skipWhile(document, cur, Forward, false, isPunctuation)
-
-      if (skipResult)
-        cur = skipResult
-      else
-        cur = new Coord(document.lineCount - 1, document.lineAt(document.lineCount - 1).text.length)
-
+      if (nextCol >= 0 && nextCol < curLineText.length) {
+        const startCharCode = curLineText.charCodeAt(nextCol)
+        const isSameCategory = isWord(startCharCode) ? isWord : isPunctuation
+        while (nextCol >= 0 && nextCol < curLineText.length && isSameCategory(curLineText.charCodeAt(nextCol)))
+          nextCol += direction
+      }
       if (!end) {
-        skipResult = skipWhile(editor.document, cur, Forward, false, isBlank)
-        if (skipResult)
-          cur = skipResult
-        else
-          cur = new Coord(document.lineCount - 1, document.lineAt(document.lineCount - 1).text.length)
+        // Select the whitespace after word, if any.
+        while (nextCol >= 0 && nextCol < curLineText.length && isBlank(curLineText.charCodeAt(nextCol)))
+          nextCol += direction
       }
-
-      endAt = helper.coordAt(helper.offsetAt(cur) - 1)
+      // If we reach here, nextCol must be the first character we encounter that
+      // does not belong to the current word (or -1 / line break). Exclude it.
+      active = new Coord(active.line, nextCol - direction)
     }
-    return [skipAt, endAt]
+    return { maybeAnchor: maybeAnchor!, active }
   }, extend)
 }
 
-function selectToPreviousWord(editor: vscode.TextEditor, state: CommandState, extend: ExtendBehavior, wordCharset: CharSet, ctx: Extension) {
-  const helper = SelectionHelper.for(editor, state)
-  const { repetitions } = state
-  const document = editor.document
-  const isWord        = ctx.getCharSetFunction(wordCharset, document),
-        isBlank       = ctx.getCharSetFunction(CharSet.Blank, document),
-        isPunctuation = ctx.getCharSetFunction(CharSet.Punctuation, document)
 
-  helper.moveEachX(MoveMode.ToCoverChar, (from) => {
-    let skipAt = from,
-        endAt  = from
-    for (let i = repetitions; i > 0; i--) {
-      if (endAt.character === 0 && endAt.line === 0) return null
-
-      const text = document.lineAt(endAt.line).text
-      // Possibly skip the current character.
-      const column = endAt.character
-
-      const shouldSkip = column > 0
-                      && categorize(text.charCodeAt(column), isBlank, isWord) !== categorize(text.charCodeAt(column - 1), isBlank, isWord)
-
-      skipAt = shouldSkip ? new Coord(endAt.line, column - 1) : endAt
-
-      let beforeEmptyLines = skipEmptyLines(skipAt, document, Backward)
-      if (beforeEmptyLines === null) {
-        return null // TODO: Is this really correct?
-      } else {
-        skipAt = beforeEmptyLines
-      }
-
-      let cur = skipAt
-
-      const skipResult = skipWhile(document, cur, Backward, false, isBlank)
-      if (!skipResult) return null
-      cur = skipResult
-
-      const charCode = document.lineAt(cur.line).text.charCodeAt(cur.character)
-      if (!isBlank(charCode)) {
-        let skipResult
-        if (isWord(charCode))
-          skipResult = skipWhile(document, cur, Backward, false, isWord)
-        else
-          skipResult = skipWhile(document, cur, Backward, false, isPunctuation)
-
-        if (skipResult)
-          cur = helper.coordAt(helper.offsetAt(skipResult) + 1)
-        else
-          cur = new Coord(0, 0)
-      }
-      endAt = cur
-    }
-    return [skipAt, endAt]
-  }, extend)
-}
-
-registerCommand(Command.selectWord                 , CommandFlags.ChangeSelections, (editor, state, __, ctx) =>     selectToNextWord(editor, state, DoNotExtend, false, CharSet.Word, ctx))
-registerCommand(Command.selectWordExtend           , CommandFlags.ChangeSelections, (editor, state, __, ctx) =>     selectToNextWord(editor, state,      Extend, false, CharSet.Word, ctx))
-registerCommand(Command.selectWordAlt              , CommandFlags.ChangeSelections, (editor, state, __, ctx) =>     selectToNextWord(editor, state, DoNotExtend, false, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordAltExtend        , CommandFlags.ChangeSelections, (editor, state, __, ctx) =>     selectToNextWord(editor, state,      Extend, false, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordEnd              , CommandFlags.ChangeSelections, (editor, state, __, ctx) =>     selectToNextWord(editor, state, DoNotExtend, true, CharSet.Word, ctx))
-registerCommand(Command.selectWordEndExtend        , CommandFlags.ChangeSelections, (editor, state, __, ctx) =>     selectToNextWord(editor, state,      Extend, true, CharSet.Word, ctx))
-registerCommand(Command.selectWordAltEnd           , CommandFlags.ChangeSelections, (editor, state, __, ctx) =>     selectToNextWord(editor, state, DoNotExtend, true, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordAltEndExtend     , CommandFlags.ChangeSelections, (editor, state, __, ctx) =>     selectToNextWord(editor, state,      Extend, true, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordPrevious         , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectToPreviousWord(editor, state, DoNotExtend, CharSet.Word, ctx))
-registerCommand(Command.selectWordPreviousExtend   , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectToPreviousWord(editor, state,      Extend, CharSet.Word, ctx))
-registerCommand(Command.selectWordAltPrevious      , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectToPreviousWord(editor, state, DoNotExtend, CharSet.NonBlank, ctx))
-registerCommand(Command.selectWordAltPreviousExtend, CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectToPreviousWord(editor, state,      Extend, CharSet.NonBlank, ctx))
+registerCommand(Command.selectWord                 , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend,  Forward, false, CharSet.Word, ctx))
+registerCommand(Command.selectWordExtend           , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend,  Forward, false, CharSet.Word, ctx))
+registerCommand(Command.selectWordAlt              , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend,  Forward, false, CharSet.NonBlank, ctx))
+registerCommand(Command.selectWordAltExtend        , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend,  Forward, false, CharSet.NonBlank, ctx))
+registerCommand(Command.selectWordEnd              , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend,  Forward,  true, CharSet.Word, ctx))
+registerCommand(Command.selectWordEndExtend        , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend,  Forward,  true, CharSet.Word, ctx))
+registerCommand(Command.selectWordAltEnd           , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend,  Forward,  true, CharSet.NonBlank, ctx))
+registerCommand(Command.selectWordAltEndExtend     , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend,  Forward,  true, CharSet.NonBlank, ctx))
+registerCommand(Command.selectWordPrevious         , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend, Backward,  true, CharSet.Word, ctx))
+registerCommand(Command.selectWordPreviousExtend   , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend, Backward,  true, CharSet.Word, ctx))
+registerCommand(Command.selectWordAltPrevious      , CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state, DoNotExtend, Backward,  true, CharSet.NonBlank, ctx))
+registerCommand(Command.selectWordAltPreviousExtend, CommandFlags.ChangeSelections, (editor, state, __, ctx) => selectByWord(editor, state,      Extend, Backward,  true, CharSet.NonBlank, ctx))
 
 
 // Line selecting key bindings (x, X, alt+[xX], home, end)

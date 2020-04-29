@@ -50,3 +50,40 @@ foo
 |{0}foo{0}
 
 bar
+
+//== spaced.0
+aaa bb{0}b|{0} ccc ddd
+
+//== spaced.0 > spaced.1
+//= dance.select.word.end
+aaa bbb{0} ccc|{0} ddd
+
+//== spaced.1 > spaced.2
+//= dance.select.word.end
+aaa bbb ccc{0} ddd|{0}
+
+//== spaced.2 > spaced.3
+//= dance.select.word.previous
+aaa bbb ccc |{0}ddd{0}
+
+//== spaced.2 > spaced.4
+//= dance.count.2
+//= dance.select.word.previous
+aaa bbb |{0}ccc {0}ddd
+
+//== break.0
+aaa{0} |{0}bbb
+  ccc
+dd
+
+//== break.0 > break.1
+//= dance.select.word
+aaa {0}bbb|{0}
+  ccc
+dd
+
+//== break.1 > break.2
+//= dance.select.word.end
+aaa bbb
+{0}  ccc|{0}
+dd

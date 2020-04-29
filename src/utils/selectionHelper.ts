@@ -83,35 +83,36 @@ export class SelectionHelper {
   moveEachX(mode: MoveMode, moveFunc: MoveFunc, extend: ExtendBehavior): void {
     const newSelections: vscode.Selection[] = []
     const editor = this.editor
+    let acceptOverflow = true
     for (let i = 0; i < editor.selections.length; i++) {
       const startAt = this.activeCoord(editor.selections[i])
-      console.log('START', this._visualizeCoord(startAt))
+      console.log('START=', this._visualizeCoord(startAt))
       const moveResult = moveFunc(startAt, this, i)
       if (moveResult === null) continue
-      // Avoid array destructuring which is not fully optimized yet in V8.
-      // See: http://bit.ly/array-destructuring-for-multi-value-returns
-      const skipTo = moveResult[0],
-            endAt = moveResult[1]
-      console.log(' SKIP', this._visualizeCoord(skipTo))
-      console.log(' END-', this._visualizeCoord(endAt))
-      if (extend) {
-        newSelections.push(this.extend(editor.selections[i], mode, endAt))
-      } else {
-        // TODO: Optimize
-        const skipCoordOffset = this.offsetAt(skipTo)
-        newSelections.push(this.extend(
-          new vscode.Selection(skipTo, this.allowEmpty
-            ? skipTo : this.coordAt(skipCoordOffset + 1)),
-          mode,
-          endAt))
+      const { maybeAnchor, active, overflow } = moveResult
+      if (maybeAnchor) console.log('ANCHOR?', this._visualizeCoord(maybeAnchor))
+      console.log('ACTIVE=', this._visualizeCoord(active))
+      if (acceptOverflow && !overflow) {
+        newSelections.length = 0 // Clear all overflow selections so far.
+        acceptOverflow = false
+      }
+      if (!overflow || acceptOverflow) {
+        if (extend || !maybeAnchor) {
+          newSelections.push(this.extend(editor.selections[i], mode, active))
+        } else {
+          // TODO: Optimize
+          const skipCoordOffset = this.offsetAt(maybeAnchor)
+          newSelections.push(this.extend(
+            new vscode.Selection(maybeAnchor, this.allowEmpty
+              ? maybeAnchor : this.coordAt(skipCoordOffset + 1)),
+            mode,
+            active))
+        }
       }
     }
-    if (newSelections.length === 0) {
+    if (acceptOverflow)
       console.warn('No selections remaining.')
-      // TODO: Provide fallback instead of cancelling the whole movement.
-    } else {
-      editor.selections = newSelections
-    }
+    editor.selections = newSelections
   }
 
   extend(oldSelection: vscode.Selection, mode: MoveMode, toCoord: Coord): vscode.Selection {
@@ -241,7 +242,9 @@ export type CoordOffset = number
 
 export type SkipFunc = (from: Coord, helper: SelectionHelper, i: number) => Coord;
 export type SelectFunc = (from: Coord, helper: SelectionHelper, i: number) => Coord;
-export type MoveFunc = (from: Coord, helper: SelectionHelper, i: number) => [Coord, Coord] | null;
+export type MoveFunc = (from: Coord, helper: SelectionHelper, i: number) => MoveResult;
+
+export type MoveResult = {maybeAnchor: Coord, active: Coord, overflow?: false} | {overflow: true, maybeAnchor: Coord | undefined, active: Coord}
 
 export enum MoveMode {
   /** Move to cover the character at offset / after position. */
