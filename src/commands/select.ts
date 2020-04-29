@@ -118,6 +118,8 @@ function selectByWord(editor: vscode.TextEditor, state: CommandState, extend: Ex
           }
         }
         maybeAnchor = afterEmptyLines
+      } else if (direction === Backward && active.character >= text.length) {
+        maybeAnchor = new Coord(active.line, text.length - 1)
       } else {
         // Skip current character if it is at boundary. (e.g. "ab[c]  ")
         const column = active.character
@@ -234,20 +236,28 @@ registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor
   editor.selections = selections
 })
 
-registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEachPosition(Anchor.IncludeActive, active => active.toFirstCharacter())
+const moveToLineBegin: MoveFunc = (from) => ({ active: new Coord(from.line, 0), maybeAnchor: OldActive })
+
+registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editor, state) => {
+  SelectionHelper.for(editor, state).moveEach(moveToLineBegin, DoNotExtend)
 })
 
-registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEachPosition(Anchor.Extend, active => active.toFirstCharacter())
+registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, (editor, state) => {
+  SelectionHelper.for(editor, state).moveEach(moveToLineBegin, Extend)
 })
 
-registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEachPosition(Anchor.IncludeActive, active => active.toEndCharacter())
+const moveToLineEnd: MoveFunc = (from, helper) => {
+  let newCol = helper.editor.document.lineAt(from.line).text.length
+  if (newCol > 0 && helper.allowNonDirectional) newCol--
+  return { active: new Coord(from.line, newCol), maybeAnchor: OldActive }
+}
+
+registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editor, state) => {
+  SelectionHelper.for(editor, state).moveEach(moveToLineEnd, DoNotExtend)
 })
 
-registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEachPosition(Anchor.Extend, active => active.toEndCharacter())
+registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, (editor, state) => {
+  SelectionHelper.for(editor, state).moveEach(moveToLineEnd, Extend)
 })
 
 registerCommand(Command.expandLines, CommandFlags.ChangeSelections, (_, { selectionSet }) => {

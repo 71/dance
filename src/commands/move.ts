@@ -52,10 +52,10 @@ const moveByLine: (direction: Direction) => MoveFunc = (direction) => (from, hel
 
   const preferredColumn = preferredColumnsPerEditor.get(helper.editor)![i]
   if (preferredColumn >= lineLen) {
-    if (helper.state.allowEmptySelections)
-      return { maybeAnchor: new Coord(actualLine, lineLen), active: AtOrBefore }
-    else
+    if (helper.allowNonDirectional)
       return { maybeAnchor: new Coord(actualLine, lineLen - 1), active: AtOrBefore }
+    else
+      return { maybeAnchor: new Coord(actualLine, lineLen), active: AtOrBefore }
   }
   return { maybeAnchor: new Coord(actualLine, preferredColumn), active: AtOrBefore }
 }

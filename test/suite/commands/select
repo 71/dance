@@ -73,3 +73,22 @@ world
   my
     friends,
 |{0}  and welcome
+
+//== line.0
+the quick {0}bro|{0}wn fox
+
+//== line.0 > line.1
+//= dance.select.toLineBegin
+|{0}the quick bro{0}wn fox
+
+//== line.0 > line.2
+//= dance.select.toLineBegin.extend
+|{0}the quick b{0}rown fox
+
+//== line.0 > line.3
+//= dance.select.toLineEnd
+the quick br{0}own fox|{0}
+
+//== line.0 > line.4
+//= dance.select.toLineEnd.extend
+the quick {0}brown fox|{0}
