@@ -5,6 +5,7 @@ import { Extension } from '../extension'
 import { Register } from '../registers'
 import { SelectionSet, CollapseFlags } from '../utils/selectionSet'
 import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
+import { preferredColumnsPerEditor } from './move'
 
 export import Command = Command
 
@@ -170,7 +171,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     if (this.input !== InputKind.None && input === undefined)
       return
 
-    if (!(this.flags & CommandFlags.DoNotResetPreferredColumns)) {
+    if ((this.flags & CommandFlags.ChangeSelections) && !(this.flags & (CommandFlags.DoNotResetPreferredColumns))) {
       preferredColumnsPerEditor.delete(editor)
     }
 
@@ -336,5 +337,5 @@ import './search'
 import './select'
 import './selections'
 import './selectObject'
-import './yankPaste'import { preferredColumnsPerEditor } from './move'
+import './yankPaste'
 

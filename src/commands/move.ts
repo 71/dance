@@ -9,7 +9,7 @@ import { SelectionHelper, Coord, MoveFunc, AtOrBefore } from '../utils/selection
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
 // ===============================================================================================
 
-const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
+export const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]>()
 
 const moveByOffset: (direction: Direction) => MoveFunc = (direction) => (from, helper) => {
   const toOffset = helper.offsetAt(from) + helper.state.repetitions * direction
@@ -89,10 +89,10 @@ registerCommand(Command.left       , CommandFlags.ChangeSelections, (editor, sta
 registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor, Backward,      Extend))
 registerCommand(Command.right      , CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor,  Forward, DoNotExtend))
 registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editor, state) => moveHorizontal(state, editor,  Forward,      Extend))
-registerCommand(Command.up         , CommandFlags.ChangeSelections | CommandFlags.DoNotSetPreferredColumns, (editor, state) => moveVertical(state, editor, Backward, DoNotExtend))
-registerCommand(Command.upExtend   , CommandFlags.ChangeSelections | CommandFlags.DoNotSetPreferredColumns, (editor, state) => moveVertical(state, editor, Backward,      Extend))
-registerCommand(Command.down       , CommandFlags.ChangeSelections | CommandFlags.DoNotSetPreferredColumns, (editor, state) => moveVertical(state, editor,  Forward, DoNotExtend))
-registerCommand(Command.downExtend , CommandFlags.ChangeSelections | CommandFlags.DoNotSetPreferredColumns, (editor, state) => moveVertical(state, editor,  Forward,      Extend))
+registerCommand(Command.up         , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editor, state) => moveVertical(state, editor, Backward, DoNotExtend))
+registerCommand(Command.upExtend   , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editor, state) => moveVertical(state, editor, Backward,      Extend))
+registerCommand(Command.down       , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editor, state) => moveVertical(state, editor,  Forward, DoNotExtend))
+registerCommand(Command.downExtend , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editor, state) => moveVertical(state, editor,  Forward,      Extend))
 
 
 // Move up/down (ctrl-[bfud])
