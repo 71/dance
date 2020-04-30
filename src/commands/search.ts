@@ -6,7 +6,7 @@ import { EditorState }        from '../state/editor'
 import { Extension } from '../state/extension'
 import { WritableRegister }   from '../registers'
 import { SavedSelection }     from '../utils/savedSelection'
-import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Selection, Position, SelectionSet } from '../utils/selectionSet'
+import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
 
 

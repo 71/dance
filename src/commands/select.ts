@@ -2,7 +2,7 @@
 import * as vscode from 'vscode'
 
 import { CommandState, registerCommand, Command, CommandFlags, InputKind } from '.'
-import { Direction, Anchor, Backward, Forward, ExtendBehavior, LimitToCurrentLine, DoNotExtend, Extend, Position, Cursor } from '../utils/selectionSet'
+import { Direction, Backward, Forward, ExtendBehavior, DoNotExtend, Extend } from '../utils/selectionHelper'
 import { SelectionHelper, Coord, MoveFunc, OldActive, SelectionMapper } from '../utils/selectionHelper'
 import { EditorState } from '../state/editor'
 import { getCharSetFunction, CharSet } from '../utils/charset'
@@ -375,6 +375,8 @@ registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editorSt
 
 // Select enclosing (m, M, alt+[mM])
 // ===============================================================================================
+
+const Cursor = class {} // TODO: Remove
 
 const enclosingChars = new Uint8Array(Array.from('(){}[]', ch => ch.charCodeAt(0)))
 

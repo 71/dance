@@ -2,9 +2,11 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { Position, Direction, Forward, ExtendBehavior, Backward, Cursor } from '../utils/selectionSet'
+import { Direction, Forward, ExtendBehavior, Backward } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
 
+type Position = any // TODO
+const Cursor = class {} // TODO
 
 const objectTypePromptItems: [string, string][] = [
   ['b, (, )', 'Select to enclosing parenthesis'],

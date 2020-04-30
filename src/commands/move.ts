@@ -2,7 +2,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandState, preferredColumnsPerEditor } from '.'
-import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction } from '../utils/selectionSet'
+import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction } from '../utils/selectionHelper'
 import { SelectionHelper, Coord, MoveFunc, AtOrBefore } from '../utils/selectionHelper'
 import { EditorState } from '../state/editor'
 

@@ -3,8 +3,9 @@ import * as path   from 'path'
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { Selection, ExtendBehavior, DoNotExtend, Extend } from '../utils/selectionSet'
+import { ExtendBehavior, DoNotExtend, Extend } from '../utils/selectionHelper'
 
+type Selection = any // TODO
 
 const jumps: [string, string][] = [
   ['h', 'go to line start'],
