@@ -1,11 +1,11 @@
 import * as vscode from 'vscode'
 
 import { DocumentState }           from './document'
-import { Mode, ModeConfiguration, SelectionBehavior } from './extension'
+import { Mode, SelectionBehavior } from './extension'
 import { CommandState, InputKind } from '../commands'
 import { extensionName }           from '../extension'
 import { assert }                  from '../utils/assert'
-import { SavedSelection } from '../utils/savedSelection'
+import { SavedSelection }          from '../utils/savedSelection'
 
 
 /**
