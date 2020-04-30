@@ -2,10 +2,10 @@
 import * as vscode from 'vscode'
 
 import { CommandState, registerCommand, Command, CommandFlags, InputKind } from '.'
-import { CharSet, Extension } from '../state/extension'
 import { Direction, Anchor, Backward, Forward, ExtendBehavior, LimitToCurrentLine, DoNotExtend, Extend, Position, Cursor } from '../utils/selectionSet'
-import { SelectionHelper, Coord, MoveFunc, OldActive } from '../utils/selectionHelper'
+import { SelectionHelper, Coord, MoveFunc, OldActive, SelectionMapper } from '../utils/selectionHelper'
 import { EditorState } from '../state/editor'
+import { getCharSetFunction, CharSet } from '../utils/charset'
 
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
@@ -94,9 +94,9 @@ function selectByWord(editorState: EditorState, state: CommandState, extend: Ext
   const helper = SelectionHelper.for(editorState, state)
   const { extension, repetitions } = state
   const document = editorState.editor.document
-  const isWord        = extension.getCharSetFunction(wordCharset, document),
-        isBlank       = extension.getCharSetFunction(CharSet.Blank, document),
-        isPunctuation = extension.getCharSetFunction(CharSet.Punctuation, document)
+  const isWord        = getCharSetFunction(wordCharset, document),
+        isBlank       = getCharSetFunction(CharSet.Blank, document),
+        isPunctuation = getCharSetFunction(CharSet.Punctuation, document)
 
   helper.moveEach((from) => {
     let maybeAnchor = undefined,
@@ -259,55 +259,117 @@ registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, (e
   SelectionHelper.for(editorState, state).moveEach(moveToLineEnd, Extend)
 })
 
-registerCommand(Command.expandLines, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateEach(selection => {
-    selection.start.toFirstCharacter()
-    selection.end.toLineBreak()
-  })
+const expandLine: SelectionMapper = (selection, helper) => {
+  // This command is idempotent. state.currentCount is intentionally ignored.
+  const { start, end } = selection,
+        document = helper.editor.document
+  // Move start to line start and end to include line break.
+  const newStart = start.with(undefined, 0)
+  let newEnd
+  if (end.character === 0) {
+    // End is next line start, which means the selection already includes
+    // the line break of last line.
+    newEnd = end
+  } else if (end.line + 1 < document.lineCount) {
+    // Move end to the next line start to include the line break.
+    newEnd = new vscode.Position(end.line + 1, 0)
+  } else {
+    // End is at the last line, so try to include all text.
+    const textLen = document.lineAt(end.line).text.length
+    newEnd = end.with(undefined, textLen)
+  }
+  // After expanding, the selection should be in the same direction as before.
+  if (selection.isReversed)
+    return new vscode.Selection(newEnd, newStart)
+  else
+    return new vscode.Selection(newStart, newEnd)
+}
+
+registerCommand(Command.expandLines, CommandFlags.ChangeSelections, (editorState, state) => {
+  SelectionHelper.for(editorState, state).mapEach(expandLine)
 })
 
-registerCommand(Command.trimLines, CommandFlags.ChangeSelections, (_, { selectionSet }) => {
-  selectionSet.updateWithBuilder((builder, selection) => {
-    const { start, end, isReversed } = selection
+const trimToFullLines: SelectionMapper = (selection, helper) => {
+  // This command is idempotent. state.currentCount is intentionally ignored.
+  const { start, end } = selection
+  // If start is not at line start, move it to the next line start.
+  const newStart = (start.character === 0) ? start : new vscode.Position(start.line + 1, 0)
+  // Move end to the line start, so that the selection ends with a line break.
+  let newEnd = end.with(undefined, 0)
 
-    if (!start.isFirstCharacter()) {
-      if (start.isLastLine())
-        return
+  if (newStart.isAfterOrEqual(newEnd)) {
+    // The selection is deleted if there is no full line contained.
+    return null
+  }
 
-      start.toNextLineFirstCharacter()
-    }
+  // After trimming, the selection should be in the same direction as before.
+  // Except when selecting only one empty line in non-directional mode, prefer
+  // to keep the selection facing forward.
+  if (selection.isReversed &&
+      !(helper.allowNonDirectional && newStart.line + 1 === newEnd.line))
+    return new vscode.Selection(newEnd, newStart)
+  else
+    return new vscode.Selection(newStart, newEnd)
+}
 
-    if (!end.isLineBreak()) {
-      if (end.isFirstLine())
-        return
-
-      end.toPreviousLineBreak()
-    }
-
-    if (start.offset <= end.offset) {
-      if (isReversed)
-        selection.reverse()
-
-      builder.push(selection)
-    }
-  })
+registerCommand(Command.trimLines, CommandFlags.ChangeSelections, (editorState, state) => {
+  SelectionHelper.for(editorState, state).mapEach(trimToFullLines)
 })
 
-registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, ({ editor }, { selectionSet: selections }, _, ctx) => {
-  selections.updateWithBuilder((builder, selection) => {
-    const isBlank = ctx.getCharSetFunction(CharSet.Blank, editor.document)
+const trimSelections: SelectionMapper = (selection, helper) => {
+  // This command is idempotent. state.currentCount is intentionally ignored.
+  const document = helper.editor.document
+  const isBlank = getCharSetFunction(CharSet.Blank, document)
 
-    const { start, end } = selection,
-          startOffset = start.offset,
-          endOffset = end.offset
+  let startLine = selection.start.line,
+      startCol = selection.start.character,
+      startLineText = document.lineAt(startLine).text,
+      endLine = selection.end.line,
+      endCol = selection.end.character,
+      endLineText = document.lineAt(endLine).text
 
-    start.cursor().skipWhile(Forward, (ch, offset) => isBlank(ch) && offset < endOffset, { select: Cursor.Select.Next })
-    end.cursor().skipWhile(Backward, (ch, offset) => isBlank(ch) && offset > startOffset, { select: Cursor.Select.Next })
-
-    if (start.offset < end.offset) {
-      builder.push(selection)
+  while (startCol >= startLineText.length || isBlank(startLineText.charCodeAt(startCol))) {
+    startCol++
+    if (startCol >= startLineText.length) {
+      startLine++
+      if (startLine > endLine) return null
+      startLineText = document.lineAt(startLine).text
+      startCol = 0
     }
-  })
+  }
+
+  while (endCol <= 0 || isBlank(endLineText.charCodeAt(endCol - 1))) {
+    endCol--
+    if (endCol <= 0) {
+      endLine--
+      if (endLine < startLine) return null
+      endLineText = document.lineAt(endLine).text
+      endCol = endLineText.length
+    }
+  }
+
+  let reverseSelection = selection.isReversed
+  if (startLine === endLine) {
+    if (startCol >= endCol) {
+      // The selection is deleted if the selection contains entirely whitespace.
+      return null
+    }
+    if (helper.allowNonDirectional && startCol + 1 === endCol) {
+      // When selecting only one character in non-directional mode, prefer
+      // to keep the selection facing forward.
+      reverseSelection = false
+    }
+  }
+
+  if (reverseSelection) {
+    return new vscode.Selection(startLine, startCol, endLine, endCol)
+  } else {
+    return new vscode.Selection(endLine, endCol, startLine, startCol)
+  }
+}
+
+registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editorState, state) => {
+  SelectionHelper.for(editorState, state).mapEach(trimSelections)
 })
 
 

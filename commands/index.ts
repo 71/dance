@@ -401,14 +401,14 @@ export const expandLines: ICommand & { readonly id: 'dance.expandLines' } = {
   ],
 }
 /**
- * Trim selections to only contain full lines (not including last end-of-line).
+ * Trim selections to only contain full lines (from start to line break).
  *
  * Default key: `Shift+Alt+X` (`dance.mode == 'normal'`).
  */
 export const trimLines: ICommand & { readonly id: 'dance.trimLines' } = {
   id         : 'dance.trimLines',
   title      : 'Trim lines',
-  description: 'Trim selections to only contain full lines (not including last end-of-line).',
+  description: 'Trim selections to only contain full lines (from start to line break).',
   keybindings: [
     { key: 'Shift+Alt+x', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
@@ -2168,7 +2168,7 @@ export const commands = {
   selectEnclosing,
   /** Extend selections to contain full lines (including end-of-lines). */
   expandLines,
-  /** Trim selections to only contain full lines (not including last end-of-line). */
+  /** Trim selections to only contain full lines (from start to line break). */
   trimLines,
   /** Trim whitespace at beginning and end of selections. */
   trimSelections,
@@ -2496,7 +2496,7 @@ export const enum Command {
   selectEnclosing = 'dance.select.enclosing',
   /** Extend selections to contain full lines (including end-of-lines). */
   expandLines = 'dance.expandLines',
-  /** Trim selections to only contain full lines (not including last end-of-line). */
+  /** Trim selections to only contain full lines (from start to line break). */
   trimLines = 'dance.trimLines',
   /** Trim whitespace at beginning and end of selections. */
   trimSelections = 'dance.trimSelections',

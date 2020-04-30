@@ -3,10 +3,11 @@ import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
 import { EditorState }        from '../state/editor'
-import { Extension, CharSet } from '../state/extension'
+import { Extension } from '../state/extension'
 import { WritableRegister }   from '../registers'
 import { SavedSelection }     from '../utils/savedSelection'
 import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Selection, Position, SelectionSet } from '../utils/selectionSet'
+import { getCharSetFunction, CharSet } from '../utils/charset'
 
 
 function isMultilineRegExp(regex: string) {
@@ -330,7 +331,7 @@ registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, ({ edito
 })
 
 registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, ({ editor, extension }) => {
-  const isWord = extension.getCharSetFunction(CharSet.Word, editor.document)
+  const isWord = getCharSetFunction(CharSet.Word, editor.document)
 
   let text = escapeRegExp(editor.document.getText(editor.selection)),
       firstLine = editor.document.lineAt(editor.selection.start).text,

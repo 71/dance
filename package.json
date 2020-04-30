@@ -327,7 +327,7 @@
       {
         "command": "dance.trimLines",
         "title": "Trim lines",
-        "description": "Trim selections to only contain full lines (not including last end-of-line).",
+        "description": "Trim selections to only contain full lines (from start to line break).",
         "category": "Dance"
       },
       {

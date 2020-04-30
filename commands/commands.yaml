@@ -167,7 +167,7 @@ expandLines:
 
 trimLines:
   title: Trim lines
-  descr: Trim selections to only contain full lines (not including last end-of-line).
+  descr: Trim selections to only contain full lines (from start to line break).
   keys: s-a-x (normal)
 
 trimSelections:

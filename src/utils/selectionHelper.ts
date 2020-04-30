@@ -81,6 +81,29 @@ export class SelectionHelper {
     editor.selections = newSelections
   }
 
+  mapEach(mapper: SelectionMapper): void {
+    const newSelections: vscode.Selection[] = []
+    const editor = this.editor
+    let acceptOverflow = true
+    const len = editor.selections.length
+    for (let i = 0; i < len; i++) {
+      const moveResult = mapper(editor.selections[i], this, i)
+      if (moveResult === null) {
+        if (acceptOverflow)
+          newSelections.push(editor.selections[i])
+      } else {
+        if (acceptOverflow) {
+          newSelections.length = 0 // Clear all overflow selections so far.
+          acceptOverflow = false
+        }
+        newSelections.push(moveResult)
+      }
+    }
+    if (acceptOverflow)
+      console.warn('No selections remaining.')
+    editor.selections = newSelections
+  }
+
   evolve(extend: boolean, oldSelection: vscode.Selection, moveResult: MoveResult) {
     if (!moveResult.maybeAnchor) {
       if (typeof moveResult.active === 'object')
@@ -279,8 +302,35 @@ export interface Coord extends vscode.Position {
 export const Coord = vscode.Position // To allow sugar like `new Coord(1, 2)`.
 export type CoordOffset = number
 
-export const OldActive = 'oldActive'
-export const AtOrBefore = 'atOrBefore'
+export type SelectionMapper = (selection: vscode.Selection, helper: SelectionHelper, i: number) => vscode.Selection | null
 export type MoveFunc = (from: Coord, helper: SelectionHelper, i: number) => MoveResult;
 
-export type MoveResult = {maybeAnchor: Coord | typeof OldActive, active: Coord | typeof AtOrBefore, overflow?: false} | {overflow: true, active: Coord | undefined, maybeAnchor: Coord | undefined}
+export const OldActive = 'oldActive'
+export const AtOrBefore = 'atOrBefore'
+export type MoveResult = {overflow?: false, maybeAnchor: Coord | typeof OldActive, active: Coord | typeof AtOrBefore} |
+                         {overflow: true,   maybeAnchor: Coord | undefined,        active: Coord | undefined}
+
+
+// =============================================================================================
+// ==  CHARACTER SETS  =========================================================================
+// =============================================================================================
+
+/**
+ * Returns a string containing all the characters belonging to the given charset.
+ */
+export function getCharacters(charSet: CharSet, document: vscode.TextDocument) {
+  let characters = ''
+
+  if (charSet & CharSet.Blank) {
+    characters += blankCharacters
+  }
+
+  if (charSet & CharSet.Punctuation) {
+    const wordSeparators = vscode.workspace.getConfiguration('editor', { languageId: document.languageId }).get('wordSeparators')
+
+    if (typeof wordSeparators === 'string')
+      characters += wordSeparators
+  }
+
+  return characters
+}

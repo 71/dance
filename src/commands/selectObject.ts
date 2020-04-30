@@ -2,8 +2,8 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { CharSet } from '../state/extension'
 import { Position, Direction, Forward, ExtendBehavior, Backward, Cursor } from '../utils/selectionSet'
+import { getCharSetFunction, CharSet } from '../utils/charset'
 
 
 const objectTypePromptItems: [string, string][] = [
@@ -392,13 +392,13 @@ function findObjectStart(origin: Position, type: number, inner: boolean) {
 
 
     case 7: // Word
-      return findObjectWithChars(origin, Backward, inner, origin.set.extension.getCharSetFunction(CharSet.Word, origin.set.document))
+      return findObjectWithChars(origin, Backward, inner, getCharSetFunction(CharSet.Word, origin.set.document))
 
     case 8: // Non-whitespace word
-      return findObjectWithChars(origin, Backward, inner, origin.set.extension.getCharSetFunction(CharSet.NonBlank, origin.set.document))
+      return findObjectWithChars(origin, Backward, inner, getCharSetFunction(CharSet.NonBlank, origin.set.document))
 
     case 11: // Whitespaces
-      return findObjectWithChars(origin, Backward, inner, origin.set.extension.getCharSetFunction(CharSet.Blank, origin.set.document))
+      return findObjectWithChars(origin, Backward, inner, getCharSetFunction(CharSet.Blank, origin.set.document))
 
     case 13: // Number
       return findObjectWithChars(origin, Backward, inner, charCode => charCode >= 48 && charCode <= 57)
