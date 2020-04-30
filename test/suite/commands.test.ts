@@ -5,6 +5,7 @@ import * as vscode from 'vscode'
 
 import { Command }        from '../../commands'
 import { extensionState } from '../../src/extension'
+import { SelectionBehavior } from '../../src/state/extension'
 
 export namespace testCommands {
   export interface Mutation {
@@ -13,9 +14,9 @@ export namespace testCommands {
   }
 
   export interface Options {
-    readonly allowEmpty: boolean
     readonly initialContent: string
     readonly mutations: readonly Mutation[]
+    readonly selectionBehavior: SelectionBehavior
   }
 }
 
@@ -62,9 +63,9 @@ function stringifySelection(document: vscode.TextDocument, selection: vscode.Sel
     return content.substring(0, startOffset) + startString + content.substring(startOffset, endOffset) + endString + content.substring(endOffset)
 }
 
-async function testCommands(editor: vscode.TextEditor, { initialContent, mutations, allowEmpty }: testCommands.Options) {
+async function testCommands(editor: vscode.TextEditor, { initialContent, mutations, selectionBehavior }: testCommands.Options) {
   // @ts-ignore
-  extensionState._allowEmptySelections = allowEmpty
+  extensionState._selectionBehavior = selectionBehavior
 
   const content = getPlainContent(initialContent)
   const document = editor.document
@@ -141,26 +142,26 @@ suite('Running commands', function() {
 
   test('mutation tests work correctly', async function() {
     await testCommands(editor, {
-      allowEmpty: false,
       initialContent: `{0}f|{0}oo`,
       mutations: [
         { contentAfterMutation: `{0}fo|{0}o`,
           commands: [Command.rightExtend],
         },
       ],
+      selectionBehavior: SelectionBehavior.Character,
     })
   })
 
   test('mutation tests catch errors correctly', async function() {
     try {
       await testCommands(editor, {
-        allowEmpty: false,
         initialContent: `|{0}foo`,
         mutations: [
           { contentAfterMutation: `|{0}foo`,
             commands: [Command.rightExtend],
           },
         ],
+        selectionBehavior: SelectionBehavior.Character,
       })
     } catch (err) {
       if (err instanceof Error && err.message === `Expected selections #0 to match ('>' is anchor, '|' is cursor).`)
@@ -180,7 +181,7 @@ suite('Running commands', function() {
   for (const file of fileNames) {
     const fullPath = path.join(basedir, file.padEnd(fileNamePadding))
     const friendlyPath = fullPath.substr(/dance.test.suite/.exec(fullPath)!.index)
-    const allowEmpty = file.endsWith('.allowempty')
+    const selectionBehavior = file.endsWith('.caret') ? SelectionBehavior.Caret : SelectionBehavior.Character
 
     const content = fs.readFileSync(fullPath.trimRight(), { encoding: 'utf8' })
         .replace(/^\/\/[^=].*\n/gm, '')   // Remove //-comments.
@@ -240,13 +241,13 @@ suite('Running commands', function() {
 
         try {
           await testCommands(editor, {
-            allowEmpty,
             initialContent,
             mutations: [
               { contentAfterMutation,
                 commands,
               },
             ],
+            selectionBehavior,
           })
 
           success = true
