@@ -238,8 +238,8 @@ export class Extension implements vscode.Disposable {
       this._selectionBehavior = value === 'caret' ? SelectionBehavior.Caret : SelectionBehavior.Character
     }, true)
 
-    this.observePreference<boolean>('selections.allowEmpty', true, value => {
-      if (!vscode.workspace.getConfiguration('dance').has('selectionBehavior'))
+    this.observePreference<boolean | null>('selections.allowEmpty', null, value => {
+      if (value !== null)
         this._selectionBehavior = value ? SelectionBehavior.Caret : SelectionBehavior.Character
     }, true)
 
