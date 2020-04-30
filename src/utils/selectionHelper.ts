@@ -309,28 +309,3 @@ export const OldActive = 'oldActive'
 export const AtOrBefore = 'atOrBefore'
 export type MoveResult = {overflow?: false, maybeAnchor: Coord | typeof OldActive, active: Coord | typeof AtOrBefore} |
                          {overflow: true,   maybeAnchor: Coord | undefined,        active: Coord | undefined}
-
-
-// =============================================================================================
-// ==  CHARACTER SETS  =========================================================================
-// =============================================================================================
-
-/**
- * Returns a string containing all the characters belonging to the given charset.
- */
-export function getCharacters(charSet: CharSet, document: vscode.TextDocument) {
-  let characters = ''
-
-  if (charSet & CharSet.Blank) {
-    characters += blankCharacters
-  }
-
-  if (charSet & CharSet.Punctuation) {
-    const wordSeparators = vscode.workspace.getConfiguration('editor', { languageId: document.languageId }).get('wordSeparators')
-
-    if (typeof wordSeparators === 'string')
-      characters += wordSeparators
-  }
-
-  return characters
-}
