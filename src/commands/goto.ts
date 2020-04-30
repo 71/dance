@@ -2,238 +2,170 @@ import * as fs     from 'fs'
 import * as path   from 'path'
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { ExtendBehavior, DoNotExtend, Extend } from '../utils/selectionHelper'
+import { registerCommand, Command, CommandFlags, CommandState, commands } from '.'
+import { EditorState } from '../state/editor'
+import { ExtendBehavior, Extend, DoNotExtend, SelectionHelper, MoveFunc } from '../utils/selectionHelper'
 
-type Selection = any // TODO
 
-const jumps: [string, string][] = [
-  ['h', 'go to line start'],
-  ['l', 'go to line end'],
-  ['i', 'go to non-blank line start'],
-  ['g', 'go to first line'],
-  ['k', 'go to first line'],
-  ['j', 'go to last line'],
-  ['e', 'go to last char of last line'],
-  ['t', 'go to the first displayed line'],
-  ['c', 'go to the middle displayed line'],
-  ['b', 'go to the last displayed line'],
-  ['a', 'go to previous buffer'],
-  ['f', 'go to file whose name is selected'],
-  ['.', 'go to last buffer modification position'],
-]
+registerCommand(Command.goto, CommandFlags.ChangeSelections, (editorState, state) => {
+  if (state.input === null) {
+    const { editor } = editorState,
+          { document } = editor
+    let line = state.currentCount - 1
 
-function executeGoto(gotoType: number, editor: vscode.TextEditor, state: CommandState, extend: ExtendBehavior) {
-  switch (gotoType) {
-    case 0: // go to line start
-      executeGotoLine(state, extend, 'start')
-      break
+    if (line >= document.lineCount)
+      line = document.lineCount - 1
 
-    case 1: // go to line end
-      executeGotoLine(state, extend, 'end')
-      break
+    const active = new vscode.Position(line, 0),
+          anchor = new vscode.Position(line, 0)
 
-    case 2: // go to non-blank line start
-      executeGotoLine(state, extend, 'first')
-      break
+    editor.selections = [new vscode.Selection(anchor, active)]
 
-    case 3: // go to first line
-    case 4: // go to first line
-      executeGotoFirstLine(state, extend)
-      break
+    return
+  } else {
+    return commands.find(x => x.command === Command.openMenu)!.execute(editorState, { menu: 'goto' })
+  }
+})
 
-    case 5: // go to last line
-      executeGotoLastLine(state, extend)
-      break
+registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, (editorState, state) => {
+  if (state.input === null) {
+    const { editor } = editorState,
+          { document, selection } = editor
+    let line = state.currentCount - 1
 
-    case 6: // go to last char of last line
-      executeGotoLastLine(state, extend, true)
-      break
+    if (line >= document.lineCount)
+      line = document.lineCount - 1
 
-    case 7: // go to first displayed line
-      executeGotoDisplayLine(editor, state, extend, 'top')
-      break
+    const anchor = selection.anchor,
+          active = new vscode.Position(line, 0)
 
-    case 8: // go to middle displayed line
-      executeGotoDisplayLine(editor, state, extend, 'center')
-      break
+    editor.selections = [new vscode.Selection(anchor, active)]
 
-    case 9: // go to last displayed line
-      executeGotoDisplayLine(editor, state, extend, 'bottom')
-      break
+    return
+  } else {
+    return commands.find(x => x.command === Command.openMenu)!.execute(editorState, { menu: 'goto.extend' })
+  }
+})
 
-    case 10: // go to previous buffer
-      break
+const toStartCharacterFunc: MoveFunc = (from) => ({
+  active: 'atOrBefore',
+  maybeAnchor: from.with(undefined, 0),
+})
+const toFirstNonBlankCharacterFunc: MoveFunc = (from, { editor }) => ({
+  active: 'atOrBefore',
+  maybeAnchor: from.with(undefined, editor.document.lineAt(from).firstNonWhitespaceCharacterIndex),
+})
+const toEndCharacterFunc: MoveFunc = (from) => ({
+  active: 'atOrBefore',
+  maybeAnchor: from.with(undefined, Number.MAX_SAFE_INTEGER),
+})
 
-    case 11: // go to file whose name is selected
-      const basePath = path.dirname(editor.document.fileName)
+function toCharacter(func: MoveFunc, extend: ExtendBehavior) {
+  return (editorState: EditorState, commandState: CommandState) =>
+    SelectionHelper.for(editorState, commandState).moveEach(func, extend)
+}
 
-      return new Promise<void>(resolve => fs.exists(basePath, exists => {
-        if (!exists)
-          return
+registerCommand(Command.gotoLineStart              , CommandFlags.ChangeSelections, toCharacter(toStartCharacterFunc        , DoNotExtend))
+registerCommand(Command.gotoLineStartExtend        , CommandFlags.ChangeSelections, toCharacter(toStartCharacterFunc        ,      Extend))
+registerCommand(Command.gotoLineStartNonBlank      , CommandFlags.ChangeSelections, toCharacter(toFirstNonBlankCharacterFunc, DoNotExtend))
+registerCommand(Command.gotoLineStartNonBlankExtend, CommandFlags.ChangeSelections, toCharacter(toFirstNonBlankCharacterFunc,      Extend))
+registerCommand(Command.gotoLineEnd                , CommandFlags.ChangeSelections, toCharacter(toEndCharacterFunc          , DoNotExtend))
+registerCommand(Command.gotoLineEndExtend          , CommandFlags.ChangeSelections, toCharacter(toEndCharacterFunc          ,      Extend))
 
-        const selections = state.selectionSet.selections
-        let remaining = selections.length
+const toFirstVisibleLineFunc: MoveFunc = (from, { editor }) => ({
+  active: 'atOrBefore',
+  maybeAnchor: from.with(editor.visibleRanges[0].start.line),
+})
+const toMiddleVisibleLineFunc: MoveFunc = (from, { editor }) => ({
+  active: 'atOrBefore',
+  maybeAnchor: from.with((editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2),
+})
+const toLastVisibleLineFunc: MoveFunc = (from, { editor }) => ({
+  active: 'atOrBefore',
+  maybeAnchor: from.with(editor.visibleRanges[0].end.line),
+})
 
-        for (const selection of selections) {
-          const filename = selection.getText()
-          const filepath = path.resolve(basePath, filename)
+function toVisibleLine(func: MoveFunc, extend: ExtendBehavior) {
+  return (editorState: EditorState, commandState: CommandState) =>
+    SelectionHelper.for(editorState, commandState).moveEach(func, extend)
+}
 
-          fs.exists(filepath, exists => {
-            if (exists)
-              vscode.workspace.openTextDocument(filepath).then(vscode.window.showTextDocument)
+registerCommand(Command.gotoFirstVisibleLine       , CommandFlags.ChangeSelections, toVisibleLine( toFirstVisibleLineFunc, DoNotExtend))
+registerCommand(Command.gotoFirstVisibleLineExtend , CommandFlags.ChangeSelections, toVisibleLine( toFirstVisibleLineFunc,      Extend))
+registerCommand(Command.gotoMiddleVisibleLine      , CommandFlags.ChangeSelections, toVisibleLine(toMiddleVisibleLineFunc, DoNotExtend))
+registerCommand(Command.gotoMiddleVisibleLineExtend, CommandFlags.ChangeSelections, toVisibleLine(toMiddleVisibleLineFunc,      Extend))
+registerCommand(Command.gotoLastVisibleLine        , CommandFlags.ChangeSelections, toVisibleLine(  toLastVisibleLineFunc, DoNotExtend))
+registerCommand(Command.gotoLastVisibleLineExtend  , CommandFlags.ChangeSelections, toVisibleLine(  toLastVisibleLineFunc,      Extend))
 
-            if (--remaining === 0)
-              resolve()
-          })
+function toFirstLine({ editor }: EditorState, extend: ExtendBehavior) {
+  const active = new vscode.Position(0, 0),
+        anchor = extend
+          ? editor.selections
+              .map(x => x.anchor)
+              .reduce((furthestFromStart, current) => furthestFromStart.isAfter(current) ? furthestFromStart : current)
+          : active
+
+  editor.selections = [new vscode.Selection(anchor, active)]
+}
+
+registerCommand(Command.gotoFirstLine      , CommandFlags.ChangeSelections, (editorState) => toFirstLine(editorState, DoNotExtend))
+registerCommand(Command.gotoFirstLineExtend, CommandFlags.ChangeSelections, (editorState) => toFirstLine(editorState,      Extend))
+
+function toLastLine({ editor }: EditorState, extend: ExtendBehavior, gotoLastChar: boolean = false) {
+  const active = new vscode.Position(editor.document.lineCount - 1, gotoLastChar ? Number.MAX_SAFE_INTEGER : 0),
+        anchor = extend
+          ? editor.selections
+              .map(x => x.anchor)
+              .reduce((furthestFromEnd, current) => furthestFromEnd.isBefore(current) ? furthestFromEnd : current)
+          : active
+
+  editor.selections = [new vscode.Selection(anchor, active)]
+}
+
+registerCommand(Command.gotoLastLine           , CommandFlags.ChangeSelections, (editorState) => toLastLine(editorState, DoNotExtend, false))
+registerCommand(Command.gotoLastLineExtend     , CommandFlags.ChangeSelections, (editorState) => toLastLine(editorState,      Extend, false))
+registerCommand(Command.gotoLastCharacter      , CommandFlags.ChangeSelections, (editorState) => toLastLine(editorState, DoNotExtend, true))
+registerCommand(Command.gotoLastCharacterExtend, CommandFlags.ChangeSelections, (editorState) => toLastLine(editorState,      Extend, true))
+
+registerCommand(Command.gotoSelectedFile, CommandFlags.ChangeSelections, ({ editor }) => {
+  const basePath = path.dirname(editor.document.fileName)
+
+  return new Promise<void>(resolve => fs.exists(basePath, exists => {
+    if (!exists)
+      return
+
+    const selections = editor.selections
+    let remaining = selections.length
+
+    for (const selection of selections) {
+      const filename = editor.document.getText(selection)
+      const filepath = path.resolve(basePath, filename)
+
+      fs.exists(filepath, exists => {
+        if (exists) {
+          vscode.workspace.openTextDocument(filepath)
+            .then(vscode.window.showTextDocument)
+        } else {
+          vscode.window.showErrorMessage(`File ${filepath} does not exist.`)
         }
-      }))
 
-    case 12: // go to last buffer modification position
-      const documentState = state.extension.getDocumentState(editor.document)
-
-      if (documentState.recordedChanges.length > 0) {
-        const range = documentState.recordedChanges[documentState.recordedChanges.length - 1].range,
-              selection = range.selection(documentState.document)
-
-        editor.selection = extend ? new vscode.Selection(editor.selection.anchor, selection.active) : selection
-      }
-      break
-  }
-
-  return
-}
-
-const pickGetCharacter = {
-  first(x: Selection) {
-    return x.active.textLine().firstNonWhitespaceCharacterIndex
-  },
-  end(x: Selection) {
-    return x.active.textLine().text.length
-  },
-  start() {
-    return 0
-  },
-  default() {
-    return 0
-  },
-}
-
-function executeGotoLine({ selectionSet }: CommandState, extend: ExtendBehavior, position: 'first' | 'end' | 'start' | 'default') {
-  const getCharacter = pickGetCharacter[position]
-
-  selectionSet.updateEach(selection => {
-    selection.active.updateFromPosition(new vscode.Position(selection.activeLine, getCharacter(selection)))
-
-    if (!extend)
-      selection.collapseToActive()
-  })
-}
-
-const pickNewLine = {
-  top(editor: vscode.TextEditor) {
-    return editor.visibleRanges[0].start.line
-  },
-  center(editor: vscode.TextEditor) {
-    return (editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2
-  },
-  bottom(editor: vscode.TextEditor) {
-    return editor.visibleRanges[0].end.line
-  },
-  default() {
-    return 0
-  },
-}
-
-function executeGotoDisplayLine(editor: vscode.TextEditor, { selectionSet }: CommandState, extend: ExtendBehavior, position: 'top' | 'center' | 'bottom' | 'default') {
-  const newLine = pickNewLine[position](editor)
-
-  if (extend) {
-    selectionSet.updateEach(selection => {
-      selection.active.update(newLine, 0)
-    })
-  } else {
-    selectionSet.updateAll(selections => {
-      selections.length = 1
-      selections[0].active.update(newLine, 0)
-      selections[0].anchor.update(newLine, 0)
-    })
-  }
-}
-
-function executeGotoFirstLine({ selectionSet }: CommandState, extend: boolean) {
-  selectionSet.updateAll(selections => {
-    const selection = selections[0]
-
-    selection.active.toDocumentFirstCharacter()
-
-    if (extend) {
-      const newAnchor = selections
-        .map(x => x.anchor)
-        .reduce((furthestFromStart, current) => furthestFromStart.offset > current.offset ? furthestFromStart : current)
-
-      selection.anchor.inheritPosition(newAnchor)
-    } else {
-      selection.collapseToActive()
+        if (--remaining === 0)
+          resolve()
+      })
     }
-
-    selections.length = 1
-  })
-}
-
-function executeGotoLastLine({ selectionSet }: CommandState, extend: ExtendBehavior, gotoLastChar: boolean = false) {
-  selectionSet.updateAll(selections => {
-    const selection = selections[0]
-
-    if (gotoLastChar)
-      selection.active.toDocumentLastCharacter()
-    else
-      selection.active.update(selectionSet.end.line - 1, 0)
-
-    if (extend) {
-      const newAnchor = selections
-        .map(x => x.anchor)
-        .reduce((furthestFromEnd, current) => furthestFromEnd.offset < current.offset ? furthestFromEnd : current)
-
-      selection.anchor.inheritPosition(newAnchor)
-    } else {
-      selection.collapseToActive()
-    }
-
-    selections.length = 1
-  })
-}
-
-
-registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, ({ editor }, state) => {
-  if (state.input === null) {
-    let line = state.currentCount - 1
-
-    if (line >= editor.document.lineCount)
-      line = editor.document.lineCount - 1
-
-    state.selectionSet.updateAll(selections => {
-      selections.length = 1
-      selections[0].active.update(line, 0)
-      selections[0].collapseToActive()
-    })
-  } else {
-    executeGoto(state.input, editor, state, DoNotExtend)
-  }
+  }))
 })
 
-registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, jumps, ({ editor }, state) => {
-  if (state.input === null) {
-    let line = state.currentCount - 1
+function toLastBufferModification(editorState: EditorState, extend: ExtendBehavior) {
+  const { documentState, editor } = editorState
 
-    if (line >= editor.document.lineCount)
-      line = editor.document.lineCount - 1
+  if (documentState.recordedChanges.length > 0) {
+    const range = documentState.recordedChanges[documentState.recordedChanges.length - 1].range,
+          selection = range.selection(documentState.document)
 
-    state.selectionSet.updateAll(selections => {
-      selections.length = 1
-      selections[0].active.update(line, 0)
-    })
-  } else {
-    executeGoto(state.input, editor, state, Extend)
+    editor.selection = extend ? new vscode.Selection(editor.selection.anchor, selection.active) : selection
   }
-})
+}
+
+registerCommand(Command.gotoLastModification      , CommandFlags.ChangeSelections, (editorState) => toLastBufferModification(editorState, DoNotExtend))
+registerCommand(Command.gotoLastModificationExtend, CommandFlags.ChangeSelections, (editorState) => toLastBufferModification(editorState,      Extend))

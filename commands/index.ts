@@ -1458,6 +1458,114 @@ export const goto: ICommand & { readonly id: 'dance.goto' } = {
   ],
 }
 /**
+ * Go to line start.
+ */
+export const gotoLineStart: ICommand & { readonly id: 'dance.goto.lineStart' } = {
+  id         : 'dance.goto.lineStart',
+  title      : 'Go to line start',
+  description: 'Go to line start.',
+  keybindings: [],
+}
+/**
+ * Go to first non-whitespace character of the line
+ */
+export const gotoLineStartNonBlank: ICommand & { readonly id: 'dance.goto.lineStart.nonBlank' } = {
+  id         : 'dance.goto.lineStart.nonBlank',
+  title      : 'Go to non-blank line start',
+  description: 'Go to first non-whitespace character of the line',
+  keybindings: [],
+}
+/**
+ * Go to line end.
+ */
+export const gotoLineEnd: ICommand & { readonly id: 'dance.goto.lineEnd' } = {
+  id         : 'dance.goto.lineEnd',
+  title      : 'Go to line end',
+  description: 'Go to line end.',
+  keybindings: [],
+}
+/**
+ * Go to first line.
+ */
+export const gotoFirstLine: ICommand & { readonly id: 'dance.goto.firstLine' } = {
+  id         : 'dance.goto.firstLine',
+  title      : 'Go to first line',
+  description: 'Go to first line.',
+  keybindings: [],
+}
+/**
+ * Go to last line.
+ */
+export const gotoLastLine: ICommand & { readonly id: 'dance.goto.lastLine' } = {
+  id         : 'dance.goto.lastLine',
+  title      : 'Go to last line',
+  description: 'Go to last line.',
+  keybindings: [],
+}
+/**
+ * Go to last character of the document.
+ */
+export const gotoLastCharacter: ICommand & { readonly id: 'dance.goto.lastCharacter' } = {
+  id         : 'dance.goto.lastCharacter',
+  title      : 'Go to last character of the document',
+  description: 'Go to last character of the document.',
+  keybindings: [],
+}
+/**
+ * Go to first visible line.
+ */
+export const gotoFirstVisibleLine: ICommand & { readonly id: 'dance.goto.firstVisibleLine' } = {
+  id         : 'dance.goto.firstVisibleLine',
+  title      : 'Go to first visible line',
+  description: 'Go to first visible line.',
+  keybindings: [],
+}
+/**
+ * Go to middle visible line.
+ */
+export const gotoMiddleVisibleLine: ICommand & { readonly id: 'dance.goto.middleVisibleLine' } = {
+  id         : 'dance.goto.middleVisibleLine',
+  title      : 'Go to middle visible line',
+  description: 'Go to middle visible line.',
+  keybindings: [],
+}
+/**
+ * Go to last visible line.
+ */
+export const gotoLastVisibleLine: ICommand & { readonly id: 'dance.goto.lastVisibleLine' } = {
+  id         : 'dance.goto.lastVisibleLine',
+  title      : 'Go to last visible line',
+  description: 'Go to last visible line.',
+  keybindings: [],
+}
+/**
+ * Open file under selection.
+ */
+export const gotoSelectedFile: ICommand & { readonly id: 'dance.goto.selectedFile' } = {
+  id         : 'dance.goto.selectedFile',
+  title      : 'Open file under selection',
+  description: 'Open file under selection.',
+  keybindings: [],
+}
+/**
+ * Go to last buffer modification position.
+ */
+export const gotoLastModification: ICommand & { readonly id: 'dance.goto.lastModification' } = {
+  id         : 'dance.goto.lastModification',
+  title      : 'Go to last buffer modification position',
+  description: 'Go to last buffer modification position.',
+  keybindings: [],
+}
+/**
+ * Open quick-jump menu.
+ */
+export const openMenu: ICommand & { readonly id: 'dance.openMenu' } = {
+  id         : 'dance.openMenu',
+  title      : 'Open quick-jump menu',
+  description: 'Open quick-jump menu.',
+  keybindings: [],
+}
+/**
  * Insert value in register.
  *
  * Default keys: `Ctrl+R` (`dance.mode == 'normal'`), `Ctrl+R` (`dance.mode == 'insert'`).
@@ -1844,6 +1952,96 @@ export const gotoExtend: ICommand & { readonly id: 'dance.goto.extend' } = {
   keybindings: [
     { key: 'Shift+g', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
+}
+/**
+ * Go to line start (extend).
+ */
+export const gotoLineStartExtend: ICommand & { readonly id: 'dance.goto.lineStart.extend' } = {
+  id         : 'dance.goto.lineStart.extend',
+  title      : 'Go to line start (extend)',
+  description: 'Go to line start (extend).',
+  keybindings: [],
+}
+/**
+ * Go to first non-whitespace character of the line
+ */
+export const gotoLineStartNonBlankExtend: ICommand & { readonly id: 'dance.goto.lineStart.nonBlank.extend' } = {
+  id         : 'dance.goto.lineStart.nonBlank.extend',
+  title      : 'Go to non-blank line start (extend)',
+  description: 'Go to first non-whitespace character of the line',
+  keybindings: [],
+}
+/**
+ * Go to line end (extend).
+ */
+export const gotoLineEndExtend: ICommand & { readonly id: 'dance.goto.lineEnd.extend' } = {
+  id         : 'dance.goto.lineEnd.extend',
+  title      : 'Go to line end (extend)',
+  description: 'Go to line end (extend).',
+  keybindings: [],
+}
+/**
+ * Go to first line (extend).
+ */
+export const gotoFirstLineExtend: ICommand & { readonly id: 'dance.goto.firstLine.extend' } = {
+  id         : 'dance.goto.firstLine.extend',
+  title      : 'Go to first line (extend)',
+  description: 'Go to first line (extend).',
+  keybindings: [],
+}
+/**
+ * Go to last line (extend).
+ */
+export const gotoLastLineExtend: ICommand & { readonly id: 'dance.goto.lastLine.extend' } = {
+  id         : 'dance.goto.lastLine.extend',
+  title      : 'Go to last line (extend)',
+  description: 'Go to last line (extend).',
+  keybindings: [],
+}
+/**
+ * Go to last character of the document (extend).
+ */
+export const gotoLastCharacterExtend: ICommand & { readonly id: 'dance.goto.lastCharacter.extend' } = {
+  id         : 'dance.goto.lastCharacter.extend',
+  title      : 'Go to last character of the document (extend)',
+  description: 'Go to last character of the document (extend).',
+  keybindings: [],
+}
+/**
+ * Go to first visible line (extend).
+ */
+export const gotoFirstVisibleLineExtend: ICommand & { readonly id: 'dance.goto.firstVisibleLine.extend' } = {
+  id         : 'dance.goto.firstVisibleLine.extend',
+  title      : 'Go to first visible line (extend)',
+  description: 'Go to first visible line (extend).',
+  keybindings: [],
+}
+/**
+ * Go to middle visible line (extend).
+ */
+export const gotoMiddleVisibleLineExtend: ICommand & { readonly id: 'dance.goto.middleVisibleLine.extend' } = {
+  id         : 'dance.goto.middleVisibleLine.extend',
+  title      : 'Go to middle visible line (extend)',
+  description: 'Go to middle visible line (extend).',
+  keybindings: [],
+}
+/**
+ * Go to last visible line (extend).
+ */
+export const gotoLastVisibleLineExtend: ICommand & { readonly id: 'dance.goto.lastVisibleLine.extend' } = {
+  id         : 'dance.goto.lastVisibleLine.extend',
+  title      : 'Go to last visible line (extend)',
+  description: 'Go to last visible line (extend).',
+  keybindings: [],
+}
+/**
+ * Go to last buffer modification position (extend).
+ */
+export const gotoLastModificationExtend: ICommand & { readonly id: 'dance.goto.lastModification.extend' } = {
+  id         : 'dance.goto.lastModification.extend',
+  title      : 'Go to last buffer modification position (extend)',
+  description: 'Go to last buffer modification position (extend).',
+  keybindings: [],
 }
 /**
  * Select to the next character pressed, including it. (backwards)
@@ -2334,6 +2532,30 @@ export const commands = {
   objectsSelectRepeat,
   /** Shows prompt to jump somewhere */
   goto,
+  /** Go to line start. */
+  gotoLineStart,
+  /** Go to first non-whitespace character of the line */
+  gotoLineStartNonBlank,
+  /** Go to line end. */
+  gotoLineEnd,
+  /** Go to first line. */
+  gotoFirstLine,
+  /** Go to last line. */
+  gotoLastLine,
+  /** Go to last character of the document. */
+  gotoLastCharacter,
+  /** Go to first visible line. */
+  gotoFirstVisibleLine,
+  /** Go to middle visible line. */
+  gotoMiddleVisibleLine,
+  /** Go to last visible line. */
+  gotoLastVisibleLine,
+  /** Open file under selection. */
+  gotoSelectedFile,
+  /** Go to last buffer modification position. */
+  gotoLastModification,
+  /** Open quick-jump menu. */
+  openMenu,
   /** Insert value in register. */
   registersInsert,
   /** Select register for next command. */
@@ -2392,6 +2614,26 @@ export const commands = {
   searchBackwardsExtend,
   /** Shows prompt to jump somewhere */
   gotoExtend,
+  /** Go to line start (extend). */
+  gotoLineStartExtend,
+  /** Go to first non-whitespace character of the line */
+  gotoLineStartNonBlankExtend,
+  /** Go to line end (extend). */
+  gotoLineEndExtend,
+  /** Go to first line (extend). */
+  gotoFirstLineExtend,
+  /** Go to last line (extend). */
+  gotoLastLineExtend,
+  /** Go to last character of the document (extend). */
+  gotoLastCharacterExtend,
+  /** Go to first visible line (extend). */
+  gotoFirstVisibleLineExtend,
+  /** Go to middle visible line (extend). */
+  gotoMiddleVisibleLineExtend,
+  /** Go to last visible line (extend). */
+  gotoLastVisibleLineExtend,
+  /** Go to last buffer modification position (extend). */
+  gotoLastModificationExtend,
   /** Select to the next character pressed, including it. (backwards) */
   selectToIncludedBackwards,
   /** Select until the next character pressed, excluding it. (backwards) */
@@ -2662,6 +2904,30 @@ export const enum Command {
   objectsSelectRepeat = 'dance.objects.select.repeat',
   /** Shows prompt to jump somewhere */
   goto = 'dance.goto',
+  /** Go to line start. */
+  gotoLineStart = 'dance.goto.lineStart',
+  /** Go to first non-whitespace character of the line */
+  gotoLineStartNonBlank = 'dance.goto.lineStart.nonBlank',
+  /** Go to line end. */
+  gotoLineEnd = 'dance.goto.lineEnd',
+  /** Go to first line. */
+  gotoFirstLine = 'dance.goto.firstLine',
+  /** Go to last line. */
+  gotoLastLine = 'dance.goto.lastLine',
+  /** Go to last character of the document. */
+  gotoLastCharacter = 'dance.goto.lastCharacter',
+  /** Go to first visible line. */
+  gotoFirstVisibleLine = 'dance.goto.firstVisibleLine',
+  /** Go to middle visible line. */
+  gotoMiddleVisibleLine = 'dance.goto.middleVisibleLine',
+  /** Go to last visible line. */
+  gotoLastVisibleLine = 'dance.goto.lastVisibleLine',
+  /** Open file under selection. */
+  gotoSelectedFile = 'dance.goto.selectedFile',
+  /** Go to last buffer modification position. */
+  gotoLastModification = 'dance.goto.lastModification',
+  /** Open quick-jump menu. */
+  openMenu = 'dance.openMenu',
   /** Insert value in register. */
   registersInsert = 'dance.registers.insert',
   /** Select register for next command. */
@@ -2720,6 +2986,26 @@ export const enum Command {
   searchBackwardsExtend = 'dance.search.backwards.extend',
   /** Shows prompt to jump somewhere */
   gotoExtend = 'dance.goto.extend',
+  /** Go to line start (extend). */
+  gotoLineStartExtend = 'dance.goto.lineStart.extend',
+  /** Go to first non-whitespace character of the line */
+  gotoLineStartNonBlankExtend = 'dance.goto.lineStart.nonBlank.extend',
+  /** Go to line end (extend). */
+  gotoLineEndExtend = 'dance.goto.lineEnd.extend',
+  /** Go to first line (extend). */
+  gotoFirstLineExtend = 'dance.goto.firstLine.extend',
+  /** Go to last line (extend). */
+  gotoLastLineExtend = 'dance.goto.lastLine.extend',
+  /** Go to last character of the document (extend). */
+  gotoLastCharacterExtend = 'dance.goto.lastCharacter.extend',
+  /** Go to first visible line (extend). */
+  gotoFirstVisibleLineExtend = 'dance.goto.firstVisibleLine.extend',
+  /** Go to middle visible line (extend). */
+  gotoMiddleVisibleLineExtend = 'dance.goto.middleVisibleLine.extend',
+  /** Go to last visible line (extend). */
+  gotoLastVisibleLineExtend = 'dance.goto.lastVisibleLine.extend',
+  /** Go to last buffer modification position (extend). */
+  gotoLastModificationExtend = 'dance.goto.lastModification.extend',
   /** Select to the next character pressed, including it. (backwards) */
   selectToIncludedBackwards = 'dance.select.to.included.backwards',
   /** Select until the next character pressed, excluding it. (backwards) */

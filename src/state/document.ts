@@ -122,7 +122,7 @@ export class DocumentState {
   // ==  HISTORY  ================================================================================
   // =============================================================================================
 
-  private _lastCommand = new CommandState<any>(commands.find(x => x.command === Command.setNormal)!, undefined, this.extension)
+  private _lastCommand?: CommandState<any>
   private readonly _recordedChanges = [] as RecordedChange[]
 
   /**

@@ -63,12 +63,6 @@ export function promptInList(canPickMany: boolean, items: [string, string][], ca
     quickPick.onDidChangeValue(key => {
       const index = items.findIndex(x => x[0].split(', ').includes(key))
 
-      if (index === -1) {
-        quickPick.value = ''
-
-        return
-      }
-
       quickPick.dispose()
 
       if (canPickMany)

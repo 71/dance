@@ -28,6 +28,14 @@ export namespace ModeConfiguration {
   export type LineNumbers = 'on' | 'off' | 'relative' | 'inherit'
 }
 
+export interface GotoMenu {
+  readonly items: Record<string, {
+    readonly text: string
+    readonly command: string
+    readonly args?: any[]
+  }>
+}
+
 /**
  * Mode-specific configuration.
  */
@@ -185,12 +193,17 @@ export class Extension implements vscode.Disposable {
   private readonly subscriptions: vscode.Disposable[] = []
 
   // Configuration.
+  private readonly _gotoMenus = new Map<string, GotoMenu>()
   private _selectionBehavior = SelectionBehavior.Caret
 
   configuration = vscode.workspace.getConfiguration(extensionName)
 
   get selectionBehavior() {
     return this._selectionBehavior
+  }
+
+  get menus() {
+    return this._gotoMenus as ReadonlyMap<string, GotoMenu>
   }
 
   // General state.
@@ -251,6 +264,55 @@ export class Extension implements vscode.Disposable {
       this.insertMode.updateCursorStyle(this, 'inherit')
       this.normalMode.updateCursorStyle(this, 'inherit')
     })
+
+    // Configuration: menus.
+    this.observePreference<Record<string, GotoMenu>>('menus', {}, value => {
+      this._gotoMenus.clear()
+
+      if (typeof value !== 'object' || value === null) {
+        vscode.window.showErrorMessage(`Configuration ${extensionName}.menus must be an object.`)
+
+        return
+      }
+
+      for (const menuName in value) {
+        const menu = value[menuName],
+              builtMenu: GotoMenu = { items: {} },
+              menuDisplay = `${extensionName}.menus[${JSON.stringify(menuName)}]`
+
+        if (typeof menu !== 'object' || menu === null) {
+          vscode.window.showErrorMessage(`Menu ${menuDisplay} must be an object.`)
+        } else if (typeof menu.items !== 'object' || menu.items === null || Object.keys(menu.items).length < 2) {
+          vscode.window.showErrorMessage(`Menu ${menuDisplay} must have an subobject "items" with at least two entries.`)
+        } else {
+          let valid = true
+
+          for (const key in menu.items) {
+            const item = menu.items[key],
+                  itemDisplay = `${JSON.stringify(key)} of ${menuDisplay}`
+
+            if (typeof key !== 'string' || key.length !== 1) {
+              vscode.window.showErrorMessage(`Item ${itemDisplay} must have a single-character key.`)
+            } else if (typeof item !== 'object' || item === null) {
+              vscode.window.showErrorMessage(`Item ${itemDisplay} must be an object.`)
+            } else if (typeof item.text !== 'string' || item.text.length === 0) {
+              vscode.window.showErrorMessage(`Item ${itemDisplay} must have a non-empty "text" property.`)
+            } else if (typeof item.command !== 'string' || item.command.length === 0) {
+              vscode.window.showErrorMessage(`Item ${itemDisplay} must have a non-empty "command" property.`)
+            } else {
+              builtMenu.items[key] = { command: item.command, text: item.text, args: item.args }
+              continue
+            }
+
+            valid = false
+          }
+
+          if (valid) {
+            this._gotoMenus.set(menuName, builtMenu)
+          }
+        }
+      }
+    }, true)
 
     // Lastly, enable the extension and set up modes.
     this.setEnabled(this.configuration.get('enabled', true), false)

@@ -66,6 +66,7 @@ export class CommandState<Input extends InputKind = any> {
     readonly descriptor: CommandDescriptor<Input>,
     readonly input: InputTypeMap[Input],
     readonly extension: Extension,
+    readonly argument: any,
   ) {
     this.currentCount = extension.currentCount
     this.currentRegister = extension.currentRegister
@@ -135,7 +136,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   /**
    * Executes the command completely, prompting the user for input and saving history entries if needed.
    */
-  async execute(editorState: EditorState) {
+  async execute(editorState: EditorState, argument: any) {
     const { extension, editor } = editorState
 
     const flags = this.flags
@@ -187,7 +188,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       editorState.preferredColumns.length = 0
     }
 
-    const commandState = new CommandState<Input>(this, input as InputTypeMap[Input], extension)
+    const commandState = new CommandState<Input>(this, input as InputTypeMap[Input], extension, argument)
 
     editorState.ignoreSelectionChanges = true
 
@@ -305,13 +306,13 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   }
 
   register(extension: Extension) {
-    return vscode.commands.registerCommand(this.command, () => {
+    return vscode.commands.registerCommand(this.command, (arg) => {
       const editor = vscode.window.activeTextEditor
 
       if (editor === undefined)
         return
 
-      return this.execute(extension.getEditorState(editor).updateEditor(editor))
+      return this.execute(extension.getEditorState(editor).updateEditor(editor), arg)
     })
   }
 }
@@ -343,6 +344,7 @@ import './goto'
 import './history'
 import './insert'
 import './mark'
+import './menus'
 import './modes'
 import './move'
 import './pipe'

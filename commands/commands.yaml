@@ -606,6 +606,57 @@ goto:
   keys: g (normal)
   add: extend
 
+goto.lineStart:
+  title: Go to line start
+  add: extend
+
+goto.lineStart.nonBlank:
+  title: Go to non-blank line start
+  descr: Go to first non-whitespace character of the line
+  add: extend
+
+goto.lineEnd:
+  title: Go to line end
+  add: extend
+
+goto.firstLine:
+  title: Go to first line
+  add: extend
+
+goto.lastLine:
+  title: Go to last line
+  add: extend
+
+goto.lastCharacter:
+  title: Go to last character of the document
+  add: extend
+
+goto.firstVisibleLine:
+  title: Go to first visible line
+  add: extend
+
+goto.middleVisibleLine:
+  title: Go to middle visible line
+  add: extend
+
+goto.lastVisibleLine:
+  title: Go to last visible line
+  add: extend
+
+goto.selectedFile:
+  title: Open file under selection
+
+goto.lastModification:
+  title: Go to last buffer modification position
+  add: extend
+
+
+# Menus (menus.ts)
+# ================================================================================================
+
+openMenu:
+  title: Open quick-jump menu
+
 
 # Registers and marks (mark.ts)
 # ================================================================================================

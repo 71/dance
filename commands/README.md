@@ -125,6 +125,18 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.objects.selectToEnd.extend` | Extend to the whole object end | Extend to the whole object end. | `Shift+]` (`dance.mode == 'normal'`) |
 | `dance.objects.select.repeat` | Repeat object select | Repeat object select. | `Alt+.` (`dance.mode == 'normal'`) |
 | `dance.goto` | Go to... | Shows prompt to jump somewhere | `G` (`dance.mode == 'normal'`) |
+| `dance.goto.lineStart` | Go to line start | Go to line start. |  |
+| `dance.goto.lineStart.nonBlank` | Go to non-blank line start | Go to first non-whitespace character of the line |  |
+| `dance.goto.lineEnd` | Go to line end | Go to line end. |  |
+| `dance.goto.firstLine` | Go to first line | Go to first line. |  |
+| `dance.goto.lastLine` | Go to last line | Go to last line. |  |
+| `dance.goto.lastCharacter` | Go to last character of the document | Go to last character of the document. |  |
+| `dance.goto.firstVisibleLine` | Go to first visible line | Go to first visible line. |  |
+| `dance.goto.middleVisibleLine` | Go to middle visible line | Go to middle visible line. |  |
+| `dance.goto.lastVisibleLine` | Go to last visible line | Go to last visible line. |  |
+| `dance.goto.selectedFile` | Open file under selection | Open file under selection. |  |
+| `dance.goto.lastModification` | Go to last buffer modification position | Go to last buffer modification position. |  |
+| `dance.openMenu` | Open quick-jump menu | Open quick-jump menu. |  |
 | `dance.registers.insert` | Insert value in register | Insert value in register. | `Ctrl+R` (`dance.mode == 'normal'`), `Ctrl+R` (`dance.mode == 'insert'`) |
 | `dance.registers.select` | Select register for next command | Select register for next command. | `Shift+\'` (`dance.mode == 'normal'`) |
 | `dance.marks.saveSelections` | Save selections | Save selections. | `Shift+Z` (`dance.mode == 'normal'`) |
@@ -154,6 +166,16 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.search.extend` | Search (extend) | Search for the given input string (extend). | `Shift+/` (`dance.mode == 'normal'`) |
 | `dance.search.backwards.extend` | Search backwards (extend) | Search for the given input string before the current selections (extend). | `Shift+Alt+/` (`dance.mode == 'normal'`) |
 | `dance.goto.extend` | Go to... (extend) | Shows prompt to jump somewhere | `Shift+G` (`dance.mode == 'normal'`) |
+| `dance.goto.lineStart.extend` | Go to line start (extend) | Go to line start (extend). |  |
+| `dance.goto.lineStart.nonBlank.extend` | Go to non-blank line start (extend) | Go to first non-whitespace character of the line |  |
+| `dance.goto.lineEnd.extend` | Go to line end (extend) | Go to line end (extend). |  |
+| `dance.goto.firstLine.extend` | Go to first line (extend) | Go to first line (extend). |  |
+| `dance.goto.lastLine.extend` | Go to last line (extend) | Go to last line (extend). |  |
+| `dance.goto.lastCharacter.extend` | Go to last character of the document (extend) | Go to last character of the document (extend). |  |
+| `dance.goto.firstVisibleLine.extend` | Go to first visible line (extend) | Go to first visible line (extend). |  |
+| `dance.goto.middleVisibleLine.extend` | Go to middle visible line (extend) | Go to middle visible line (extend). |  |
+| `dance.goto.lastVisibleLine.extend` | Go to last visible line (extend) | Go to last visible line (extend). |  |
+| `dance.goto.lastModification.extend` | Go to last buffer modification position (extend) | Go to last buffer modification position (extend). |  |
 | `dance.select.to.included.backwards` | Select to (backwards) | Select to the next character pressed, including it. (backwards) | `Alt+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.backwards` | Select until (backwards) | Select until the next character pressed, excluding it. (backwards) | `Alt+T` (`dance.mode == 'normal'`) |
 | `dance.select.enclosing.backwards` | Select enclosing characters (backwards) | Select enclosing characters. (backwards) | `Alt+M` (`dance.mode == 'normal'`) |

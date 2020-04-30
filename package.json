@@ -20,7 +20,7 @@
   ],
   "main": "./out/src/extension.js",
   "engines": {
-    "vscode": "^1.43.0"
+    "vscode": "^1.44.0"
   },
   "scripts": {
     "generate": "ts-node ./commands/generate.ts && ts-node package.ts",
@@ -152,6 +152,138 @@
           "default": true,
           "description": "Controls whether selections can be empty. If false, each selection will have at least one character.",
           "deprecationMessage": "This property will be removed in the next version of Dance. Please set dance.selectionBehavior to \"caret\" to allow empty selections, or to \"character\" to forbid them."
+        },
+        "dance.menus": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "command": {
+                      "type": "string"
+                    },
+                    "args": {
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "default": {
+            "goto": {
+              "items": {
+                "h": {
+                  "text": "go to line start",
+                  "command": "dance.goto.lineStart"
+                },
+                "l": {
+                  "text": "go to line end",
+                  "command": "dance.goto.lineEnd"
+                },
+                "i": {
+                  "text": "go to non-blank line start",
+                  "command": "dance.goto.lineStart.nonBlank"
+                },
+                "g": {
+                  "text": "go to first line",
+                  "command": "dance.goto.firstLine"
+                },
+                "k": {
+                  "text": "go to first line",
+                  "command": "dance.goto.firstLine"
+                },
+                "j": {
+                  "text": "go to last line",
+                  "command": "dance.goto.lastLine"
+                },
+                "e": {
+                  "text": "go to last char of last line",
+                  "command": "dance.goto.lastCharacter"
+                },
+                "t": {
+                  "text": "go to the first displayed line",
+                  "command": "dance.goto.firstVisibleLine"
+                },
+                "c": {
+                  "text": "go to the middle displayed line",
+                  "command": "dance.goto.middleVisibleLine"
+                },
+                "b": {
+                  "text": "go to the last displayed line",
+                  "command": "dance.goto.lastVisibleLine"
+                },
+                "f": {
+                  "text": "go to file whose name is selected",
+                  "command": "dance.goto.selectedFile"
+                },
+                ".": {
+                  "text": "go to last buffer modification position",
+                  "command": "dance.goto.lastModification"
+                }
+              }
+            },
+            "goto.extend": {
+              "items": {
+                "h": {
+                  "text": "go to line start",
+                  "command": "dance.goto.lineStart.extend"
+                },
+                "l": {
+                  "text": "go to line end",
+                  "command": "dance.goto.lineEnd.extend"
+                },
+                "i": {
+                  "text": "go to non-blank line start",
+                  "command": "dance.goto.lineStart.nonBlank.extend"
+                },
+                "g": {
+                  "text": "go to first line",
+                  "command": "dance.goto.firstLine.extend"
+                },
+                "k": {
+                  "text": "go to first line",
+                  "command": "dance.goto.firstLine.extend"
+                },
+                "j": {
+                  "text": "go to last line",
+                  "command": "dance.goto.lastLine.extend"
+                },
+                "e": {
+                  "text": "go to last char of last line",
+                  "command": "dance.goto.lastCharacter.extend"
+                },
+                "t": {
+                  "text": "go to the first displayed line",
+                  "command": "dance.goto.firstVisibleLine.extend"
+                },
+                "c": {
+                  "text": "go to the middle displayed line",
+                  "command": "dance.goto.middleVisibleLine.extend"
+                },
+                "b": {
+                  "text": "go to the last displayed line",
+                  "command": "dance.goto.lastVisibleLine.extend"
+                },
+                "f": {
+                  "text": "go to file whose name is selected",
+                  "command": "dance.goto.selectedFile.extend"
+                },
+                ".": {
+                  "text": "go to last buffer modification position",
+                  "command": "dance.goto.lastModification.extend"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -835,6 +967,78 @@
         "category": "Dance"
       },
       {
+        "command": "dance.goto.lineStart",
+        "title": "Go to line start",
+        "description": "Go to line start.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineStart.nonBlank",
+        "title": "Go to non-blank line start",
+        "description": "Go to first non-whitespace character of the line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineEnd",
+        "title": "Go to line end",
+        "description": "Go to line end.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.firstLine",
+        "title": "Go to first line",
+        "description": "Go to first line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastLine",
+        "title": "Go to last line",
+        "description": "Go to last line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastCharacter",
+        "title": "Go to last character of the document",
+        "description": "Go to last character of the document.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.firstVisibleLine",
+        "title": "Go to first visible line",
+        "description": "Go to first visible line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.middleVisibleLine",
+        "title": "Go to middle visible line",
+        "description": "Go to middle visible line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastVisibleLine",
+        "title": "Go to last visible line",
+        "description": "Go to last visible line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.selectedFile",
+        "title": "Open file under selection",
+        "description": "Open file under selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastModification",
+        "title": "Go to last buffer modification position",
+        "description": "Go to last buffer modification position.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.openMenu",
+        "title": "Open quick-jump menu",
+        "description": "Open quick-jump menu.",
+        "category": "Dance"
+      },
+      {
         "command": "dance.registers.insert",
         "title": "Insert value in register",
         "description": "Insert value in register.",
@@ -1006,6 +1210,66 @@
         "command": "dance.goto.extend",
         "title": "Go to... (extend)",
         "description": "Shows prompt to jump somewhere",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineStart.extend",
+        "title": "Go to line start (extend)",
+        "description": "Go to line start (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineStart.nonBlank.extend",
+        "title": "Go to non-blank line start (extend)",
+        "description": "Go to first non-whitespace character of the line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineEnd.extend",
+        "title": "Go to line end (extend)",
+        "description": "Go to line end (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.firstLine.extend",
+        "title": "Go to first line (extend)",
+        "description": "Go to first line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastLine.extend",
+        "title": "Go to last line (extend)",
+        "description": "Go to last line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastCharacter.extend",
+        "title": "Go to last character of the document (extend)",
+        "description": "Go to last character of the document (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.firstVisibleLine.extend",
+        "title": "Go to first visible line (extend)",
+        "description": "Go to first visible line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.middleVisibleLine.extend",
+        "title": "Go to middle visible line (extend)",
+        "description": "Go to middle visible line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastVisibleLine.extend",
+        "title": "Go to last visible line (extend)",
+        "description": "Go to last visible line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastModification.extend",
+        "title": "Go to last buffer modification position (extend)",
+        "description": "Go to last buffer modification position (extend).",
         "category": "Dance"
       },
       {

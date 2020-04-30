@@ -125,6 +125,48 @@ const pkg = {
           description: 'Controls whether selections can be empty. If false, each selection will have at least one character.',
           deprecationMessage: 'This property will be removed in the next version of Dance. Please set dance.selectionBehavior to "caret" to allow empty selections, or to "character" to forbid them.',
         },
+        'dance.menus': {
+          type: 'object',
+          additionalProperties: {
+            type: 'object',
+            properties: {
+              items: {
+                type: 'object',
+                additionalProperties: {
+                  type: 'object',
+                  properties: {
+                    'text': {
+                      type: 'string',
+                    },
+                    'command': {
+                      type: 'string',
+                    },
+                    'args': {
+                      type: 'array',
+                    },
+                  },
+                },
+              },
+            },
+            additionalProperties: false,
+          },
+          default: (Object as any).fromEntries(['', '.extend'].map(suffix => ['goto' + suffix, {
+            items: {
+              'h': { text: 'go to line start', command: 'dance.goto.lineStart' + suffix },
+              'l': { text: 'go to line end', command: 'dance.goto.lineEnd' + suffix },
+              'i': { text: 'go to non-blank line start', command: 'dance.goto.lineStart.nonBlank' + suffix },
+              'g': { text: 'go to first line', command: 'dance.goto.firstLine' + suffix },
+              'k': { text: 'go to first line', command: 'dance.goto.firstLine' + suffix },
+              'j': { text: 'go to last line', command: 'dance.goto.lastLine' + suffix },
+              'e': { text: 'go to last char of last line', command: 'dance.goto.lastCharacter' + suffix },
+              't': { text: 'go to the first displayed line', command: 'dance.goto.firstVisibleLine' + suffix },
+              'c': { text: 'go to the middle displayed line', command: 'dance.goto.middleVisibleLine' + suffix },
+              'b': { text: 'go to the last displayed line', command: 'dance.goto.lastVisibleLine' + suffix },
+              'f': { text: 'go to file whose name is selected', command: 'dance.goto.selectedFile' + suffix },
+              '.': { text: 'go to last buffer modification position', command: 'dance.goto.lastModification' + suffix },
+            },
+          }])),
+        },
       },
     },
     commands: Object.values(commands).map(x => ({
