@@ -74,6 +74,89 @@ world
     friends,
 |{0}  and welcome
 
+//== 5
+he{0}llo
+|{0}world
+
+my
+friend
+
+//== 5 > 5.select
+//= dance.select.line
+// The full line is not yet selected, so select it.
+{0}hello
+|{0}world
+
+my
+friend
+
+//== 5 > 5.select.twice
+//= dance.count.2
+//= dance.select.line
+// First select the full first line, then the next line.
+hello
+{0}world
+|{0}
+my
+friend
+
+//== 5.select.twice > 5.emptyLine
+//= dance.select.line
+// An empty line is selected now.
+hello
+world
+{0}
+|{0}my
+friend
+
+//== 5.emptyLine > 5.pass.emptyLine
+//= dance.select.line
+hello
+world
+
+{0}my
+|{0}friend
+
+//== 6
+// The full line is selected, but in reverse direction.
+|{0}hello
+{0}world
+
+//== 6 > 6.select
+//= dance.select.line
+// The selection should be reversed without moving on.
+{0}hello
+|{0}world
+
+//== 6 > 6.select.extend
+//= dance.select.line.extend
+// Anchor is unchanged but active moved to the line break, thus selecting it.
+hello{0}
+|{0}world
+
+//== 6.select.extend > 6.select.extend.again
+//= dance.select.line.extend
+// Special case: Anchor (instead of active) is moved to the line start, thus
+// selecting the full line in forward direction.
+{0}hello
+|{0}world
+
+//== 7
+|{0}hello
+w{0}orld
+
+//== 7 > 7.select.extend
+//= dance.select.line.extend
+// The special case above does not apply if anchor is on a different line.
+hello{0}
+w|{0}orld
+
+//== 7.select.extend > 7.select.extend.again
+//= dance.select.line.extend
+// So the selection will get stuck there with more select.line.extend commands.
+hello{0}
+w|{0}orld
+
 //== line.0
 the quick {0}bro|{0}wn fox
 
