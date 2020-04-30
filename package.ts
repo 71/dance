@@ -110,6 +110,17 @@ const pkg = {
           default: 'inherit',
           description: 'Controls the cursor style in insert mode.',
         },
+        'dance.insertMode.selectionStyle': {
+          type: 'object',
+          default: {
+            borderColor: '$editor.selectionBackground',
+            borderStyle: 'solid',
+            borderWidth: '2px',
+            borderRadius: '1px',
+          },
+          description: 'The style to apply to selections in insert mode.',
+          properties: (Object as any).fromEntries(['backgroundColor', 'borderColor', 'borderStyle', 'borderWidth', 'borderRadius'].map(x => [x, { type: 'string' }])),
+        },
         'dance.selectionBehavior': {
           enum: ['caret', 'character'],
           default: 'caret',

@@ -200,10 +200,21 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     }
 
     if (flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter)) {
-      editorState.setMode(Mode.Insert)
-
+      // Ensure selections face the right way.
       const selections = editor.selections,
-            len = selections.length
+            len = selections.length,
+            shouldBeReversed = (flags & CommandFlags.SwitchToInsertBefore) !== 0
+
+      for (let i = 0; i < len; i++) {
+        const selection = selections[i]
+
+        selections[i] = selection.isReversed === shouldBeReversed
+          ? selection
+          : new vscode.Selection(selection.active, selection.anchor)
+      }
+
+      // Make selections empty.
+      editorState.setMode(Mode.Insert)
 
       for (let i = 0; i < len; i++) {
         const position = flags & CommandFlags.SwitchToInsertBefore

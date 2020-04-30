@@ -2,7 +2,7 @@ import * as vscode from 'vscode'
 
 import { EditorState }    from './editor'
 import { Extension }      from './extension'
-import { commands, Command, CommandState, InputKind } from '../commands'
+import { CommandState, InputKind } from '../commands'
 import { assert }         from '../utils/assert'
 import { SavedSelection } from '../utils/savedSelection'
 
@@ -77,6 +77,12 @@ export class DocumentState {
         for (let j = 0; j < e.contentChanges.length; j++)
           savedSelection.updateAfterDocumentChanged(e.contentChanges[j])
       }
+    }
+
+    const editorStates = this._editorStates
+
+    for (let i = 0; i < editorStates.length; i++) {
+      editorStates[i].onDidChangeTextDocument(e)
     }
 
     this.recordChanges(e.contentChanges)

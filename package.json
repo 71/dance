@@ -135,6 +135,33 @@
           "default": "inherit",
           "description": "Controls the cursor style in insert mode."
         },
+        "dance.insertMode.selectionStyle": {
+          "type": "object",
+          "default": {
+            "borderColor": "$editor.selectionBackground",
+            "borderStyle": "solid",
+            "borderWidth": "2px",
+            "borderRadius": "1px"
+          },
+          "description": "The style to apply to selections in insert mode.",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "borderStyle": {
+              "type": "string"
+            },
+            "borderWidth": {
+              "type": "string"
+            },
+            "borderRadius": {
+              "type": "string"
+            }
+          }
+        },
         "dance.selectionBehavior": {
           "enum": [
             "caret",

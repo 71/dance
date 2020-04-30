@@ -52,12 +52,13 @@ export class SavedSelection {
    * Updates the underlying selection to reflect a change in its document.
    */
   updateAfterDocumentChanged(e: vscode.TextDocumentContentChangeEvent) {
-    const diff = e.text.length - e.rangeLength
+    const diff = e.text.length - e.rangeLength,
+          offset = e.rangeOffset + e.rangeLength
 
-    if (e.rangeOffset <= this._activeOffset)
+    if (offset <= this._activeOffset)
       this._activeOffset += diff
 
-    if (e.rangeOffset <= this._anchorOffset)
+    if (offset <= this._anchorOffset)
       this._anchorOffset += diff
   }
 }

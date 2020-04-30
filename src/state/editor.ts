@@ -5,6 +5,7 @@ import { Mode, ModeConfiguration, SelectionBehavior } from './extension'
 import { CommandState, InputKind } from '../commands'
 import { extensionName }           from '../extension'
 import { assert }                  from '../utils/assert'
+import { SavedSelection } from '../utils/savedSelection'
 
 
 /**
@@ -22,14 +23,22 @@ export class EditorState {
    */
   private _id: string
 
-  /**
-   * The last matching editor.
-   */
+  /** The last matching editor. */
   private _editor: vscode.TextEditor
 
   private _mode!: Mode
 
+  /** Disposable for the `type` command override. */
   private _typeCommandDisposable?: vscode.Disposable
+
+  /** Selections that we had before entering insert mode. */
+  private _insertModeSelections?: readonly SavedSelection[]
+
+  /** Whether a selection change event should be expected while in insert mode. */
+  private _expectSelectionChangeEvent = false
+
+  /** Whether the next selection change event should be ignored. */
+  private _ignoreSelectionChangeEvent = false
 
   /**
    * The mode of the editor.
@@ -131,15 +140,51 @@ export class EditorState {
       this._typeCommandDisposable = typeCommandDisposable
     }
 
-    const { insertMode, normalMode } = this.extension
+    if (this._mode === mode)
+      return
+
+    const { insertMode, normalMode } = this.extension,
+          documentState = this.documentState
 
     this._mode = mode
 
     if (mode === Mode.Insert) {
       this.clearDecorations(normalMode.decorationType)
       this.setDecorations(insertMode.decorationType)
+
+      const selections = this.editor.selections,
+            documentState = this.documentState,
+            savedSelections = [] as SavedSelection[]
+
+      for (let i = 0, len = selections.length; i < len; i++) {
+        savedSelections.push(documentState.saveSelection(selections[i]))
+      }
+
+      this._insertModeSelections = savedSelections
+      this._ignoreSelectionChangeEvent = true
+
+      if (this.extension.insertModeSelectionStyle !== undefined)
+        this.editor.setDecorations(this.extension.insertModeSelectionStyle, selections)
     } else {
+      if (this._insertModeSelections !== undefined) {
+        const savedSelections = this._insertModeSelections,
+              editorSelections = this._editor.selections,
+              document = this.documentState.document
+
+        assert(editorSelections.length === savedSelections.length)
+
+        for (let i = 0, len = savedSelections.length; i < len; i++) {
+          editorSelections[i] = savedSelections[i].selection(document)
+        }
+
+        documentState.forgetSelections(this._insertModeSelections)
+
+        this._editor.selections = editorSelections
+        this._insertModeSelections = undefined
+      }
+
       this.clearDecorations(insertMode.decorationType)
+      this.clearDecorations(this.extension.insertModeSelectionStyle)
       this.setDecorations(normalMode.decorationType)
 
       this.normalizeSelections()
@@ -187,10 +232,47 @@ export class EditorState {
       this.setMode(Mode.Normal)
 
     // Update decorations.
-    if (mode === Mode.Insert)
+    if (mode === Mode.Insert) {
+      if (this._ignoreSelectionChangeEvent) {
+        this._ignoreSelectionChangeEvent = false
+
+        return
+      }
+
       this.setDecorations(this.extension.insertMode.decorationType)
-    else
+
+      // Update insert mode decorations that keep track of previous selections.
+      const mustDropSelections = e.kind === vscode.TextEditorSelectionChangeKind.Command
+                              || e.kind === vscode.TextEditorSelectionChangeKind.Mouse
+                              || !this._expectSelectionChangeEvent
+
+      const selectionStyle = this.extension.insertModeSelectionStyle,
+            decorationRanges = [] as vscode.Range[]
+
+      if (mustDropSelections) {
+        this._insertModeSelections = []
+
+        if (selectionStyle !== undefined)
+          this.editor.setDecorations(selectionStyle, [])
+      } else if (selectionStyle !== undefined) {
+        const insertModeSelections = this._insertModeSelections
+
+        if (insertModeSelections !== undefined) {
+          const document = this.documentState.document
+
+          for (let i = 0, len = insertModeSelections.length; i < len; i++) {
+            const insertModeSelection = insertModeSelections[i]
+
+            if (insertModeSelection.activeOffset !== insertModeSelection.anchorOffset)
+              decorationRanges.push(insertModeSelection.selection(document))
+          }
+        }
+
+        this.editor.setDecorations(selectionStyle, decorationRanges)
+      }
+    } else {
       this.setDecorations(this.extension.normalMode.decorationType)
+    }
 
     // Debounce normalization.
     if (this.normalizeTimeoutToken !== undefined) {
@@ -205,6 +287,42 @@ export class EditorState {
       }, 200)
     } else {
       this.normalizeSelections()
+    }
+  }
+
+  /**
+   * Called when `vscode.workspace.onDidChangeTextDocument` is triggered on the document of the editor.
+   */
+  onDidChangeTextDocument(e: vscode.TextDocumentChangeEvent) {
+    if (this._mode === Mode.Insert) {
+      const changes = e.contentChanges
+
+      if (this.editor.selections.length !== changes.length) {
+        return
+      }
+
+      // Find all matching selections for the given changes.
+      // If all selections have a match, we can continue.
+      const remainingSelections = new Set(this.editor.selections)
+
+      for (let i = 0, len = changes.length; i < len; i++) {
+        const change = changes[i]
+
+        for (const selection of remainingSelections) {
+          if (selection.active.isEqual(change.range.start) || selection.active.isEqual(change.range.end)) {
+            remainingSelections.delete(selection)
+
+            break
+          }
+        }
+
+        if (remainingSelections.size !== len - i - 1)
+          return
+      }
+
+      this._expectSelectionChangeEvent = true
+
+      setImmediate(() => this._expectSelectionChangeEvent = false)
     }
   }
 

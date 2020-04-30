@@ -225,6 +225,8 @@ export class Extension implements vscode.Disposable {
   readonly insertMode = ModeConfiguration.insert()
   readonly normalMode = ModeConfiguration.normal()
 
+  insertModeSelectionStyle?: vscode.TextEditorDecorationType
+
   // Ephemeral state needed by commands.
   currentCount: number = 0
   currentRegister: Register | undefined = undefined
@@ -259,6 +261,24 @@ export class Extension implements vscode.Disposable {
       this.insertMode.updateCursorStyle(this, 'inherit')
       this.normalMode.updateCursorStyle(this, 'inherit')
     })
+
+    // Configuration: selection style.
+    this.observePreference<Record<string, string | vscode.ThemeColor>>('insertMode.selectionStyle', {}, value => {
+      if (typeof value !== 'object' || value === null)
+        return
+
+      for (const key in value) {
+        const val = value[key]
+
+        if (typeof val !== 'string')
+          return
+        if (val.startsWith('$'))
+          value[key] = new vscode.ThemeColor(val.substr(1))
+      }
+
+      this.insertModeSelectionStyle?.dispose()
+      this.insertModeSelectionStyle = vscode.window.createTextEditorDecorationType(value)
+    }, true)
 
     // Configuration: menus.
     this.observePreference<Record<string, GotoMenu>>('menus', {}, value => {
