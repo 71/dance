@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandDescriptor } from '.'
+import { SelectionBehavior } from '../state/extension'
 import { SelectionHelper } from '../utils/selectionHelper'
 
 
@@ -50,15 +51,15 @@ function normalizeSelectionsForLineInsertion(editor: vscode.TextEditor) {
   })
 }
 
-registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, ({ editor }, { allowEmptySelections }) => {
-  if (!allowEmptySelections)
+registerCommand(Command.insertNewLineAbove, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, ({ editor }, { selectionBehavior }) => {
+  if (selectionBehavior === SelectionBehavior.Character)
     normalizeSelectionsForLineInsertion(editor)
 
   return vscode.commands.executeCommand('editor.action.insertLineBefore')
 })
 
-registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, ({ editor }, { allowEmptySelections }) => {
-  if (!allowEmptySelections)
+registerCommand(Command.insertNewLineBelow, CommandFlags.Edit | CommandFlags.SwitchToInsertBefore, ({ editor }, { selectionBehavior }) => {
+  if (selectionBehavior === SelectionBehavior.Character)
     normalizeSelectionsForLineInsertion(editor)
 
   return vscode.commands.executeCommand('editor.action.insertLineAfter')

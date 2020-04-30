@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { DocumentState }           from './document'
-import { Mode, ModeConfiguration } from './extension'
+import { Mode, ModeConfiguration, SelectionBehavior } from './extension'
 import { CommandState, InputKind } from '../commands'
 import { extensionName }           from '../extension'
 import { assert }                  from '../utils/assert'
@@ -243,7 +243,7 @@ export class EditorState {
           selection = editor.selection,
           extension = this.extension
 
-    if (selection.end.character === 0 && selection.end.line > 0 && !extension.allowEmptySelections) {
+    if (selection.end.character === 0 && selection.end.line > 0 && extension.selectionBehavior === SelectionBehavior.Character) {
       editor.setDecorations(decorationType, [new vscode.Range(selection.start, selection.end.with(selection.end.line - 1, 0))])
       editor.options.cursorStyle = vscode.TextEditorCursorStyle.LineThin
     } else {
@@ -294,7 +294,7 @@ export class EditorState {
    * Make all selections in the editor non-empty by selecting at least one character.
    */
   normalizeSelections() {
-    if (this._mode !== Mode.Normal || this.extension.allowEmptySelections || this.ignoreSelectionChanges)
+    if (this._mode !== Mode.Normal || this.extension.selectionBehavior === SelectionBehavior.Caret || this.ignoreSelectionChanges)
       return
 
     const editor = this._editor

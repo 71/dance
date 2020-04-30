@@ -136,10 +136,23 @@
           "default": "inherit",
           "description": "Controls the cursor style in insert mode."
         },
+        "dance.selectionBehavior": {
+          "enum": [
+            "caret",
+            "character"
+          ],
+          "default": "caret",
+          "description": "Controls how selections behave within VS Code.",
+          "markdownEnumDescriptions": [
+            "Selections are anchored to carets, which is the native VS Code behavior; that is, they are positioned *between* characters and can therefore be empty.",
+            "Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. Additionally, one-character selections will behave as if they were non-directional, like Kakoune."
+          ]
+        },
         "dance.selections.allowEmpty": {
           "type": "boolean",
           "default": true,
-          "description": "Controls whether selections can be empty. If false, each selection will have at least one character."
+          "description": "Controls whether selections can be empty. If false, each selection will have at least one character.",
+          "deprecationMessage": "This property will be removed in the next version of Dance. Please set dance.selectionBehavior to \"caret\" to allow empty selections, or to \"character\" to forbid them."
         }
       }
     },

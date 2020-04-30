@@ -2,9 +2,9 @@ import * as vscode from 'vscode'
 
 import { DocumentState } from './document'
 import { EditorState }   from './editor'
+import { commands }            from '../commands'
 import { extensionName }       from '../extension'
 import { Registers, Register } from '../registers'
-import { commands } from '../commands'
 
 
 // =============================================================================================
@@ -16,6 +16,11 @@ export const enum Mode {
   Insert = 'insert',
 
   Awaiting = 'awaiting',
+}
+
+export const enum SelectionBehavior {
+  Caret = 1,
+  Character = 2,
 }
 
 export namespace ModeConfiguration {
@@ -166,12 +171,12 @@ export class Extension implements vscode.Disposable {
   private readonly subscriptions: vscode.Disposable[] = []
 
   // Configuration.
-  private _allowEmptySelections = true
+  private _selectionBehavior = SelectionBehavior.Caret
 
   configuration = vscode.workspace.getConfiguration(extensionName)
 
-  get allowEmptySelections() {
-    return this._allowEmptySelections
+  get selectionBehavior() {
+    return this._selectionBehavior
   }
 
   // General state.
@@ -202,8 +207,13 @@ export class Extension implements vscode.Disposable {
     this.statusBarItem.tooltip = 'Current mode'
 
     // This needs to be before setEnabled for normalizing selections on start.
+    this.observePreference<'caret' | 'character'>('selectionBehavior', 'caret', value => {
+      this._selectionBehavior = value === 'caret' ? SelectionBehavior.Caret : SelectionBehavior.Character
+    }, true)
+
     this.observePreference<boolean>('selections.allowEmpty', true, value => {
-      this._allowEmptySelections = value
+      if (!vscode.workspace.getConfiguration('dance').has('selectionBehavior'))
+        this._selectionBehavior = value ? SelectionBehavior.Caret : SelectionBehavior.Character
     }, true)
 
     // Configuration: line highlight.

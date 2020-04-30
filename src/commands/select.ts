@@ -2,10 +2,10 @@
 import * as vscode from 'vscode'
 
 import { CommandState, registerCommand, Command, CommandFlags, InputKind } from '.'
-import { Direction, Backward, Forward, ExtendBehavior, DoNotExtend, Extend } from '../utils/selectionHelper'
-import { SelectionHelper, Coord, MoveFunc, OldActive, SelectionMapper } from '../utils/selectionHelper'
 import { EditorState } from '../state/editor'
+import { SelectionBehavior } from '../state/extension'
 import { getCharSetFunction, CharSet } from '../utils/charset'
+import { Direction, Backward, Forward, ExtendBehavior, DoNotExtend, Extend, SelectionHelper, Coord, MoveFunc, OldActive, SelectionMapper } from '../utils/selectionHelper'
 
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
@@ -199,7 +199,7 @@ registerCommand(Command.selectLine, CommandFlags.ChangeSelections, ({ editor }, 
   editor.selections = selections
 })
 
-registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, ({ editor }, { currentCount, allowEmptySelections }) => {
+registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, ({ editor }, { currentCount, selectionBehavior }) => {
   const selections = editor.selections,
         len = selections.length
 
@@ -211,7 +211,7 @@ registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, ({ edit
       const anchor = isSameLine
         ? selection.anchor.with(undefined, 0)
         : selection.anchor
-      const active = selection.active.character === 0 && !allowEmptySelections && !selection.isReversed
+      const active = selection.active.character === 0 && !selection.isReversed && selectionBehavior === SelectionBehavior.Character
         ? selection.active.translate(1)
         : new vscode.Position(selection.active.line + 1, 0)
 
@@ -247,7 +247,7 @@ registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, 
 
 const moveToLineEnd: MoveFunc = (from, helper) => {
   let newCol = helper.editor.document.lineAt(from.line).text.length
-  if (newCol > 0 && helper.allowNonDirectional) newCol--
+  if (newCol > 0 && helper.selectionBehavior === SelectionBehavior.Character) newCol--
   return { active: new Coord(from.line, newCol), maybeAnchor: OldActive }
 }
 
@@ -306,7 +306,7 @@ const trimToFullLines: SelectionMapper = (selection, helper) => {
   // Except when selecting only one empty line in non-directional mode, prefer
   // to keep the selection facing forward.
   if (selection.isReversed &&
-      !(helper.allowNonDirectional && newStart.line + 1 === newEnd.line))
+      !(helper.selectionBehavior === SelectionBehavior.Character && newStart.line + 1 === newEnd.line))
     return new vscode.Selection(newEnd, newStart)
   else
     return new vscode.Selection(newStart, newEnd)
@@ -354,7 +354,7 @@ const trimSelections: SelectionMapper = (selection, helper) => {
       // The selection is deleted if the selection contains entirely whitespace.
       return null
     }
-    if (helper.allowNonDirectional && startCol + 1 === endCol) {
+    if (helper.selectionBehavior === SelectionBehavior.Character && startCol + 1 === endCol) {
       // When selecting only one character in non-directional mode, prefer
       // to keep the selection facing forward.
       reverseSelection = false

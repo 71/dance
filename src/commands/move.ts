@@ -5,6 +5,7 @@ import { registerCommand, Command, CommandFlags, CommandState, preferredColumnsP
 import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction } from '../utils/selectionHelper'
 import { SelectionHelper, Coord, MoveFunc, AtOrBefore } from '../utils/selectionHelper'
 import { EditorState } from '../state/editor'
+import { SelectionBehavior } from '../state/extension'
 
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
@@ -51,7 +52,7 @@ const moveByLine: (direction: Direction) => MoveFunc = (direction) => (from, hel
 
   const preferredColumn = helper.editorState.preferredColumns![i]
   if (preferredColumn >= lineLen) {
-    if (helper.allowNonDirectional)
+    if (helper.selectionBehavior === SelectionBehavior.Character)
       return { maybeAnchor: new Coord(actualLine, lineLen - 1), active: AtOrBefore }
     else
       return { maybeAnchor: new Coord(actualLine, lineLen), active: AtOrBefore }

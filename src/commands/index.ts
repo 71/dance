@@ -1,8 +1,8 @@
 import * as vscode from 'vscode'
 
-import { Register }        from '../registers'
-import { EditorState }     from '../state/editor'
-import { Extension, Mode } from '../state/extension'
+import { Register } from '../registers'
+import { EditorState } from '../state/editor'
+import { Extension, Mode, SelectionBehavior } from '../state/extension'
 import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
 import { Command } from '../../commands'
 
@@ -58,12 +58,9 @@ export class CommandState<Input extends InputKind = any> {
     return this._followingChanges as readonly vscode.TextDocumentContentChangeEvent[]
   }
 
-  get allowEmptySelections() {
-    return this.extension.allowEmptySelections
-  }
-
   readonly currentCount: number
   readonly currentRegister?: Register
+  readonly selectionBehavior: SelectionBehavior
 
   constructor(
     readonly descriptor: CommandDescriptor<Input>,
@@ -72,6 +69,7 @@ export class CommandState<Input extends InputKind = any> {
   ) {
     this.currentCount = extension.currentCount
     this.currentRegister = extension.currentRegister
+    this.selectionBehavior = extension.selectionBehavior
   }
 
   /**

@@ -1,6 +1,8 @@
 import * as vscode from 'vscode'
+
 import { CommandState } from '../commands'
-import { EditorState } from '../state/editor'
+import { EditorState }       from '../state/editor'
+import { SelectionBehavior } from '../state/extension'
 
 /**
  * Direction of an operation.
@@ -33,11 +35,7 @@ export class SelectionHelper {
     return new SelectionHelper(editorState, state)
   }
 
-  readonly allowNonDirectional = !this.state.allowEmptySelections
-
-  get allowEmpty(): boolean {
-    return !this.allowNonDirectional
-  }
+  readonly selectionBehavior = this.state.selectionBehavior
 
   /**
    * Get the "cursor active" Coord of a selection.
@@ -47,7 +45,7 @@ export class SelectionHelper {
    * @param selection
    */
   activeCoord(selection: vscode.Selection): Coord {
-    if (!this.allowNonDirectional) return selection.active
+    if (this.selectionBehavior === SelectionBehavior.Caret) return selection.active
     if (selection.isEmpty) return selection.active
     if (selection.isReversed) {
       return selection.active
@@ -115,7 +113,7 @@ export class SelectionHelper {
     if (active === AtOrBefore) {
       if (moveResult.maybeAnchor === OldActive)
         throw new Error('{anchor: OldActive, active: AtOrBefore} is unsupported')
-      if (!this.allowNonDirectional)
+      if (this.selectionBehavior === SelectionBehavior.Caret)
         return new vscode.Selection(extend ? oldSelection.anchor : moveResult.maybeAnchor, moveResult.maybeAnchor)
       active = moveResult.maybeAnchor
     }
@@ -125,7 +123,7 @@ export class SelectionHelper {
     const oldActiveCoord = this.activeCoord(oldSelection)
     let anchor = moveResult.maybeAnchor
     if (anchor === OldActive) {
-      if (!this.allowNonDirectional) {
+      if (this.selectionBehavior === SelectionBehavior.Caret) {
         let activePos = oldSelection.active.isBeforeOrEqual(active) ?
           this.coordAt(this.offsetAt(active) + 1) : active
         return new vscode.Selection(oldSelection.active, activePos)
@@ -146,7 +144,7 @@ export class SelectionHelper {
     // TODO: Remove this.coordAt and this.offsetAt. Use lineAt for shifting to
     // the next position.
     if (from.isBefore(to) ||
-        (from.isEqual(to) && (this.allowNonDirectional || to.isAfter(ref)))) {
+        (from.isEqual(to) && (this.selectionBehavior === SelectionBehavior.Character || to.isAfter(ref)))) {
       // Forward: 0123456 ==select(1, 4)=> 0<1234|56
       // Need to increment `to` to include the last character.
       const active = this.coordAt(this.offsetAt(to) + 1)
@@ -165,12 +163,12 @@ export class SelectionHelper {
     let { anchor } = oldSelection
     if (anchor.isBeforeOrEqual(to)) {
       // The resulting selection will be forward-facing.
-      if (this.allowNonDirectional && oldSelection.isReversed) {
+      if (this.selectionBehavior === SelectionBehavior.Character && oldSelection.isReversed) {
         // Flipping selections in the opposite direction: 0|1>2345 to 0<12345|
         // Need to push anchor backwards so that the first symbol is included.
         anchor = this.coordAt(this.offsetAt(anchor) - 1)
       }
-      if (this.allowNonDirectional || to.isAfterOrEqual(oldSelection.active)) {
+      if (this.selectionBehavior === SelectionBehavior.Character || to.isAfterOrEqual(oldSelection.active)) {
         // Moving forward (or non-directional): 01|23>456 ==(to 4)==> 01|234>56
         // Need to increment to include the the symbol at `to`.
         const active = this.coordAt(this.offsetAt(to) + 1)
@@ -184,7 +182,7 @@ export class SelectionHelper {
     } else {
       // The resulting selection will be (most likely) backwards-facing.
       const afterTo = this.coordAt(this.offsetAt(to) + 1)
-      if (this.allowNonDirectional) {
+      if (this.selectionBehavior === SelectionBehavior.Character) {
         if ((!oldSelection.isReversed && oldSelection.anchor.isEqual(to)) ||
             (oldSelection.isReversed && oldSelection.anchor.isEqual(afterTo))) {
           // Special case one character selections to face forward:
@@ -195,7 +193,7 @@ export class SelectionHelper {
           anchor = this.coordAt(this.offsetAt(anchor) + 1)
         }
       }
-      if (this.allowNonDirectional || to.isBeforeOrEqual(oldSelection.active)) {
+      if (this.selectionBehavior === SelectionBehavior.Character || to.isBeforeOrEqual(oldSelection.active)) {
         // Moving backward (or non-directional): 012<34|5 ==(to 2)==> 01<234|5
         // Include the symbol at `to`.
         return new vscode.Selection(anchor, to)
@@ -234,7 +232,7 @@ export class SelectionHelper {
   }
 
   endLine(selection: vscode.Selection) {
-    if (!this.allowEmpty && selection.end === selection.active && selection.end.character === 0)
+    if (this.selectionBehavior === SelectionBehavior.Character && selection.end === selection.active && selection.end.character === 0)
       return selection.end.line - 1
     else
       return selection.end.line

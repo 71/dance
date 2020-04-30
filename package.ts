@@ -34,7 +34,7 @@ const pkg = {
   main: './out/src/extension.js',
 
   engines: {
-    vscode: '^1.32.0',
+    vscode: '^1.43.0',
   },
 
   scripts: {
@@ -43,7 +43,7 @@ const pkg = {
     'compile'          : 'tsc -p ./',
     'watch'            : 'tsc -watch -p ./',
     'postinstall'      : 'node ./node_modules/vscode/bin/install',
-    'test'             : 'yarn run compile && node ./node_modules/vscode/bin/test',
+    'test'             : 'yarn run compile && node ./out/test/run.js',
     'package'          : 'vsce package',
     'publish'          : 'vsce publish',
   },
@@ -111,10 +111,20 @@ const pkg = {
           default: 'inherit',
           description: 'Controls the cursor style in insert mode.',
         },
+        'dance.selectionBehavior': {
+          enum: ['caret', 'character'],
+          default: 'caret',
+          description: 'Controls how selections behave within VS Code.',
+          markdownEnumDescriptions: [
+            'Selections are anchored to carets, which is the native VS Code behavior; that is, they are positioned *between* characters and can therefore be empty.',
+            'Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. Additionally, one-character selections will behave as if they were non-directional, like Kakoune.',
+          ],
+        },
         'dance.selections.allowEmpty': {
           type: 'boolean',
           default: true,
           description: 'Controls whether selections can be empty. If false, each selection will have at least one character.',
+          deprecationMessage: 'This property will be removed in the next version of Dance. Please set dance.selectionBehavior to "caret" to allow empty selections, or to "character" to forbid them.',
         },
       },
     },
@@ -136,4 +146,4 @@ const pkg = {
 // Save to package.json
 // ============================================================================
 
-writeFileSync('./package.json', JSON.stringify(pkg, undefined, 2), 'utf8')
+writeFileSync('./package.json', JSON.stringify(pkg, undefined, 2) + '\n', 'utf8')
