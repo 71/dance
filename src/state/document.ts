@@ -1,11 +1,10 @@
 import * as vscode from 'vscode'
 
-import { EditorState }             from './editor'
-import { Extension }               from './extension'
-import { CommandState, InputKind, Command } from '../commands'
-import { assert }                  from '../utils/assert'
-import { SavedSelection }          from '../utils/savedSelection'
-import { commands } from '../commands'
+import { EditorState }    from './editor'
+import { Extension }      from './extension'
+import { commands, Command, CommandState, InputKind } from '../commands'
+import { assert }         from '../utils/assert'
+import { SavedSelection } from '../utils/savedSelection'
 
 
 /**
