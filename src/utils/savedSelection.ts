@@ -7,9 +7,9 @@ export class SavedSelection {
   private _anchorOffset: number
   private _activeOffset: number
 
-  constructor(document: vscode.TextDocument, selection: vscode.Selection) {
-    this._anchorOffset = document.offsetAt(selection.anchor)
-    this._activeOffset = document.offsetAt(selection.active)
+  constructor(anchorOffset: number, activeOffset: number) {
+    this._anchorOffset = anchorOffset
+    this._activeOffset = activeOffset
   }
 
   /** The offset of the anchor in its document. */

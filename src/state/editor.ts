@@ -151,6 +151,10 @@ export class EditorState {
 
       this.normalizeSelections()
     }
+
+    if (this.isActive) {
+      this.onDidBecomeActive()
+    }
   }
 
   /**
@@ -212,30 +216,12 @@ export class EditorState {
   // ==  DECORATIONS  ============================================================================
   // =============================================================================================
 
-  updateDecorations(modeConfiguration: ModeConfiguration, color: string | null) {
-    if (modeConfiguration.decorationType !== undefined)
-      modeConfiguration.decorationType.dispose()
-
-    if (color === null || color.length === 0)
-      return modeConfiguration.decorationType = undefined
-
-    modeConfiguration.decorationType = vscode.window.createTextEditorDecorationType({
-      backgroundColor: color[0] === '#' ? color : new vscode.ThemeColor(color),
-      isWholeLine: true,
-    })
-
-    if (this.mode === modeConfiguration.mode && this.isActive)
-      this.setDecorations(modeConfiguration.decorationType)
-
-    return
-  }
-
   private clearDecorations(decorationType: vscode.TextEditorDecorationType | undefined) {
     if (decorationType !== undefined)
       this._editor.setDecorations(decorationType, [])
   }
 
-  private setDecorations(decorationType: vscode.TextEditorDecorationType | undefined) {
+  setDecorations(decorationType: vscode.TextEditorDecorationType | undefined) {
     if (decorationType === undefined)
       return
 

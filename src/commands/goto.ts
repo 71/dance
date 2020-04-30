@@ -90,6 +90,14 @@ function executeGoto(gotoType: number, editor: vscode.TextEditor, state: Command
       }))
 
     case 12: // go to last buffer modification position
+      const documentState = state.extension.getDocumentState(editor.document)
+
+      if (documentState.recordedChanges.length > 0) {
+        const range = documentState.recordedChanges[documentState.recordedChanges.length - 1].range,
+              selection = range.selection(documentState.document)
+
+        editor.selection = extend ? new vscode.Selection(editor.selection.anchor, selection.active) : selection
+      }
       break
   }
 

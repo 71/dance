@@ -189,9 +189,6 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
     const commandState = new CommandState<Input>(this, input as InputTypeMap[Input], extension)
 
-    if (!(flags & CommandFlags.IgnoreInHistory))
-      editorState.recordCommand(commandState)
-
     editorState.ignoreSelectionChanges = true
 
     let result = this.action(editorState, commandState, { undoStopBefore: true, undoStopAfter: true })
@@ -239,6 +236,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     }
 
     editorState.ignoreSelectionChanges = false
+    editorState.recordCommand(commandState)
     editorState.normalizeSelections()
   }
 

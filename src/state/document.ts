@@ -2,9 +2,10 @@ import * as vscode from 'vscode'
 
 import { EditorState }             from './editor'
 import { Extension }               from './extension'
-import { CommandState, InputKind } from '../commands'
+import { CommandState, InputKind, Command } from '../commands'
 import { assert }                  from '../utils/assert'
 import { SavedSelection }          from '../utils/savedSelection'
+import { commands } from '../commands'
 
 
 /**
@@ -92,7 +93,9 @@ export class DocumentState {
    * the selection correspondingly over time.
    */
   saveSelection(selection: vscode.Selection) {
-    const savedSelection = new SavedSelection(this.document, selection)
+    const anchorOffset = this.document.offsetAt(selection.anchor),
+          activeOffset = this.document.offsetAt(selection.active),
+          savedSelection = new SavedSelection(anchorOffset, activeOffset)
 
     this._savedSelections.push(savedSelection)
 
@@ -120,13 +123,35 @@ export class DocumentState {
   // ==  HISTORY  ================================================================================
   // =============================================================================================
 
-  private _lastCommand?: CommandState<any>
+  private _lastCommand = new CommandState<any>(commands.find(x => x.command === Command.setNormal)!, undefined, this.extension)
+  private readonly _recordedChanges = [] as RecordedChange[]
+
+  /**
+   * The changes that were last made in this editor.
+   */
+  get recordedChanges() {
+    return this._recordedChanges as readonly RecordedChange[]
+  }
 
   /**
    * Adds the given changes to the history of the editor following the given command.
    */
   private recordChanges(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
     this._lastCommand?.recordFollowingChanges(changes)
+
+    const recordedChanges = this._recordedChanges
+
+    if (recordedChanges.length + changes.length > 100) {
+      recordedChanges.splice(0, recordedChanges.length + changes.length - 100)
+    }
+
+    for (let i = 0, len = changes.length; i < len; i++) {
+      const change = changes[i],
+            savedSelection = new SavedSelection(change.rangeOffset, change.rangeOffset + change.rangeLength)
+
+      this._savedSelections.push(savedSelection)
+      recordedChanges.push(new RecordedChange(savedSelection, change.text))
+    }
   }
 
   /**
@@ -135,4 +160,14 @@ export class DocumentState {
   recordCommand<I extends InputKind>(state: CommandState<I>) {
     this._lastCommand = state
   }
+}
+
+export class RecordedChange {
+  constructor(
+    /** The range that got replaced. */
+    readonly range: SavedSelection,
+
+    /** The new text for the range. */
+    readonly text: string,
+  ) {}
 }

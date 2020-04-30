@@ -79,7 +79,7 @@ registerCommand(Command.macrosRecordStop, CommandFlags.SwitchToNormal | CommandF
     // TODO: Fix that, since entries get removed after recording a small number of them.
     const commands = editorState.recordedCommands.slice(macro.lastHistoryEntry)
 
-    macro.reg.setMacro(commands)
+    macro.reg.setMacro(commands.filter(x => !(x.descriptor.flags & CommandFlags.IgnoreInHistory)))
     macro.sbi.dispose()
 
     recording.delete(editor)

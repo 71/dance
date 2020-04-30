@@ -63,8 +63,22 @@ export class ModeConfiguration {
 
   observeLineHighlightPreference(extension: Extension, defaultValue: string | null) {
     extension.observePreference<string | null>(this.modePrefix + '.lineHighlight', defaultValue, value => {
-      for (const editor of extension.editorStates())
-        editor.updateDecorations(this, value)
+      this.decorationType?.dispose()
+
+      if (value === null || value.length === 0)
+        return this.decorationType = undefined
+
+      this.decorationType = vscode.window.createTextEditorDecorationType({
+        backgroundColor: value[0] === '#' ? value : new vscode.ThemeColor(value),
+        isWholeLine: true,
+      })
+
+      for (const editor of extension.editorStates()) {
+        if (editor.mode === this.mode && editor.isActive)
+          editor.setDecorations(this.decorationType)
+      }
+
+      return
     }, true)
   }
 
@@ -301,7 +315,7 @@ export class Extension implements vscode.Disposable {
         }),
 
         vscode.window.onDidChangeTextEditorSelection(e => {
-          this._documentStates.get(e.textEditor.document)?.getEditorState(e.textEditor)?.onDidChangeTextEditorSelection(e)
+          this._documentStates.get(e.textEditor.document)?.getEditorState(e.textEditor)?.updateEditor(e.textEditor)?.onDidChangeTextEditorSelection(e)
         }),
 
         vscode.workspace.onDidChangeTextDocument(e => {
