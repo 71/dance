@@ -131,23 +131,16 @@ export class EditorState {
       this._typeCommandDisposable = typeCommandDisposable
     }
 
-    const { insertMode, normalMode } = this.extension,
-          editor = this._editor
+    const { insertMode, normalMode } = this.extension
 
     this._mode = mode
 
     if (mode === Mode.Insert) {
       this.clearDecorations(normalMode.decorationType)
       this.setDecorations(insertMode.decorationType)
-
-      editor.options.lineNumbers = insertMode.lineNumbers
-      editor.options.cursorStyle = insertMode.cursorStyle
     } else {
       this.clearDecorations(insertMode.decorationType)
       this.setDecorations(normalMode.decorationType)
-
-      editor.options.lineNumbers = normalMode.lineNumbers
-      editor.options.cursorStyle = normalMode.cursorStyle
 
       this.normalizeSelections()
     }
@@ -161,13 +154,17 @@ export class EditorState {
    * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with this editor.
    */
   onDidBecomeActive() {
-    const mode = this._mode
+    const { editor, mode } = this,
+          modeConfiguration = mode === Mode.Insert ? this.extension.insertMode : this.extension.normalMode
 
     if (mode === Mode.Insert) {
       this.extension.statusBarItem.text = '$(pencil) INSERT'
     } else if (mode === Mode.Normal) {
       this.extension.statusBarItem.text = '$(beaker) NORMAL'
     }
+
+    editor.options.lineNumbers = modeConfiguration.lineNumbers
+    editor.options.cursorStyle = modeConfiguration.cursorStyle
 
     vscode.commands.executeCommand('setContext', extensionName + '.mode', mode)
   }

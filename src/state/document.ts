@@ -54,7 +54,7 @@ export class DocumentState {
       const editorState = editorStates[i]
 
       if (editorState.isFor(editor))
-        return editorState
+        return editorState.updateEditor(editor)
     }
 
     const editorState = new EditorState(this, editor)
