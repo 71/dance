@@ -34,15 +34,14 @@ const pkg = {
   main: './out/src/extension.js',
 
   engines: {
-    vscode: '^1.43.0',
+    vscode: '^1.44.0',
   },
 
   scripts: {
-    'generate'         : 'ts-node commands/generate.ts && ts-node package.ts',
+    'generate'         : 'ts-node ./commands/generate.ts && ts-node package.ts',
     'vscode:prepublish': 'yarn run generate && yarn run compile',
     'compile'          : 'tsc -p ./',
     'watch'            : 'tsc -watch -p ./',
-    'postinstall'      : 'node ./node_modules/vscode/bin/install',
     'test'             : 'yarn run compile && node ./out/test/run.js',
     'package'          : 'vsce package',
     'publish'          : 'vsce publish',
@@ -53,7 +52,7 @@ const pkg = {
     '@types/js-yaml': '^3.12.3',
     '@types/mocha': '^7.0.2',
     '@types/node': '^13.13.4',
-    '@types/vscode': '^1.43.0',
+    '@types/vscode': '^1.44.0',
     '@typescript-eslint/eslint-plugin': '^2.30.0',
     '@typescript-eslint/parser': '^2.30.0',
     'eslint': '^6.8.0',
