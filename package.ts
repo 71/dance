@@ -121,9 +121,8 @@ const pkg = {
         },
         'dance.selections.allowEmpty': {
           type: 'boolean',
-          default: null,
           description: 'Controls whether selections can be empty. If false, each selection will have at least one character.',
-          deprecationMessage: 'This property will be removed in the next version of Dance. Please set dance.selectionBehavior to "caret" to allow empty selections, or to "character" to forbid them.',
+          deprecationMessage: 'This property will be removed in the next version of Dance and is currently being ignored. Please set dance.selectionBehavior to "caret" to allow empty selections, or to "character" to forbid them.',
         },
         'dance.menus': {
           type: 'object',

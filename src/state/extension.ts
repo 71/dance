@@ -238,11 +238,6 @@ export class Extension implements vscode.Disposable {
       this._selectionBehavior = value === 'caret' ? SelectionBehavior.Caret : SelectionBehavior.Character
     }, true)
 
-    this.observePreference<boolean | null>('selections.allowEmpty', null, value => {
-      if (value !== null)
-        this._selectionBehavior = value ? SelectionBehavior.Caret : SelectionBehavior.Character
-    }, true)
-
     // Configuration: line highlight.
     this.insertMode.observeLineHighlightPreference(this, null)
     this.normalMode.observeLineHighlightPreference(this, 'editor.hoverHighlightBackground')
