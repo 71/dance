@@ -54,6 +54,39 @@ export class SelectionHelper {
     }
   }
 
+  /**
+   * Apply a transformation to each selection.
+   *
+   * @param mapper a function takes the old selection and return a new one or
+   *               null if the selection should be deleted
+   *
+   * @see moveActiveCoord,jumpTo for creating mappers for common operations
+  */
+  mapEach(mapper: SelectionMapper): void {
+    const newSelections: vscode.Selection[] = []
+    const editor = this.editor
+    let acceptOverflow = true
+    const len = editor.selections.length
+    for (let i = 0; i < len; i++) {
+      const moveResult = mapper(editor.selections[i], this, i)
+      if (moveResult === null) {
+        if (acceptOverflow)
+          newSelections.push(editor.selections[i])
+      } else {
+        if (acceptOverflow) {
+          newSelections.length = 0 // Clear all overflow selections so far.
+          acceptOverflow = false
+        }
+        newSelections.push(moveResult)
+      }
+    }
+    if (acceptOverflow)
+      console.warn('No selections remaining.')
+    editor.selections = newSelections
+  }
+
+
+  /** Deprecated, will be refactored out soon */
   moveEach(moveFunc: MoveFunc, extend: ExtendBehavior): void {
     const newSelections: vscode.Selection[] = []
     const editor = this.editor
@@ -79,29 +112,7 @@ export class SelectionHelper {
     editor.selections = newSelections
   }
 
-  mapEach(mapper: SelectionMapper): void {
-    const newSelections: vscode.Selection[] = []
-    const editor = this.editor
-    let acceptOverflow = true
-    const len = editor.selections.length
-    for (let i = 0; i < len; i++) {
-      const moveResult = mapper(editor.selections[i], this, i)
-      if (moveResult === null) {
-        if (acceptOverflow)
-          newSelections.push(editor.selections[i])
-      } else {
-        if (acceptOverflow) {
-          newSelections.length = 0 // Clear all overflow selections so far.
-          acceptOverflow = false
-        }
-        newSelections.push(moveResult)
-      }
-    }
-    if (acceptOverflow)
-      console.warn('No selections remaining.')
-    editor.selections = newSelections
-  }
-
+  /** Deprecated, will be refactored out soon */
   evolve(extend: boolean, oldSelection: vscode.Selection, moveResult: MoveResult) {
     if (!moveResult.maybeAnchor) {
       if (typeof moveResult.active === 'object')
@@ -206,7 +217,6 @@ export class SelectionHelper {
     }
   }
 
-
   /**
    * Get the line and character of an offset in the document.
    *
@@ -301,9 +311,92 @@ export const Coord = vscode.Position // To allow sugar like `new Coord(1, 2)`.
 export type CoordOffset = number
 
 export type SelectionMapper = (selection: vscode.Selection, helper: SelectionHelper, i: number) => vscode.Selection | null
+export type CoordMapper = (oldActive: Coord, helper: SelectionHelper, i: number) => Coord | null
+
+// BEGIN DEPRECATED
 export type MoveFunc = (from: Coord, helper: SelectionHelper, i: number) => MoveResult;
 
 export const OldActive = 'oldActive'
 export const AtOrBefore = 'atOrBefore'
 export type MoveResult = {overflow?: false, maybeAnchor: Coord | typeof OldActive, active: Coord | typeof AtOrBefore} |
                          {overflow: true,   maybeAnchor: Coord | undefined,        active: Coord | undefined}
+// END DEPRECATED
+
+/**
+ * Create a SelectionMapper that moves selection's active to a new coordinate.
+ *
+ * @summary The mapper created is useful for commands that "drags" to a
+ * character such as `f` (selectTo) without moving anchor.
+ *
+ * When extending, the new selection will keep the same anchor caret /
+ * character (depending on `this.selectionBehavior`). When not extending, the
+ * new selection anchors to the old active caret / character. Either way,
+ * the new active will always sweep over the symbol at the coordinate
+ * returned, selecting or deselecting it as appropriate.
+ *
+ * @param activeMapper a function that takes an old active coordinate and return
+ *                     the coordinate of the new symbol to move to or `null` if
+ *                     it would move out of bound
+ * @param extend if Extend, the new selection will keep the anchor caret /
+ *               character. Otherwise, it is anchored to old active.
+ * @returns a SelectionMapper that is suitable for SelectionHelper#mapEach
+ */
+export function moveActiveCoord(activeMapper: CoordMapper, extend: ExtendBehavior): SelectionMapper {
+  return (selection, helper, i) => {
+    const oldActive = helper.activeCoord(selection)
+    const newActive = activeMapper(oldActive, helper, i)
+    if (newActive === null) return null
+
+    if (extend)
+      return helper.extend(selection, newActive)
+
+    if (helper.selectionBehavior === SelectionBehavior.Caret) {
+      // TODO: Optimize to avoid coordAt / offsetAt.
+      let activePos = selection.active.isBeforeOrEqual(newActive) ?
+        helper.coordAt(helper.offsetAt(newActive) + 1) : newActive
+      return new vscode.Selection(selection.active, activePos)
+    }
+
+    const ref = oldActive
+    return helper.selectionBetween(oldActive, newActive, ref)
+  }
+}
+
+/**
+ * Create a SelectionMapper that jump / extend the selection to a new position
+ * (caret or coordinate, depending on `this.selectionBehavior`).
+ *
+ * @summary The mapper created is useful for commands that "jump" to a place
+ * without dragging to it, such as `gg` (gotoFirstLine) or arrows (`hjkl`).
+ *
+ * When `this.selectionBehavior` is Caret, the new active will be at the caret
+ * at the result Position. When not extending, the anchor is moved there as
+ * well, creating an empty selection on that spot.
+ *
+ * When `this.selectionBehavior` is Character and extending, new active always
+ * include the symbol at Position. When not extending, the new selection will
+ * contain exactly one symbol under the result Position.
+ *
+ * @param activeMapper a function that takes an old active coordinate and return
+ *                     the caret / character move to or `null` if it would move
+ *                     out of bound
+ * @param extend if Extend, the new selection will keep the anchor caret /
+ *               character. Otherwise, it is anchored to old active.
+ * @returns a SelectionMapper that is suitable for SelectionHelper#mapEach
+ */
+export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): SelectionMapper {
+  return (selection, helper, i) => {
+    const oldActive = helper.activeCoord(selection)
+    const newActive = activeMapper(oldActive, helper, i)
+    if (newActive === null) return null
+
+    if (helper.selectionBehavior === SelectionBehavior.Caret)
+      return new vscode.Selection(extend ? selection.anchor : newActive, newActive)
+
+    if (extend)
+      return helper.extend(selection, newActive)
+
+    const ref = newActive
+    return helper.selectionBetween(newActive, newActive, ref)
+  }
+}

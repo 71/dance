@@ -2,7 +2,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandState, preferredColumnsPerEditor } from '.'
-import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction } from '../utils/selectionHelper'
+import { ExtendBehavior, Backward, Forward, DoNotExtend, Extend, Direction, SelectionMapper, jumpTo } from '../utils/selectionHelper'
 import { SelectionHelper, Coord, MoveFunc, AtOrBefore } from '../utils/selectionHelper'
 import { EditorState } from '../state/editor'
 import { SelectionBehavior } from '../state/extension'
@@ -10,20 +10,6 @@ import { SelectionBehavior } from '../state/extension'
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
 // ===============================================================================================
-
-const moveByOffset: (direction: Direction) => MoveFunc = (direction) => (from, helper) => {
-  const toOffset = helper.offsetAt(from) + helper.state.repetitions * direction
-  return { maybeAnchor: helper.coordAt(toOffset), active: AtOrBefore }
-}
-
-const moveByOffsetBackward  = moveByOffset(Backward)
-const moveByOffsetForward = moveByOffset(Forward)
-
-function moveHorizontal(state: CommandState, editorState: EditorState, direction: Direction, extend: ExtendBehavior) {
-  const moveFunc = direction === Forward ? moveByOffsetForward : moveByOffsetBackward
-  SelectionHelper.for(editorState, state).moveEach(moveFunc, extend)
-  revealActiveTowards(direction, editorState.editor)
-}
 
 function revealActiveTowards(direction: Direction, editor: vscode.TextEditor) {
   let revealPosition = undefined as vscode.Position | undefined
@@ -36,60 +22,68 @@ function revealActiveTowards(direction: Direction, editor: vscode.TextEditor) {
   editor.revealRange(new vscode.Range(revealPosition!, revealPosition!))
 }
 
-const moveByLine: (direction: Direction) => MoveFunc = (direction) => (from, helper, i) => {
-  const targetLine = from.line + helper.state.repetitions * direction
-  let actualLine = targetLine
-  if (actualLine < 0)
-    actualLine = 0
-  else if (targetLine > helper.editor.document.lineCount - 1)
-    actualLine = helper.editor.document.lineCount
+function registerMoveHorizontal(command: Command, direction: Direction, extend: ExtendBehavior) {
+  const selectionMapper = jumpTo((from, helper) => {
+    return helper.coordAt(helper.offsetAt(from) + helper.state.repetitions * direction)
+  }, extend)
 
-  const lineLen = helper.editor.document.lineAt(actualLine).text.length
-  if (lineLen === 0) {
-    // Select the line break on an empty line.
-    return { maybeAnchor: new Coord(actualLine, 0), active: AtOrBefore }
-  }
-
-  const preferredColumn = helper.editorState.preferredColumns![i]
-  if (preferredColumn >= lineLen) {
-    if (helper.selectionBehavior === SelectionBehavior.Character)
-      return { maybeAnchor: new Coord(actualLine, lineLen - 1), active: AtOrBefore }
-    else
-      return { maybeAnchor: new Coord(actualLine, lineLen), active: AtOrBefore }
-  }
-  return { maybeAnchor: new Coord(actualLine, preferredColumn), active: AtOrBefore }
+  registerCommand(command, CommandFlags.ChangeSelections, (editorState, state) => {
+    SelectionHelper.for(editorState, state).mapEach(selectionMapper)
+    revealActiveTowards(direction, editorState.editor)
+  })
 }
 
-const moveByLineBackward = moveByLine(Backward)
-const moveByLineForward = moveByLine(Forward)
+function registerMoveVertical(command: Command, direction: Direction, extend: ExtendBehavior) {
+  const selectionMapper = jumpTo((from, helper, i) => {
+    const targetLine = from.line + helper.state.repetitions * direction
+    let actualLine = targetLine
+    if (actualLine < 0)
+      actualLine = 0
+    else if (targetLine > helper.editor.document.lineCount - 1)
+      actualLine = helper.editor.document.lineCount
 
-function moveVertical(state: CommandState, editorState: EditorState, direction: Direction, extend: ExtendBehavior) {
-  const { editor, preferredColumns } = editorState,
-        selectionHelper = SelectionHelper.for(editorState, state)
-
-  if (preferredColumns.length === 0) {
-    for (let i = 0; i < editor.selections.length; i++) {
-      const column = selectionHelper.activeCoord(editor.selections[i]).character
-
-      preferredColumns.push(column)
+    const lineLen = helper.editor.document.lineAt(actualLine).text.length
+    if (lineLen === 0) {
+      // Select the line break on an empty line.
+      return new Coord(actualLine, 0)
     }
-  }
 
-  const moveFunc = direction === Forward ? moveByLineForward : moveByLineBackward
-  selectionHelper.moveEach(moveFunc, extend)
-  revealActiveTowards(direction, editor)
+    const preferredColumn = helper.editorState.preferredColumns![i]
+    if (preferredColumn >= lineLen) {
+      if (helper.selectionBehavior === SelectionBehavior.Character)
+        return new Coord(actualLine, lineLen - 1)
+      else
+        return new Coord(actualLine, lineLen)
+    }
+    return new Coord(actualLine, preferredColumn)
+  }, extend)
+
+  registerCommand(command, CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => {
+    const { editor, preferredColumns } = editorState,
+          selectionHelper = SelectionHelper.for(editorState, state)
+
+    if (preferredColumns.length === 0) {
+      for (let i = 0; i < editor.selections.length; i++) {
+        const column = selectionHelper.activeCoord(editor.selections[i]).character
+
+        preferredColumns.push(column)
+      }
+    }
+    SelectionHelper.for(editorState, state).mapEach(selectionMapper)
+    revealActiveTowards(direction, editorState.editor)
+  })
 }
 
 // Move/extend left/down/up/right
-registerCommand(Command.left       , CommandFlags.ChangeSelections, (editorState, state) => moveHorizontal(state, editorState, Backward, DoNotExtend))
-registerCommand(Command.leftExtend , CommandFlags.ChangeSelections, (editorState, state) => moveHorizontal(state, editorState, Backward,      Extend))
-registerCommand(Command.right      , CommandFlags.ChangeSelections, (editorState, state) => moveHorizontal(state, editorState,  Forward, DoNotExtend))
-registerCommand(Command.rightExtend, CommandFlags.ChangeSelections, (editorState, state) => moveHorizontal(state, editorState,  Forward,      Extend))
-registerCommand(Command.up         , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => moveVertical(state, editorState, Backward, DoNotExtend))
-registerCommand(Command.upExtend   , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => moveVertical(state, editorState, Backward,      Extend))
-registerCommand(Command.down       , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => moveVertical(state, editorState,  Forward, DoNotExtend))
-registerCommand(Command.downExtend , CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns, (editorState, state) => moveVertical(state, editorState,  Forward,      Extend))
 
+registerMoveHorizontal(Command.left       , Backward, DoNotExtend)
+registerMoveHorizontal(Command.leftExtend , Backward,      Extend)
+registerMoveHorizontal(Command.right      ,  Forward, DoNotExtend)
+registerMoveHorizontal(Command.rightExtend,  Forward,      Extend)
+registerMoveVertical(  Command.up         , Backward, DoNotExtend)
+registerMoveVertical(  Command.upExtend   , Backward,      Extend)
+registerMoveVertical(  Command.down       ,  Forward, DoNotExtend)
+registerMoveVertical(  Command.downExtend ,  Forward,      Extend)
 
 // Move up/down (ctrl-[bfud])
 // ===============================================================================================

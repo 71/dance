@@ -5,13 +5,13 @@ import { CommandState, registerCommand, Command, CommandFlags, InputKind } from 
 import { EditorState } from '../state/editor'
 import { SelectionBehavior } from '../state/extension'
 import { getCharSetFunction, CharSet } from '../utils/charset'
-import { Direction, Backward, Forward, ExtendBehavior, DoNotExtend, Extend, SelectionHelper, Coord, MoveFunc, OldActive, SelectionMapper } from '../utils/selectionHelper'
+import { Direction, Backward, Forward, ExtendBehavior, DoNotExtend, Extend, SelectionHelper, Coord, MoveFunc, OldActive, SelectionMapper, moveActiveCoord, CoordMapper } from '../utils/selectionHelper'
 
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
 // ===============================================================================================
 
-function moveToNextCharacter(direction: Direction, include: boolean): MoveFunc {
+function toNextCharacter(direction: Direction, include: boolean): CoordMapper {
   return (from, helper) => {
     const key = helper.state.input as string
     const active = from
@@ -38,7 +38,7 @@ function moveToNextCharacter(direction: Direction, include: boolean): MoveFunc {
 
         if (isDocumentEdge)
           // ... except if we've reached the start or end of the document.
-          return { overflow: true, active: undefined, maybeAnchor: undefined }
+          return null
 
         character = direction === Backward ? undefined : 0
       }
@@ -46,14 +46,15 @@ function moveToNextCharacter(direction: Direction, include: boolean): MoveFunc {
     if (!include) {
       character += (direction === Backward ? 1 : -1)
     }
-    return { maybeAnchor: OldActive, active: new Coord(line, character) }
+    return new Coord(line, character)
   }
 }
 
 function registerSelectTo(commandName: Command, include: boolean, extend: ExtendBehavior, direction: Direction) {
-  const moveFunc = moveToNextCharacter(direction, include)
+  const mapper = moveActiveCoord(toNextCharacter(direction, include), extend)
   registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editorState, state) => {
-    SelectionHelper.for(editorState, state).moveEach(moveFunc, extend)
+    SelectionHelper.for(editorState, state).mapEach(mapper)
+    // TODO: Reveal
   })
 }
 
@@ -235,28 +236,32 @@ registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, ({ edit
   editor.selections = selections
 })
 
-const moveToLineBegin: MoveFunc = (from) => ({ active: new Coord(from.line, 0), maybeAnchor: OldActive })
+const toLineBegin: CoordMapper = (from) => from.with(undefined, 0)
 
+const selectToLineBegin = moveActiveCoord(toLineBegin, DoNotExtend)
 registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).moveEach(moveToLineBegin, DoNotExtend)
+  SelectionHelper.for(editorState, state).mapEach(selectToLineBegin)
 })
 
+const selectToLineBeginExtend = moveActiveCoord(toLineBegin, Extend)
 registerCommand(Command.selectToLineBeginExtend, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).moveEach(moveToLineBegin, Extend)
+  SelectionHelper.for(editorState, state).mapEach(selectToLineBeginExtend)
 })
 
-const moveToLineEnd: MoveFunc = (from, helper) => {
+const toLineEnd: CoordMapper = (from, helper) => {
   let newCol = helper.editor.document.lineAt(from.line).text.length
   if (newCol > 0 && helper.selectionBehavior === SelectionBehavior.Character) newCol--
-  return { active: new Coord(from.line, newCol), maybeAnchor: OldActive }
+  return from.with(undefined, newCol)
 }
 
+const selectToLineEnd = moveActiveCoord(toLineEnd, DoNotExtend)
 registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).moveEach(moveToLineEnd, DoNotExtend)
+  SelectionHelper.for(editorState, state).mapEach(selectToLineEnd)
 })
 
+const selectToLineEndExtend = moveActiveCoord(toLineEnd, Extend)
 registerCommand(Command.selectToLineEndExtend, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).moveEach(moveToLineEnd, Extend)
+  SelectionHelper.for(editorState, state).mapEach(selectToLineEndExtend)
 })
 
 const expandLine: SelectionMapper = (selection, helper) => {
