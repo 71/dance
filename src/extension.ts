@@ -11,16 +11,16 @@ export const extensionName = 'dance'
 /**
  * Global state of the extension.
  */
-export let state: Extension
+export let extensionState: Extension
 
 /**
  * Function called by VS Code to activate the extension.
  */
 export function activate(context: vscode.ExtensionContext) {
-  state = new Extension()
+  extensionState = new Extension()
 
   context.subscriptions.push(
-    vscode.commands.registerCommand(extensionName + '.toggle', () => state.setEnabled(!state.enabled, false)),
+    vscode.commands.registerCommand(extensionName + '.toggle', () => extensionState.setEnabled(!extensionState.enabled, false)),
   )
 
   if (process.env.VERBOSE_LOGGING === 'true') {
@@ -39,5 +39,5 @@ export function activate(context: vscode.ExtensionContext) {
  * Function called by VS Code to deactivate the extension.
  */
 export function deactivate() {
-  state.dispose()
+  extensionState.dispose()
 }

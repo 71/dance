@@ -3,8 +3,8 @@ import * as fs     from 'fs'
 import * as path   from 'path'
 import * as vscode from 'vscode'
 
-import { Command } from '../../commands'
-import { state }   from '../../src/extension'
+import { Command }        from '../../commands'
+import { extensionState } from '../../src/extension'
 
 export namespace testCommands {
   export interface Mutation {
@@ -64,7 +64,7 @@ function stringifySelection(document: vscode.TextDocument, selection: vscode.Sel
 
 async function testCommands(editor: vscode.TextEditor, { initialContent, mutations, allowEmpty }: testCommands.Options) {
   // @ts-ignore
-  state._allowEmptySelections = allowEmpty
+  extensionState._allowEmptySelections = allowEmpty
 
   const content = getPlainContent(initialContent)
   const document = editor.document
