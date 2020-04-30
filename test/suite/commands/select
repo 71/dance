@@ -42,9 +42,9 @@ world
 
 //== 4 > 4.select
 //= dance.select.line
-{0}hello
+hello
 world
-  my
+{0}  my
 |{0}    friends,
   and welcome
 
