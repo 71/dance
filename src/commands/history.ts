@@ -1,6 +1,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandDescriptor, CommandFlags } from '.'
+import { extensionName }           from '../extension'
 import { MacroRegister, Register } from '../registers'
 
 
@@ -49,6 +50,7 @@ registerCommand(Command.historyRepeatEdit, CommandFlags.Edit | CommandFlags.Igno
   return
 })
 
+// TODO: Move all this to EditorState
 const recording = new WeakMap<vscode.TextEditor, {
   reg: MacroRegister, lastHistoryEntry: number, sbi: vscode.StatusBarItem
 }>()
@@ -69,6 +71,8 @@ registerCommand(Command.macrosRecordStart, CommandFlags.IgnoreInHistory, (editor
 
     recording.set(editor, { reg, lastHistoryEntry: editorState.recordedCommands.length, sbi })
   }
+
+  return vscode.commands.executeCommand('setContext', extensionName + '.recordingMacro', true)
 })
 
 registerCommand(Command.macrosRecordStop, CommandFlags.SwitchToNormal | CommandFlags.IgnoreInHistory, (editorState) => {
@@ -84,6 +88,8 @@ registerCommand(Command.macrosRecordStop, CommandFlags.SwitchToNormal | CommandF
 
     recording.delete(editor)
   }
+
+  return vscode.commands.executeCommand('setContext', extensionName + '.recordingMacro', false)
 })
 
 registerCommand(Command.macrosPlay, CommandFlags.ChangeSelections | CommandFlags.Edit, (editorState, { currentRegister, extension, repetitions }) => {

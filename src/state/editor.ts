@@ -28,9 +28,6 @@ export class EditorState {
 
   private _mode!: Mode
 
-  /** Disposable for the `type` command override. */
-  private _typeCommandDisposable?: vscode.Disposable
-
   /** Selections that we had before entering insert mode. */
   private _insertModeSelections?: readonly SavedSelection[]
 
@@ -100,8 +97,6 @@ export class EditorState {
 
     this.clearDecorations(this.extension.normalMode.decorationType)
     this.clearDecorations(this.extension.insertMode.decorationType)
-
-    this._typeCommandDisposable?.dispose()
   }
 
   /**
@@ -126,20 +121,7 @@ export class EditorState {
   /**
    * Sets the mode of the editor.
    */
-  setMode(mode: Mode): void
-  /**
-   * Sets the mode of the editor to `Awaiting`.
-   */
-  setMode(mode: Mode.Awaiting, typeCommandDisposable?: vscode.Disposable): void
-
-  setMode(mode: Mode, typeCommandDisposable?: vscode.Disposable) {
-    if (this._mode === Mode.Awaiting) {
-      this._typeCommandDisposable?.dispose()
-    }
-    if (mode === Mode.Awaiting) {
-      this._typeCommandDisposable = typeCommandDisposable
-    }
-
+  setMode(mode: Mode) {
     if (this._mode === mode)
       return
 

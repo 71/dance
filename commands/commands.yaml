@@ -474,11 +474,11 @@ history.repeat.edit:
 
 macros.record.start:
   title: Start recording macro
-  keys: s-q (normal)
+  keys: s-q (normal -macro)
 
 macros.record.stop:
   title: Stop recording macro
-  keys: escape (normal)
+  keys: escape (normal macro)
 
 macros.play:
   title: Play macro
@@ -685,3 +685,11 @@ marks.combineSelections.fromCurrent:
 marks.combineSelections.fromRegister:
   title: Combine register selections with current ones
   keys: a-z (normal)
+
+
+# Misc. (misc.ts)
+
+cancel:
+  title: Cancel operation
+  descr: Cancels waiting for input from the user
+  keys: escape (awaiting)

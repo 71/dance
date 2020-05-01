@@ -142,7 +142,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     const flags = this.flags
     const cts = new vscode.CancellationTokenSource()
 
-    extension.cancellationTokenSource?.dispose()
+    extension.cancellationTokenSource?.cancel()
     extension.cancellationTokenSource = cts
 
     let input: InputTypeMap[Input] | undefined = undefined
@@ -356,6 +356,7 @@ import './history'
 import './insert'
 import './mark'
 import './menus'
+import './misc'
 import './modes'
 import './move'
 import './pipe'

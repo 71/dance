@@ -337,7 +337,7 @@ export class Extension implements vscode.Disposable {
    * Disposes of the extension and all of its resources and subscriptions.
    */
   dispose() {
-    this.cancellationTokenSource?.dispose()
+    this.cancellationTokenSource?.cancel()
     this.setEnabled(false, false)
     this.statusBarItem.dispose()
   }

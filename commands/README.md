@@ -100,8 +100,8 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.history.repeat` | Repeat last change | Repeat last change. |  |
 | `dance.history.repeat.selection` | Repeat last selection change | Repeat last selection change. |  |
 | `dance.history.repeat.edit` | Repeat last edit change | Repeat last edit change. |  |
-| `dance.macros.record.start` | Start recording macro | Start recording macro. | `Shift+Q` (`dance.mode == 'normal'`) |
-| `dance.macros.record.stop` | Stop recording macro | Stop recording macro. | `Escape` (`dance.mode == 'normal'`) |
+| `dance.macros.record.start` | Start recording macro | Start recording macro. |  |
+| `dance.macros.record.stop` | Stop recording macro | Stop recording macro. | `Escape` (`dance.mode == 'normal' && dance.recordingMacro`) |
 | `dance.macros.play` | Play macro | Play macro. | `Q` (`dance.mode == 'normal'`) |
 | `dance.rotate` | Rotate | Rotate each selection clockwise. | `Shift+0` (`dance.mode == 'normal'`) |
 | `dance.rotate.backwards` | Rotate backwards | Rotate each selection counter-clockwise. | `Shift+9` (`dance.mode == 'normal'`) |
@@ -143,6 +143,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.marks.restoreSelections` | Restore selections | Restore selections. | `Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromCurrent` | Combine current selections with ones from register | Combine current selections with ones from register. | `Shift+Alt+Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromRegister` | Combine register selections with current ones | Combine register selections with current ones. | `Alt+Z` (`dance.mode == 'normal'`) |
+| `dance.cancel` | Cancel operation | Cancels waiting for input from the user | `Escape` (`dance.mode == 'awaiting'`) |
 | `dance.left.extend` | Move left (extend) | Move left (extend). | `Shift+Left` (`dance.mode == 'normal'`), `Shift+H` (`dance.mode == 'normal'`) |
 | `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `Shift+L` (`dance.mode == 'normal'`) |
 | `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `Shift+K` (`dance.mode == 'normal'`) |

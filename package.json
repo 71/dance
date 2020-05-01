@@ -1101,6 +1101,12 @@
         "category": "Dance"
       },
       {
+        "command": "dance.cancel",
+        "title": "Cancel operation",
+        "description": "Cancels waiting for input from the user",
+        "category": "Dance"
+      },
+      {
         "command": "dance.left.extend",
         "title": "Move left (extend)",
         "description": "Move left (extend).",
@@ -1886,14 +1892,9 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.macros.record.start",
-        "key": "Shift+q",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
         "command": "dance.macros.record.stop",
         "key": "escape",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal' && dance.recordingMacro"
       },
       {
         "command": "dance.macros.play",
@@ -2044,6 +2045,11 @@
         "command": "dance.marks.combineSelections.fromRegister",
         "key": "Alt+z",
         "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "escape",
+        "when": "editorTextFocus && dance.mode == 'awaiting'"
       },
       {
         "command": "dance.left.extend",

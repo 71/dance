@@ -1140,28 +1140,25 @@ export const historyRepeatEdit: ICommand & { readonly id: 'dance.history.repeat.
 }
 /**
  * Start recording macro.
- *
- * Default key: `Shift+Q` (`dance.mode == 'normal'`).
  */
 export const macrosRecordStart: ICommand & { readonly id: 'dance.macros.record.start' } = {
   id         : 'dance.macros.record.start',
   title      : 'Start recording macro',
   description: 'Start recording macro.',
   keybindings: [
-    { key: 'Shift+q', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /**
  * Stop recording macro.
  *
- * Default key: `Escape` (`dance.mode == 'normal'`).
+ * Default key: `Escape` (`dance.mode == 'normal' && dance.recordingMacro`).
  */
 export const macrosRecordStop: ICommand & { readonly id: 'dance.macros.record.stop' } = {
   id         : 'dance.macros.record.stop',
   title      : 'Stop recording macro',
   description: 'Stop recording macro.',
   keybindings: [
-    { key: 'escape', when: 'editorTextFocus && dance.mode == \'normal\'' },
+    { key: 'escape', when: 'editorTextFocus && dance.mode == \'normal\' && dance.recordingMacro' },
   ],
 }
 /**
@@ -1642,6 +1639,19 @@ export const marksCombineSelectionsFromRegister: ICommand & { readonly id: 'danc
   description: 'Combine register selections with current ones.',
   keybindings: [
     { key: 'Alt+z', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/**
+ * Cancels waiting for input from the user
+ *
+ * Default key: `Escape` (`dance.mode == 'awaiting'`).
+ */
+export const cancel: ICommand & { readonly id: 'dance.cancel' } = {
+  id         : 'dance.cancel',
+  title      : 'Cancel operation',
+  description: 'Cancels waiting for input from the user',
+  keybindings: [
+    { key: 'escape', when: 'editorTextFocus && dance.mode == \'awaiting\'' },
   ],
 }
 /**
@@ -2568,6 +2578,8 @@ export const commands = {
   marksCombineSelectionsFromCurrent,
   /** Combine register selections with current ones. */
   marksCombineSelectionsFromRegister,
+  /** Cancels waiting for input from the user */
+  cancel,
   /** Move left (extend). */
   leftExtend,
   /** Move right (extend). */
@@ -2940,6 +2952,8 @@ export const enum Command {
   marksCombineSelectionsFromCurrent = 'dance.marks.combineSelections.fromCurrent',
   /** Combine register selections with current ones. */
   marksCombineSelectionsFromRegister = 'dance.marks.combineSelections.fromRegister',
+  /** Cancels waiting for input from the user */
+  cancel = 'dance.cancel',
   /** Move left (extend). */
   leftExtend = 'dance.left.extend',
   /** Move right (extend). */
