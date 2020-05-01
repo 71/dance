@@ -81,9 +81,8 @@ const toFirstVisibleLineFunc: CoordMapper = (from, { editor }) =>
 const toLastVisibleLineFunc: CoordMapper = (from, { editor }) =>
     from.with(editor.visibleRanges[0].end.line, 0)
 
-// TODO: Sometimes TypeError: cannot read property length of undefined is thrown.
 const toMiddleVisibleLineFunc: CoordMapper = (from, { editor }) =>
-    from.with((editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2, 0)
+    from.with(((editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2) | 0, 0)
 
 registerCommand(Command.gotoFirstVisibleLine       , CommandFlags.ChangeSelections, toCharacter( toFirstVisibleLineFunc, DoNotExtend))
 registerCommand(Command.gotoFirstVisibleLineExtend , CommandFlags.ChangeSelections, toCharacter( toFirstVisibleLineFunc,      Extend))
