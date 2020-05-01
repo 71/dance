@@ -48,13 +48,23 @@ registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, (editorState,
   }
 })
 
-const toStartCharacterFunc: CoordMapper = (from) => from.with(undefined, 0)
-const toFirstNonBlankCharacterFunc: CoordMapper = (from, { editor }) =>
-    from.with(undefined, editor.document.lineAt(from).firstNonWhitespaceCharacterIndex)
+const toStartCharacterFunc: CoordMapper = (from, { editorState }, i) => {
+  editorState.preferredColumns[i] = 0
 
-// TODO: Also need to set preferredColumn to max.
-const toEndCharacterFunc: CoordMapper = (from, helper) => {
+  return from.with(undefined, 0)
+}
+const toFirstNonBlankCharacterFunc: CoordMapper = (from, { editor, editorState }, i) => {
+  const column = editor.document.lineAt(from).firstNonWhitespaceCharacterIndex
+
+  editorState.preferredColumns[i] = column
+
+  return from.with(undefined, column)
+}
+const toEndCharacterFunc: CoordMapper = (from, helper, i) => {
   const lineLen = helper.editor.document.lineAt(from).text.length
+
+  helper.editorState.preferredColumns[i] = Number.MAX_SAFE_INTEGER
+
   if (lineLen === 0 || helper.selectionBehavior === SelectionBehavior.Caret)
     return from.with(undefined, lineLen)
   else
