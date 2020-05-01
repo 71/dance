@@ -2,10 +2,11 @@ import * as vscode from 'vscode'
 
 import { DocumentState }           from './document'
 import { Mode, SelectionBehavior } from './extension'
-import { CommandState, InputKind } from '../commands'
+import { CommandState, InputKind, Command } from '../commands'
 import { extensionName }           from '../extension'
 import { assert }                  from '../utils/assert'
 import { SavedSelection }          from '../utils/savedSelection'
+import { MacroRegister } from '../registers'
 
 
 /**
@@ -26,8 +27,6 @@ export class EditorState {
   /** The last matching editor. */
   private _editor: vscode.TextEditor
 
-  private _mode!: Mode
-
   /** Selections that we had before entering insert mode. */
   private _insertModeSelections?: readonly SavedSelection[]
 
@@ -36,6 +35,11 @@ export class EditorState {
 
   /** Whether the next selection change event should be ignored. */
   private _ignoreSelectionChangeEvent = false
+
+  /** The ongoing recording of a macro in this editor. */
+  private _macroRecording?: MacroRecording
+
+  private _mode!: Mode
 
   /**
    * The mode of the editor.
@@ -97,6 +101,7 @@ export class EditorState {
 
     this.clearDecorations(this.extension.normalMode.decorationType)
     this.clearDecorations(this.extension.insertMode.decorationType)
+    this._macroRecording?.dispose()
   }
 
   /**
@@ -178,6 +183,37 @@ export class EditorState {
   }
 
   /**
+   * Starts recording a macro, setting up relevant handlers and UI elements.
+   */
+  startMacroRecording(register: MacroRegister & { readonly name: string }) {
+    if (this._macroRecording !== undefined)
+      return Promise.resolve(undefined)
+
+    const statusBarItem = vscode.window.createStatusBarItem()
+
+    statusBarItem.command = Command.macrosRecordStop
+    statusBarItem.text = `Macro recording in ${register.name}`
+
+    this._macroRecording = new MacroRecording(register, this._commands.length, statusBarItem)
+
+    return this._macroRecording.show().then(() => this._macroRecording)
+  }
+
+  /**
+   * Stops recording a macro, disposing of its resources.
+   */
+  stopMacroRecording() {
+    const recording = this._macroRecording
+
+    if (recording === undefined)
+      return Promise.resolve(undefined)
+
+    this._macroRecording = undefined
+
+    return recording.dispose().then(() => recording)
+  }
+
+  /**
    * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with this editor.
    */
   onDidBecomeActive() {
@@ -189,6 +225,8 @@ export class EditorState {
     } else if (mode === Mode.Normal) {
       this.extension.statusBarItem.text = '$(beaker) NORMAL'
     }
+
+    this._macroRecording?.show()
 
     editor.options.lineNumbers = modeConfiguration.lineNumbers
     editor.options.cursorStyle = modeConfiguration.cursorStyle
@@ -202,6 +240,8 @@ export class EditorState {
   onDidBecomeInactive() {
     if (this.mode === Mode.Awaiting)
       this.setMode(Mode.Normal)
+
+    this._macroRecording?.hide()
   }
 
   /**
@@ -448,4 +488,33 @@ export class EditorState {
 
 function getEditorId(editor: vscode.TextEditor) {
   return (editor as unknown as { readonly id: string }).id
+}
+
+/**
+ * An ongoing recording of a macro.
+ */
+export class MacroRecording {
+  constructor(
+    readonly register: MacroRegister,
+    readonly lastHistoryEntry: number,
+    readonly statusBarItem: vscode.StatusBarItem,
+  ) {}
+
+  show() {
+    this.statusBarItem.show()
+
+    return vscode.commands.executeCommand('setContext', extensionName + '.recordingMacro', true)
+  }
+
+  hide() {
+    this.statusBarItem.hide()
+
+    return vscode.commands.executeCommand('setContext', extensionName + '.recordingMacro', false)
+  }
+
+  dispose() {
+    this.statusBarItem.dispose()
+
+    return vscode.commands.executeCommand('setContext', extensionName + '.recordingMacro', false)
+  }
 }

@@ -1140,12 +1140,15 @@ export const historyRepeatEdit: ICommand & { readonly id: 'dance.history.repeat.
 }
 /**
  * Start recording macro.
+ *
+ * Default key: `Shift+Q` (`dance.mode == 'normal' && !dance.recordingMacro`).
  */
 export const macrosRecordStart: ICommand & { readonly id: 'dance.macros.record.start' } = {
   id         : 'dance.macros.record.start',
   title      : 'Start recording macro',
   description: 'Start recording macro.',
   keybindings: [
+    { key: 'Shift+q', when: 'editorTextFocus && dance.mode == \'normal\' && !dance.recordingMacro' },
   ],
 }
 /**

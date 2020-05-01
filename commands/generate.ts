@@ -142,7 +142,7 @@ const parseWhen = (when: string) => ({
 const parseKey = (key: string) => key.replace('a-', 'Alt+').replace('s-', 'Shift+').replace('c-', 'Ctrl+')
 
 const writable = (id: string) => id.replace(/\.\w/g, c => c.substr(1).toUpperCase())
-const parseKeys = (key: string) => matches(/([\S]+) \(([\w ]+)\)/g, key).map(x => ({ key: parseKey(x[1]), when: parseWhen(x[2]) }))
+const parseKeys = (key: string) => matches(/([\S]+) \(([\w- ]+)\)/g, key).map(x => ({ key: parseKey(x[1]), when: parseWhen(x[2]) }))
 
 for (const id in yaml) {
   const command = yaml[id]

@@ -1892,6 +1892,11 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
+        "command": "dance.macros.record.start",
+        "key": "Shift+q",
+        "when": "editorTextFocus && dance.mode == 'normal' && !dance.recordingMacro"
+      },
+      {
         "command": "dance.macros.record.stop",
         "key": "escape",
         "when": "editorTextFocus && dance.mode == 'normal' && dance.recordingMacro"

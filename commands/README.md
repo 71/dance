@@ -100,7 +100,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.history.repeat` | Repeat last change | Repeat last change. |  |
 | `dance.history.repeat.selection` | Repeat last selection change | Repeat last selection change. |  |
 | `dance.history.repeat.edit` | Repeat last edit change | Repeat last edit change. |  |
-| `dance.macros.record.start` | Start recording macro | Start recording macro. |  |
+| `dance.macros.record.start` | Start recording macro | Start recording macro. | `Shift+Q` (`dance.mode == 'normal' && !dance.recordingMacro`) |
 | `dance.macros.record.stop` | Stop recording macro | Stop recording macro. | `Escape` (`dance.mode == 'normal' && dance.recordingMacro`) |
 | `dance.macros.play` | Play macro | Play macro. | `Q` (`dance.mode == 'normal'`) |
 | `dance.rotate` | Rotate | Rotate each selection clockwise. | `Shift+0` (`dance.mode == 'normal'`) |

@@ -444,7 +444,7 @@ pipe.prepend:
   keys: s-a-1 (normal)
 
 
-# History and macros (history.ts)
+# History (history.ts)
 # ================================================================================================
 
 history.undo:
@@ -471,6 +471,10 @@ history.repeat.selection:
 
 history.repeat.edit:
   title: Repeat last edit change
+
+
+# Macros (macros.ts)
+# ================================================================================================
 
 macros.record.start:
   title: Start recording macro
