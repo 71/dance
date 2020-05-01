@@ -189,9 +189,12 @@ registerCommand(Command.pasteSelectBefore, CommandFlags.ChangeSelections | Comma
 
 registerCommand(Command.pasteReplace, CommandFlags.Edit, async ({ editor, extension }, state, undoStops) => {
   const contents = await getContentsToPaste(editor, state, extension)
-
   if (contents === undefined)
     return
+
+  const reg = getRegister(state, extension)
+  if (reg.canWrite())
+    await reg.set(editor, editor.selections.map(editor.document.getText))
 
   await editor.edit(builder => {
     for (let i = 0; i < contents.length; i++) {
