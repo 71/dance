@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, CommandState, commands } from '.'
 import { EditorState } from '../state/editor'
-import { ExtendBehavior, Extend, DoNotExtend, SelectionHelper, MoveFunc, SelectionMapper, jumpTo, CoordMapper } from '../utils/selectionHelper'
+import { ExtendBehavior, Extend, DoNotExtend, SelectionHelper, jumpTo, CoordMapper } from '../utils/selectionHelper'
 import { SelectionBehavior } from '../state/extension'
 
 

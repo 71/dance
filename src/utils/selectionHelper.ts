@@ -57,91 +57,40 @@ export class SelectionHelper {
   /**
    * Apply a transformation to each selection.
    *
-   * @param mapper a function takes the old selection and return a new one or
-   *               null if the selection should be deleted
+   * If all selections are to be removed, an alert will be raised and selections
+   * are left untouched (or replaced by fallback, if provided).
    *
-   * @see moveActiveCoord,jumpTo for creating mappers for common operations
+   * @param mapper a function takes the old selection and return a new one or
+   *               `{remove: true}` with optional fallback.
+   *
+   * @see moveActiveCoord,jumpTo,seekToRange for utilities to create mappers for
+   *                                         common select operations
   */
   mapEach(mapper: SelectionMapper): void {
     const newSelections: vscode.Selection[] = []
     const editor = this.editor
-    let acceptOverflow = true
+    let acceptFallback = true
     const len = editor.selections.length
     for (let i = 0; i < len; i++) {
       const moveResult = mapper(editor.selections[i], this, i)
-      if (moveResult === null) {
-        if (acceptOverflow)
-          newSelections.push(editor.selections[i])
+      if (moveResult === RemoveSelection || 'remove' in moveResult) {
+        if (acceptFallback)
+          newSelections.push(moveResult.fallback || editor.selections[i])
       } else {
-        if (acceptOverflow) {
-          newSelections.length = 0 // Clear all overflow selections so far.
-          acceptOverflow = false
+        if (acceptFallback) {
+          newSelections.length = 0 // Clear all fallback selections so far.
+          acceptFallback = false
         }
         newSelections.push(moveResult)
       }
     }
-    if (acceptOverflow)
-      console.warn('No selections remaining.')
+    if (acceptFallback) {
+      vscode.window.showErrorMessage('No selections remaining.')
+      // Or show error in the status bar? VSCode does not have a way to dismiss
+      // messages, but they recommend setting the status bar instead.
+      // See: https://github.com/Microsoft/vscode/issues/2732
+    }
     editor.selections = newSelections
-  }
-
-
-  /** Deprecated, will be refactored out soon */
-  moveEach(moveFunc: MoveFunc, extend: ExtendBehavior): void {
-    const newSelections: vscode.Selection[] = []
-    const editor = this.editor
-    let acceptOverflow = true
-    for (let i = 0; i < editor.selections.length; i++) {
-      const startAt = this.activeCoord(editor.selections[i])
-      console.log('START=', this._visualizeCoord(startAt))
-      const moveResult = moveFunc(startAt, this, i)
-      if (typeof moveResult.maybeAnchor === 'object')
-        console.log('ANCHOR?', this._visualizeCoord(moveResult.maybeAnchor))
-      if (typeof moveResult.active === 'object')
-        console.log('ACTIVE=', this._visualizeCoord(moveResult.active))
-      if (acceptOverflow && !moveResult.overflow) {
-        newSelections.length = 0 // Clear all overflow selections so far.
-        acceptOverflow = false
-      }
-      if (!moveResult.overflow || acceptOverflow) {
-        newSelections.push(this.evolve(extend, editor.selections[i], moveResult))
-      }
-    }
-    if (acceptOverflow)
-      console.warn('No selections remaining.')
-    editor.selections = newSelections
-  }
-
-  /** Deprecated, will be refactored out soon */
-  evolve(extend: boolean, oldSelection: vscode.Selection, moveResult: MoveResult) {
-    if (!moveResult.maybeAnchor) {
-      if (typeof moveResult.active === 'object')
-        return this.extend(oldSelection, moveResult.active)
-      else
-        return oldSelection
-    }
-    let active = moveResult.active!
-    if (active === AtOrBefore) {
-      if (moveResult.maybeAnchor === OldActive)
-        throw new Error('{anchor: OldActive, active: AtOrBefore} is unsupported')
-      if (this.selectionBehavior === SelectionBehavior.Caret)
-        return new vscode.Selection(extend ? oldSelection.anchor : moveResult.maybeAnchor, moveResult.maybeAnchor)
-      active = moveResult.maybeAnchor
-    }
-    if (extend)
-      return this.extend(oldSelection, active)
-
-    const oldActiveCoord = this.activeCoord(oldSelection)
-    let anchor = moveResult.maybeAnchor
-    if (anchor === OldActive) {
-      if (this.selectionBehavior === SelectionBehavior.Caret) {
-        let activePos = oldSelection.active.isBeforeOrEqual(active) ?
-          this.coordAt(this.offsetAt(active) + 1) : active
-        return new vscode.Selection(oldSelection.active, activePos)
-      }
-      anchor = oldActiveCoord
-    }
-    return this.selectionBetween(anchor, active, oldActiveCoord)
   }
 
   /**
@@ -310,17 +259,11 @@ export interface Coord extends vscode.Position {
 export const Coord = vscode.Position // To allow sugar like `new Coord(1, 2)`.
 export type CoordOffset = number
 
-export type SelectionMapper = (selection: vscode.Selection, helper: SelectionHelper, i: number) => vscode.Selection | null
-export type CoordMapper = (oldActive: Coord, helper: SelectionHelper, i: number) => Coord | null
+export type SelectionMapper = (selection: vscode.Selection, helper: SelectionHelper, i: number) => vscode.Selection | {remove: true, fallback?: vscode.Selection}
+export type CoordMapper = (oldActive: Coord, helper: SelectionHelper, i: number) => Coord | typeof RemoveSelection
+export type SeekFunc = (oldActive: Coord, helper: SelectionHelper, i: number) => [Coord, Coord] | {remove: true, fallback?: [Coord | undefined, Coord]}
 
-// BEGIN DEPRECATED
-export type MoveFunc = (from: Coord, helper: SelectionHelper, i: number) => MoveResult;
-
-export const OldActive = 'oldActive'
-export const AtOrBefore = 'atOrBefore'
-export type MoveResult = {overflow?: false, maybeAnchor: Coord | typeof OldActive, active: Coord | typeof AtOrBefore} |
-                         {overflow: true,   maybeAnchor: Coord | undefined,        active: Coord | undefined}
-// END DEPRECATED
+export const RemoveSelection: {remove: true} = { remove: true }
 
 /**
  * Create a SelectionMapper that moves selection's active to a new coordinate.
@@ -335,8 +278,7 @@ export type MoveResult = {overflow?: false, maybeAnchor: Coord | typeof OldActiv
  * returned, selecting or deselecting it as appropriate.
  *
  * @param activeMapper a function that takes an old active coordinate and return
- *                     the coordinate of the new symbol to move to or `null` if
- *                     it would move out of bound
+ *                     the Coord of the symbol to move to or `RemoveSelection`
  * @param extend if Extend, the new selection will keep the anchor caret /
  *               character. Otherwise, it is anchored to old active.
  * @returns a SelectionMapper that is suitable for SelectionHelper#mapEach
@@ -345,7 +287,7 @@ export function moveActiveCoord(activeMapper: CoordMapper, extend: ExtendBehavio
   return (selection, helper, i) => {
     const oldActive = helper.activeCoord(selection)
     const newActive = activeMapper(oldActive, helper, i)
-    if (newActive === null) return null
+    if ('remove' in newActive) return RemoveSelection
 
     if (extend)
       return helper.extend(selection, newActive)
@@ -378,8 +320,7 @@ export function moveActiveCoord(activeMapper: CoordMapper, extend: ExtendBehavio
  * contain exactly one symbol under the result Position.
  *
  * @param activeMapper a function that takes an old active coordinate and return
- *                     the caret / character move to or `null` if it would move
- *                     out of bound
+ *                     the caret / character move to or `RemoveSelection`.
  * @param extend if Extend, the new selection will keep the anchor caret /
  *               character. Otherwise, it is anchored to old active.
  * @returns a SelectionMapper that is suitable for SelectionHelper#mapEach
@@ -388,7 +329,7 @@ export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): Selec
   return (selection, helper, i) => {
     const oldActive = helper.activeCoord(selection)
     const newActive = activeMapper(oldActive, helper, i)
-    if (newActive === null) return null
+    if ('remove' in newActive) return RemoveSelection
 
     if (helper.selectionBehavior === SelectionBehavior.Caret)
       return new vscode.Selection(extend ? selection.anchor : newActive, newActive)
@@ -398,5 +339,52 @@ export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): Selec
 
     const ref = newActive
     return helper.selectionBetween(newActive, newActive, ref)
+  }
+}
+
+/**
+ * Create a SelectionMapper that change / extend the selection to a new
+ * character range (including starting and ending characters).
+ *
+ * @summary The mapper created is useful for commands that "seeks" to a range of
+ * characters and re-anchor, such as `w` (selectWord) or `m` (selectMatching).
+ *
+ * The seek function returns two Coords, start and end, both inclusive. If not
+ * extending, a new selection will be created that includes both symbols under
+ * start and end. (The selection will be reversed if start is after end). When
+ * extending, start is ignored and the old extension is extended to sweep over
+ * the end symbol, selecting or deselecting it as appropriate.
+ *
+ * @param seekFunc a function that takes an old active coordinate and return
+ *                 the range ([start, end]) to seek to, or remove.
+ * @param extend if Extend, the new selection will keep the anchor caret /
+ *               character. Otherwise, the new selection is anchored to start.
+ * @returns a SelectionMapper that is suitable for SelectionHelper#mapEach
+ */
+export function seekToRange(seek: SeekFunc, extend: ExtendBehavior): SelectionMapper {
+  return (selection, helper, i) => {
+    const oldActive = helper.activeCoord(selection)
+    const range = seek(oldActive, helper, i)
+    if ('remove' in range) {
+      if (!range.fallback) return RemoveSelection
+      // Avoid array destructuring which is not fully optimized yet in V8.
+      // See: http://bit.ly/array-destructuring-for-multi-value-returns
+      const start = range.fallback[0],
+            end   = range.fallback[1]
+      return {
+        remove: true,
+        fallback: start ? helper.selectionBetween(start, end, oldActive)
+                        : helper.extend(selection, end),
+      }
+    }
+
+    // Avoid array destructuring which is not fully optimized yet in V8.
+    // See: http://bit.ly/array-destructuring-for-multi-value-returns
+    const start = range[0],
+          end   = range[1]
+    if (extend)
+      return helper.extend(selection, end)
+    else
+      return helper.selectionBetween(start, end, oldActive)
   }
 }

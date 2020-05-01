@@ -5,7 +5,7 @@ import { CommandState, registerCommand, Command, CommandFlags, InputKind } from 
 import { EditorState } from '../state/editor'
 import { SelectionBehavior } from '../state/extension'
 import { getCharSetFunction, CharSet } from '../utils/charset'
-import { Direction, Backward, Forward, ExtendBehavior, DoNotExtend, Extend, SelectionHelper, Coord, MoveFunc, OldActive, SelectionMapper, moveActiveCoord, CoordMapper } from '../utils/selectionHelper'
+import { Direction, Backward, Forward, ExtendBehavior, DoNotExtend, Extend, SelectionHelper, Coord, SelectionMapper, moveActiveCoord, CoordMapper, RemoveSelection, seekToRange } from '../utils/selectionHelper'
 
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
@@ -38,7 +38,7 @@ function toNextCharacter(direction: Direction, include: boolean): CoordMapper {
 
         if (isDocumentEdge)
           // ... except if we've reached the start or end of the document.
-          return null
+          return RemoveSelection
 
         character = direction === Backward ? undefined : 0
       }
@@ -93,44 +93,44 @@ function categorize(charCode: number, isBlank: (charCode: number) => boolean, is
 
 function selectByWord(editorState: EditorState, state: CommandState, extend: ExtendBehavior, direction: Direction, end: boolean, wordCharset: CharSet) {
   const helper = SelectionHelper.for(editorState, state)
-  const { extension, repetitions } = state
+  const { repetitions } = state
   const document = editorState.editor.document
   const isWord        = getCharSetFunction(wordCharset, document),
         isBlank       = getCharSetFunction(CharSet.Blank, document),
         isPunctuation = getCharSetFunction(CharSet.Punctuation, document)
 
-  helper.moveEach((from) => {
-    let maybeAnchor = undefined,
+  helper.mapEach(seekToRange((from) => {
+    let anchor = undefined,
         active  = from
     for (let i = repetitions; i > 0; i--) {
       const text = document.lineAt(active.line).text
-      // 1. Starting from active, try to figure out where scanning should start.
+      // 1. Starting from active, try to seek to the word start.
       if (direction === Forward ? active.character + 1 >= text.length : active.character === 0) {
         let afterEmptyLines = skipEmptyLines(active, document, direction)
         if (afterEmptyLines === undefined) {
           if (direction === Backward && active.line > 0) {
             // This is a special case in Kakoune and we try to mimic it here.
-            // Instead of overflowing, put maybeAnchor at document start and
+            // Instead of overflowing, put anchor at document start and
             // active always on the first character on the second line.
-            maybeAnchor = new Coord(0, 0)
+            anchor = new Coord(0, 0)
             active = new Coord(1, 0)
             continue
           } else {
             // Otherwise the selection overflows.
-            return { overflow: true, maybeAnchor, active }
+            return { remove: true, fallback: [anchor, active] }
           }
         }
-        maybeAnchor = afterEmptyLines
+        anchor = afterEmptyLines
       } else if (direction === Backward && active.character >= text.length) {
-        maybeAnchor = new Coord(active.line, text.length - 1)
+        anchor = new Coord(active.line, text.length - 1)
       } else {
         // Skip current character if it is at boundary. (e.g. "ab[c]  ")
         const column = active.character
         const shouldSkip = categorize(text.charCodeAt(column), isBlank, isWord) !== categorize(text.charCodeAt(column + direction), isBlank, isWord)
-        maybeAnchor = shouldSkip ? new Coord(active.line, active.character + direction) : active
+        anchor = shouldSkip ? new Coord(active.line, active.character + direction) : active
       }
 
-      active = maybeAnchor
+      active = anchor
 
       // 2. Then scan within the current line until the word ends.
 
@@ -156,8 +156,8 @@ function selectByWord(editorState: EditorState, state: CommandState, extend: Ext
       // does not belong to the current word (or -1 / line break). Exclude it.
       active = new Coord(active.line, nextCol - direction)
     }
-    return { maybeAnchor: maybeAnchor!, active }
-  }, extend)
+    return [anchor!, active]
+  }, extend))
 }
 
 
@@ -302,10 +302,8 @@ const trimToFullLines: SelectionMapper = (selection, helper) => {
   // Move end to the line start, so that the selection ends with a line break.
   let newEnd = end.with(undefined, 0)
 
-  if (newStart.isAfterOrEqual(newEnd)) {
-    // The selection is deleted if there is no full line contained.
-    return null
-  }
+  if (newStart.isAfterOrEqual(newEnd))
+    return RemoveSelection // No full line contained.
 
   // After trimming, the selection should be in the same direction as before.
   // Except when selecting only one empty line in non-directional mode, prefer
@@ -337,7 +335,7 @@ const trimSelections: SelectionMapper = (selection, helper) => {
     startCol++
     if (startCol >= startLineText.length) {
       startLine++
-      if (startLine > endLine) return null
+      if (startLine > endLine) return RemoveSelection
       startLineText = document.lineAt(startLine).text
       startCol = 0
     }
@@ -347,7 +345,7 @@ const trimSelections: SelectionMapper = (selection, helper) => {
     endCol--
     if (endCol <= 0) {
       endLine--
-      if (endLine < startLine) return null
+      if (endLine < startLine) return RemoveSelection
       endLineText = document.lineAt(endLine).text
       endCol = endLineText.length
     }
@@ -356,8 +354,7 @@ const trimSelections: SelectionMapper = (selection, helper) => {
   let reverseSelection = selection.isReversed
   if (startLine === endLine) {
     if (startCol >= endCol) {
-      // The selection is deleted if the selection contains entirely whitespace.
-      return null
+      return RemoveSelection // The selection contains entirely whitespace.
     }
     if (helper.selectionBehavior === SelectionBehavior.Character && startCol + 1 === endCol) {
       // When selecting only one character in non-directional mode, prefer

@@ -2,7 +2,7 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { Forward, Direction, Backward, SelectionHelper, DoNotExtend, MoveFunc, AtOrBefore, CoordMapper, SelectionMapper, jumpTo } from '../utils/selectionHelper'
+import { Forward, Direction, Backward, SelectionHelper, DoNotExtend, SelectionMapper, jumpTo } from '../utils/selectionHelper'
 
 
 // Swap cursors (;, a-;, a-:)
