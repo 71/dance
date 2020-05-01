@@ -104,8 +104,10 @@ function selectByWord(editorState: EditorState, state: CommandState, extend: Ext
         active  = from
     for (let i = repetitions; i > 0; i--) {
       const text = document.lineAt(active.line).text
+      const lineEndCol =
+        (helper.selectionBehavior === SelectionBehavior.Caret) ? text.length : text.length - 1
       // 1. Starting from active, try to seek to the word start.
-      if (direction === Forward ? active.character + 1 >= text.length : active.character === 0) {
+      if (direction === Forward ? active.character >= lineEndCol : active.character === 0) {
         let afterEmptyLines = skipEmptyLines(active, document, direction)
         if (afterEmptyLines === undefined) {
           if (direction === Backward && active.line > 0) {
@@ -124,9 +126,15 @@ function selectByWord(editorState: EditorState, state: CommandState, extend: Ext
       } else if (direction === Backward && active.character >= text.length) {
         anchor = new Coord(active.line, text.length - 1)
       } else {
-        // Skip current character if it is at boundary. (e.g. "ab[c]  ")
-        const column = active.character
-        const shouldSkip = categorize(text.charCodeAt(column), isBlank, isWord) !== categorize(text.charCodeAt(column + direction), isBlank, isWord)
+        let shouldSkip
+        if (helper.selectionBehavior === SelectionBehavior.Character) {
+          // Skip current character if it is at boundary. (e.g. "ab[c]  " =>`w`)
+          const column = active.character
+          shouldSkip = categorize(text.charCodeAt(column), isBlank, isWord) !== categorize(text.charCodeAt(column + direction), isBlank, isWord)
+        } else {
+          // Ignore the character on the right of the caret.
+          shouldSkip = direction === Backward
+        }
         anchor = shouldSkip ? new Coord(active.line, active.character + direction) : active
       }
 

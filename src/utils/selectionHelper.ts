@@ -97,14 +97,15 @@ export class SelectionHelper {
    * Return a selection that spans from and to (both inclusive).
    * @param from the coordinate of the starting symbol to include
    * @param to the coordinate of the ending symbol to include
-   * @param ref reference coord for where the previous active symbol is at, used
-   *            to decide the direction of one-character selections, if enabled.
+   * @param ref (only used for caret-based selections) a reference Position of
+   *            the previous active caret, for deciding the direction of
+   *            one-character selections
    */
-  selectionBetween(from: Coord, to: Coord, ref: Coord): vscode.Selection {
+  selectionBetween(from: Coord, to: Coord, ref: vscode.Position): vscode.Selection {
     // TODO: Remove this.coordAt and this.offsetAt. Use lineAt for shifting to
     // the next position.
     if (from.isBefore(to) ||
-        (from.isEqual(to) && (this.selectionBehavior === SelectionBehavior.Character || to.isAfter(ref)))) {
+        (from.isEqual(to) && (this.selectionBehavior === SelectionBehavior.Character || to.isAfterOrEqual(ref)))) {
       // Forward: 0123456 ==select(1, 4)=> 0<1234|56
       // Need to increment `to` to include the last character.
       const active = this.coordAt(this.offsetAt(to) + 1)
@@ -299,8 +300,7 @@ export function moveActiveCoord(activeMapper: CoordMapper, extend: ExtendBehavio
       return new vscode.Selection(selection.active, activePos)
     }
 
-    const ref = oldActive
-    return helper.selectionBetween(oldActive, newActive, ref)
+    return helper.selectionBetween(oldActive, newActive, selection.active)
   }
 }
 
@@ -337,8 +337,7 @@ export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): Selec
     if (extend)
       return helper.extend(selection, newActive)
 
-    const ref = newActive
-    return helper.selectionBetween(newActive, newActive, ref)
+    return helper.selectionBetween(newActive, newActive, selection.active)
   }
 }
 
@@ -373,7 +372,7 @@ export function seekToRange(seek: SeekFunc, extend: ExtendBehavior): SelectionMa
             end   = range.fallback[1]
       return {
         remove: true,
-        fallback: start ? helper.selectionBetween(start, end, oldActive)
+        fallback: start ? helper.selectionBetween(start, end, selection.active)
                         : helper.extend(selection, end),
       }
     }
@@ -385,6 +384,6 @@ export function seekToRange(seek: SeekFunc, extend: ExtendBehavior): SelectionMa
     if (extend)
       return helper.extend(selection, end)
     else
-      return helper.selectionBetween(start, end, oldActive)
+      return helper.selectionBetween(start, end, selection.active)
   }
 }
