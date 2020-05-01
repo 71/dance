@@ -327,55 +327,50 @@ registerCommand(Command.trimLines, CommandFlags.ChangeSelections, (editorState, 
   SelectionHelper.for(editorState, state).mapEach(trimToFullLines)
 })
 
+/**
+ * Starting from `current` (inclusive), find the first character that does not
+ * satisfy `condition` in the direction and return its Coord.
+ *
+ * @param current Coord of the first character to test
+ * @param condition will be only executed on character codes, not line breaks
+ * @returns the Coord of the first character that does not satisfy condition,
+ *          which may be `current`. Or `undefined` if document end is reached.
+ */
+function skipWhile(direction: Direction, current: Coord, condition: (charCode: number) => boolean, document: vscode.TextDocument, endLine?: number): Coord | undefined {
+  let col = current.character,
+      line = current.line,
+      text = document.lineAt(line).text
+  if (endLine === undefined)
+    endLine = document.lineCount - 1
+
+  while (col < 0 || col >= text.length || condition(text.charCodeAt(col))) {
+    col += direction
+    if (col < 0 || col >= text.length) {
+      line += direction
+      if (line < 0 || line > endLine) return undefined
+      text = document.lineAt(line).text
+      col = direction === Forward ? 0 : text.length - 1
+    }
+  }
+  return new Coord(line, col)
+}
+
 const trimSelections: SelectionMapper = (selection, helper) => {
   // This command is idempotent. state.currentCount is intentionally ignored.
   const document = helper.editor.document
   const isBlank = getCharSetFunction(CharSet.Blank, document)
 
-  let startLine = selection.start.line,
-      startCol = selection.start.character,
-      startLineText = document.lineAt(startLine).text,
-      endLine = selection.end.line,
-      endCol = selection.end.character,
-      endLineText = document.lineAt(endLine).text
+  const firstCharacter = selection.start
+  const lastCharacter = helper.coordAt(helper.offsetAt(selection.end) - 1)
 
-  while (startCol >= startLineText.length || isBlank(startLineText.charCodeAt(startCol))) {
-    startCol++
-    if (startCol >= startLineText.length) {
-      startLine++
-      if (startLine > endLine) return RemoveSelection
-      startLineText = document.lineAt(startLine).text
-      startCol = 0
-    }
-  }
+  const start = skipWhile(Forward, firstCharacter, isBlank, document, lastCharacter.line)
+  const end = skipWhile(Backward, lastCharacter, isBlank, document, firstCharacter.line)
+  if (!start || !end || start.isAfter(end)) return RemoveSelection
 
-  while (endCol <= 0 || isBlank(endLineText.charCodeAt(endCol - 1))) {
-    endCol--
-    if (endCol <= 0) {
-      endLine--
-      if (endLine < startLine) return RemoveSelection
-      endLineText = document.lineAt(endLine).text
-      endCol = endLineText.length
-    }
-  }
-
-  let reverseSelection = selection.isReversed
-  if (startLine === endLine) {
-    if (startCol >= endCol) {
-      return RemoveSelection // The selection contains entirely whitespace.
-    }
-    if (helper.selectionBehavior === SelectionBehavior.Character && startCol + 1 === endCol) {
-      // When selecting only one character in non-directional mode, prefer
-      // to keep the selection facing forward.
-      reverseSelection = false
-    }
-  }
-
-  if (reverseSelection) {
-    return new vscode.Selection(startLine, startCol, endLine, endCol)
-  } else {
-    return new vscode.Selection(endLine, endCol, startLine, startCol)
-  }
+  if (selection.isReversed)
+    return helper.selectionBetween(end, start, selection.anchor)
+  else
+    return helper.selectionBetween(start, end, selection.anchor)
 }
 
 registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editorState, state) => {
@@ -386,78 +381,84 @@ registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editorSt
 // Select enclosing (m, M, alt+[mM])
 // ===============================================================================================
 
-const Cursor = class {} // TODO: Remove
+const enclosingChars = new Uint8Array(Array.from('(){}[]<>', ch => ch.charCodeAt(0)))
+const isNotEnclosingChar = (charCode: number) => enclosingChars.indexOf(charCode) === -1
 
-const enclosingChars = new Uint8Array(Array.from('(){}[]', ch => ch.charCodeAt(0)))
 
-function selectEnclosing({ selectionSet }: CommandState, extend: ExtendBehavior, direction: Direction) {
-  selectionSet.updateEach(({ active, anchor }) => {
-    const activeCursor = active.cursor()
+function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
+  // This command intentionally ignores repetitions to be consistent with Kakoune.
+  // It only finds one next enclosing character and drags only once to its
+  // matching counterpart. Repetitions > 1 does exactly the same with rep=1,
+  // even though executing the command again will jump back and forth.
 
-    if (!activeCursor.skipWhile(direction, ch => enclosingChars.indexOf(ch) === -1, { select: Cursor.Select.Next, restorePositionIfNeverSatisfied: true })) {
-      return
+  const mapper = seekToRange((from, helper, i) => {
+    const document = helper.editor.document
+    // First, find an enclosing char (which may be the current character).
+    let currentCharacter = from
+    if (helper.selectionBehavior === SelectionBehavior.Caret) {
+      // When moving backwards, the first character to consider is the character
+      // to the left, not the right. However, we hackily special case `|[foo]>`
+      // (> is anchor, | is active) to jump to the end in the current group.
+      const selection = helper.editor.selections[i]
+      if (direction === Backward && selection.isReversed) {
+        currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1)
+      }
+      // Similarly, we special case `<[foo]|` to jump back in the current group.
+      if (direction === Forward && !selection.isReversed && !selection.isEmpty) {
+        currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1)
+      }
     }
+    if (helper.selectionBehavior === SelectionBehavior.Caret && direction === Backward) {
+      // When moving backwards, the first character to consider is the character
+      // to the left, not the right.
+      currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1)
+    }
+    const anchor = skipWhile(direction, currentCharacter, isNotEnclosingChar, document)
+    if (!anchor)
+      return RemoveSelection
 
-    const enclosingChar = activeCursor.textLine.text.charCodeAt(activeCursor.position.column),
+    // Then, find the matching char of the anchor.
+    const enclosingChar = document.lineAt(anchor.line).text.charCodeAt(anchor.character),
           idxOfEnclosingChar = enclosingChars.indexOf(enclosingChar)
-
-    const anchorSave = anchor.save()
-
-    anchor.inheritPosition(active)
-
-    const anchorCursor = anchor.cursor()
-
-    let balance = 0
-
+    let matchingChar: number,
+        matchDirection: Direction
     if (idxOfEnclosingChar & 1) {
       // Odd enclosingChar index <=> enclosingChar is closing character
       //                         <=> we go backward looking for the opening character
-      const openingChar = enclosingChars[idxOfEnclosingChar - 1]
-
-      anchorCursor.skipWhile(Backward, charCode => {
-        if (charCode === openingChar && balance-- === 0) {
-          return false
-        } else if (charCode === enclosingChar) {
-          balance++
-        }
-
-        return true
-      }, { select: Cursor.Select.Previous })
-
-      // Also include the closing character.
-      active.moveRightOrStop()
+      matchingChar = enclosingChars[idxOfEnclosingChar - 1]
+      matchDirection = Backward
     } else {
       // Even enclosingChar index <=> enclosingChar is opening character
       //                          <=> we go forward looking for the closing character
-      const closingChar = enclosingChars[idxOfEnclosingChar + 1]
+      matchingChar = enclosingChars[idxOfEnclosingChar + 1]
+      matchDirection = Forward
+    }
 
-      anchorCursor.skip(Forward)
-      const found = anchorCursor.skipWhile(Forward, charCode => {
-        if (charCode === closingChar && balance-- === 0) {
-          return false
-        } else if (charCode === enclosingChar) {
-          balance++
-        }
-
-        return true
-      })
-
-      if (found) {
-        anchorCursor.skip(Forward)
+    let balance = 0
+    const active = skipWhile(matchDirection, anchor, charCode => {
+      if (charCode === enclosingChar) {
+        // The starting anchor character itself also counts as +1.
+        balance++
+      } else if (charCode === matchingChar && --balance === 0) {
+        return false
       }
-    }
 
-    if (extend) {
-      anchor.restore(anchorSave)
-    }
-  })
+      return true
+    }, document)
+    if (!active)
+      return RemoveSelection
+    return [anchor, active]
+  }, extend)
+
+  return (editorState: EditorState, state: CommandState) => {
+    SelectionHelper.for(editorState, state).mapEach(mapper)
+  }
 }
 
-registerCommand(Command.selectEnclosing               , CommandFlags.ChangeSelections, (_, state) => selectEnclosing(state, DoNotExtend, Forward))
-registerCommand(Command.selectEnclosingExtend         , CommandFlags.ChangeSelections, (_, state) => selectEnclosing(state,      Extend, Forward))
-registerCommand(Command.selectEnclosingBackwards      , CommandFlags.ChangeSelections, (_, state) => selectEnclosing(state, DoNotExtend, Backward))
-registerCommand(Command.selectEnclosingExtendBackwards, CommandFlags.ChangeSelections, (_, state) => selectEnclosing(state,      Extend, Backward))
-
+registerCommand(Command.selectEnclosing               , CommandFlags.ChangeSelections, selectEnclosing(DoNotExtend, Forward))
+registerCommand(Command.selectEnclosingExtend         , CommandFlags.ChangeSelections, selectEnclosing(     Extend, Forward))
+registerCommand(Command.selectEnclosingBackwards      , CommandFlags.ChangeSelections, selectEnclosing(DoNotExtend, Backward))
+registerCommand(Command.selectEnclosingExtendBackwards, CommandFlags.ChangeSelections, selectEnclosing(     Extend, Backward))
 
 // Other bindings (%)
 // ===============================================================================================
