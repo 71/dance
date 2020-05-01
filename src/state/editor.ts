@@ -187,7 +187,7 @@ export class EditorState {
    */
   startMacroRecording(register: MacroRegister & { readonly name: string }) {
     if (this._macroRecording !== undefined)
-      return Promise.resolve(undefined)
+      return undefined
 
     const statusBarItem = vscode.window.createStatusBarItem()
 
@@ -206,7 +206,7 @@ export class EditorState {
     const recording = this._macroRecording
 
     if (recording === undefined)
-      return Promise.resolve(undefined)
+      return undefined
 
     this._macroRecording = undefined
 
