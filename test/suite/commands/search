@@ -1,0 +1,143 @@
+Th{0}e q|{0}uick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search
+//= {"command": "dance.search", "args": [{"input": "brown"}]}
+The quick {0}brown|{0} fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.start
+//= {"command": "dance.search", "args": [{"input": "quick"}]}
+// Search starts AFTER the selection so the first "quick" is not matched.
+The quick brown fox
+jumps over the
+lazy dog {0}quick|{0}ly.
+
+//== 0 > 0.search.start.wrap
+//= {"command": "dance.search", "args": [{"input": "quick "}]}
+// Search starts AFTER the selection, but wraps over to find "quick ".
+The {0}quick |{0}brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.wrap
+//= {"command": "dance.search", "args": [{"input": "Th"}]}
+{0}Th|{0}e quick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.notfound
+//= {"command": "dance.search", "args": [{"input": "pig"}]}
+// No matches found. Selection left untouched because otherwise there will be
+// no selection left.
+Th{0}e q|{0}uick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.backwards
+//= {"command": "dance.search.backwards", "args": [{"input": "Th"}]}
+// Note: Selection always face forward when not extending.
+{0}Th|{0}e quick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.backwards.start.wrap
+//= {"command": "dance.search.backwards", "args": [{"input": "he"}]}
+// Search starts BEFORE the selection and wraps around to find the last "he".
+The quick brown fox
+jumps over t{0}he|{0}
+lazy dog quickly.
+
+//== 0 > 0.search.backwards.start.wrap2
+//= {"command": "dance.search.backwards", "args": [{"input": "he q"}]}
+// Search starts BEFORE the selection "q" but wraps around to find "he q".
+T{0}he q|{0}uick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.backwards.notfound
+//= {"command": "dance.search.backwards", "args": [{"input": "pig"}]}
+// No matches found. Selection left untouched because otherwise there will be
+// no selection left.
+Th{0}e q|{0}uick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.extend
+//= {"command": "dance.search.extend", "args": [{"input": "quick"}]}
+Th{0}e quick brown fox
+jumps over the
+lazy dog quick|{0}ly.
+
+//== 0 > 0.search.extend.wrap
+//= {"command": "dance.search.extend", "args": [{"input": "T"}]}
+// When extending, a selection is deleted if it would require wrapping to find
+// the next match. In this case, the only main selection is left untouched
+// because otherwise there will be no selection left.
+Th{0}e q|{0}uick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.backwards.extend
+//= {"command": "dance.search.backwards.extend", "args": [{"input": "T"}]}
+// Note: 'e' is included in character-selections because it is the anchor.
+// When extending, the resulting selection may face backwards.
+|{0}The{0} quick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.backwards.extend2
+//= {"command": "dance.search.backwards.extend", "args": [{"input": "Th"}]}
+// Note: 'e' is included in character-selections because it is the anchor.
+// When extending, the resulting selection may face backwards.
+|{0}The{0} quick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 0 > 0.search.backwards.extend.wrap
+//= {"command": "dance.search.backwards.extend", "args": [{"input": "lazy"}]}
+// When extending, a selection is deleted if it would require wrapping to find
+// the next match. In this case, the only main selection is left untouched
+// because otherwise there will be no selection left.
+Th{0}e q|{0}uick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 1
+// Remember that search will start at the start / end of the selection, so
+// anything that is (partially) covered by the current selection cannot be
+// found without wrapping first. The following cases show some consequences.
+The quick b|{0}rown fox
+jumps over the
+laz{0}y dog quickly.
+
+//== 1 > 1.search
+//= {"command": "dance.search", "args": [{"input": "o"}]}
+// Forward search starts at "y" and finds "d[o]g" instead of "br[o]wn".
+The quick brown fox
+jumps over the
+lazy d{0}o|{0}g quickly.
+
+//== 1 > 1.search.extend
+//= {"command": "dance.search.extend", "args": [{"input": "o"}]}
+// Same, but extends instead of replaces.
+The quick brown fox
+jumps over the
+la{0}zy do|{0}g quickly.
+
+//== 1 > 1.search.wrap
+//= {"command": "dance.search", "args": [{"input": "he"}]}
+// Forward search starts at "y" and wraps to "T[he]" instead of "t[he]".
+T|{0}he{0} quick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 1 > 1.search.extend.wrap
+//= {"command": "dance.search.extend", "args": [{"input": "he"}]}
+// When extending, it should not wrap around document edges to find "T[he]".
+// "t[he]" is not considered at all. In this case, selections are unchanged.
+The quick b|{0}rown fox
+jumps over the
+laz{0}y dog quickly.

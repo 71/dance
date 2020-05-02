@@ -210,7 +210,8 @@ suite('Running commands', function() {
             content = sections[i + 1]
 
       const [full, from, to] = /^\/\/== ([\w.]+)(?: > ([\w.]+))?$/m.exec(metadata)!
-      const commands = metadata.substr(full.length).split('\n').map(x => x.substr(3).trim()).filter(x => x)
+      const commands = metadata.substr(full.length).split('\n').map(x => x.substr(3).trim())
+         .filter(x => x).map(str => (str[0] === '{') ? JSON.parse(str) : str)
       const contentAfterMutation = content
       const initialContent = nodes.get(from)!
 

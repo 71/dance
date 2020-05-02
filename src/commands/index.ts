@@ -149,19 +149,30 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
     switch (this.input) {
       case InputKind.RegExp:
-        input = await promptRegex(this.inputDescr as string, cts.token) as any
+        if (typeof argument === 'object' && typeof argument.input === 'string')
+          input = new RegExp(argument.input, this.inputDescr as string) as any
+        else
+          input = await promptRegex(this.inputDescr as string, cts.token) as any
         break
       case InputKind.ListOneItem:
-        input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
+        if (typeof argument === 'object' && typeof argument.input === 'string')
+          input = argument.input
+        else
+          input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
         break
       case InputKind.ListOneItemOrCount:
-        if (extension.currentCount === 0)
+        if (typeof argument === 'object' && typeof argument.input === 'string')
+          input = argument.input
+        else if (extension.currentCount === 0)
           input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
         else
           input = null as any
         break
       case InputKind.ListManyItems:
-        input = await promptInList(true, this.inputDescr as [string, string][], cts.token) as any
+        if (typeof argument === 'object' && typeof argument.input === 'string')
+          input = argument.input
+        else
+          input = await promptInList(true, this.inputDescr as [string, string][], cts.token) as any
         break
       case InputKind.Text:
         const inputDescr = this.inputDescr as InputDescrMap[InputKind.Text]
@@ -169,15 +180,23 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         if (inputDescr.setup !== undefined)
           inputDescr.setup(editorState)
 
-        input = await prompt(inputDescr, cts.token) as any
+        if (typeof argument === 'object' && typeof argument.input === 'string') {
+          const error = await Promise.resolve(inputDescr.validateInput?.(argument.input))
+          if (error) throw new Error(error)
+          input = argument.input
+        } else
+          input = await prompt(inputDescr, cts.token) as any
         break
       case InputKind.Key:
-        const prevMode = editorState.mode
+        if (typeof argument === 'object' && typeof argument.input === 'string')
+          input = argument.input
+        else {
+          const prevMode = editorState.mode
 
-        editorState.setMode(Mode.Awaiting)
-        input = await keypress(cts.token) as any
-        editorState.setMode(prevMode)
-
+          editorState.setMode(Mode.Awaiting)
+          input = await keypress(cts.token) as any
+          editorState.setMode(prevMode)
+        }
         break
     }
 
