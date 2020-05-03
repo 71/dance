@@ -29,8 +29,8 @@ export const Extend = true as ExtendBehavior
 /** Do not extend. */
 export const DoNotExtend = false as ExtendBehavior
 
-export class SelectionHelper {
-  static for(editorState: EditorState, state: CommandState): SelectionHelper {
+export class SelectionHelper<State extends {selectionBehavior: SelectionBehavior}> {
+  static for<State extends {selectionBehavior: SelectionBehavior}>(editorState: EditorState, state: State): SelectionHelper<State> {
     // TODO: Caching
     return new SelectionHelper(editorState, state)
   }
@@ -66,7 +66,7 @@ export class SelectionHelper {
    * @see moveActiveCoord,jumpTo,seekToRange for utilities to create mappers for
    *                                         common select operations
   */
-  mapEach(mapper: SelectionMapper): void {
+  mapEach(mapper: SelectionMapper<State>): void {
     const newSelections: vscode.Selection[] = []
     const editor = this.editor
     let acceptFallback = true
@@ -238,7 +238,7 @@ export class SelectionHelper {
 
   readonly editor: vscode.TextEditor
 
-  private constructor(public readonly editorState: EditorState, public readonly state: CommandState) {
+  private constructor(public readonly editorState: EditorState, public readonly state: State) {
     this.editor = editorState.editor
   }
 }
@@ -258,9 +258,10 @@ export interface Coord extends vscode.Position {
 export const Coord = vscode.Position // To allow sugar like `new Coord(1, 2)`.
 export type CoordOffset = number
 
-export type SelectionMapper = (selection: vscode.Selection, helper: SelectionHelper, i: number) => vscode.Selection | {remove: true, fallback?: vscode.Selection}
-export type CoordMapper = (oldActive: Coord, helper: SelectionHelper, i: number) => Coord | typeof RemoveSelection
-export type SeekFunc = (oldActive: Coord, helper: SelectionHelper, i: number) => [Coord, Coord] | {remove: true, fallback?: [Coord | undefined, Coord]}
+export type SelectionMapper<State extends {selectionBehavior: SelectionBehavior} = CommandState> =
+    (selection: vscode.Selection, helper: SelectionHelper<State>, i: number) => vscode.Selection | {remove: true, fallback?: vscode.Selection}
+export type CoordMapper = (oldActive: Coord, helper: SelectionHelper<CommandState>, i: number) => Coord | typeof RemoveSelection
+export type SeekFunc = (oldActive: Coord, helper: SelectionHelper<CommandState>, i: number) => [Coord, Coord] | {remove: true, fallback?: [Coord | undefined, Coord]}
 
 export const RemoveSelection: {remove: true} = { remove: true }
 

@@ -8,6 +8,13 @@ The quick {0}brown|{0} fox
 jumps over the
 lazy dog quickly.
 
+//== 0 > 0.search.repeat
+//= dance.count.2
+//= {"command": "dance.search", "args": [{"input": "o"}]}
+The quick brown f{0}o|{0}x
+jumps over the
+lazy dog quickly.
+
 //== 0 > 0.search.start
 //= {"command": "dance.search", "args": [{"input": "quick"}]}
 // Search starts AFTER the selection so the first "quick" is not matched.
@@ -137,7 +144,36 @@ lazy dog quickly.
 //== 1 > 1.search.extend.wrap
 //= {"command": "dance.search.extend", "args": [{"input": "he"}]}
 // When extending, it should not wrap around document edges to find "T[he]".
-// "t[he]" is not considered at all. In this case, selections are unchanged.
+// "t[he]" is not considered at all. No-op due to no selections remaining.
+The quick b|{0}rown fox
+jumps over the
+laz{0}y dog quickly.
+
+//== 1 > 1.search.backwards
+//= {"command": "dance.search.backwards", "args": [{"input": "u"}]}
+// Backward search starts at "b" and finds "q[u]ick" instead of "j[u]mps".
+The q{0}u|{0}ick brown fox
+jumps over the
+lazy dog quickly.
+
+//== 1 > 1.search.backwards.extend
+//= {"command": "dance.search.backwards.extend", "args": [{"input": "u"}]}
+// Same, but extends instead of replaces.
+The q|{0}uick brown fox
+jumps over the
+laz{0}y dog quickly.
+
+//== 1 > 1.search.backwards.wrap
+//= {"command": "dance.search.backwards", "args": [{"input": "o"}]}
+// Backward search starts at "b" and wraps to "d[o]g" instead of "br[o]wn".
+The quick brown fox
+jumps over the
+lazy d{0}o|{0}g quickly.
+
+//== 1 > 1.search.backwards.extend.wrap
+//= {"command": "dance.search.backwards.extend", "args": [{"input": "o"}]}
+// When extending, it should not wrap around document edges to find "d[o]g".
+// "br[o]wn" is not considered at all. No-op due to no selections remaining.
 The quick b|{0}rown fox
 jumps over the
 laz{0}y dog quickly.

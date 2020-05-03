@@ -182,7 +182,9 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
         if (typeof argument === 'object' && typeof argument.input === 'string') {
           const error = await Promise.resolve(inputDescr.validateInput?.(argument.input))
-          if (error) throw new Error(error)
+          if (error) {
+            vscode.window.showErrorMessage(error)
+          }
           input = argument.input
         } else
           input = await prompt(inputDescr, cts.token) as any
