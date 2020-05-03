@@ -368,9 +368,9 @@ const trimSelections: SelectionMapper = (selection, helper) => {
   if (!start || !end || start.isAfter(end)) return RemoveSelection
 
   if (selection.isReversed)
-    return helper.selectionBetween(end, start, selection.anchor)
+    return helper.selectionBetween(end, start, /* singleCharDirection = */ Backward)
   else
-    return helper.selectionBetween(start, end, selection.anchor)
+    return helper.selectionBetween(start, end, /* singleCharDirection = */ Forward)
 }
 
 registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editorState, state) => {

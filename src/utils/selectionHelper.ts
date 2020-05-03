@@ -97,15 +97,13 @@ export class SelectionHelper {
    * Return a selection that spans from and to (both inclusive).
    * @param from the coordinate of the starting symbol to include
    * @param to the coordinate of the ending symbol to include
-   * @param ref (only used for caret-based selections) a reference Position of
-   *            the previous active caret, for deciding the direction of
-   *            one-character selections
+   * @param singleCharDirection the direction of selection when from equals to
    */
-  selectionBetween(from: Coord, to: Coord, ref: vscode.Position): vscode.Selection {
+  selectionBetween(from: Coord, to: Coord, singleCharDirection: Direction = Forward): vscode.Selection {
     // TODO: Remove this.coordAt and this.offsetAt. Use lineAt for shifting to
     // the next position.
     if (from.isBefore(to) ||
-        (from.isEqual(to) && (this.selectionBehavior === SelectionBehavior.Character || to.isAfterOrEqual(ref)))) {
+        (from.isEqual(to) && singleCharDirection === Forward)) {
       // Forward: 0123456 ==select(1, 4)=> 0<1234|56
       // Need to increment `to` to include the last character.
       const active = this.coordAt(this.offsetAt(to) + 1)
@@ -299,8 +297,7 @@ export function moveActiveCoord(activeMapper: CoordMapper, extend: ExtendBehavio
         helper.coordAt(helper.offsetAt(newActive) + 1) : newActive
       return new vscode.Selection(selection.active, activePos)
     }
-
-    return helper.selectionBetween(oldActive, newActive, selection.active)
+    return helper.selectionBetween(oldActive, newActive)
   }
 }
 
@@ -337,7 +334,7 @@ export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): Selec
     if (extend)
       return helper.extend(selection, newActive)
 
-    return helper.selectionBetween(newActive, newActive, selection.active)
+    return helper.selectionBetween(newActive, newActive)
   }
 }
 
@@ -363,27 +360,41 @@ export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): Selec
 export function seekToRange(seek: SeekFunc, extend: ExtendBehavior): SelectionMapper {
   return (selection, helper, i) => {
     const oldActive = helper.activeCoord(selection)
-    const range = seek(oldActive, helper, i)
-    if ('remove' in range) {
-      if (!range.fallback) return RemoveSelection
+    const seekResult = seek(oldActive, helper, i)
+    let remove = false
+    let start: Coord | undefined,
+        end: Coord
+
+    if ('remove' in seekResult) {
+      if (!seekResult.fallback) return RemoveSelection
       // Avoid array destructuring which is not fully optimized yet in V8.
       // See: http://bit.ly/array-destructuring-for-multi-value-returns
-      const start = range.fallback[0],
-            end   = range.fallback[1]
-      return {
-        remove: true,
-        fallback: start ? helper.selectionBetween(start, end, selection.active)
-                        : helper.extend(selection, end),
-      }
+      start = seekResult.fallback[0]
+      end = seekResult.fallback[1]
+      remove = true
+    } else {
+      start = seekResult[0]
+      end = seekResult[1]
     }
 
-    // Avoid array destructuring which is not fully optimized yet in V8.
-    // See: http://bit.ly/array-destructuring-for-multi-value-returns
-    const start = range[0],
-          end   = range[1]
-    if (extend)
-      return helper.extend(selection, end)
+    let newSelection
+    if (!start || extend) {
+      newSelection = helper.extend(selection, end)
+    } else {
+      let singleCharDirection = Forward
+      if (helper.selectionBehavior === SelectionBehavior.Caret &&
+          end.isBefore(selection.active)) {
+        // When moving backwards creates a single character selection, make sure
+        // the selection is backwards. This is important so that the active
+        // position is where the user expect it to be.
+        singleCharDirection = Backward
+      }
+      newSelection = helper.selectionBetween(start, end, singleCharDirection)
+    }
+
+    if (remove)
+      return { remove, fallback: newSelection }
     else
-      return helper.selectionBetween(start, end, selection.active)
+      return newSelection
   }
 }
