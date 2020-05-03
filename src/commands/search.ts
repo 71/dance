@@ -92,6 +92,7 @@ function needleInHaystack(direction: Direction, allowWrapping: boolean): (select
     for (const isWrapped of [false, true]) {
       const searchRange = getSearchRange(selection, document, direction, isWrapped)
       const text = document.getText(searchRange)
+      regex.lastIndex = 0
       const match = direction === Forward ? regex.exec(text) : execFromEnd(regex, text)
       if (match) {
         const startOffset = helper.offsetAt(searchRange.start) + match.index
@@ -257,7 +258,7 @@ function nextNeedleInHaystack(direction: Direction): (selection: vscode.Selectio
 
 function registerNextCommand(command: Command, direction: Direction, replace: boolean) {
   const mapper = nextNeedleInHaystack(direction)
-  registerCommand(command, CommandFlags.ChangeSelections, async (editorState, { currentRegister, selectionBehavior }) => {
+  registerCommand(command, CommandFlags.ChangeSelections, async (editorState, { currentRegister, selectionBehavior ,repetitions }) => {
     const { editor, extension } = editorState
     const regexStr = await (currentRegister ?? extension.registers.slash).get(editor)
 
@@ -268,16 +269,23 @@ function registerNextCommand(command: Command, direction: Direction, replace: bo
           selections = editor.selections
     const searchState = { selectionBehavior, regex }
     const helper = SelectionHelper.for(editorState, searchState)
-    const next = mapper(selections[0], helper)
+    let cur = selections[0]
 
-    if (next !== undefined) {
+    for (let i = repetitions; i > 0; i--) {
+      const next = mapper(cur, helper)
+      if (next === undefined) {
+        vscode.window.showErrorMessage('No matches found.')
+        return
+      }
+      cur = next
+
       if (replace)
-        selections[0] = next
+        selections[0] = cur
       else
-        selections.unshift(next)
-
-      editor.selections = selections
+        selections.unshift(cur)
     }
+
+    editor.selections = selections
   })
 }
 
