@@ -482,7 +482,9 @@ macros.record.start:
 
 macros.record.stop:
   title: Stop recording macro
-  keys: escape (normal macro)
+  keys: escape (normal)
+  # Note: this command executes even if a macro recording is not in progess,
+  # so that <esc> will noop instead of defaulting to deselecting in VSCode.
 
 macros.play:
   title: Play macro

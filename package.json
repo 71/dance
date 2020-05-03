@@ -1899,7 +1899,7 @@
       {
         "command": "dance.macros.record.stop",
         "key": "escape",
-        "when": "editorTextFocus && dance.mode == 'normal' && dance.recordingMacro"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "command": "dance.macros.play",

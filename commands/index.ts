@@ -1154,14 +1154,14 @@ export const macrosRecordStart: ICommand & { readonly id: 'dance.macros.record.s
 /**
  * Stop recording macro.
  *
- * Default key: `Escape` (`dance.mode == 'normal' && dance.recordingMacro`).
+ * Default key: `Escape` (`dance.mode == 'normal'`).
  */
 export const macrosRecordStop: ICommand & { readonly id: 'dance.macros.record.stop' } = {
   id         : 'dance.macros.record.stop',
   title      : 'Stop recording macro',
   description: 'Stop recording macro.',
   keybindings: [
-    { key: 'escape', when: 'editorTextFocus && dance.mode == \'normal\' && dance.recordingMacro' },
+    { key: 'escape', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
 }
 /**

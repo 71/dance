@@ -397,8 +397,16 @@ export class EditorState {
     this._commands.push(state)
 
     // For now, history is limited to 20 items.
-    if (this._commands.length === 20)
+    if (this._commands.length === 20) {
+      if (this._macroRecording) {
+        this._macroRecording.lastHistoryEntry--
+        if (this._macroRecording.lastHistoryEntry < 0) {
+          this._macroRecording.lastHistoryEntry = 0
+          vscode.window.showErrorMessage('Only 20 commands can be recorded (for now). The earliest command(s) were forgotten.')
+        }
+      }
       this._commands.shift()
+    }
   }
 
 
@@ -496,7 +504,7 @@ function getEditorId(editor: vscode.TextEditor) {
 export class MacroRecording {
   constructor(
     readonly register: MacroRegister,
-    readonly lastHistoryEntry: number,
+    public lastHistoryEntry: number,
     readonly statusBarItem: vscode.StatusBarItem,
   ) {}
 
