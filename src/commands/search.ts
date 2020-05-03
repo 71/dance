@@ -1,14 +1,12 @@
 // Search: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#searching
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
-import { EditorState }        from '../state/editor'
+import { registerCommand, Command, CommandFlags, InputKind } from '.'
 import { Extension, SelectionBehavior } from '../state/extension'
 import { WritableRegister }   from '../registers'
 import { SavedSelection }     from '../utils/savedSelection'
 import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, SeekFunc, SelectionMapper, RemoveSelection, SelectionHelper, Coord, seekToRange } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
-import { DocumentState } from '../state/document'
 
 
 function isMultilineRegExp(regex: string) {
@@ -80,8 +78,8 @@ function getSearchRange(selection: vscode.Selection, document: vscode.TextDocume
 }
 
 interface SearchState {
-  selectionBehavior: SelectionBehavior;
-  regex?: RegExp;
+  selectionBehavior: SelectionBehavior
+  regex?: RegExp
 }
 
 function needleInHaystack(direction: Direction, allowWrapping: boolean): (selection: vscode.Selection, helper: SelectionHelper<SearchState>) => [Coord, Coord] | undefined {
@@ -125,20 +123,16 @@ function moveToNeedleInHaystack(direction: Direction, extend: ExtendBehavior): (
 function registerSearchCommand(command: Command, direction: Direction, extend: ExtendBehavior) {
   let initialSelections: readonly SavedSelection[],
       register: WritableRegister,
-      editorState: EditorState,
-      documentState: DocumentState,
-      searchState: SearchState
+      helper: SelectionHelper<SearchState>
 
   const mapper = moveToNeedleInHaystack(direction, extend)
 
   registerCommand(command, CommandFlags.ChangeSelections, InputKind.Text, {
     prompt: 'Search RegExp',
 
-    setup(newEditorState) {
-      editorState = newEditorState
-      documentState = editorState.documentState
-      const { editor, extension } = editorState
-      searchState = { selectionBehavior: extension.selectionBehavior }
+    setup(editorState) {
+      const { documentState, editor, extension } = editorState
+      helper = SelectionHelper.for(editorState, { selectionBehavior: extension.selectionBehavior })
       initialSelections = editor.selections.map(selection => documentState.saveSelection(selection))
 
       const targetRegister = extension.currentRegister
@@ -153,8 +147,8 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
       if (input.length === 0)
         return 'RegExp cannot be empty.'
 
-      const editor = vscode.window.activeTextEditor!
-      const selections = editor.selections = initialSelections.map(selection => selection.selection(editor.document))
+      const editor = helper.editor
+      const selections = initialSelections.map(selection => selection.selection(editor.document))
 
       let regex: RegExp
       let flags = (isMultilineRegExp(input) ? 'm' : '') + (direction === Backward ? 'g' : '')
@@ -162,17 +156,21 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
       try {
         regex = new RegExp(input, flags)
       } catch {
+        editor.selections = selections
         return 'Invalid ECMA RegExp.'
       }
+      helper.state.regex = regex
 
-      searchState.regex = regex
-
-      const helper = SelectionHelper.for(editorState, searchState)
       const newSelections = []
       const len = selections.length
+      const repetitions = helper.editorState.extension.currentCount || 1
       for (let i = 0; i < len; i++) {
-        const newSelection = mapper(selections[i], helper)
-        if (newSelection !== undefined) newSelections.push(newSelection)
+        let newSelection: vscode.Selection | undefined = selections[i]
+        for (let r = 0; r < repetitions; r++) {
+          newSelection = mapper(newSelection, helper)
+          if (!newSelection) break
+        }
+        if (newSelection) newSelections.push(newSelection)
       }
       if (newSelections.length === 0) {
         editor.selections = selections
@@ -184,8 +182,12 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
         return undefined
       }
     },
-  }, ({ editor }) => {
-    register.set(editor, [searchState.regex!.source])
+    onDidCancel({ editor, documentState }) {
+      editor.selections = initialSelections.map(selection => selection.selection(editor.document))
+      documentState.forgetSelections(initialSelections)
+    },
+  }, ({ editor, documentState }) => {
+    register.set(editor, [helper.state.regex!.source])
     documentState.forgetSelections(initialSelections)
   })
 }

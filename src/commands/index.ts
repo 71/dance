@@ -116,7 +116,10 @@ export interface InputDescrMap {
   [InputKind.ListOneItem]: [string, string][]
   [InputKind.ListManyItems]: [string, string][]
   [InputKind.RegExp]: string
-  [InputKind.Text]: vscode.InputBoxOptions & { setup?: (editorState: EditorState) => void }
+  [InputKind.Text]: vscode.InputBoxOptions & {
+    setup?: (editorState: EditorState) => void
+    onDidCancel?: (editorState: EditorState) => void
+  }
   [InputKind.Key]: undefined
   [InputKind.ListOneItemOrCount]: [string, string][]
 }
@@ -202,8 +205,11 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         break
     }
 
-    if (this.input !== InputKind.None && input === undefined)
+    if (this.input !== InputKind.None && input === undefined) {
+      if ('onDidCancel' in this.inputDescr)
+        this.inputDescr.onDidCancel?.(editorState)
       return
+    }
 
     if ((this.flags & CommandFlags.ChangeSelections) && !(this.flags & (CommandFlags.DoNotResetPreferredColumns))) {
       editorState.preferredColumns.length = 0
