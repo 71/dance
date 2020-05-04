@@ -40,7 +40,7 @@ function registerMoveVertical(command: Command, direction: Direction, extend: Ex
     if (actualLine < 0)
       actualLine = 0
     else if (targetLine > helper.editor.document.lineCount - 1)
-      actualLine = helper.editor.document.lineCount
+      actualLine = helper.editor.document.lineCount - 1
 
     const lineLen = helper.editor.document.lineAt(actualLine).text.length
     if (lineLen === 0) {

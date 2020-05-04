@@ -142,6 +142,12 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   async execute(editorState: EditorState, argument: any) {
     const { extension, editor } = editorState
 
+    if (editor.selections.length === 0) {
+      // Most commands won't work without any selection at all. So let's force
+      // one. This mainly happens when document is empty.
+      editor.selections = [new vscode.Selection(DocumentStart, DocumentStart)]
+    }
+
     const flags = this.flags
     const cts = new vscode.CancellationTokenSource()
 
@@ -219,11 +225,16 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
     editorState.ignoreSelectionChanges = true
 
-    let result = this.action(editorState, commandState, { undoStopBefore: true, undoStopAfter: true })
-
-    if (result !== undefined) {
-      if (typeof result === 'object' && typeof result.then === 'function')
-        result = await result
+    let result
+    try {
+      result = this.action(editorState, commandState, { undoStopBefore: true, undoStopAfter: true })
+      if (result !== undefined) {
+        if (typeof result === 'object' && typeof result.then === 'function')
+          result = await result
+      }
+    } catch (e) {
+      console.error(e.stack)
+      throw e
     }
 
     if (flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter)) {
@@ -393,4 +404,5 @@ import './search'
 import './select'
 import './selections'
 import './selectObject'
-import './yankPaste'
+import './yankPaste'import { DocumentStart } from '../utils/selectionHelper'
+

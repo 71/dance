@@ -4,6 +4,8 @@ import { CommandState } from '../commands'
 import { EditorState }       from '../state/editor'
 import { SelectionBehavior } from '../state/extension'
 
+export const DocumentStart = new vscode.Position(0, 0)
+
 /**
  * Direction of an operation.
  */
@@ -45,13 +47,11 @@ export class SelectionHelper<State extends {selectionBehavior: SelectionBehavior
    * @param selection
    */
   activeCoord(selection: vscode.Selection): Coord {
-    if (this.selectionBehavior === SelectionBehavior.Caret) return selection.active
-    if (selection.isEmpty) return selection.active
-    if (selection.isReversed) {
+    if (this.selectionBehavior === SelectionBehavior.Caret ||
+        selection.active.isEqual(DocumentStart) ||
+        selection.isEmpty || selection.isReversed)
       return selection.active
-    } else {
-      return this.coordAt(this.offsetAt(selection.active) - 1)
-    }
+    return this.coordAt(this.offsetAt(selection.active) - 1)
   }
 
   /**
@@ -163,6 +163,18 @@ export class SelectionHelper<State extends {selectionBehavior: SelectionBehavior
         return new vscode.Selection(anchor, afterTo)
       }
     }
+  }
+
+  /** Get the next position in document. */
+  nextPos(pos: vscode.Position): vscode.Position {
+    // TODO: Optimize
+    return this.coordAt(this.offsetAt(pos) + 1)
+  }
+
+  /** Get the previous position in document. */
+  prevPos(pos: vscode.Position): vscode.Position {
+    // TODO: Optimize
+    return this.coordAt(this.offsetAt(pos) - 1)
   }
 
   /**
