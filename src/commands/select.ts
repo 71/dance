@@ -334,20 +334,20 @@ registerCommand(Command.trimLines, CommandFlags.ChangeSelections, (editorState, 
  * @param current Coord of the first character to test
  * @param condition will be only executed on character codes, not line breaks
  * @returns the Coord of the first character that does not satisfy condition,
- *          which may be `current`. Or `undefined` if document end is reached.
+ *          which may be `current`. Or `undefined` if document edge is reached.
  */
-function skipWhile(direction: Direction, current: Coord, condition: (charCode: number) => boolean, document: vscode.TextDocument, endLine?: number): Coord | undefined {
+export function skipWhile(direction: Direction, current: Coord, condition: (charCode: number) => boolean, document: vscode.TextDocument, endLine?: number): Coord | undefined {
   let col = current.character,
       line = current.line,
       text = document.lineAt(line).text
   if (endLine === undefined)
-    endLine = document.lineCount - 1
+    endLine = direction === Forward ? document.lineCount - 1 : 0
 
   while (col < 0 || col >= text.length || condition(text.charCodeAt(col))) {
     col += direction
     if (col < 0 || col >= text.length) {
       line += direction
-      if (line < 0 || line > endLine) return undefined
+      if (line < 0 || line * direction > endLine * direction) return undefined
       text = document.lineAt(line).text
       col = direction === Forward ? 0 : text.length - 1
     }
@@ -377,13 +377,36 @@ registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editorSt
   SelectionHelper.for(editorState, state).mapEach(trimSelections)
 })
 
-
 // Select enclosing (m, M, alt+[mM])
 // ===============================================================================================
 
 const enclosingChars = new Uint8Array(Array.from('(){}[]<>', ch => ch.charCodeAt(0)))
 const isNotEnclosingChar = (charCode: number) => enclosingChars.indexOf(charCode) === -1
 
+/**
+ * Find the matching matchingChar, balanced by balancingChar.
+ *
+ * The character at start does not contribute to balance, and will not be
+ * returned as result either. Every other balancingChar will cause the next
+ * matchingChar to be ignored.
+ */
+export function findMatching(direction: Direction, start: Coord, matchingChar: number, balancingChar: number, document: vscode.TextDocument) {
+  let isStart = true
+  let balance = 0
+  const active = skipWhile(direction, start, charCode => {
+    if (isStart) {
+      isStart = false
+      return true
+    }
+    if (charCode === matchingChar) {
+      if (balance === 0) return false
+      balance--
+    } else if (charCode === balancingChar)
+      balance++
+    return true
+  }, document)
+  return active
+}
 
 function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
   // This command intentionally ignores repetitions to be consistent with Kakoune.
@@ -420,33 +443,21 @@ function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
     // Then, find the matching char of the anchor.
     const enclosingChar = document.lineAt(anchor.line).text.charCodeAt(anchor.character),
           idxOfEnclosingChar = enclosingChars.indexOf(enclosingChar)
-    let matchingChar: number,
-        matchDirection: Direction
+
+    let active
     if (idxOfEnclosingChar & 1) {
       // Odd enclosingChar index <=> enclosingChar is closing character
       //                         <=> we go backward looking for the opening character
-      matchingChar = enclosingChars[idxOfEnclosingChar - 1]
-      matchDirection = Backward
+      const matchingChar = enclosingChars[idxOfEnclosingChar - 1]
+      active = findMatching(Backward, anchor, matchingChar, enclosingChar, document)
     } else {
       // Even enclosingChar index <=> enclosingChar is opening character
       //                          <=> we go forward looking for the closing character
-      matchingChar = enclosingChars[idxOfEnclosingChar + 1]
-      matchDirection = Forward
+      const matchingChar = enclosingChars[idxOfEnclosingChar + 1]
+      active = findMatching(Forward, anchor, matchingChar, enclosingChar, document)
     }
 
-    let balance = 0
-    const active = skipWhile(matchDirection, anchor, charCode => {
-      if (charCode === enclosingChar) {
-        // The starting anchor character itself also counts as +1.
-        balance++
-      } else if (charCode === matchingChar && --balance === 0) {
-        return false
-      }
-
-      return true
-    }, document)
-    if (!active)
-      return RemoveSelection
+    if (!active) return RemoveSelection
     return [anchor, active]
   }, extend)
 

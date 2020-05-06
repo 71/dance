@@ -1352,86 +1352,6 @@ export const searchPreviousAdd: ICommand & { readonly id: 'dance.search.previous
   ],
 }
 /**
- * Select whole object.
- *
- * Default keys: `Alt+A` (`dance.mode == 'normal'`), `Alt+A` (`dance.mode == 'insert'`).
- */
-export const objectsSelect: ICommand & { readonly id: 'dance.objects.select' } = {
-  id         : 'dance.objects.select',
-  title      : 'Select whole object',
-  description: 'Select whole object.',
-  keybindings: [
-    { key: 'Alt+a', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'Alt+a', when: 'editorTextFocus && dance.mode == \'insert\'' },
-  ],
-}
-/**
- * Select inner object.
- *
- * Default keys: `Alt+I` (`dance.mode == 'normal'`), `Alt+I` (`dance.mode == 'insert'`).
- */
-export const objectsSelectInner: ICommand & { readonly id: 'dance.objects.select.inner' } = {
-  id         : 'dance.objects.select.inner',
-  title      : 'Select inner object',
-  description: 'Select inner object.',
-  keybindings: [
-    { key: 'Alt+i', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'Alt+i', when: 'editorTextFocus && dance.mode == \'insert\'' },
-  ],
-}
-/**
- * Select to the whole object start.
- *
- * Default key: `[` (`dance.mode == 'normal'`).
- */
-export const objectsSelectToStart: ICommand & { readonly id: 'dance.objects.selectToStart' } = {
-  id         : 'dance.objects.selectToStart',
-  title      : 'Select to the whole object start',
-  description: 'Select to the whole object start.',
-  keybindings: [
-    { key: '[', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
- * Extend to the whole object start.
- *
- * Default key: `Shift+[` (`dance.mode == 'normal'`).
- */
-export const objectsSelectToStartExtend: ICommand & { readonly id: 'dance.objects.selectToStart.extend' } = {
-  id         : 'dance.objects.selectToStart.extend',
-  title      : 'Extend to the whole object start',
-  description: 'Extend to the whole object start.',
-  keybindings: [
-    { key: 'Shift+[', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
- * Select to the whole object end.
- *
- * Default key: `]` (`dance.mode == 'normal'`).
- */
-export const objectsSelectToEnd: ICommand & { readonly id: 'dance.objects.selectToEnd' } = {
-  id         : 'dance.objects.selectToEnd',
-  title      : 'Select to the whole object end',
-  description: 'Select to the whole object end.',
-  keybindings: [
-    { key: ']', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
- * Extend to the whole object end.
- *
- * Default key: `Shift+]` (`dance.mode == 'normal'`).
- */
-export const objectsSelectToEndExtend: ICommand & { readonly id: 'dance.objects.selectToEnd.extend' } = {
-  id         : 'dance.objects.selectToEnd.extend',
-  title      : 'Extend to the whole object end',
-  description: 'Extend to the whole object end.',
-  keybindings: [
-    { key: 'Shift+]', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
  * Repeat object select.
  *
  * Default key: `Alt+.` (`dance.mode == 'normal'`).
@@ -1443,6 +1363,15 @@ export const objectsSelectRepeat: ICommand & { readonly id: 'dance.objects.selec
   keybindings: [
     { key: 'Alt+.', when: 'editorTextFocus && dance.mode == \'normal\'' },
   ],
+}
+/**
+ * Perform selections specified in the arguments..
+ */
+export const objectsPerformSelection: ICommand & { readonly id: 'dance.objects.performSelection' } = {
+  id         : 'dance.objects.performSelection',
+  title      : 'Perform selections specified in the arguments.',
+  description: 'Perform selections specified in the arguments..',
+  keybindings: [],
 }
 /**
  * Shows prompt to jump somewhere
@@ -2135,58 +2064,6 @@ export const selectEnclosingExtendBackwards: ICommand & { readonly id: 'dance.se
   ],
 }
 /**
- * Select to the inner object start.
- *
- * Default key: `Alt+[` (`dance.mode == 'normal'`).
- */
-export const objectsSelectToStartInner: ICommand & { readonly id: 'dance.objects.selectToStart.inner' } = {
-  id         : 'dance.objects.selectToStart.inner',
-  title      : 'Select to the inner object start',
-  description: 'Select to the inner object start.',
-  keybindings: [
-    { key: 'Alt+[', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
- * Extend to the inner object start.
- *
- * Default key: `Alt+Shift+[` (`dance.mode == 'normal'`).
- */
-export const objectsSelectToStartExtendInner: ICommand & { readonly id: 'dance.objects.selectToStart.extend.inner' } = {
-  id         : 'dance.objects.selectToStart.extend.inner',
-  title      : 'Extend to the inner object start',
-  description: 'Extend to the inner object start.',
-  keybindings: [
-    { key: 'Alt+Shift+[', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
- * Select to the inner object end.
- *
- * Default key: `Alt+]` (`dance.mode == 'normal'`).
- */
-export const objectsSelectToEndInner: ICommand & { readonly id: 'dance.objects.selectToEnd.inner' } = {
-  id         : 'dance.objects.selectToEnd.inner',
-  title      : 'Select to the inner object end',
-  description: 'Select to the inner object end.',
-  keybindings: [
-    { key: 'Alt+]', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
- * Extend to the inner object end.
- *
- * Default key: `Alt+Shift+]` (`dance.mode == 'normal'`).
- */
-export const objectsSelectToEndExtendInner: ICommand & { readonly id: 'dance.objects.selectToEnd.extend.inner' } = {
-  id         : 'dance.objects.selectToEnd.extend.inner',
-  title      : 'Extend to the inner object end',
-  description: 'Extend to the inner object end.',
-  keybindings: [
-    { key: 'Alt+Shift+]', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
  * Adds 0 to the current counter for the next operation.
  *
  * Default key: `0` (`dance.mode == 'normal'`).
@@ -2529,20 +2406,10 @@ export const commands = {
   searchPrevious,
   /** Add a new selection with the previous match before the main selection. */
   searchPreviousAdd,
-  /** Select whole object. */
-  objectsSelect,
-  /** Select inner object. */
-  objectsSelectInner,
-  /** Select to the whole object start. */
-  objectsSelectToStart,
-  /** Extend to the whole object start. */
-  objectsSelectToStartExtend,
-  /** Select to the whole object end. */
-  objectsSelectToEnd,
-  /** Extend to the whole object end. */
-  objectsSelectToEndExtend,
   /** Repeat object select. */
   objectsSelectRepeat,
+  /** Perform selections specified in the arguments.. */
+  objectsPerformSelection,
   /** Shows prompt to jump somewhere */
   goto,
   /** Go to line start. */
@@ -2661,14 +2528,6 @@ export const commands = {
   selectToExcludedExtendBackwards,
   /** Extend with enclosing characters. (backwards) */
   selectEnclosingExtendBackwards,
-  /** Select to the inner object start. */
-  objectsSelectToStartInner,
-  /** Extend to the inner object start. */
-  objectsSelectToStartExtendInner,
-  /** Select to the inner object end. */
-  objectsSelectToEndInner,
-  /** Extend to the inner object end. */
-  objectsSelectToEndExtendInner,
   /** Adds 0 to the current counter for the next operation. */
   count0,
   /** Adds 1 to the current counter for the next operation. */
@@ -2903,20 +2762,10 @@ export const enum Command {
   searchPrevious = 'dance.search.previous',
   /** Add a new selection with the previous match before the main selection. */
   searchPreviousAdd = 'dance.search.previous.add',
-  /** Select whole object. */
-  objectsSelect = 'dance.objects.select',
-  /** Select inner object. */
-  objectsSelectInner = 'dance.objects.select.inner',
-  /** Select to the whole object start. */
-  objectsSelectToStart = 'dance.objects.selectToStart',
-  /** Extend to the whole object start. */
-  objectsSelectToStartExtend = 'dance.objects.selectToStart.extend',
-  /** Select to the whole object end. */
-  objectsSelectToEnd = 'dance.objects.selectToEnd',
-  /** Extend to the whole object end. */
-  objectsSelectToEndExtend = 'dance.objects.selectToEnd.extend',
   /** Repeat object select. */
   objectsSelectRepeat = 'dance.objects.select.repeat',
+  /** Perform selections specified in the arguments.. */
+  objectsPerformSelection = 'dance.objects.performSelection',
   /** Shows prompt to jump somewhere */
   goto = 'dance.goto',
   /** Go to line start. */
@@ -3035,14 +2884,6 @@ export const enum Command {
   selectToExcludedExtendBackwards = 'dance.select.to.excluded.extend.backwards',
   /** Extend with enclosing characters. (backwards) */
   selectEnclosingExtendBackwards = 'dance.select.enclosing.extend.backwards',
-  /** Select to the inner object start. */
-  objectsSelectToStartInner = 'dance.objects.selectToStart.inner',
-  /** Extend to the inner object start. */
-  objectsSelectToStartExtendInner = 'dance.objects.selectToStart.extend.inner',
-  /** Select to the inner object end. */
-  objectsSelectToEndInner = 'dance.objects.selectToEnd.inner',
-  /** Extend to the inner object end. */
-  objectsSelectToEndExtendInner = 'dance.objects.selectToEnd.extend.inner',
   /** Adds 0 to the current counter for the next operation. */
   count0 = 'dance.count.0',
   /** Adds 1 to the current counter for the next operation. */
@@ -3064,3 +2905,85 @@ export const enum Command {
   /** Adds 9 to the current counter for the next operation. */
   count9 = 'dance.count.9',
 }
+
+/* eslint-disable */
+/** Additional key bindings. */
+export const additionalKeyBindings = [
+  {
+    key    : 'Alt+a',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"select"},
+  },
+  {
+    key    : 'Alt+a',
+    when   : 'editorTextFocus && dance.mode == \'insert\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"select"},
+  },
+  {
+    key    : 'Alt+i',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"select","inner":true},
+  },
+  {
+    key    : 'Alt+i',
+    when   : 'editorTextFocus && dance.mode == \'insert\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"select","inner":true},
+  },
+  {
+    key    : '[',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"selectToStart"},
+  },
+  {
+    key    : ']',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"selectToEnd"},
+  },
+  {
+    key    : 'Shift+;',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "workbench.action.showCommands",
+  },
+  {
+    key    : 'Shift+[',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"selectToStart","extend":true},
+  },
+  {
+    key    : 'Shift+]',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"selectToEnd","extend":true},
+  },
+  {
+    key    : 'Alt+[',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"selectToStart","inner":true},
+  },
+  {
+    key    : 'Alt+]',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"selectToEnd","inner":true},
+  },
+  {
+    key    : 'Alt+Shift+[',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"selectToStart","extend":true,"inner":true},
+  },
+  {
+    key    : 'Alt+Shift+]',
+    when   : 'editorTextFocus && dance.mode == \'normal\'',
+    command: "dance.openMenu",
+    args   : {"menu":"object","action":"selectToEnd","extend":true,"inner":true},
+  },
+]

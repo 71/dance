@@ -3,9 +3,10 @@ import * as vscode from 'vscode'
 import { registerCommand, CommandFlags } from '.'
 import { promptInList } from '../utils/prompt'
 import { Command } from '../../commands'
+import { Extension } from '../state/extension'
 
 
-registerCommand(Command.openMenu, CommandFlags.ChangeSelections, async (_, { argument, extension }) => {
+registerCommand(Command.openMenu, CommandFlags.None, (_, { argument, extension }) => {
   if (typeof argument !== 'object' || argument === null || typeof argument.menu !== 'string') {
     vscode.window.showErrorMessage(`Invalid argument passed to command ${Command.openMenu}.`)
 
@@ -13,6 +14,17 @@ registerCommand(Command.openMenu, CommandFlags.ChangeSelections, async (_, { arg
   }
 
   const menuName = argument.menu
+
+  if (Object.keys(argument).length > 1) {
+    const argFields = Object.assign({}, argument)
+    delete argFields.menu
+    openMenu(menuName, extension, argFields)
+  } else {
+    openMenu(menuName, extension)
+  }
+})
+
+export async function openMenu(menuName: string, extension: Extension, argFields?: Record<string, any>) {
   const menu = extension.menus.get(menuName)
 
   if (menu === undefined) {
@@ -30,11 +42,16 @@ registerCommand(Command.openMenu, CommandFlags.ChangeSelections, async (_, { arg
 
   const pickedItem = entries[choice][1]
 
+  let args = pickedItem.args ?? []
+  if (argFields) {
+    args = [Object.assign({}, argFields, args[0]), ...args.slice(1)]
+  }
+
   try {
-    await vscode.commands.executeCommand(pickedItem.command, ...pickedItem.args ?? [])
+    await vscode.commands.executeCommand(pickedItem.command, ...args)
   } catch (e) {
     const str = `${e}`.replace(/^Error: /, '')
 
     vscode.window.showErrorMessage(`Command did not succeed successfully: ${str}.`)
   }
-})
+}

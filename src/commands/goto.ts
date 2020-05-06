@@ -6,8 +6,11 @@ import { registerCommand, Command, CommandFlags, CommandState, commands } from '
 import { EditorState } from '../state/editor'
 import { ExtendBehavior, Extend, DoNotExtend, SelectionHelper, jumpTo, CoordMapper } from '../utils/selectionHelper'
 import { SelectionBehavior } from '../state/extension'
+import { openMenu } from './menus'
 
 
+// TODO: Make just merely opening the menu not count as a command execution
+// and do not record it. The count+goto version (e.g. `10g`) should still count.
 registerCommand(Command.goto, CommandFlags.ChangeSelections, (editorState, state) => {
   if (state.input === null) {
     const { editor } = editorState,
@@ -24,10 +27,12 @@ registerCommand(Command.goto, CommandFlags.ChangeSelections, (editorState, state
 
     return
   } else {
-    return commands.find(x => x.command === Command.openMenu)!.execute(editorState, { menu: 'goto' })
+    openMenu('goto', editorState.extension)
   }
 })
 
+// TODO: Make just merely opening the menu not count as a command execution
+// and do not record it. The count+goto version (e.g. `10G`) should still count.
 registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, (editorState, state) => {
   if (state.input === null) {
     const { editor } = editorState,
@@ -44,7 +49,7 @@ registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, (editorState,
 
     return
   } else {
-    return commands.find(x => x.command === Command.openMenu)!.execute(editorState, { menu: 'goto.extend' })
+    openMenu('goto.extend', editorState.extension)
   }
 })
 

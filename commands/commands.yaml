@@ -570,38 +570,38 @@ search.previous.add:
 # Objects (selectObject.ts)
 # ================================================================================================
 
-objects.select:
+_objects.select:
   title: Select whole object
   keys: a-a (normal), a-a (insert)
+  command: dance.openMenu
+  args: {menu: 'object', action: 'select'}
 
-objects.select.inner:
+_objects.select.inner:
   title: Select inner object
   keys: a-i (normal), a-i (insert)
+  command: dance.openMenu
+  args: {menu: 'object', action: 'select', inner: true}
 
-objects.selectToStart:
+_objects.selectToStart:
   title: Select to the whole object start
   keys: "[ (normal)"
-  add: inner
+  add: inner, extend
+  command: dance.openMenu
+  args: {menu: 'object', action: 'selectToStart'}
 
-objects.selectToStart.extend:
-  title: Extend to the whole object start
-  keys: "s-[ (normal)"
-  add: inner
-
-objects.selectToEnd:
+_objects.selectToEnd:
   title: Select to the whole object end
   keys: "] (normal)"
-  add: inner
-
-objects.selectToEnd.extend:
-  title: Extend to the whole object end
-  keys: "s-] (normal)"
-  add: inner
+  add: inner, extend
+  command: dance.openMenu
+  args: {menu: 'object', action: 'selectToEnd'}
 
 objects.select.repeat:
-  title: Repeat object select
+  title: Repeat object select  # TODO: or t/f selection.
   keys: a-. (normal)
 
+objects.performSelection:
+  title: Perform selections specified in the arguments.
 
 # Goto (goto.ts)
 # ================================================================================================
@@ -699,3 +699,9 @@ cancel:
   title: Cancel operation
   descr: Cancels waiting for input from the user
   keys: escape (awaiting)
+
+_commandPalette:
+  title: Open Command Palette
+  descr: Open the built-in Command Palette in VSCode
+  keys: s-; (normal)
+  command: 'workbench.action.showCommands'

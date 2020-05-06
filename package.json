@@ -205,6 +205,253 @@
             "additionalProperties": false
           },
           "default": {
+            "object": {
+              "items": {
+                "b": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "parens"
+                    }
+                  ],
+                  "text": "parenthesis block"
+                },
+                "(": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "parens"
+                    }
+                  ],
+                  "text": "parenthesis block"
+                },
+                ")": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "parens"
+                    }
+                  ],
+                  "text": "parenthesis block"
+                },
+                "B": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "braces"
+                    }
+                  ],
+                  "text": "braces block"
+                },
+                "{": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "braces"
+                    }
+                  ],
+                  "text": "braces block"
+                },
+                "}": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "braces"
+                    }
+                  ],
+                  "text": "braces block"
+                },
+                "r": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "brackets"
+                    }
+                  ],
+                  "text": "brackets block"
+                },
+                "[": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "brackets"
+                    }
+                  ],
+                  "text": "brackets block"
+                },
+                "]": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "brackets"
+                    }
+                  ],
+                  "text": "brackets block"
+                },
+                "a": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "angleBrackets"
+                    }
+                  ],
+                  "text": "angle block"
+                },
+                "<": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "angleBrackets"
+                    }
+                  ],
+                  "text": "angle block"
+                },
+                ">": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "angleBrackets"
+                    }
+                  ],
+                  "text": "angle block"
+                },
+                "Q": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "doubleQuoteString"
+                    }
+                  ],
+                  "text": "double quote string"
+                },
+                "\"": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "doubleQuoteString"
+                    }
+                  ],
+                  "text": "double quote string"
+                },
+                "q": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "singleQuoteString"
+                    }
+                  ],
+                  "text": "single quote string"
+                },
+                "'": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "singleQuoteString"
+                    }
+                  ],
+                  "text": "single quote string"
+                },
+                "g": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "graveQuoteString"
+                    }
+                  ],
+                  "text": "grave quote string"
+                },
+                "`": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "graveQuoteString"
+                    }
+                  ],
+                  "text": "grave quote string"
+                },
+                "w": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "word"
+                    }
+                  ],
+                  "text": "word"
+                },
+                "W": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "WORD"
+                    }
+                  ],
+                  "text": "WORD"
+                },
+                "s": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "sentence"
+                    }
+                  ],
+                  "text": "sentence"
+                },
+                "p": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "paragraph"
+                    }
+                  ],
+                  "text": "paragraph"
+                },
+                " ": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "whitespaces"
+                    }
+                  ],
+                  "text": "whitespaces"
+                },
+                "i": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "indent"
+                    }
+                  ],
+                  "text": "indent"
+                },
+                "n": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "number"
+                    }
+                  ],
+                  "text": "number"
+                },
+                "u": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "argument"
+                    }
+                  ],
+                  "text": "argument"
+                },
+                "c": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "custom"
+                    }
+                  ],
+                  "text": "custom object desc"
+                }
+              }
+            },
             "goto": {
               "items": {
                 "h": {
@@ -260,51 +507,51 @@
             "goto.extend": {
               "items": {
                 "h": {
-                  "text": "go to line start",
+                  "text": "extend to line start",
                   "command": "dance.goto.lineStart.extend"
                 },
                 "l": {
-                  "text": "go to line end",
+                  "text": "extend to line end",
                   "command": "dance.goto.lineEnd.extend"
                 },
                 "i": {
-                  "text": "go to non-blank line start",
+                  "text": "extend to non-blank line start",
                   "command": "dance.goto.lineStart.nonBlank.extend"
                 },
                 "g": {
-                  "text": "go to first line",
+                  "text": "extend to first line",
                   "command": "dance.goto.firstLine.extend"
                 },
                 "k": {
-                  "text": "go to first line",
+                  "text": "extend to first line",
                   "command": "dance.goto.firstLine.extend"
                 },
                 "j": {
-                  "text": "go to last line",
+                  "text": "extend to last line",
                   "command": "dance.goto.lastLine.extend"
                 },
                 "e": {
-                  "text": "go to last char of last line",
+                  "text": "extend to last char of last line",
                   "command": "dance.goto.lastCharacter.extend"
                 },
                 "t": {
-                  "text": "go to the first displayed line",
+                  "text": "extend to the first displayed line",
                   "command": "dance.goto.firstVisibleLine.extend"
                 },
                 "c": {
-                  "text": "go to the middle displayed line",
+                  "text": "extend to the middle displayed line",
                   "command": "dance.goto.middleVisibleLine.extend"
                 },
                 "b": {
-                  "text": "go to the last displayed line",
+                  "text": "extend to the last displayed line",
                   "command": "dance.goto.lastVisibleLine.extend"
                 },
                 "f": {
-                  "text": "go to file whose name is selected",
+                  "text": "extend to file whose name is selected",
                   "command": "dance.goto.selectedFile.extend"
                 },
                 ".": {
-                  "text": "go to last buffer modification position",
+                  "text": "extend to last buffer modification position",
                   "command": "dance.goto.lastModification.extend"
                 }
               }
@@ -945,45 +1192,15 @@
         "category": "Dance"
       },
       {
-        "command": "dance.objects.select",
-        "title": "Select whole object",
-        "description": "Select whole object.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.select.inner",
-        "title": "Select inner object",
-        "description": "Select inner object.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToStart",
-        "title": "Select to the whole object start",
-        "description": "Select to the whole object start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToStart.extend",
-        "title": "Extend to the whole object start",
-        "description": "Extend to the whole object start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToEnd",
-        "title": "Select to the whole object end",
-        "description": "Select to the whole object end.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToEnd.extend",
-        "title": "Extend to the whole object end",
-        "description": "Extend to the whole object end.",
-        "category": "Dance"
-      },
-      {
         "command": "dance.objects.select.repeat",
         "title": "Repeat object select",
         "description": "Repeat object select.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.objects.performSelection",
+        "title": "Perform selections specified in the arguments.",
+        "description": "Perform selections specified in the arguments..",
         "category": "Dance"
       },
       {
@@ -1341,30 +1558,6 @@
         "category": "Dance"
       },
       {
-        "command": "dance.objects.selectToStart.inner",
-        "title": "Select to the inner object start",
-        "description": "Select to the inner object start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToStart.extend.inner",
-        "title": "Extend to the inner object start",
-        "description": "Extend to the inner object start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToEnd.inner",
-        "title": "Select to the inner object end",
-        "description": "Select to the inner object end.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToEnd.extend.inner",
-        "title": "Extend to the inner object end",
-        "description": "Extend to the inner object end.",
-        "category": "Dance"
-      },
-      {
         "command": "dance.count.0",
         "title": "Count 0",
         "description": "Adds 0 to the current counter for the next operation.",
@@ -1427,9 +1620,127 @@
     ],
     "keybindings": [
       {
-        "command": "workbench.action.showCommands",
+        "key": "Alt+a",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "select"
+        }
+      },
+      {
+        "key": "Alt+a",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "select"
+        }
+      },
+      {
+        "key": "Alt+i",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "select",
+          "inner": true
+        }
+      },
+      {
+        "key": "Alt+i",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "select",
+          "inner": true
+        }
+      },
+      {
+        "key": "[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToStart"
+        }
+      },
+      {
+        "key": "]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToEnd"
+        }
+      },
+      {
         "key": "Shift+;",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "workbench.action.showCommands"
+      },
+      {
+        "key": "Shift+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToStart",
+          "extend": true
+        }
+      },
+      {
+        "key": "Shift+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToEnd",
+          "extend": true
+        }
+      },
+      {
+        "key": "Alt+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToStart",
+          "inner": true
+        }
+      },
+      {
+        "key": "Alt+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToEnd",
+          "inner": true
+        }
+      },
+      {
+        "key": "Alt+Shift+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToStart",
+          "extend": true,
+          "inner": true
+        }
+      },
+      {
+        "key": "Alt+Shift+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToEnd",
+          "extend": true,
+          "inner": true
+        }
       },
       {
         "command": "dance.set.normal",
@@ -1967,46 +2278,6 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.objects.select",
-        "key": "Alt+a",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.select",
-        "key": "Alt+a",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.objects.select.inner",
-        "key": "Alt+i",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.select.inner",
-        "key": "Alt+i",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.objects.selectToStart",
-        "key": "[",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToStart.extend",
-        "key": "Shift+[",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToEnd",
-        "key": "]",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToEnd.extend",
-        "key": "Shift+]",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
         "command": "dance.objects.select.repeat",
         "key": "Alt+.",
         "when": "editorTextFocus && dance.mode == 'normal'"
@@ -2249,26 +2520,6 @@
       {
         "command": "dance.select.enclosing.extend.backwards",
         "key": "Alt+Shift+m",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToStart.inner",
-        "key": "Alt+[",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToStart.extend.inner",
-        "key": "Alt+Shift+[",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToEnd.inner",
-        "key": "Alt+]",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToEnd.extend.inner",
-        "key": "Alt+Shift+]",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

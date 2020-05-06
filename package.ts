@@ -1,7 +1,73 @@
 import { writeFileSync } from 'fs'
 
-import { commands } from './commands'
+import { commands, Command, additionalKeyBindings } from './commands'
 
+// Key bindings
+// ============================================================================
+
+const keybindings: {command: string, key: string, when: string, args?: any}[] = additionalKeyBindings.concat()
+
+for (const command of Object.values(commands)) {
+  for (const { key, when } of command.keybindings) {
+    keybindings.push({ command: command.id, key, when })
+  }
+}
+
+// Menus
+// ============================================================================
+
+const menus: Record<string, {items: Record<string, {text: string, command: string, args?: any[]}>}> = {
+  object: {
+    items: {
+      'b': { command: Command.objectsPerformSelection, args: [{ object: 'parens' }], text: 'parenthesis block' },
+      '(': { command: Command.objectsPerformSelection, args: [{ object: 'parens' }], text: 'parenthesis block' },
+      ')': { command: Command.objectsPerformSelection, args: [{ object: 'parens' }], text: 'parenthesis block' },
+      'B': { command: Command.objectsPerformSelection, args: [{ object: 'braces' }], text: 'braces block' },
+      '{': { command: Command.objectsPerformSelection, args: [{ object: 'braces' }], text: 'braces block' },
+      '}': { command: Command.objectsPerformSelection, args: [{ object: 'braces' }], text: 'braces block' },
+      'r': { command: Command.objectsPerformSelection, args: [{ object: 'brackets' }], text: 'brackets block' },
+      '[': { command: Command.objectsPerformSelection, args: [{ object: 'brackets' }], text: 'brackets block' },
+      ']': { command: Command.objectsPerformSelection, args: [{ object: 'brackets' }], text: 'brackets block' },
+      'a': { command: Command.objectsPerformSelection, args: [{ object: 'angleBrackets' }], text: 'angle block' },
+      '<': { command: Command.objectsPerformSelection, args: [{ object: 'angleBrackets' }], text: 'angle block' },
+      '>': { command: Command.objectsPerformSelection, args: [{ object: 'angleBrackets' }], text: 'angle block' },
+      'Q': { command: Command.objectsPerformSelection, args: [{ object: 'doubleQuoteString' }], text: 'double quote string' },
+      '"': { command: Command.objectsPerformSelection, args: [{ object: 'doubleQuoteString' }], text: 'double quote string' },
+      'q': { command: Command.objectsPerformSelection, args: [{ object: 'singleQuoteString' }], text: 'single quote string' },
+      "'": { command: Command.objectsPerformSelection, args: [{ object: 'singleQuoteString' }], text: 'single quote string' },
+      'g': { command: Command.objectsPerformSelection, args: [{ object: 'graveQuoteString' }], text: 'grave quote string' },
+      '`': { command: Command.objectsPerformSelection, args: [{ object: 'graveQuoteString' }], text: 'grave quote string' },
+      'w': { command: Command.objectsPerformSelection, args: [{ object: 'word' }], text: 'word' },
+      'W': { command: Command.objectsPerformSelection, args: [{ object: 'WORD' }], text: 'WORD' },
+      's': { command: Command.objectsPerformSelection, args: [{ object: 'sentence' }], text: 'sentence' },
+      'p': { command: Command.objectsPerformSelection, args: [{ object: 'paragraph' }], text: 'paragraph' },
+      ' ': { command: Command.objectsPerformSelection, args: [{ object: 'whitespaces' }], text: 'whitespaces' },
+      'i': { command: Command.objectsPerformSelection, args: [{ object: 'indent' }], text: 'indent' },
+      'n': { command: Command.objectsPerformSelection, args: [{ object: 'number' }], text: 'number' },
+      'u': { command: Command.objectsPerformSelection, args: [{ object: 'argument' }], text: 'argument' },
+      'c': { command: Command.objectsPerformSelection, args: [{ object: 'custom' }], text: 'custom object desc' },
+    },
+  },
+}
+
+for (const [suffix, desc] of [['', 'go to'], ['.extend', 'extend to']]) {
+  menus['goto' + suffix] = {
+    items: {
+      'h': { text: `${desc} line start`, command: 'dance.goto.lineStart' + suffix },
+      'l': { text: `${desc} line end`, command: 'dance.goto.lineEnd' + suffix },
+      'i': { text: `${desc} non-blank line start`, command: 'dance.goto.lineStart.nonBlank' + suffix },
+      'g': { text: `${desc} first line`, command: 'dance.goto.firstLine' + suffix },
+      'k': { text: `${desc} first line`, command: 'dance.goto.firstLine' + suffix },
+      'j': { text: `${desc} last line`, command: 'dance.goto.lastLine' + suffix },
+      'e': { text: `${desc} last char of last line`, command: 'dance.goto.lastCharacter' + suffix },
+      't': { text: `${desc} the first displayed line`, command: 'dance.goto.firstVisibleLine' + suffix },
+      'c': { text: `${desc} the middle displayed line`, command: 'dance.goto.middleVisibleLine' + suffix },
+      'b': { text: `${desc} the last displayed line`, command: 'dance.goto.lastVisibleLine' + suffix },
+      'f': { text: `${desc} file whose name is selected`, command: 'dance.goto.selectedFile' + suffix },
+      '.': { text: `${desc} last buffer modification position`, command: 'dance.goto.lastModification' + suffix },
+    },
+  }
+}
 
 // Package information
 // ============================================================================
@@ -160,22 +226,7 @@ const pkg = {
             },
             additionalProperties: false,
           },
-          default: (Object as any).fromEntries(['', '.extend'].map(suffix => ['goto' + suffix, {
-            items: {
-              'h': { text: 'go to line start', command: 'dance.goto.lineStart' + suffix },
-              'l': { text: 'go to line end', command: 'dance.goto.lineEnd' + suffix },
-              'i': { text: 'go to non-blank line start', command: 'dance.goto.lineStart.nonBlank' + suffix },
-              'g': { text: 'go to first line', command: 'dance.goto.firstLine' + suffix },
-              'k': { text: 'go to first line', command: 'dance.goto.firstLine' + suffix },
-              'j': { text: 'go to last line', command: 'dance.goto.lastLine' + suffix },
-              'e': { text: 'go to last char of last line', command: 'dance.goto.lastCharacter' + suffix },
-              't': { text: 'go to the first displayed line', command: 'dance.goto.firstVisibleLine' + suffix },
-              'c': { text: 'go to the middle displayed line', command: 'dance.goto.middleVisibleLine' + suffix },
-              'b': { text: 'go to the last displayed line', command: 'dance.goto.lastVisibleLine' + suffix },
-              'f': { text: 'go to file whose name is selected', command: 'dance.goto.selectedFile' + suffix },
-              '.': { text: 'go to last buffer modification position', command: 'dance.goto.lastModification' + suffix },
-            },
-          }])),
+          default: menus,
         },
       },
     },
@@ -185,11 +236,7 @@ const pkg = {
       description: x.description,
       category: 'Dance',
     })),
-    keybindings: Object.values(commands).reduce((bindings: { command: string, key: string, when: string }[], x) =>
-      bindings.concat(x.keybindings.map(k => ({ command: x.id, key: k.key, when: k.when })))
-    , [
-      { command: 'workbench.action.showCommands', key: 'Shift+;', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    ]),
+    keybindings,
   },
 }
 

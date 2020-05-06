@@ -5,6 +5,7 @@ import { EditorState } from '../state/editor'
 import { Extension, Mode, SelectionBehavior } from '../state/extension'
 import { keypress, prompt, promptInList, promptRegex } from '../utils/prompt'
 import { Command } from '../../commands'
+import { DocumentStart } from '../utils/selectionHelper'
 
 export import Command = Command
 
@@ -212,7 +213,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     }
 
     if (this.input !== InputKind.None && input === undefined) {
-      if ('onDidCancel' in this.inputDescr)
+      if (this.inputDescr && ('onDidCancel' in this.inputDescr))
         this.inputDescr.onDidCancel?.(editorState)
       return
     }
@@ -404,5 +405,5 @@ import './search'
 import './select'
 import './selections'
 import './selectObject'
-import './yankPaste'import { DocumentStart } from '../utils/selectionHelper'
+import './yankPaste'
 
