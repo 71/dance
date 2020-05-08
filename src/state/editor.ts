@@ -396,19 +396,15 @@ export class EditorState {
     this.documentState.recordCommand(state)
     this._commands.push(state)
 
-    // For now, history is limited to 20 items.
-    if (this._commands.length === 20) {
-      if (this._macroRecording) {
-        this._macroRecording.lastHistoryEntry--
-        if (this._macroRecording.lastHistoryEntry < 0) {
-          this._macroRecording.lastHistoryEntry = 0
-          vscode.window.showErrorMessage('Only 20 commands can be recorded (for now). The earliest command(s) were forgotten.')
-        }
-      }
-      this._commands.shift()
+    if (this._macroRecording) {
+      if (this._commands.length === 50)
+        vscode.window.showWarningMessage(
+          "You're recording a lot of commands. This may increase memory usage.")
+    } else {
+      // If not recording, limit history to 20 items to avoid eating RAM.
+      while (this._commands.length > 20) this._commands.shift()
     }
   }
-
 
   // =============================================================================================
   // ==  SELECTION NORMALIZATION  ================================================================
