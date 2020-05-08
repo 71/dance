@@ -112,7 +112,46 @@ function objectWithinPair(startCharCode: number, endCharCode: number) {
     return helper.prevPos(pos)
   }
 
-  return objectActions(toStart, toEnd, toStartInner, toEndInner)
+  const actions = objectActions(toStart, toEnd, toStartInner, toEndInner)
+
+  // Special cases for selectObject and selectObjectInner when active is at the
+  // start / end of an object, so that it always select a whole object within
+  // a matching pair. e.g. (12345) when active at first character should select
+  // the whole thing instead of error.
+  const defaultSelect = actions.select.outer
+  const defaultSelectInner = actions.select.inner
+  actions.select.outer = (selection, helper, i) => {
+    const active = helper.activeCoord(selection)
+    const currentCharCode = helper.editor.document.lineAt(active.line).text.charCodeAt(active.character)
+    if (currentCharCode === startCharCode) {
+      const end = toEnd(active, helper, i)
+      if ('remove' in end) return RemoveSelection
+      return helper.selectionBetween(active, end)
+    } else if (currentCharCode === endCharCode) {
+      const start = toStart(active, helper, i)
+      if ('remove' in start) return RemoveSelection
+      return helper.selectionBetween(start, active)
+    } else {
+      return defaultSelect(selection, helper, i)
+    }
+  }
+  actions.select.inner = (selection, helper, i) => {
+    const active = helper.activeCoord(selection)
+    const currentCharCode = helper.editor.document.lineAt(active.line).text.charCodeAt(active.character)
+    if (currentCharCode === startCharCode) {
+      const end = toEndInner(active, helper, i)
+      if ('remove' in end) return RemoveSelection
+      return helper.selectionBetween(helper.nextPos(active), end)
+    } else if (currentCharCode === endCharCode) {
+      const start = toStartInner(active, helper, i)
+      if ('remove' in start) return RemoveSelection
+      return helper.selectionBetween(start, helper.prevPos(active))
+    } else {
+      return defaultSelectInner(selection, helper, i)
+    }
+  }
+
+  return actions
 }
 
 function objectWithCharSet(charSet: CharSet) {
