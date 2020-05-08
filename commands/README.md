@@ -26,6 +26,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.newLine.below` | Add new line below | Add a new line below, without entering insert mode. | `Alt+O` (`dance.mode == 'normal'`) |
 | `dance.newLine.above` | Add new line above | Add a new line above, without entering insert mode. | `Shift+Alt+O` (`dance.mode == 'normal'`) |
 | `dance.repeat.insert` | Repeat last insert-mode change | Repeat last insert-mode change. | `.` (`dance.mode == 'normal'`) |
+| `dance.repeat.objectOrSelectTo` | Repeat last object select / character find | Repeat last object select / character find. | `Alt+.` (`dance.mode == 'normal'`) |
 | `dance.left` | Move left | Move left. | `Left` (`dance.mode == 'normal'`), `H` (`dance.mode == 'normal'`) |
 | `dance.right` | Move right | Move right. | `Right` (`dance.mode == 'normal'`), `L` (`dance.mode == 'normal'`) |
 | `dance.up` | Move up | Move up. | `Up` (`dance.mode == 'normal'`), `K` (`dance.mode == 'normal'`) |
@@ -121,7 +122,6 @@ They are implemented in [`src/commands`](../src/commands).
 |  | Select inner object | Select inner object. | `Alt+I` (`dance.mode == 'normal'`), `Alt+I` (`dance.mode == 'insert'`) |
 |  | Select to the whole object start | Select to the whole object start. | `[` (`dance.mode == 'normal'`) |
 |  | Select to the whole object end | Select to the whole object end. | `]` (`dance.mode == 'normal'`) |
-| `dance.objects.select.repeat` | Repeat object select | Repeat object select. | `Alt+.` (`dance.mode == 'normal'`) |
 | `dance.objects.performSelection` | Perform selections specified in the arguments. | Perform selections specified in the arguments.. |  |
 | `dance.goto` | Go to... | Shows prompt to jump somewhere | `G` (`dance.mode == 'normal'`) |
 | `dance.goto.lineStart` | Go to line start | Go to line start. |  |

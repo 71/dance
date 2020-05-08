@@ -183,6 +183,19 @@ export const repeatInsert: ICommand & { readonly id: 'dance.repeat.insert' } = {
   ],
 }
 /**
+ * Repeat last object select / character find.
+ *
+ * Default key: `Alt+.` (`dance.mode == 'normal'`).
+ */
+export const repeatObjectOrSelectTo: ICommand & { readonly id: 'dance.repeat.objectOrSelectTo' } = {
+  id         : 'dance.repeat.objectOrSelectTo',
+  title      : 'Repeat last object select / character find',
+  description: 'Repeat last object select / character find.',
+  keybindings: [
+    { key: 'Alt+.', when: 'editorTextFocus && dance.mode == \'normal\'' },
+  ],
+}
+/**
  * Move left.
  *
  * Default keys: `Left` (`dance.mode == 'normal'`), `H` (`dance.mode == 'normal'`).
@@ -1352,19 +1365,6 @@ export const searchPreviousAdd: ICommand & { readonly id: 'dance.search.previous
   ],
 }
 /**
- * Repeat object select.
- *
- * Default key: `Alt+.` (`dance.mode == 'normal'`).
- */
-export const objectsSelectRepeat: ICommand & { readonly id: 'dance.objects.select.repeat' } = {
-  id         : 'dance.objects.select.repeat',
-  title      : 'Repeat object select',
-  description: 'Repeat object select.',
-  keybindings: [
-    { key: 'Alt+.', when: 'editorTextFocus && dance.mode == \'normal\'' },
-  ],
-}
-/**
  * Perform selections specified in the arguments..
  */
 export const objectsPerformSelection: ICommand & { readonly id: 'dance.objects.performSelection' } = {
@@ -2168,6 +2168,8 @@ export const commands = {
   newLineAbove,
   /** Repeat last insert-mode change. */
   repeatInsert,
+  /** Repeat last object select / character find. */
+  repeatObjectOrSelectTo,
   /** Move left. */
   left,
   /** Move right. */
@@ -2350,8 +2352,6 @@ export const commands = {
   searchPrevious,
   /** Add a new selection with the previous match before the main selection. */
   searchPreviousAdd,
-  /** Repeat object select. */
-  objectsSelectRepeat,
   /** Perform selections specified in the arguments.. */
   objectsPerformSelection,
   /** Shows prompt to jump somewhere */
@@ -2516,6 +2516,8 @@ export const enum Command {
   newLineAbove = 'dance.newLine.above',
   /** Repeat last insert-mode change. */
   repeatInsert = 'dance.repeat.insert',
+  /** Repeat last object select / character find. */
+  repeatObjectOrSelectTo = 'dance.repeat.objectOrSelectTo',
   /** Move left. */
   left = 'dance.left',
   /** Move right. */
@@ -2698,8 +2700,6 @@ export const enum Command {
   searchPrevious = 'dance.search.previous',
   /** Add a new selection with the previous match before the main selection. */
   searchPreviousAdd = 'dance.search.previous.add',
-  /** Repeat object select. */
-  objectsSelectRepeat = 'dance.objects.select.repeat',
   /** Perform selections specified in the arguments.. */
   objectsPerformSelection = 'dance.objects.performSelection',
   /** Shows prompt to jump somewhere */

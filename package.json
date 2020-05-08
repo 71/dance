@@ -646,6 +646,12 @@
         "category": "Dance"
       },
       {
+        "command": "dance.repeat.objectOrSelectTo",
+        "title": "Repeat last object select / character find",
+        "description": "Repeat last object select / character find.",
+        "category": "Dance"
+      },
+      {
         "command": "dance.left",
         "title": "Move left",
         "description": "Move left.",
@@ -1189,12 +1195,6 @@
         "command": "dance.search.previous.add",
         "title": "Add previous match",
         "description": "Add a new selection with the previous match before the main selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.select.repeat",
-        "title": "Repeat object select",
-        "description": "Repeat object select.",
         "category": "Dance"
       },
       {
@@ -1779,6 +1779,11 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
+        "command": "dance.repeat.objectOrSelectTo",
+        "key": "Alt+.",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
         "command": "dance.left",
         "key": "left",
         "when": "editorTextFocus && dance.mode == 'normal'"
@@ -2251,11 +2256,6 @@
       {
         "command": "dance.search.previous.add",
         "key": "Shift+Alt+n",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.select.repeat",
-        "key": "Alt+.",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

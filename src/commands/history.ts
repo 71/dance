@@ -47,3 +47,26 @@ registerCommand(Command.historyRepeatEdit, CommandFlags.Edit | CommandFlags.Igno
 
   return
 })
+
+const ObjectOrSelectToCommands = new Set([
+  Command.objectsPerformSelection,
+  Command.selectToExcluded,
+  Command.selectToExcludedBackwards,
+  Command.selectToExcludedExtend,
+  Command.selectToExcludedExtendBackwards,
+  Command.selectToIncluded,
+  Command.selectToIncludedBackwards,
+  Command.selectToIncludedExtend,
+  Command.selectToIncludedExtendBackwards,
+])
+
+registerCommand(Command.repeatObjectOrSelectTo, CommandFlags.ChangeSelections, (editorState) => {
+  const commands = editorState.recordedCommands
+
+  for (let i = commands.length - 1; i >= 0; i--) {
+    const commandState = commands[i]
+
+    if (ObjectOrSelectToCommands.has(commandState.descriptor.command))
+      return CommandDescriptor.execute(editorState, commandState)
+  }
+})

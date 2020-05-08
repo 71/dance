@@ -78,6 +78,9 @@ repeat.insert:
   title: Repeat last insert-mode change
   keys: . (normal)
 
+repeat.objectOrSelectTo:
+  title: Repeat last object select / character find
+  keys: a-. (normal)
 
 # Move around (move.ts)
 # ================================================================================================
@@ -591,10 +594,6 @@ _objects.selectToEnd:
   add: inner, extend
   command: dance.openMenu
   args: {menu: 'object', action: 'selectToEnd'}
-
-objects.select.repeat:
-  title: Repeat object select  # TODO: or t/f selection.
-  keys: a-. (normal)
 
 objects.performSelection:
   title: Perform selections specified in the arguments.

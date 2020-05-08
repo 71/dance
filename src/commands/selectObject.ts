@@ -213,9 +213,3 @@ registerCommand(Command.objectsPerformSelection, CommandFlags.ChangeSelections, 
   const helper = SelectionHelper.for(editorState, state)
   helper.mapEach(mapper)
 })
-
-// TODO
-registerCommand(Command.objectsSelectRepeat, CommandFlags.ChangeSelections, () => {
-  // TODO: Or repeat the last t/f selection.
-
-})
