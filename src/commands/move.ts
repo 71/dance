@@ -88,13 +88,12 @@ registerMoveVertical(  Command.downExtend ,  Forward,      Extend)
 // Move up/down (ctrl-[bfud])
 // ===============================================================================================
 
-function scrollBy(iterations: number, to: 'up' | 'down', extend: ExtendBehavior, translation: number) {
+function scrollBy(iterations: number, to: 'up' | 'down', translation: number) {
   return vscode.commands.executeCommand('editorScroll', {
     to,
     by: 'line',
     value: iterations * translation,
     revealCursor: true,
-    select: extend,
   }) as Promise<void>
 }
 
@@ -104,12 +103,7 @@ function getHeight(editor: vscode.TextEditor) {
   return visibleRange.end.line - visibleRange.start.line
 }
 
-registerCommand(Command.upPage            , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up', DoNotExtend, getHeight(editor)))
-registerCommand(Command.upPageExtend      , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up',      Extend, getHeight(editor)))
-registerCommand(Command.upHalfPage        , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up', DoNotExtend, getHeight(editor) / 2 | 0))
-registerCommand(Command.upHalfPageExtend  , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up',      Extend, getHeight(editor) / 2 | 0))
-
-registerCommand(Command.downPage          , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down', DoNotExtend, getHeight(editor)))
-registerCommand(Command.downPageExtend    , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down',      Extend, getHeight(editor)))
-registerCommand(Command.downHalfPage      , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down', DoNotExtend, getHeight(editor) / 2 | 0))
-registerCommand(Command.downHalfPageExtend, CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down',      Extend, getHeight(editor) / 2 | 0))
+registerCommand(Command.upPage            , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up', getHeight(editor)))
+registerCommand(Command.upHalfPage        , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions,   'up', getHeight(editor) / 2 | 0))
+registerCommand(Command.downPage          , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down', getHeight(editor)))
+registerCommand(Command.downHalfPage      , CommandFlags.ChangeSelections, ({ editor }, { repetitions }) => scrollBy(repetitions, 'down', getHeight(editor) / 2 | 0))

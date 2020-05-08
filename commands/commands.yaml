@@ -102,22 +102,18 @@ down:
 up.page:
   title: Scroll one page up
   keys: c-b (normal), c-b (insert)
-  add: extend
 
 down.page:
   title: Scroll one page down
   keys: c-f (normal), c-f (insert)
-  add: extend
 
 up.halfPage:
   title: Scroll half a page up
   keys: c-u (normal), c-u (insert)
-  add: extend
 
 down.halfPage:
   title: Scroll half a page down
   keys: c-d (normal), c-d (insert)
-  add: extend
 
 
 # Select to / until / buffer / line (move.ts)

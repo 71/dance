@@ -148,10 +148,6 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `Shift+L` (`dance.mode == 'normal'`) |
 | `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `Shift+K` (`dance.mode == 'normal'`) |
 | `dance.down.extend` | Move down (extend) | Move down (extend). | `Shift+Down` (`dance.mode == 'normal'`), `Shift+J` (`dance.mode == 'normal'`) |
-| `dance.up.page.extend` | Scroll one page up (extend) | Scroll one page up (extend). | `Shift+Ctrl+B` (`dance.mode == 'normal'`), `Shift+Ctrl+B` (`dance.mode == 'insert'`) |
-| `dance.down.page.extend` | Scroll one page down (extend) | Scroll one page down (extend). | `Shift+Ctrl+F` (`dance.mode == 'normal'`), `Shift+Ctrl+F` (`dance.mode == 'insert'`) |
-| `dance.up.halfPage.extend` | Scroll half a page up (extend) | Scroll half a page up (extend). | `Shift+Ctrl+U` (`dance.mode == 'normal'`), `Shift+Ctrl+U` (`dance.mode == 'insert'`) |
-| `dance.down.halfPage.extend` | Scroll half a page down (extend) | Scroll half a page down (extend). | `Shift+Ctrl+D` (`dance.mode == 'normal'`), `Shift+Ctrl+D` (`dance.mode == 'insert'`) |
 | `dance.select.to.included.extend` | Extend to | Extend to the next character pressed, including it. | `Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend` | Extend until | Extend with until the next character pressed, excluding it. | `Shift+T` (`dance.mode == 'normal'`) |
 | `dance.select.line.extend` | Extend with line | Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line). | `Shift+X` (`dance.mode == 'normal'`) |

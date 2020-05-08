@@ -1643,62 +1643,6 @@ export const downExtend: ICommand & { readonly id: 'dance.down.extend' } = {
   ],
 }
 /**
- * Scroll one page up (extend).
- *
- * Default keys: `Shift+Ctrl+B` (`dance.mode == 'normal'`), `Shift+Ctrl+B` (`dance.mode == 'insert'`).
- */
-export const upPageExtend: ICommand & { readonly id: 'dance.up.page.extend' } = {
-  id         : 'dance.up.page.extend',
-  title      : 'Scroll one page up (extend)',
-  description: 'Scroll one page up (extend).',
-  keybindings: [
-    { key: 'Shift+Ctrl+b', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'Shift+Ctrl+b', when: 'editorTextFocus && dance.mode == \'insert\'' },
-  ],
-}
-/**
- * Scroll one page down (extend).
- *
- * Default keys: `Shift+Ctrl+F` (`dance.mode == 'normal'`), `Shift+Ctrl+F` (`dance.mode == 'insert'`).
- */
-export const downPageExtend: ICommand & { readonly id: 'dance.down.page.extend' } = {
-  id         : 'dance.down.page.extend',
-  title      : 'Scroll one page down (extend)',
-  description: 'Scroll one page down (extend).',
-  keybindings: [
-    { key: 'Shift+Ctrl+f', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'Shift+Ctrl+f', when: 'editorTextFocus && dance.mode == \'insert\'' },
-  ],
-}
-/**
- * Scroll half a page up (extend).
- *
- * Default keys: `Shift+Ctrl+U` (`dance.mode == 'normal'`), `Shift+Ctrl+U` (`dance.mode == 'insert'`).
- */
-export const upHalfPageExtend: ICommand & { readonly id: 'dance.up.halfPage.extend' } = {
-  id         : 'dance.up.halfPage.extend',
-  title      : 'Scroll half a page up (extend)',
-  description: 'Scroll half a page up (extend).',
-  keybindings: [
-    { key: 'Shift+Ctrl+u', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'Shift+Ctrl+u', when: 'editorTextFocus && dance.mode == \'insert\'' },
-  ],
-}
-/**
- * Scroll half a page down (extend).
- *
- * Default keys: `Shift+Ctrl+D` (`dance.mode == 'normal'`), `Shift+Ctrl+D` (`dance.mode == 'insert'`).
- */
-export const downHalfPageExtend: ICommand & { readonly id: 'dance.down.halfPage.extend' } = {
-  id         : 'dance.down.halfPage.extend',
-  title      : 'Scroll half a page down (extend)',
-  description: 'Scroll half a page down (extend).',
-  keybindings: [
-    { key: 'Shift+Ctrl+d', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    { key: 'Shift+Ctrl+d', when: 'editorTextFocus && dance.mode == \'insert\'' },
-  ],
-}
-/**
  * Extend to the next character pressed, including it.
  *
  * Default key: `Shift+F` (`dance.mode == 'normal'`).
@@ -2458,14 +2402,6 @@ export const commands = {
   upExtend,
   /** Move down (extend). */
   downExtend,
-  /** Scroll one page up (extend). */
-  upPageExtend,
-  /** Scroll one page down (extend). */
-  downPageExtend,
-  /** Scroll half a page up (extend). */
-  upHalfPageExtend,
-  /** Scroll half a page down (extend). */
-  downHalfPageExtend,
   /** Extend to the next character pressed, including it. */
   selectToIncludedExtend,
   /** Extend with until the next character pressed, excluding it. */
@@ -2814,14 +2750,6 @@ export const enum Command {
   upExtend = 'dance.up.extend',
   /** Move down (extend). */
   downExtend = 'dance.down.extend',
-  /** Scroll one page up (extend). */
-  upPageExtend = 'dance.up.page.extend',
-  /** Scroll one page down (extend). */
-  downPageExtend = 'dance.down.page.extend',
-  /** Scroll half a page up (extend). */
-  upHalfPageExtend = 'dance.up.halfPage.extend',
-  /** Scroll half a page down (extend). */
-  downHalfPageExtend = 'dance.down.halfPage.extend',
   /** Extend to the next character pressed, including it. */
   selectToIncludedExtend = 'dance.select.to.included.extend',
   /** Extend with until the next character pressed, excluding it. */

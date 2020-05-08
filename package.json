@@ -1348,30 +1348,6 @@
         "category": "Dance"
       },
       {
-        "command": "dance.up.page.extend",
-        "title": "Scroll one page up (extend)",
-        "description": "Scroll one page up (extend).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.down.page.extend",
-        "title": "Scroll one page down (extend)",
-        "description": "Scroll one page down (extend).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.up.halfPage.extend",
-        "title": "Scroll half a page up (extend)",
-        "description": "Scroll half a page up (extend).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.down.halfPage.extend",
-        "title": "Scroll half a page down (extend)",
-        "description": "Scroll half a page down (extend).",
-        "category": "Dance"
-      },
-      {
         "command": "dance.select.to.included.extend",
         "title": "Extend to",
         "description": "Extend to the next character pressed, including it.",
@@ -2366,46 +2342,6 @@
         "command": "dance.down.extend",
         "key": "Shift+j",
         "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.up.page.extend",
-        "key": "Shift+Ctrl+b",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.up.page.extend",
-        "key": "Shift+Ctrl+b",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.down.page.extend",
-        "key": "Shift+Ctrl+f",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down.page.extend",
-        "key": "Shift+Ctrl+f",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.up.halfPage.extend",
-        "key": "Shift+Ctrl+u",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.up.halfPage.extend",
-        "key": "Shift+Ctrl+u",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.down.halfPage.extend",
-        "key": "Shift+Ctrl+d",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down.halfPage.extend",
-        "key": "Shift+Ctrl+d",
-        "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
         "command": "dance.select.to.included.extend",
