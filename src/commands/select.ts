@@ -355,6 +355,41 @@ export function skipWhile(direction: Direction, current: Coord, condition: (char
   return new Coord(line, col)
 }
 
+const LF = '\n'.charCodeAt(0)
+/**
+ * Starting from `current` (inclusive), find the first character or line break
+ * that does not satisfy `condition` in the direction and return its Coord.
+ *
+ * @param current Coord of the first character to test
+ * @param condition will be called with charCode (or LF for line break).
+ * @returns the Coord of the first character/LF that does not satisfy condition,
+ *          which may be `current`. Or `undefined` if document edge is reached.
+ */
+export function skipWhileX(direction: Direction, current: Coord, condition: (charCode: number) => boolean, document: vscode.TextDocument, endLine?: number): Coord | undefined {
+  let col = current.character,
+      line = current.line
+  if (endLine === undefined) {
+    endLine = direction === Forward ? document.lineCount - 1 : 0
+  }
+
+  while (line >= 0 && line * direction <= endLine * direction) {
+    const text = document.lineAt(line).text
+    if (direction === Backward && col >= text.length) {
+      if (!condition(LF)) return new Coord(line, text.length)
+      col = text.length - 1
+    }
+    while (col >= 0 && col < text.length) {
+      if (!condition(text.charCodeAt(col))) return new Coord(line, col)
+      col += direction
+    }
+
+    if (direction === Forward && !condition(LF)) return new Coord(line, col)
+    col = (direction === Forward) ? 0 : Number.MAX_SAFE_INTEGER
+    line += direction
+  }
+  return undefined
+}
+
 const trimSelections: SelectionMapper = (selection, helper) => {
   // This command is idempotent. state.currentCount is intentionally ignored.
   const document = helper.editor.document

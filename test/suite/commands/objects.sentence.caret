@@ -1,0 +1,5 @@
+// TODO: Write tests. Ideas below:
+// If caret is between two sentences, we should arbitrarily lean to:
+//   1. Direction of current selection (if not empty).
+//   2. Direction of movement (if to inner/out start/end)
+//   3. The NEXT one by default

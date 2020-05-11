@@ -224,6 +224,16 @@ export class SelectionHelper<State extends {selectionBehavior: SelectionBehavior
     return new vscode.Selection(anchorCoord, this.coordAt(this.offsetAt(anchorCoord) + length))
   }
 
+  lastCoord(): Coord {
+    const document = this.editor.document
+    const lastLineText = document.lineAt(document.lineCount - 1).text
+    if (lastLineText.length > 0)
+      return new Coord(document.lineCount - 1, lastLineText.length - 1)
+    if (document.lineCount >= 2)
+      return new Coord(document.lineCount - 2, document.lineAt(document.lineCount - 2).text.length)
+    return DocumentStart
+  }
+
   /** DEBUG ONLY method to visualize an offset. DO NOT leave calls in code. */
   _visualizeOffset(offset: number): string {
     const position = this.coordAt(offset)

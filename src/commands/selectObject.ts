@@ -1,9 +1,10 @@
 // Objects: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
 
+import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags } from '.'
-import { Direction, Forward, Backward, SelectionHelper, RemoveSelection, CoordMapper, SelectionMapper, moveActiveCoord, DoNotExtend, Extend } from '../utils/selectionHelper'
+import { Direction, Forward, Backward, SelectionHelper, RemoveSelection, CoordMapper, SelectionMapper, moveActiveCoord, DoNotExtend, Extend, DocumentStart, Coord, ExtendBehavior } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
-import { findMatching } from './select'
+import { findMatching, skipWhile, skipWhileX } from './select'
 
 // Selecting is a bit harder than it sounds like:
 // 1. Dealing with multiple lines, whether forwards or backwards, is a bit of a pain.
@@ -27,30 +28,6 @@ const [
   BACKSLASH,
   COMMA,
 ] = Array.from('()[]{}<>\n "\'`\\,', ch => ch.charCodeAt(0))
-
-type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
-const dispatch = {
-  parens:            objectWithinPair(LPAREN,     RPAREN),
-  braces:            objectWithinPair(LCRBRACKET, RCRBRACKET),
-  brackets:          objectWithinPair(LSQBRACKET, RSQBRACKET),
-  angleBrackets:     objectWithinPair(LCHEVRON,   RCHEVRON),
-  doubleQuoteString: objectWithinPair(QUOTE_DBL,  QUOTE_DBL),
-  singleQuoteString: objectWithinPair(QUOTE_SGL,  QUOTE_SGL),
-  graveQuoteString:  objectWithinPair(BACKTICK,   BACKTICK),
-  word: objectWithCharSet(CharSet.Word),
-  WORD: objectWithCharSet(CharSet.NonBlank),
-  // TODO: sentence
-  // TODO: paragraph
-  // TODO: whitespaces
-  // TODO: indent
-  // TODO: number
-  // TODO: argument
-  // TODO: custom
-}
-
-// I bet that's the first time you see a Greek question mark used as an actual Greek question mark,
-// rather than as a "prank" semicolon.
-const punctCharCodes = new Uint32Array(Array.from('.!?¡§¶¿;՞。', ch => ch.charCodeAt(0)))
 
 function objectActions(toStart: CoordMapper, toEnd: CoordMapper, toStartInner: CoordMapper, toEndInner: CoordMapper) {
   const selectObject: SelectionMapper = (selection, helper, i) => {
@@ -190,6 +167,198 @@ function objectWithCharSet(charSet: CharSet) {
   const toEnd = toEdge(Forward, true)
   const toEndInner = toEdge(Forward, false)
   return objectActions(toStart, toEnd, toStartInner, toEndInner)
+}
+
+// I bet that's the first time you see a Greek question mark used as an actual Greek question mark,
+// rather than as a "prank" semicolon.
+const punctCharCodes = new Uint32Array(Array.from('.!?¡§¶¿;՞。', ch => ch.charCodeAt(0)))
+
+function paragraphObject() {
+  const toStart: CoordMapper = (oldActive, helper, i) => {
+    const allowSkipToPrevious = true // TODO
+    const document = helper.editor.document
+    const isBlank = getCharSetFunction(CharSet.Blank, document)
+    let origin = oldActive // TODO: Adjust for caret mode.
+
+    let isPreviousSentence = false
+
+    let skipCurrent = true // TODO: Set to false for select whole object
+    let hadLf = true
+    const beforeBlank = skipWhileX(Backward, origin, (charCode) => {
+      if (charCode === LF) {
+        if (hadLf) {
+          isPreviousSentence = true
+          return allowSkipToPrevious
+        }
+        hadLf = true
+        skipCurrent = false
+        return true
+      } else {
+        hadLf = false
+        if (skipCurrent) {
+          skipCurrent = false
+          return true
+        }
+        return isBlank(charCode)
+      }
+    }, document)
+
+    if (beforeBlank !== undefined && (
+        !isPreviousSentence || (allowSkipToPrevious && punctCharCodes.includes(document.lineAt(beforeBlank.line).text.charCodeAt(beforeBlank.character)))
+    )) {
+      if (beforeBlank.line === 0 && beforeBlank.character === 0)
+        return beforeBlank
+      else
+        origin = helper.prevPos(beforeBlank)
+    }
+
+    let originLineText = document.lineAt(origin.line).text
+    if (originLineText.length === 0 && origin.line + 1 >= document.lineCount) {
+      if (origin.line === 0) {
+        // There is only one line and that line is empty. What a life.
+        return DocumentStart
+      }
+      // Special case: If at the last line, search from the previous line.
+      originLineText = document.lineAt(origin.line - 1).text
+      origin = origin.with(origin.line - 1, originLineText.length)
+    }
+    if (originLineText.length === 0) {
+      // This line is empty. Just go to the first non-blank char on next line.
+      const nextLineText = document.lineAt(origin.line + 1).text
+      let col = 0
+      while (col < nextLineText.length && isBlank(nextLineText.charCodeAt(col))) col++
+      return new Coord(origin.line + 1, col)
+    }
+
+    hadLf = false
+    const afterSkip = skipWhileX(Backward, origin, (charCode) => {
+      if (charCode === LF) {
+        if (hadLf)
+          return false
+        hadLf = true
+      } else {
+        hadLf = false
+        if (punctCharCodes.indexOf(charCode) >= 0)
+          return false
+      }
+      return true
+    }, document)
+
+    // If we hit two LFs or document start, the current sentence starts at the
+    // first non-blank character after that.
+    if (hadLf || !afterSkip)
+      return skipWhileX(
+        Forward,
+        afterSkip ?? DocumentStart,
+        isBlank,
+        document,
+      ) ?? DocumentStart
+
+    // If we hit a punct char, then the current sentence starts on the first
+    // non-blank character on the same line, or the line break.
+    let col = afterSkip.character + 1
+    const text = document.lineAt(afterSkip.line).text
+    while (col < text.length && isBlank(text.charCodeAt(col))) col++
+    return afterSkip.with(undefined, col)
+  }
+  function toEnd(inner: boolean): CoordMapper {
+    return (origin, helper) => {
+      const document = helper.editor.document
+
+      if (document.lineAt(origin.line).text.length === 0) {
+        // We're on an empty line which does not belong to last sentence or this
+        // sentence. If next line is also empty, we should just stay here.
+        // However, start scanning from the next line if it is not empty.
+        if (origin.line + 1 >= document.lineCount || document.lineAt(origin.line + 1).text.length === 0)
+          return origin
+        else
+          origin = new Coord(origin.line + 1, 0)
+      }
+
+      const isBlank = getCharSetFunction(CharSet.Blank, document)
+
+      let hadLf = false
+      const innerEnd = skipWhileX(Forward, origin, (charCode) => {
+        if (charCode === LF) {
+          if (hadLf)
+            return false
+          hadLf = true
+        } else {
+          hadLf = false
+          if (punctCharCodes.indexOf(charCode) >= 0)
+            return false
+        }
+        return true
+      }, document)
+
+      if (!innerEnd) return helper.lastCoord()
+
+      // If a sentence ends with two LFs in a row, then the first LF is part of
+      // the inner & outer sentence while the second LF should be excluded.
+      if (hadLf) return helper.prevPos(innerEnd)
+
+      if (inner) return innerEnd
+      // If a sentence ends with punct char, then any blank characters after it
+      // but BEFORE any line breaks belongs to the outer sentence.
+      let col = innerEnd.character + 1
+      const text = document.lineAt(innerEnd.line).text
+      while (col < text.length && isBlank(text.charCodeAt(col))) col++
+      return innerEnd.with(undefined, col - 1)
+    }
+  }
+  return objectActions(toStart, toEnd(false), toStart, toEnd(true))
+}
+
+/*
+function findSentenceEnd(origin: Position, inner: boolean, isWord: (charCode: number) => boolean) {
+  const cursor = origin.cursor()
+
+  let hadLf = false
+  let toNextWord = false
+
+  cursor.skipWhile(Forward, charCode => {
+    if (charCode === LF) {
+      if (hadLf)
+        return false
+
+      hadLf = true
+    } else if (punctCharCodes.indexOf(charCode) !== -1) {
+      if (inner)
+        toNextWord = true
+
+      return false
+    }
+
+    return true
+  })
+
+  if (toNextWord) {
+    cursor.skipWhile(Forward, charCode => !isWord(charCode))
+  }
+
+  return true
+}
+*/
+
+type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
+const dispatch = {
+  parens:            objectWithinPair(LPAREN,     RPAREN),
+  braces:            objectWithinPair(LCRBRACKET, RCRBRACKET),
+  brackets:          objectWithinPair(LSQBRACKET, RSQBRACKET),
+  angleBrackets:     objectWithinPair(LCHEVRON,   RCHEVRON),
+  doubleQuoteString: objectWithinPair(QUOTE_DBL,  QUOTE_DBL),
+  singleQuoteString: objectWithinPair(QUOTE_SGL,  QUOTE_SGL),
+  graveQuoteString:  objectWithinPair(BACKTICK,   BACKTICK),
+  word: objectWithCharSet(CharSet.Word),
+  WORD: objectWithCharSet(CharSet.NonBlank),
+  sentence: paragraphObject(),
+  // TODO: sentence
+  // TODO: paragraph
+  // TODO: whitespaces
+  // TODO: indent
+  // TODO: number
+  // TODO: argument
+  // TODO: custom
 }
 
 registerCommand(Command.objectsPerformSelection, CommandFlags.ChangeSelections, (editorState, state) => {
