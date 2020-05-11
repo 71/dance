@@ -20,10 +20,20 @@ export namespace testCommands {
   }
 }
 
-const regexp = /(\|)?{(\d+)}/g
+/**
+ * Used to indicate the anchor ("{0}") and active ("|{0}") carets of each
+ * selection in the document. e.g. "a{0}bcd|{0}ef" indicates "bcd" selected.
+ */
+const selectionMarkerRegexp = /(\|)?{(\d+)}/g
+
+/*
+ * Used to mark the end of line, which helps to indicate trailing whitespace
+ * on a line or (trailing) empty lines (if placed by itself on a line).
+ */
+const eolMarkerRegexp = /{EOL}/g
 
 function getPlainContent(templatedContent: string) {
-  return templatedContent.replace(regexp, '').trimRight()
+  return templatedContent.trimRight().replace(eolMarkerRegexp, '').replace(selectionMarkerRegexp, '')
 }
 
 function getSelections(document: vscode.TextDocument, templatedContent: string) {
@@ -33,7 +43,9 @@ function getSelections(document: vscode.TextDocument, templatedContent: string) 
   let match: RegExpExecArray | null = null
   let diff = 0
 
-  while (match = regexp.exec(templatedContent)) {
+  const contentAndSelections = templatedContent.trimRight().replace(eolMarkerRegexp, '')
+
+  while (match = selectionMarkerRegexp.exec(contentAndSelections)) {
     const index = +match[2]
 
     if (match[1] === '|') {
@@ -48,7 +60,12 @@ function getSelections(document: vscode.TextDocument, templatedContent: string) 
     diff += match[0].length
   }
 
-  return Array.from(anchorPositions, (anchor, i) => new vscode.Selection(anchor, activePositions[i]))
+  return Array.from(anchorPositions, (anchor, i) => {
+    if (!anchor) {
+      throw new Error(`Selection ${i} is not specified.`)
+    }
+    return new vscode.Selection(anchor, activePositions[i])
+  })
 }
 
 function stringifySelection(document: vscode.TextDocument, selection: vscode.Selection) {

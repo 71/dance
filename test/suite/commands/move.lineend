@@ -56,9 +56,11 @@ bar{0}
 foo
 {0}
 |{0}bar
+{EOL}
 
 //== blank.1 > blank.2
 //= dance.up
 fo{0}o|{0}
 
 bar
+{EOL}

@@ -6,8 +6,7 @@ baz
 //= dance.select.buffer
 {0}foo
 bar
-baz
-|{0}
+baz|{0}
 
 //== 0 > 1
 //= dance.select.line
