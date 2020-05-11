@@ -173,7 +173,7 @@ function objectWithCharSet(charSet: CharSet) {
 // rather than as a "prank" semicolon.
 const punctCharCodes = new Uint32Array(Array.from('.!?¡§¶¿;՞。', ch => ch.charCodeAt(0)))
 
-function paragraphObject() {
+function sentenceObject() {
   const toStart: CoordMapper = (oldActive, helper, i) => {
     const allowSkipToPrevious = true // TODO
     const document = helper.editor.document
@@ -309,37 +309,6 @@ function paragraphObject() {
   return objectActions(toStart, toEnd(false), toStart, toEnd(true))
 }
 
-/*
-function findSentenceEnd(origin: Position, inner: boolean, isWord: (charCode: number) => boolean) {
-  const cursor = origin.cursor()
-
-  let hadLf = false
-  let toNextWord = false
-
-  cursor.skipWhile(Forward, charCode => {
-    if (charCode === LF) {
-      if (hadLf)
-        return false
-
-      hadLf = true
-    } else if (punctCharCodes.indexOf(charCode) !== -1) {
-      if (inner)
-        toNextWord = true
-
-      return false
-    }
-
-    return true
-  })
-
-  if (toNextWord) {
-    cursor.skipWhile(Forward, charCode => !isWord(charCode))
-  }
-
-  return true
-}
-*/
-
 type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
 const dispatch = {
   parens:            objectWithinPair(LPAREN,     RPAREN),
@@ -351,7 +320,7 @@ const dispatch = {
   graveQuoteString:  objectWithinPair(BACKTICK,   BACKTICK),
   word: objectWithCharSet(CharSet.Word),
   WORD: objectWithCharSet(CharSet.NonBlank),
-  sentence: paragraphObject(),
+  sentence: sentenceObject(),
   // TODO: sentence
   // TODO: paragraph
   // TODO: whitespaces
