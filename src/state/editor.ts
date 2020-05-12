@@ -69,6 +69,10 @@ export class EditorState {
     return vscode.window.activeTextEditor === this._editor
   }
 
+  get selectionBehavior() {
+    return this.documentState.extension.selectionBehavior
+  }
+
   /**
    * Preferred columns when navigating up and down.
    */
@@ -473,8 +477,8 @@ export class EditorState {
           const nextPos = editor.document.positionAt(offset + 1)
 
           if (nextPos.isAfter(selection.active)) {
-            // Move anchor to select 1 character after, but keep the cursor position.
-            normalizedSelections.push(new vscode.Selection(active.translate(0, 1), active))
+            // Move cursor forward.
+            normalizedSelections.push(new vscode.Selection(active, active.translate(0, 1)))
           } else {
             // Selection is at the very end of the document. Select the last character instead.
             normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active))

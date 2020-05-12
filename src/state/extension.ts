@@ -392,7 +392,7 @@ export class Extension implements vscode.Disposable {
         }),
 
         vscode.window.onDidChangeTextEditorSelection(e => {
-          this._documentStates.get(e.textEditor.document)?.getEditorState(e.textEditor)?.updateEditor(e.textEditor)?.onDidChangeTextEditorSelection(e)
+          this._documentStates.get(e.textEditor.document)?.getEditorState(e.textEditor)?.onDidChangeTextEditorSelection(e)
         }),
 
         vscode.workspace.onDidChangeTextDocument(e => {

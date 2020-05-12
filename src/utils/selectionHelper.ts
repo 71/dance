@@ -31,10 +31,13 @@ export const Extend = true as ExtendBehavior
 /** Do not extend. */
 export const DoNotExtend = false as ExtendBehavior
 
-export class SelectionHelper<State extends {selectionBehavior: SelectionBehavior}> {
-  static for<State extends {selectionBehavior: SelectionBehavior}>(editorState: EditorState, state: State): SelectionHelper<State> {
+export class SelectionHelper<State extends { selectionBehavior: SelectionBehavior }> {
+  static for(editorState: EditorState): SelectionHelper<EditorState>
+  static for<State extends { selectionBehavior: SelectionBehavior }>(editorState: EditorState, state: State): SelectionHelper<State>
+
+  static for(editorState: EditorState, state?: any) {
     // TODO: Caching
-    return new SelectionHelper(editorState, state)
+    return new SelectionHelper(editorState, state ?? editorState)
   }
 
   readonly selectionBehavior = this.state.selectionBehavior
@@ -206,6 +209,35 @@ export class SelectionHelper<State extends {selectionBehavior: SelectionBehavior
       return selection.end.line - 1
     else
       return selection.end.line
+  }
+
+  activeLine(selection: vscode.Selection) {
+    if (this.selectionBehavior === SelectionBehavior.Character && selection.end === selection.active && selection.end.character === 0)
+      return selection.active.line - 1
+    else
+      return selection.active.line
+  }
+
+  endCharacter(selection: vscode.Selection, forPositionConstructor = false) {
+    if (this.selectionBehavior === SelectionBehavior.Character && selection.end === selection.active && selection.end.character === 0)
+      return forPositionConstructor ? Number.MAX_SAFE_INTEGER : this.editor.document.lineAt(selection.end.line - 1).text.length + 1
+    else
+      return selection.end.character
+  }
+
+  activeCharacter(selection: vscode.Selection, forPositionConstructor = false) {
+    if (this.selectionBehavior === SelectionBehavior.Character && selection.end === selection.active && selection.active.character === 0)
+      return forPositionConstructor ? Number.MAX_SAFE_INTEGER : this.editor.document.lineAt(selection.active.line - 1).text.length + 1
+    else
+      return selection.active.character
+  }
+
+  isSingleLine(selection: vscode.Selection) {
+    return selection.isSingleLine || selection.start.line === this.endLine(selection)
+  }
+
+  isEntireLine(selection: vscode.Selection) {
+    return selection.start.character === 0 && selection.end.character === 0 && selection.start.line === selection.end.line - 1
   }
 
   /**

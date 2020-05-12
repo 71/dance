@@ -3,6 +3,7 @@ import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind, CommandState } from '.'
 import { Forward, Direction, Backward, SelectionHelper, DoNotExtend, SelectionMapper, jumpTo } from '../utils/selectionHelper'
+import { EditorState } from '../state/editor'
 
 
 // Swap cursors (;, a-;, a-:)
@@ -282,19 +283,21 @@ registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, ({ edito
 // Copy selections (C, a-C)
 // ===============================================================================================
 
-function tryCopySelection(document: vscode.TextDocument, selection: vscode.Selection, newActiveLine: number) {
+function tryCopySelection(selectionHelper: SelectionHelper<EditorState>, document: vscode.TextDocument, selection: vscode.Selection, newActiveLine: number) {
   const active = selection.active,
-        anchor = selection.anchor
+        anchor = selection.anchor,
+        activeLine = selectionHelper.activeLine(selection)
 
-  if (active.line === anchor.line) {
+  if (activeLine === anchor.line) {
     const newLine = document.lineAt(newActiveLine)
 
+    // TODO: Generalize below for all cases
     return newLine.text.length >= selection.end.character
-      ? new vscode.Selection(anchor.with(newActiveLine), active.with(newActiveLine))
+      ? new vscode.Selection(anchor.with(newActiveLine), active.with(newActiveLine, selectionHelper.activeCharacter(selection)))
       : undefined
   }
 
-  const newAnchorLine = newActiveLine + anchor.line - active.line
+  const newAnchorLine = newActiveLine + anchor.line - activeLine
 
   if (newAnchorLine < 0 || newAnchorLine >= document.lineCount)
     return undefined
@@ -320,17 +323,20 @@ function tryCopySelection(document: vscode.TextDocument, selection: vscode.Selec
   return newSelection
 }
 
-function copySelections(editor: vscode.TextEditor, { repetitions }: CommandState, direction: Direction) {
-  const selections = editor.selections,
+function copySelections(editorState: EditorState, { repetitions }: CommandState, direction: Direction) {
+  const editor = editorState.editor,
+        selections = editor.selections,
         len = selections.length,
         document = editor.document,
-        lineCount = document.lineCount
+        lineCount = document.lineCount,
+        selectionHelper = SelectionHelper.for(editorState)
 
   for (let i = 0; i < len; i++) {
-    const selection = selections[i]
+    const selection = selections[i],
+          selectionActiveLine = selectionHelper.activeLine(selection)
 
-    for (let i = 0, currentLine = selection.active.line + direction; i < repetitions && currentLine >= 0 && currentLine < lineCount;) {
-      const copiedSelection = tryCopySelection(document, selection, currentLine)
+    for (let i = 0, currentLine = selectionActiveLine + direction; i < repetitions && currentLine >= 0 && currentLine < lineCount;) {
+      const copiedSelection = tryCopySelection(selectionHelper, document, selection, currentLine)
 
       if (copiedSelection !== undefined) {
         if (!selections.some(s => s.contains(copiedSelection)))
@@ -351,5 +357,5 @@ function copySelections(editor: vscode.TextEditor, { repetitions }: CommandState
   editor.selections = selections
 }
 
-registerCommand(Command.selectCopy         , CommandFlags.ChangeSelections, ({ editor }, state) => copySelections(editor, state, Forward))
-registerCommand(Command.selectCopyBackwards, CommandFlags.ChangeSelections, ({ editor }, state) => copySelections(editor, state, Backward))
+registerCommand(Command.selectCopy         , CommandFlags.ChangeSelections, (editorState, state) => copySelections(editorState, state, Forward))
+registerCommand(Command.selectCopyBackwards, CommandFlags.ChangeSelections, (editorState, state) => copySelections(editorState, state, Backward))

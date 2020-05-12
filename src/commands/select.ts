@@ -186,20 +186,27 @@ registerCommand(Command.selectWordAltPreviousExtend, CommandFlags.ChangeSelectio
 // Line selecting key bindings (x, X, alt+[xX], home, end)
 // ===============================================================================================
 
-registerCommand(Command.selectLine, CommandFlags.ChangeSelections, ({ editor }, { currentCount }) => {
-  const selections = editor.selections,
-        len = selections.length
+registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editorState, { currentCount }) => {
+  const editor = editorState.editor,
+        selections = editor.selections,
+        len = selections.length,
+        selectionHelper = SelectionHelper.for(editorState)
 
   if (currentCount === 0 || currentCount === 1) {
     for (let i = 0; i < len; i++) {
       const selection = selections[i]
+      let line = selectionHelper.activeLine(selection),
+          isFullLine = selection.start.character === 0 && selection.end.character === 0 && Math.abs(selection.end.line - selection.start.line) === 1
 
-      selections[i] = new vscode.Selection(selection.active.line, 0, selection.active.line + 1, 0)
+      if (isFullLine)
+        line++
+
+      selections[i] = new vscode.Selection(line, 0, line + 1, 0)
     }
   } else {
     for (let i = 0; i < len; i++) {
       const selection = selections[i],
-            targetLine = Math.min(selection.active.line + currentCount - 1, editor.document.lineCount - 1)
+            targetLine = Math.min(selectionHelper.activeLine(selection) + currentCount - 1, editor.document.lineCount - 1)
 
       selections[i] = new vscode.Selection(targetLine, 0, targetLine + 1, 0)
     }
@@ -208,29 +215,32 @@ registerCommand(Command.selectLine, CommandFlags.ChangeSelections, ({ editor }, 
   editor.selections = selections
 })
 
-registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, ({ editor }, { currentCount, selectionBehavior }) => {
-  const selections = editor.selections,
-        len = selections.length
+registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editorState, { currentCount, selectionBehavior }) => {
+  const editor = editorState.editor,
+        selections = editor.selections,
+        len = selections.length,
+        selectionHelper = SelectionHelper.for(editorState)
 
   if (currentCount === 0 || currentCount === 1) {
     for (let i = 0; i < len; i++) {
       const selection = selections[i],
-            isSameLine = selection.isSingleLine || (selection.active.character === 0 && selection.active.line === selection.anchor.line + 1)
+            isSameLine = selectionHelper.isSingleLine(selection),
+            isFullLineDiff = selectionHelper.isEntireLine(selection) ? 1 : 0
 
       const anchor = isSameLine
         ? selection.anchor.with(undefined, 0)
         : selection.anchor
-      const active = selection.active.character === 0 && !selection.isReversed && selectionBehavior === SelectionBehavior.Character
-        ? selection.active.translate(1)
-        : new vscode.Position(selection.active.line + 1, 0)
+      const active = selection.active.character === 0 && !selection.isReversed && selectionBehavior === SelectionBehavior.Character && !isSameLine
+        ? selection.active.translate(1 + isFullLineDiff)
+        : new vscode.Position(selectionHelper.activeLine(selection) + 1 + isFullLineDiff, 0)
 
       selections[i] = new vscode.Selection(anchor, active)
     }
   } else {
     for (let i = 0; i < len; i++) {
       const selection = selections[i],
-            targetLine = Math.min(selection.active.line + currentCount - 1, editor.document.lineCount - 1),
-            isSameLine = selection.isSingleLine || (selection.active.character === 0 && selection.active.line === selection.anchor.line + 1)
+            targetLine = Math.min(selectionHelper.activeLine(selection) + currentCount - 1, editor.document.lineCount - 1),
+            isSameLine = selectionHelper.isSingleLine(selection)
 
       const anchor = isSameLine
         ? selection.anchor.with(undefined, 0)

@@ -12,7 +12,7 @@ import { openMenu } from './menus'
 // TODO: Make just merely opening the menu not count as a command execution
 // and do not record it. The count+goto version (e.g. `10g`) should still count.
 registerCommand(Command.goto, CommandFlags.ChangeSelections, (editorState, state) => {
-  if (state.input === null) {
+  if (state.input === undefined) {
     const { editor } = editorState,
           { document } = editor
     let line = state.currentCount - 1
@@ -34,7 +34,7 @@ registerCommand(Command.goto, CommandFlags.ChangeSelections, (editorState, state
 // TODO: Make just merely opening the menu not count as a command execution
 // and do not record it. The count+goto version (e.g. `10G`) should still count.
 registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, (editorState, state) => {
-  if (state.input === null) {
+  if (state.input === undefined) {
     const { editor } = editorState,
           { document, selection } = editor
     let line = state.currentCount - 1
