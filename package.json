@@ -207,7 +207,7 @@
           "default": {
             "object": {
               "items": {
-                "b": {
+                "b()": {
                   "command": "dance.objects.performSelection",
                   "args": [
                     {
@@ -216,25 +216,7 @@
                   ],
                   "text": "parenthesis block"
                 },
-                "(": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "parens"
-                    }
-                  ],
-                  "text": "parenthesis block"
-                },
-                ")": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "parens"
-                    }
-                  ],
-                  "text": "parenthesis block"
-                },
-                "B": {
+                "B{}": {
                   "command": "dance.objects.performSelection",
                   "args": [
                     {
@@ -243,25 +225,7 @@
                   ],
                   "text": "braces block"
                 },
-                "{": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "braces"
-                    }
-                  ],
-                  "text": "braces block"
-                },
-                "}": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "braces"
-                    }
-                  ],
-                  "text": "braces block"
-                },
-                "r": {
+                "r[]": {
                   "command": "dance.objects.performSelection",
                   "args": [
                     {
@@ -270,25 +234,7 @@
                   ],
                   "text": "brackets block"
                 },
-                "[": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "brackets"
-                    }
-                  ],
-                  "text": "brackets block"
-                },
-                "]": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "brackets"
-                    }
-                  ],
-                  "text": "brackets block"
-                },
-                "a": {
+                "a<>": {
                   "command": "dance.objects.performSelection",
                   "args": [
                     {
@@ -297,25 +243,7 @@
                   ],
                   "text": "angle block"
                 },
-                "<": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "angleBrackets"
-                    }
-                  ],
-                  "text": "angle block"
-                },
-                ">": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "angleBrackets"
-                    }
-                  ],
-                  "text": "angle block"
-                },
-                "Q": {
+                "Q\"": {
                   "command": "dance.objects.performSelection",
                   "args": [
                     {
@@ -324,16 +252,7 @@
                   ],
                   "text": "double quote string"
                 },
-                "\"": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "doubleQuoteString"
-                    }
-                  ],
-                  "text": "double quote string"
-                },
-                "q": {
+                "q'": {
                   "command": "dance.objects.performSelection",
                   "args": [
                     {
@@ -342,25 +261,7 @@
                   ],
                   "text": "single quote string"
                 },
-                "'": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "singleQuoteString"
-                    }
-                  ],
-                  "text": "single quote string"
-                },
-                "g": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "graveQuoteString"
-                    }
-                  ],
-                  "text": "grave quote string"
-                },
-                "`": {
+                "g`": {
                   "command": "dance.objects.performSelection",
                   "args": [
                     {

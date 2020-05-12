@@ -301,22 +301,40 @@ export class Extension implements vscode.Disposable {
           vscode.window.showErrorMessage(`Menu ${menuDisplay} must have an subobject "items" with at least two entries.`)
         } else {
           let valid = true
+          const allKeys = new Set<number>()
 
           for (const key in menu.items) {
             const item = menu.items[key],
                   itemDisplay = `${JSON.stringify(key)} of ${menuDisplay}`
 
-            if (typeof key !== 'string' || key.length !== 1) {
-              vscode.window.showErrorMessage(`Item ${itemDisplay} must have a single-character key.`)
-            } else if (typeof item !== 'object' || item === null) {
+            if (typeof item !== 'object' || item === null) {
               vscode.window.showErrorMessage(`Item ${itemDisplay} must be an object.`)
             } else if (typeof item.text !== 'string' || item.text.length === 0) {
               vscode.window.showErrorMessage(`Item ${itemDisplay} must have a non-empty "text" property.`)
             } else if (typeof item.command !== 'string' || item.command.length === 0) {
               vscode.window.showErrorMessage(`Item ${itemDisplay} must have a non-empty "command" property.`)
             } else {
-              builtMenu.items[key] = { command: item.command, text: item.text, args: item.args }
-              continue
+              let keyString = ''
+
+              if (key.length === 0) {
+                vscode.window.showErrorMessage(`Item ${itemDisplay} must be a non-empty string key.`)
+              } else {
+                for (let i = 0; i < key.length; i++) {
+                  if (allKeys.size === allKeys.add(key.charCodeAt(i)).size) {
+                    vscode.window.showErrorMessage(`Menu ${menuDisplay} specifies the key '${key}' more than once.`)
+                  } else {
+                    keyString = keyString === '' ? key[i] : `${keyString}, ${key[i]}`
+                    continue
+                  }
+
+                  valid = false
+                }
+              }
+
+              if (valid) {
+                builtMenu.items[keyString] = { command: item.command, text: item.text, args: item.args }
+                continue
+              }
             }
 
             valid = false

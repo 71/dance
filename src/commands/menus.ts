@@ -1,9 +1,9 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, CommandFlags } from '.'
+import { Extension } from '../state/extension'
 import { promptInList } from '../utils/prompt'
 import { Command } from '../../commands'
-import { Extension } from '../state/extension'
 
 
 registerCommand(Command.openMenu, CommandFlags.None, (_, { argument, extension }) => {
