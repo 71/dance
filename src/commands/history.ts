@@ -69,4 +69,6 @@ registerCommand(Command.repeatObjectOrSelectTo, CommandFlags.ChangeSelections, (
     if (ObjectOrSelectToCommands.has(commandState.descriptor.command))
       return CommandDescriptor.execute(editorState, commandState)
   }
+
+  return undefined
 })
