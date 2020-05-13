@@ -114,7 +114,7 @@ registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, ({ e
   }
 })
 
-registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', ({ editor }, { input: regex }) => {
+registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, InputKind.RegExp, () => '', ({ editor }, { input: regex }) => {
   const document = editor.document,
         newSelections = editor.selections.filter(selection => regex.test(document.getText(selection)))
 
@@ -122,7 +122,7 @@ registerCommand(Command.selectionsKeepMatching, CommandFlags.ChangeSelections, I
     editor.selections = newSelections
 })
 
-registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, '', ({ editor }, { input: regex }) => {
+registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, InputKind.RegExp, () => '', ({ editor }, { input: regex }) => {
   const document = editor.document,
         newSelections = editor.selections.filter(selection => !regex.test(document.getText(selection)))
 
@@ -134,7 +134,7 @@ registerCommand(Command.selectionsClearMatching, CommandFlags.ChangeSelections, 
 // Select within, split (s, S)
 // ===============================================================================================
 
-registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', ({ editor }, { input: regex }) => {
+registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp, () => 'gm', ({ editor }, { input: regex }) => {
   const { document, selections } = editor,
         len = selections.length,
         newSelections = [] as vscode.Selection[]
@@ -161,7 +161,7 @@ registerCommand(Command.select, CommandFlags.ChangeSelections, InputKind.RegExp,
     editor.selections = newSelections
 })
 
-registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, 'gm', ({ editor }, { input: regex }) => {
+registerCommand(Command.split, CommandFlags.ChangeSelections, InputKind.RegExp, () => 'gm', ({ editor }, { input: regex }) => {
   const { document, selections } = editor,
         len = selections.length,
         newSelections = [] as vscode.Selection[]

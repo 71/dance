@@ -55,12 +55,25 @@ export function promptInList(canPickMany: false, items: [string, string][], canc
 
 export function promptInList(canPickMany: boolean, items: [string, string][], cancellationToken?: vscode.CancellationToken): Thenable<undefined | number | number[]> {
   return new Promise<undefined | number | number[]>(resolve => {
-    const quickPick = vscode.window.createQuickPick()
+    const quickPick = vscode.window.createQuickPick(),
+          quickPickItems = [] as vscode.QuickPickItem[]
+
+    let isCaseSignificant = false
+
+    for (let i = 0; i < items.length; i++) {
+      const [label, description] = items[i]
+
+      quickPickItems.push({ label, description })
+      isCaseSignificant = isCaseSignificant || label.toLowerCase() !== label
+    }
 
     quickPick.title = 'Object'
-    quickPick.items = items.map(x => ({ label: x[0], description: x[1] }))
+    quickPick.items = quickPickItems
     quickPick.placeholder = 'Press one of the below keys.'
     quickPick.onDidChangeValue(key => {
+      if (!isCaseSignificant)
+        key = key.toLowerCase()
+
       const index = items.findIndex(x => x[0].split(', ').includes(key))
 
       quickPick.dispose()

@@ -133,7 +133,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     readonly command: Command,
     readonly flags  : CommandFlags,
     readonly input  : Input,
-    readonly inputDescr: InputDescrMap[Input],
+    readonly inputDescr: (editorState: EditorState) => InputDescrMap[Input],
     readonly action : Action<Input>,
   ) {}
 
@@ -160,21 +160,21 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     switch (this.input) {
       case InputKind.RegExp:
         if (typeof argument === 'object' && typeof argument.input === 'string')
-          input = new RegExp(argument.input, this.inputDescr as string) as any
+          input = new RegExp(argument.input, this.inputDescr(editorState) as string) as any
         else
-          input = await promptRegex(this.inputDescr as string, cts.token) as any
+          input = await promptRegex(this.inputDescr(editorState) as string, cts.token) as any
         break
       case InputKind.ListOneItem:
         if (typeof argument === 'object' && typeof argument.input === 'string')
           input = argument.input
         else
-          input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
+          input = await promptInList(false, this.inputDescr(editorState) as [string, string][], cts.token) as any
         break
       case InputKind.ListOneItemOrCount:
         if (typeof argument === 'object' && typeof argument.input === 'string')
           input = argument.input
         else if (extension.currentCount === 0)
-          input = await promptInList(false, this.inputDescr as [string, string][], cts.token) as any
+          input = await promptInList(false, this.inputDescr(editorState) as [string, string][], cts.token) as any
         else
           input = null as any
         break
@@ -182,10 +182,10 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         if (typeof argument === 'object' && typeof argument.input === 'string')
           input = argument.input
         else
-          input = await promptInList(true, this.inputDescr as [string, string][], cts.token) as any
+          input = await promptInList(true, this.inputDescr(editorState) as [string, string][], cts.token) as any
         break
       case InputKind.Text:
-        const inputDescr = this.inputDescr as InputDescrMap[InputKind.Text]
+        const inputDescr = this.inputDescr(editorState) as InputDescrMap[InputKind.Text]
 
         if (inputDescr.setup !== undefined)
           inputDescr.setup(editorState)
@@ -213,8 +213,9 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     }
 
     if (this.input !== InputKind.None && input === undefined) {
-      if (this.inputDescr && ('onDidCancel' in this.inputDescr))
-        this.inputDescr.onDidCancel?.(editorState)
+      const inputDescr = this.inputDescr?.(editorState)
+      if (inputDescr && ('onDidCancel' in inputDescr))
+        inputDescr.onDidCancel?.(editorState)
       return
     }
 
@@ -373,11 +374,11 @@ export const preferredColumnsPerEditor = new WeakMap<vscode.TextEditor, number[]
 export let remainingNormalCommands = 0
 
 export function registerCommand(command: Command, flags: CommandFlags, action: Action<InputKind.None>): void
-export function registerCommand<Input extends InputKind>(command: Command, flags: CommandFlags, input: Input, inputDescr: InputDescrMap[Input], action: Action<Input>): void
+export function registerCommand<Input extends InputKind>(command: Command, flags: CommandFlags, input: Input, inputDescr: (editorState: EditorState) => InputDescrMap[Input], action: Action<Input>): void
 
 export function registerCommand() {
   if (arguments.length === 3) {
-    commands.push(new CommandDescriptor(arguments[0], arguments[1], InputKind.None, undefined, arguments[2]))
+    commands.push(new CommandDescriptor(arguments[0], arguments[1], InputKind.None, () => void 0, arguments[2]))
   } else {
     commands.push(new CommandDescriptor(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]))
   }

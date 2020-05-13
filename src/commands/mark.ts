@@ -6,7 +6,7 @@ import { Register } from '../registers'
 import { SavedSelection } from '../utils/savedSelection'
 
 
-registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, undefined, (_, { extension, input: key }) => {
+registerCommand(Command.registersSelect, CommandFlags.IgnoreInHistory, InputKind.Key, () => void 0, (_, { extension, input: key }) => {
   extension.currentRegister = extension.registers.get(key)
 })
 
@@ -41,7 +41,7 @@ registerCommand(Command.marksRestoreSelections, CommandFlags.ChangeSelections, (
 })
 
 
-const combineOpts: [string, string][] = [
+const combineOpts: () => [string, string][] = () => [
   ['a', 'Append lists'],
   ['u', 'Union'],
   ['i', 'Intersection'],

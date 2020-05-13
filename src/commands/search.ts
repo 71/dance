@@ -125,7 +125,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
 
   const mapper = moveToNeedleInHaystack(direction, extend)
 
-  registerCommand(command, CommandFlags.ChangeSelections, InputKind.Text, {
+  registerCommand(command, CommandFlags.ChangeSelections, InputKind.Text, () => ({
     prompt: 'Search RegExp',
 
     setup(editorState) {
@@ -184,7 +184,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
       editor.selections = initialSelections.map(selection => selection.selection(editor.document))
       documentState.forgetSelections(initialSelections)
     },
-  }, ({ editor, documentState }) => {
+  }), ({ editor, documentState }) => {
     register.set(editor, [helper.state.regex!.source])
     documentState.forgetSelections(initialSelections)
   })

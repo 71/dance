@@ -2,17 +2,35 @@ import * as fs     from 'fs'
 import * as path   from 'path'
 import * as vscode from 'vscode'
 
-import { registerCommand, Command, CommandFlags, CommandState, commands } from '.'
+import { registerCommand, Command, CommandFlags, CommandState, InputKind } from '.'
 import { EditorState } from '../state/editor'
-import { ExtendBehavior, Extend, DoNotExtend, SelectionHelper, jumpTo, CoordMapper } from '../utils/selectionHelper'
 import { SelectionBehavior } from '../state/extension'
-import { openMenu } from './menus'
+import { ExtendBehavior, Extend, DoNotExtend, SelectionHelper, jumpTo, CoordMapper } from '../utils/selectionHelper'
 
+
+const getMenu = (name: string) => (editorState: EditorState) => {
+  const menuItems = editorState.extension.menus.get(name)!.items
+
+  return Object.entries(menuItems).map(x => [x[0], x[1].text]) as [string, string][]
+}
+
+const executeMenuItem = async (editorState: EditorState, name: string, i: number) => {
+  const menuItems = editorState.extension.menus.get(name)!.items
+  const menuItem = Object.values(menuItems)[i]
+
+  try {
+    await vscode.commands.executeCommand(menuItem.command, menuItem.args)
+  } catch (e) {
+    const str = `${e}`.replace(/^Error: /, '')
+
+    vscode.window.showErrorMessage(`Command did not succeed successfully: ${str}.`)
+  }
+}
 
 // TODO: Make just merely opening the menu not count as a command execution
 // and do not record it. The count+goto version (e.g. `10g`) should still count.
-registerCommand(Command.goto, CommandFlags.ChangeSelections, (editorState, state) => {
-  if (state.input === undefined) {
+registerCommand(Command.goto, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, getMenu('goto'), (editorState, state) => {
+  if (state.input === null) {
     const { editor } = editorState,
           { document } = editor
     let line = state.currentCount - 1
@@ -27,14 +45,14 @@ registerCommand(Command.goto, CommandFlags.ChangeSelections, (editorState, state
 
     return
   } else {
-    openMenu('goto', editorState.extension)
+    return executeMenuItem(editorState, 'goto', state.input)
   }
 })
 
 // TODO: Make just merely opening the menu not count as a command execution
 // and do not record it. The count+goto version (e.g. `10G`) should still count.
-registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, (editorState, state) => {
-  if (state.input === undefined) {
+registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, InputKind.ListOneItemOrCount, getMenu('goto.extend'), (editorState, state) => {
+  if (state.input === null) {
     const { editor } = editorState,
           { document, selection } = editor
     let line = state.currentCount - 1
@@ -49,7 +67,7 @@ registerCommand(Command.gotoExtend, CommandFlags.ChangeSelections, (editorState,
 
     return
   } else {
-    openMenu('goto.extend', editorState.extension)
+    return executeMenuItem(editorState, 'goto.extend', state.input)
   }
 })
 

@@ -220,7 +220,7 @@ registerCommand(Command.pasteReplaceEvery, CommandFlags.Edit, async ({ editor, e
 })
 
 
-registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, undefined, ({ editor }, { repetitions, input: key }, undoStops) => {
+registerCommand(Command.replaceCharacters, CommandFlags.Edit, InputKind.Key, () => void 0, ({ editor }, { repetitions, input: key }, undoStops) => {
   const string = key.repeat(repetitions)
 
   return editor.edit(builder => {

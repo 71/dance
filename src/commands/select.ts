@@ -52,7 +52,7 @@ function toNextCharacter(direction: Direction, include: boolean): CoordMapper {
 
 function registerSelectTo(commandName: Command, include: boolean, extend: ExtendBehavior, direction: Direction) {
   const mapper = moveActiveCoord(toNextCharacter(direction, include), extend)
-  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, undefined, (editorState, state) => {
+  registerCommand(commandName, CommandFlags.ChangeSelections, InputKind.Key, () => void 0, (editorState, state) => {
     SelectionHelper.for(editorState, state).mapEach(mapper)
     // TODO: Reveal
   })
