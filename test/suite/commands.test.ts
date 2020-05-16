@@ -140,7 +140,10 @@ async function testCommands(editor: vscode.TextEditor, { initialContent, mutatio
       const expected = stringifySelection(document, expectedSelections[i])
       const actual = stringifySelection(document, editor.selections[i])
 
-      assert.strictEqual(actual, expected, `${prefix}Expected selections #${i} to match ('>' is anchor, '|' is cursor).`)
+      assert.strictEqual(actual, expected, `${prefix}Expected Selection #${i} to match ('>' is anchor, '|' is cursor).`)
+      // If stringified results are the same, throw message using strict equal.
+      assert.deepStrictEqual(editor.selections[i], expectedSelections[i],
+        `(Actual Selection #${i} is at same spots in document as expected, but with different numbers)`)
       assert.fail()
     }
 

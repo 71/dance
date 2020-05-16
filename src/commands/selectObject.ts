@@ -1,10 +1,11 @@
 // Objects: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
 
 import * as vscode from 'vscode'
-import { registerCommand, Command, CommandFlags } from '.'
+import { registerCommand, Command, CommandFlags, CommandState } from '.'
 import { Direction, Forward, Backward, SelectionHelper, RemoveSelection, CoordMapper, SelectionMapper, moveActiveCoord, DoNotExtend, Extend, DocumentStart, Coord, ExtendBehavior } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
 import { findMatching, skipWhile, skipWhileX } from './select'
+import { SelectionBehavior } from '../state/extension'
 
 // Selecting is a bit harder than it sounds like:
 // 1. Dealing with multiple lines, whether forwards or backwards, is a bit of a pain.
@@ -174,43 +175,62 @@ function objectWithCharSet(charSet: CharSet) {
 const punctCharCodes = new Uint32Array(Array.from('.!?¡§¶¿;՞。', ch => ch.charCodeAt(0)))
 
 function sentenceObject() {
-  const toStart: CoordMapper = (oldActive, helper, i) => {
-    const allowSkipToPrevious = true // TODO
-    const document = helper.editor.document
-    const isBlank = getCharSetFunction(CharSet.Blank, document)
-    let origin = oldActive // TODO: Adjust for caret mode.
+  function toBeforeBlank(allowSkipToPrevious: boolean) {
+    return (oldActive: Coord, helper: SelectionHelper<CommandState>) => {
+      const document = helper.editor.document
+      const isBlank = getCharSetFunction(CharSet.Blank, document)
+      let origin = oldActive // TODO: Adjust for caret mode.
 
-    let isPreviousSentence = false
+      let jumpedOverBlankLine = false
 
-    let skipCurrent = true // TODO: Set to false for select whole object
-    let hadLf = true
-    const beforeBlank = skipWhileX(Backward, origin, (charCode) => {
-      if (charCode === LF) {
-        if (hadLf) {
-          isPreviousSentence = true
-          return allowSkipToPrevious
-        }
-        hadLf = true
-        skipCurrent = false
-        return true
-      } else {
-        hadLf = false
-        if (skipCurrent) {
+      let skipCurrent = allowSkipToPrevious
+      let hadLf = true
+      const beforeBlank = skipWhileX(Backward, origin, (charCode) => {
+        if (charCode === LF) {
+          if (hadLf) {
+            jumpedOverBlankLine = true
+            return allowSkipToPrevious
+          }
+          hadLf = true
           skipCurrent = false
           return true
+        } else {
+          hadLf = false
+          if (skipCurrent) {
+            skipCurrent = false
+            return true
+          }
+          return isBlank(charCode)
         }
-        return isBlank(charCode)
-      }
-    }, document)
+      }, document)
 
-    if (beforeBlank !== undefined && (
-        !isPreviousSentence || (allowSkipToPrevious && punctCharCodes.includes(document.lineAt(beforeBlank.line).text.charCodeAt(beforeBlank.character)))
-    )) {
-      if (beforeBlank.line === 0 && beforeBlank.character === 0)
+      if (beforeBlank === undefined) return origin
+
+      const beforeBlankChar = document.lineAt(beforeBlank.line).text.charCodeAt(beforeBlank.character)
+      const hitPunctChar = punctCharCodes.includes(beforeBlankChar)
+      if (jumpedOverBlankLine && (!allowSkipToPrevious || !hitPunctChar)) {
+        // We jumped over blank lines but didn't hit a punct char. Don't accept.
+        return origin
+      }
+      // let result = beforeBlank.isEqual(DocumentStart) ? beforeBlank : helper.prevPos(beforeBlank)
+      if (!hitPunctChar) {
         return beforeBlank
-      else
-        origin = helper.prevPos(beforeBlank)
+      }
+      if (allowSkipToPrevious) return { prevSentenceEnd: beforeBlank }
+      if (origin.line === beforeBlank.line) return beforeBlank
+      // Example below: we started from '|' and found the '.'.
+      //     foo.
+      //       |  bar
+      // In this case, technically we started from the second sentence
+      // and reached the first sentence. This is not permitted when when
+      // allowSkipToPrevious is false, so let's go back.
+      return origin
     }
+  }
+
+  const toSentenceStart = (origin: Coord, helper: SelectionHelper<CommandState>): Coord => {
+    const document = helper.editor.document
+    const isBlank = getCharSetFunction(CharSet.Blank, document)
 
     let originLineText = document.lineAt(origin.line).text
     if (originLineText.length === 0 && origin.line + 1 >= document.lineCount) {
@@ -230,14 +250,22 @@ function sentenceObject() {
       return new Coord(origin.line + 1, col)
     }
 
-    hadLf = false
+    let first = true
+    let hadLf = false
     const afterSkip = skipWhileX(Backward, origin, (charCode) => {
       if (charCode === LF) {
+        first = false
         if (hadLf)
           return false
         hadLf = true
       } else {
         hadLf = false
+        if (first) {
+          // Don't need to check if first character encountered is punct --
+          // that may be the current sentence end.
+          first = false
+          return true
+        }
         if (punctCharCodes.indexOf(charCode) >= 0)
           return false
       }
@@ -306,7 +334,78 @@ function sentenceObject() {
       return innerEnd.with(undefined, col - 1)
     }
   }
-  return objectActions(toStart, toEnd(false), toStart, toEnd(true))
+  const toBeforeBlankCurrent = toBeforeBlank(false)
+  const toCurrentStart: CoordMapper = (oldActive, helper, i) => {
+    let beforeBlank = toBeforeBlankCurrent(oldActive, helper)
+    if ('prevSentenceEnd' in beforeBlank) beforeBlank = oldActive
+    return toSentenceStart(beforeBlank, helper)
+  }
+
+  function select(inner: boolean): SelectionMapper {
+    return (selection, helper, i) => {
+      const active = helper.activeCoord(selection)
+      const start = toCurrentStart(active, helper, i)
+      if ('remove' in start) return RemoveSelection
+      // It is imposssible to determine if active is at leading or trailing or
+      // in-sentence blank characters by just looking ahead. Therefore, we start
+      // from the sentence start, which may be slightly less efficient but
+      // always accurate.
+      const end = toEnd(inner)(start, helper, i)
+      if ('remove' in start || 'remove' in end) return RemoveSelection
+      return helper.selectionBetween(start, end)
+    }
+  }
+
+  // Special cases to allow jumping to the previous sentence when active is at
+  // current sentence start / leading blank chars.
+  const toBeforeBlankOrPrev = toBeforeBlank(true)
+  const selectToStart = {
+    extend: moveActiveCoord((oldActive, helper, i) => {
+      let beforeBlank = toBeforeBlankOrPrev(oldActive, helper)
+      if ('prevSentenceEnd' in beforeBlank) beforeBlank = beforeBlank.prevSentenceEnd
+      return toSentenceStart(beforeBlank, helper)
+    }, Extend),
+    doNotExtend: (selection: vscode.Selection, helper: SelectionHelper<CommandState>) => {
+      const oldActive = helper.activeCoord(selection)
+      let beforeBlank = toBeforeBlankOrPrev(oldActive, helper)
+
+      if ('prevSentenceEnd' in beforeBlank) {
+        const newAnchor = beforeBlank.prevSentenceEnd
+        console.log('hit prev end', helper._visualizeCoord(newAnchor))
+        // Special case: re-anchor when skipping to last sentence end.
+        return helper.selectionBetween(newAnchor, toSentenceStart(newAnchor, helper))
+      } else {
+        const newActive = toSentenceStart(beforeBlank, helper)
+        if (helper.selectionBehavior === SelectionBehavior.Caret) {
+          // TODO: Optimize to avoid coordAt / offsetAt.
+          let activePos = selection.active.isBeforeOrEqual(newActive) ?
+            helper.coordAt(helper.offsetAt(newActive) + 1) : newActive
+          return new vscode.Selection(selection.active, activePos)
+        }
+        return helper.selectionBetween(oldActive, newActive)
+      }
+    },
+  }
+  return {
+    select: {
+      outer: select(false),
+      inner: select(true),
+    },
+    selectToEnd: {
+      outer: {
+        doNotExtend: moveActiveCoord(toEnd(false),        DoNotExtend),
+        extend:      moveActiveCoord(toEnd(false),             Extend),
+      },
+      inner: {
+        doNotExtend: moveActiveCoord(toEnd(true),   DoNotExtend),
+        extend:      moveActiveCoord(toEnd(true),        Extend),
+      },
+    },
+    selectToStart: {
+      outer: selectToStart,
+      inner: selectToStart,
+    },
+  }
 }
 
 type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
@@ -321,7 +420,6 @@ const dispatch = {
   word: objectWithCharSet(CharSet.Word),
   WORD: objectWithCharSet(CharSet.NonBlank),
   sentence: sentenceObject(),
-  // TODO: sentence
   // TODO: paragraph
   // TODO: whitespaces
   // TODO: indent

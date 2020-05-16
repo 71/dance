@@ -31,13 +31,13 @@ not the previous one, since the previous trailing cannot contain line breaks.
 
 //== 0 > 0.selectInner
 //= {"command": "dance.objects.performSelection", "args": [{"object": "sentence", "action": "select", "inner": true}]}
-{0}A sentence starts with a non-blank character or a line break. |{0}{1}<== It ends with a
+{0}A sentence starts with a non-blank character or a line break.|{0} {1}<== It ends with a
 punctuation mark like the previous one, or two consecutive line breaks like this
 |{1}
 {2}{3}An outer sentence also contains the trailing blank characters (but never line
-breaks) like this.       |{2}|{3}{4}<== The white spaces before this sentence belongs to
-the outer previous sentence.|{4}
-{5}   <- White spaces here and the line break before them belongs to this sentence,
+breaks) like this.|{2}|{3}       {4}<== The white spaces before this sentence belongs to
+the outer previous sentence.|{4}{5}
+   <- White spaces here and the line break before them belongs to this sentence,
 not the previous one, since the previous trailing cannot contain line breaks.|{5}
 
 // And here comes some edge cases:
@@ -80,7 +80,7 @@ I'm a previous sent|{3}ence{3}.  {4} |{4} {5}
 //== 2 > 2.toStart
 //= {"command": "dance.objects.performSelection", "args": [{"object": "sentence", "action": "selectToStart"}]}
 |{0}|{1}|{3}|{4}|{5}I'm a previous sente{3}nce.{0}{1}{4}{5}    |{2}
-        I'm a sentenc{2}e   .        I'm another sentence.
+        I'm a sent{2}ence   .        I'm another sentence.
 // Note that Selection 0, 1, 5 are sent to the PREVIOUS sentence since they are
 // active at the leading blank chars or first nonblank char. As a special case,
 // their anchors were set to the INNER end of the previous sentence (instead of
@@ -92,7 +92,7 @@ I'm a previous sent|{3}ence{3}.  {4} |{4} {5}
 // This is exactly the same as above, because leading blank chars are also part
 // of the inner sentence.
 |{0}|{1}|{3}|{4}|{5}I'm a previous sente{3}nce.{0}{1}{4}{5}    |{2}
-        I'm a sentenc{2}e   .        I'm another sentence.
+        I'm a sent{2}ence   .        I'm another sentence.
 
 //== 2 > 2.toEnd
 //= {"command": "dance.objects.performSelection", "args": [{"object": "sentence", "action": "selectToEnd"}]}
@@ -143,9 +143,9 @@ I'm a sentence ter|{0}minate{0}d by two line breaks{1}
 
 //== 4 > 4.select
 //= {"command": "dance.objects.performSelection", "args": [{"object": "sentence", "action": "select"}]}
-{0}{1}I'm a sentence terminate{0}d by two line breaks
-|{0}|{1}{2}
-|{2} {3} |{3}  I'm anoth|{4}er sen{4}tence
+{0}{1}I'm a sentence terminated by two line breaks
+|{0}|{1}
+    {2}{3}{4}I'm another sentence|{2}|{3}|{4}
 
 //== 4 > 4.toStart
 //= {"command": "dance.objects.performSelection", "args": [{"object": "sentence", "action": "selectToStart"}]}

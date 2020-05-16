@@ -114,6 +114,7 @@ const pkg = {
     'glob': '^7.1.6',
     'js-yaml': '^3.13.0',
     'mocha': '^7.1.2',
+    'source-map-support': '^0.5.19',
     'ts-node': '^8.9.1',
     'typescript': '^3.8.3',
     'vsce': '^1.75.0',

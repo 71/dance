@@ -393,7 +393,7 @@ export function skipWhileX(direction: Direction, current: Coord, condition: (cha
       col += direction
     }
 
-    if (direction === Forward && !condition(LF)) return new Coord(line, col)
+    if (direction === Forward && !condition(LF)) return new Coord(line, text.length)
     col = (direction === Forward) ? 0 : Number.MAX_SAFE_INTEGER
     line += direction
   }
