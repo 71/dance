@@ -1,3 +1,7 @@
+// Enhance stack traces with the TypeScript source pos instead of compiled JS.
+// This is only included in tests to avoid introducing a production dependency.
+import 'source-map-support/register'
+
 import * as assert from 'assert'
 import * as fs     from 'fs'
 import * as path   from 'path'

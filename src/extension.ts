@@ -1,6 +1,3 @@
-// Enhance stack traces with the TypeScript source pos instead of compiled JS.
-require('source-map-support').install()
-
 import * as vscode from 'vscode'
 
 import { Extension } from './state/extension'
