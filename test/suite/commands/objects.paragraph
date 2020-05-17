@@ -1,0 +1,99 @@
+{0}f|{0}oo{1}
+|{1}bar{2}
+|{2}{3}
+|{3}{4}b|{4}az
+
+{5}
+|{5}
+
+qux
+
+//== 0 > 0.toStart
+//= {"command": "dance.objects.performSelection", "args": [{"object": "paragraph", "action": "selectToStart"}]}
+// Selection 4 skipped to first sentence start because it was active at the very
+// beginning of next sentence. Notice how anchor is moved.
+// Similarly, Selection 5 reanchored to one line above and then selected last.
+{0}|{1}|{2}|{3}|{4}f|{0}oo
+{1}bar
+{2}
+{3}{4}|{5}baz
+
+{5}
+
+
+qux
+
+//== 0 > 0.toEnd
+//= {"command": "dance.objects.performSelection", "args": [{"object": "paragraph", "action": "selectToEnd"}]}
+// Note: Paragraph outer end includes all trailing line breaks.
+// If a selection is on an empty line, it is always reanchored to the next line.
+{0}foo{1}
+bar{2}
+
+|{0}|{1}|{2}{3}{4}baz
+
+
+{5}
+
+|{3}|{4}|{5}qux
+
+//== 0 > 0.toInnerEnd
+//= {"command": "dance.objects.performSelection", "args": [{"object": "paragraph", "action": "selectToEnd", "inner": true}]}
+// Paragraph inner end does not include blank lines (but includes the last line
+// break before blank lines). Special cases are same as above.
+{0}foo{1}
+bar{2}
+|{0}|{1}|{2}
+{3}{4}baz
+|{3}|{4}
+
+{5}
+|{5}
+qux
+
+//== 0 > 0.select
+//= {"command": "dance.objects.performSelection", "args": [{"object": "paragraph", "action": "select"}]}
+// Do not skip over the current character when finding paragraph start.
+{0}{1}{2}foo
+bar
+
+|{0}|{1}|{2}{3}{4}{5}baz
+
+
+
+
+|{3}|{4}|{5}qux
+
+//== 1
+// Special cases regarding blank lines and next paragraph.
+paragraph 1{0}
+|{0}{1}
+|{1}{2}
+|{2}{3}
+|{3}{4}
+|{4}paragraph 2
+
+//== 1 > 1.select
+//= {"command": "dance.objects.performSelection", "args": [{"object": "paragraph", "action": "select", "inner": true}]}
+// The only special case for select: when active line is blank and the next line
+// is not, select the NEXT paragraph instead. This applied to Selection 4.
+// Note that it only looks one line ahead, so Selection 0-3 were not affected.
+{0}{1}{2}{3}paragraph 1
+|{0}|{1}|{2}|{3}|{3}
+
+
+
+{4}paragraph 2|{4}
+
+//== 1 > 1.toInnerEnd
+//= {"command": "dance.objects.performSelection", "args": [{"object": "paragraph", "action": "selectToEnd", "inner": true}]}
+// In Kakoune, if a selection is on an empty line (L), it always reanchor to the
+// start of the next line (L+1). Then if L+1 is non-empty or L+2 is non-empty,
+// it selects to the end of the paragraph. (Applied to Selection 3 and 4 here.)
+// Selection 1-3 were only reanchored. Selection 0 was at the end of 1st line.
+paragraph 1{0}
+|{0}
+{1}
+|{1}{2}
+|{2}{3}
+{4}paragraph 2|{4}|{3}

@@ -212,9 +212,3 @@ I'm a sentence at end of document{0}
 //= {"command": "dance.objects.performSelection", "args": [{"object": "sentence", "action": "select"}]}
 |{0}I'm a sentence at end of document
 {0}
-
-// If caret is between two sentences, we arbitrarily bais one of the two by:
-//   1. Direction of current selection (if not empty).
-//   2. Direction of movement (if to inner/out start/end)
-//   3. The NEXT one by default
-

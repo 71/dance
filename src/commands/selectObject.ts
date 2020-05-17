@@ -2,7 +2,7 @@
 
 import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, CommandState } from '.'
-import { Direction, Forward, Backward, SelectionHelper, RemoveSelection, CoordMapper, SelectionMapper, moveActiveCoord, DoNotExtend, Extend, DocumentStart, Coord, ExtendBehavior } from '../utils/selectionHelper'
+import { Direction, Forward, Backward, SelectionHelper, RemoveSelection, CoordMapper, SelectionMapper, moveActiveCoord, DoNotExtend, Extend, DocumentStart, Coord, ExtendBehavior, SeekFunc, seekToRange } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
 import { findMatching, skipWhile, skipWhileX } from './select'
 import { SelectionBehavior } from '../state/extension'
@@ -342,6 +342,7 @@ function sentenceObject() {
   }
 
   function select(inner: boolean): SelectionMapper {
+    const toEndFunc = toEnd(inner)
     return (selection, helper, i) => {
       const active = helper.activeCoord(selection)
       const start = toCurrentStart(active, helper, i)
@@ -350,7 +351,7 @@ function sentenceObject() {
       // in-sentence blank characters by just looking ahead. Therefore, we start
       // from the sentence start, which may be slightly less efficient but
       // always accurate.
-      const end = toEnd(inner)(start, helper, i)
+      const end = toEndFunc(start, helper, i)
       if ('remove' in start || 'remove' in end) return RemoveSelection
       return helper.selectionBetween(start, end)
     }
@@ -393,8 +394,8 @@ function sentenceObject() {
     },
     selectToEnd: {
       outer: {
-        doNotExtend: moveActiveCoord(toEnd(false),        DoNotExtend),
-        extend:      moveActiveCoord(toEnd(false),             Extend),
+        doNotExtend: moveActiveCoord(toEnd(false),  DoNotExtend),
+        extend:      moveActiveCoord(toEnd(false),       Extend),
       },
       inner: {
         doNotExtend: moveActiveCoord(toEnd(true),   DoNotExtend),
@@ -408,6 +409,127 @@ function sentenceObject() {
   }
 }
 
+function paragraphObject() {
+  const lookBack: CoordMapper = (active, helper) => {
+    const { line } = active
+    if (line > 0 && active.character === 0 &&
+        helper.editor.document.lineAt(line - 1).text.length === 0) {
+      return new Coord(line - 1, 0) // Re-anchor to the previous line.
+    }
+    return active
+  }
+  const lookAhead: CoordMapper = (active, helper) => {
+    const { line } = active
+    if (helper.editor.document.lineAt(line).text.length === 0)
+      return new Coord(line + 1, 0)
+    return active
+  }
+
+  const toCurrentStart: CoordMapper = (active, helper) => {
+    const { document } = helper.editor
+    let { line } = active
+
+    // Move past any trailing empty lines.
+    while (line >= 0 && document.lineAt(line).text.length === 0) line--
+    if (line <= 0) return DocumentStart
+
+    // Then move to the start of the paragraph (non-empty lines).
+    while (line > 0 && document.lineAt(line - 1).text.length > 0) line--
+    return new Coord(line, 0)
+  }
+
+  function toEnd(inner: boolean): CoordMapper {
+    return (active, helper) => {
+      const { document } = helper.editor
+      let { line } = active
+
+      // Move to the end of the paragraph (non-empty lines)
+      while (line < document.lineCount && document.lineAt(line).text.length > 0)
+        line++
+      if (line >= document.lineCount) return helper.lastCoord()
+      if (inner) {
+        if (line > 0) line--
+        return new Coord(line, document.lineAt(line).text.length)
+      }
+
+      // Then move to the last trailing empty line.
+      while (line + 1 < document.lineCount && document.lineAt(line + 1).text.length === 0)
+        line++
+      return new Coord(line, document.lineAt(line).text.length)
+    }
+  }
+
+  function selectToEdge(direction: Direction, adjust: CoordMapper, toEdge: CoordMapper) {
+    return {
+      extend: moveActiveCoord((oldActive, helper, i) => {
+        const adjusted = adjust(oldActive, helper, i)
+        if ('remove' in adjusted) return RemoveSelection
+        if (direction === Forward &&
+            helper.editor.document.lineAt(adjusted.line).text.length === 0)
+          return toEdge(new Coord(adjusted.line + 1, 0), helper, i)
+        else
+          return toEdge(adjusted, helper, i)
+      }, Extend),
+      doNotExtend: seekToRange((oldActive, helper, i) => {
+        const anchor = adjust(oldActive, helper, i)
+        if ('remove' in anchor) return RemoveSelection
+
+        let active
+        if (direction === Forward &&
+            helper.editor.document.lineAt(anchor.line).text.length === 0)
+          active = toEdge(new Coord(anchor.line + 1, 0), helper, i)
+        else
+          active = toEdge(anchor, helper, i)
+
+        if ('remove' in active) return RemoveSelection
+        return [anchor, active]
+      }, DoNotExtend),
+    }
+  }
+
+  function select(inner: boolean): SelectionMapper {
+    const toEndFunc = toEnd(inner)
+    return (selection, helper, i) => {
+      let active = helper.activeCoord(selection)
+      const { document } = helper.editor
+
+      let start
+      if (active.line + 1 < document.lineCount &&
+          document.lineAt(active.line).text.length === 0 &&
+          document.lineAt(active.line + 1).text.length) {
+        // Special case: if current line is empty, check next line and select
+        // the NEXT paragraph if next line is not empty.
+        start = new Coord(active.line + 1, 0)
+      } else {
+        const startResult = toCurrentStart(active, helper, i)
+        if ('remove' in startResult) return RemoveSelection
+        start = startResult
+      }
+      // It's just much easier to check from start.
+      const end = toEndFunc(start, helper, i)
+      if ('remove' in end) return RemoveSelection
+      return helper.selectionBetween(start, end)
+    }
+  }
+
+  const selectToStart = selectToEdge(Backward, lookBack, toCurrentStart)
+  return {
+    select: {
+      outer: select(/* inner = */ false),
+      inner: select(/* inner = */ true),
+    },
+    selectToEnd: {
+      outer: selectToEdge(Forward, lookAhead, toEnd(/* inner = */ false)),
+      inner: selectToEdge(Forward, lookAhead, toEnd(/* inner = */ true)),
+    },
+    selectToStart: {
+      outer: selectToStart,
+      inner: selectToStart,
+    },
+  }
+}
+
+
 type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
 const dispatch = {
   parens:            objectWithinPair(LPAREN,     RPAREN),
@@ -420,7 +542,7 @@ const dispatch = {
   word: objectWithCharSet(CharSet.Word),
   WORD: objectWithCharSet(CharSet.NonBlank),
   sentence: sentenceObject(),
-  // TODO: paragraph
+  paragraph: paragraphObject(),
   // TODO: whitespaces
   // TODO: indent
   // TODO: number

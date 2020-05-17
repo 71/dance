@@ -165,7 +165,7 @@ function selectByWord(editorState: EditorState, state: CommandState, extend: Ext
       active = new Coord(active.line, nextCol - direction)
     }
     return [anchor!, active]
-  }, extend))
+  }, extend, /* singleCharDirection = */ direction))
 }
 
 
@@ -504,7 +504,7 @@ function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
 
     if (!active) return RemoveSelection
     return [anchor, active]
-  }, extend)
+  }, extend, /* singleCharDirection = */ direction)
 
   return (editorState: EditorState, state: CommandState) => {
     SelectionHelper.for(editorState, state).mapEach(mapper)

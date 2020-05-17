@@ -410,9 +410,11 @@ export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): Selec
  *                 the range ([start, end]) to seek to, or remove.
  * @param extend if Extend, the new selection will keep the anchor caret /
  *               character. Otherwise, the new selection is anchored to start.
+ * @param singleCharDirection if specified, caret-based selection that only has
+ *                            one character will face that direction
  * @returns a SelectionMapper that is suitable for SelectionHelper#mapEach
  */
-export function seekToRange(seek: SeekFunc, extend: ExtendBehavior): SelectionMapper {
+export function seekToRange(seek: SeekFunc, extend: ExtendBehavior, singleCharDirection = Forward): SelectionMapper {
   return (selection, helper, i) => {
     const oldActive = helper.activeCoord(selection)
     const seekResult = seek(oldActive, helper, i)
@@ -433,19 +435,12 @@ export function seekToRange(seek: SeekFunc, extend: ExtendBehavior): SelectionMa
     }
 
     let newSelection
-    if (!start || extend) {
+    if (!start || extend)
       newSelection = helper.extend(selection, end)
-    } else {
-      let singleCharDirection = Forward
-      if (helper.selectionBehavior === SelectionBehavior.Caret &&
-          end.isBefore(selection.active)) {
-        // When moving backwards creates a single character selection, make sure
-        // the selection is backwards. This is important so that the active
-        // position is where the user expect it to be.
-        singleCharDirection = Backward
-      }
+    else if (helper.selectionBehavior === SelectionBehavior.Caret)
       newSelection = helper.selectionBetween(start, end, singleCharDirection)
-    }
+    else
+      newSelection = helper.selectionBetween(start, end)
 
     if (remove)
       return { remove, fallback: newSelection }

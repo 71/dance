@@ -5,7 +5,7 @@ import { registerCommand, Command, CommandFlags, InputKind } from '.'
 import { Extension, SelectionBehavior } from '../state/extension'
 import { WritableRegister }   from '../registers'
 import { SavedSelection }     from '../utils/savedSelection'
-import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, SeekFunc, SelectionMapper, RemoveSelection, SelectionHelper, Coord, seekToRange, DocumentStart } from '../utils/selectionHelper'
+import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, SelectionHelper, Coord, DocumentStart } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
 
 

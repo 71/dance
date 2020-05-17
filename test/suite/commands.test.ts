@@ -184,7 +184,7 @@ suite('Running commands', function() {
         selectionBehavior: SelectionBehavior.Character,
       })
     } catch (err) {
-      if (err instanceof Error && err.message === `Expected selections #0 to match ('>' is anchor, '|' is cursor).`)
+      if (err instanceof Error && err.message === `Expected Selection #0 to match ('>' is anchor, '|' is cursor).`)
         return
 
       throw err
