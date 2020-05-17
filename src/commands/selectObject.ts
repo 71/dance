@@ -145,8 +145,8 @@ function objectWithCharSet(charSet: CharSet) {
         return RemoveSelection
       }
       while (isInSet(text.charCodeAt(col))) {
-        if (col === 0 || col + 1 === text.length) return active.with(undefined, col)
         col += direction
+        if (col < 0 || col >= text.length) return active.with(undefined, col - direction)
       }
       if (col === active.character) {
         // The cursor active is on a character outside charSet.
@@ -155,8 +155,8 @@ function objectWithCharSet(charSet: CharSet) {
       if (includeTrailingWhitespace) {
         const isBlank = getCharSetFunction(CharSet.Blank, document)
         while (isBlank(text.charCodeAt(col))) {
-          if (col === 0 || col + 1 === text.length) return active.with(undefined, col)
           col += direction
+          if (col < 0 || col >= text.length) return active.with(undefined, col - direction)
         }
       }
       return active.with(undefined, col - direction)
@@ -529,6 +529,48 @@ function paragraphObject() {
   }
 }
 
+function whitespacesObject() {
+  // The "inner" versions of a whitespaces object excludes all line breaks and
+  // the "outer" versions includes line breaks as well. Unlike other objects,
+  // there are no actual "surrounding" parts of objects.
+
+  // The objectWithCharSet helper function can handle the inline whitespaces.
+  const actions = objectWithCharSet(CharSet.Blank)
+
+  // Let's then overwrite logic for "outer" actions to include line breaks.
+  const toStart: CoordMapper = (active, helper) => {
+    const { document } = helper.editor
+    const isBlank = getCharSetFunction(CharSet.Blank, document)
+    const afterSkip = skipWhileX(Backward, active, isBlank, document)
+    if (!afterSkip) return DocumentStart
+    if (afterSkip.isEqual(active)) return RemoveSelection
+    return helper.nextPos(afterSkip)
+  }
+  const toEnd: CoordMapper = (active, helper) => {
+    const { document } = helper.editor
+    const isBlank = getCharSetFunction(CharSet.Blank, document)
+    const afterSkip = skipWhileX(Forward, active, isBlank, document)
+    if (!afterSkip) return helper.lastCoord()
+    if (afterSkip.isEqual(active)) return RemoveSelection
+    return helper.prevPos(afterSkip)
+  }
+  actions.select.outer = (selection, helper, i) => {
+    const active = helper.activeCoord(selection)
+    const start = toStart(active, helper, i)
+    const end = toEnd(active, helper, i)
+    if ('remove' in start || 'remove' in end) return RemoveSelection
+    return helper.selectionBetween(start, end)
+  }
+  actions.selectToStart.outer = {
+    doNotExtend: moveActiveCoord(toStart, DoNotExtend),
+    extend:      moveActiveCoord(toStart,      Extend),
+  }
+  actions.selectToEnd.outer = {
+    doNotExtend: moveActiveCoord(toEnd,   DoNotExtend),
+    extend:      moveActiveCoord(toEnd,        Extend),
+  }
+  return actions
+}
 
 type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
 const dispatch = {
@@ -543,7 +585,7 @@ const dispatch = {
   WORD: objectWithCharSet(CharSet.NonBlank),
   sentence: sentenceObject(),
   paragraph: paragraphObject(),
-  // TODO: whitespaces
+  whitespaces: whitespacesObject(),
   // TODO: indent
   // TODO: number
   // TODO: argument
