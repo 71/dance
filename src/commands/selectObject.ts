@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, CommandState } from '.'
 import { Direction, Forward, Backward, SelectionHelper, RemoveSelection, CoordMapper, SelectionMapper, moveActiveCoord, DoNotExtend, Extend, DocumentStart, Coord, ExtendBehavior, SeekFunc, seekToRange } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
-import { findMatching, skipWhile, skipWhileX } from './select'
+import { findMatching, skipWhileX } from './select'
 import { SelectionBehavior } from '../state/extension'
 
 // Selecting is a bit harder than it sounds like:
@@ -30,19 +30,21 @@ const [
   COMMA,
 ] = Array.from('()[]{}<>\n "\'`\\,', ch => ch.charCodeAt(0))
 
-function objectActions(toStart: CoordMapper, toEnd: CoordMapper, toStartInner: CoordMapper, toEndInner: CoordMapper) {
+function objectActions(toStart: CoordMapper, toEnd: CoordMapper, toStartInner: CoordMapper, toEndInner: CoordMapper, scanFromStart: boolean = false) {
   const selectObject: SelectionMapper = (selection, helper, i) => {
     const active = helper.activeCoord(selection)
     const start = toStart(active, helper, i)
-    const end = toEnd(active, helper, i)
-    if ('remove' in start || 'remove' in end) return RemoveSelection
+    if ('remove' in start) return RemoveSelection
+    const end = toEnd(scanFromStart ? start : active, helper, i)
+    if ('remove' in end) return RemoveSelection
     return helper.selectionBetween(start, end)
   }
   const selectObjectInner: SelectionMapper = (selection, helper, i) => {
     const active = helper.activeCoord(selection)
     const start = toStartInner(active, helper, i)
-    const end = toEndInner(active, helper, i)
-    if ('remove' in start || 'remove' in end) return RemoveSelection
+    if ('remove' in start) return RemoveSelection
+    const end = toEndInner(scanFromStart ? start : active, helper, i)
+    if ('remove' in end) return RemoveSelection
     return helper.selectionBetween(start, end)
   }
 
@@ -341,26 +343,17 @@ function sentenceObject() {
     return toSentenceStart(beforeBlank, helper)
   }
 
-  function select(inner: boolean): SelectionMapper {
-    const toEndFunc = toEnd(inner)
-    return (selection, helper, i) => {
-      const active = helper.activeCoord(selection)
-      const start = toCurrentStart(active, helper, i)
-      if ('remove' in start) return RemoveSelection
-      // It is imposssible to determine if active is at leading or trailing or
-      // in-sentence blank characters by just looking ahead. Therefore, we start
-      // from the sentence start, which may be slightly less efficient but
-      // always accurate.
-      const end = toEndFunc(start, helper, i)
-      if ('remove' in start || 'remove' in end) return RemoveSelection
-      return helper.selectionBetween(start, end)
-    }
-  }
+  // It is imposssible to determine if active is at leading or trailing or
+  // in-sentence blank characters by just looking ahead. Therefore, we search
+  // from the sentence start, which may be slightly less efficient but
+  // always accurate.
+  const scanFromStart = true
+  const actions = objectActions(toCurrentStart, toEnd(false), toCurrentStart, toEnd(true), scanFromStart)
 
   // Special cases to allow jumping to the previous sentence when active is at
   // current sentence start / leading blank chars.
   const toBeforeBlankOrPrev = toBeforeBlank(true)
-  const selectToStart = {
+  actions.selectToStart.inner = actions.selectToStart.outer = {
     extend: moveActiveCoord((oldActive, helper, i) => {
       let beforeBlank = toBeforeBlankOrPrev(oldActive, helper)
       if ('prevSentenceEnd' in beforeBlank) beforeBlank = beforeBlank.prevSentenceEnd
@@ -387,26 +380,7 @@ function sentenceObject() {
       }
     },
   }
-  return {
-    select: {
-      outer: select(false),
-      inner: select(true),
-    },
-    selectToEnd: {
-      outer: {
-        doNotExtend: moveActiveCoord(toEnd(false),  DoNotExtend),
-        extend:      moveActiveCoord(toEnd(false),       Extend),
-      },
-      inner: {
-        doNotExtend: moveActiveCoord(toEnd(true),   DoNotExtend),
-        extend:      moveActiveCoord(toEnd(true),        Extend),
-      },
-    },
-    selectToStart: {
-      outer: selectToStart,
-      inner: selectToStart,
-    },
-  }
+  return actions
 }
 
 function paragraphObject() {
@@ -572,6 +546,57 @@ function whitespacesObject() {
   return actions
 }
 
+function indentObject() {
+  function toEdge(direction: Direction, inner: boolean): CoordMapper {
+    return (oldActive, helper) => {
+      const { document } = helper.editor
+      let { line } = oldActive
+      let lineObj = document.lineAt(line)
+
+      // First, scan backwards through blank lines. (Note that whitespace-only
+      // lines do not count -- those have a proper indentation level and should
+      // be treated as the inner part of the indent block.)
+      while (lineObj.text.length === 0) {
+        line += direction
+        if (line < 0) return DocumentStart
+        if (line >= document.lineCount) return helper.lastCoord()
+        lineObj = document.lineAt(line)
+      }
+
+      let indent = lineObj.firstNonWhitespaceCharacterIndex
+      let lastNonBlankLine = line
+
+      for (;;) {
+        line += direction
+        if (line < 0) return DocumentStart
+        if (line >= document.lineCount) return helper.lastCoord()
+        lineObj = document.lineAt(line)
+
+        if (lineObj.text.length === 0) continue
+        if (lineObj.firstNonWhitespaceCharacterIndex < indent) {
+          const resultLine = inner ? lastNonBlankLine : line - direction
+          if (direction === Forward && resultLine + 1 === document.lineCount)
+            return helper.lastCoord()
+          const resultCol = direction === Backward ? 0 : document.lineAt(resultLine).text.length
+          return new Coord(resultLine, resultCol)
+        }
+        lastNonBlankLine = line
+      }
+    }
+  }
+  const toStart      = toEdge(Backward, false),
+        toStartInner = toEdge(Backward,  true),
+        toEnd        = toEdge(Forward,  false),
+        toEndInner   = toEdge(Forward,   true)
+
+  // When selecting a whole indent object, scanning separately toStart and then
+  // toEnd will lead to wrong results like two different indentation levels and
+  // skipping over blank lines more than needed. We can mitigate this by finding
+  // the start first and then scan from there to find the end of indent block.
+  const scanFromStart = true
+  return objectActions(toStart, toEnd, toStartInner, toEndInner, scanFromStart)
+}
+
 type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
 const dispatch = {
   parens:            objectWithinPair(LPAREN,     RPAREN),
@@ -586,7 +611,7 @@ const dispatch = {
   sentence: sentenceObject(),
   paragraph: paragraphObject(),
   whitespaces: whitespacesObject(),
-  // TODO: indent
+  indent: indentObject(),
   // TODO: number
   // TODO: argument
   // TODO: custom
