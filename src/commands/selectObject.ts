@@ -4,7 +4,7 @@ import * as vscode from 'vscode'
 import { registerCommand, Command, CommandFlags, CommandState } from '.'
 import { Direction, Forward, Backward, SelectionHelper, RemoveSelection, CoordMapper, SelectionMapper, moveActiveCoord, DoNotExtend, Extend, DocumentStart, Coord, ExtendBehavior, SeekFunc, seekToRange } from '../utils/selectionHelper'
 import { getCharSetFunction, CharSet } from '../utils/charset'
-import { findMatching, skipWhileX } from './select'
+import { findMatching, skipWhileX, skipWhile } from './select'
 import { SelectionBehavior } from '../state/extension'
 
 // Selecting is a bit harder than it sounds like:
@@ -611,6 +611,69 @@ function numberObject() {
   return actions
 }
 
+function argumentObject() {
+  function toEdge(direction: Direction, inner: boolean): CoordMapper {
+    const paren = (direction === Backward ? LPAREN : RPAREN)
+    return (oldActive, helper) => {
+      const { document } = helper.editor
+      let bbalance = 0,
+          pbalance = 0
+      const afterSkip = skipWhile(direction, oldActive, (charCode) => {
+        // TODO: Kak does not care about strings or ignoring braces in strings
+        // but maybe we should add a setting or an alternative command for that.
+        if (charCode === paren && pbalance === 0 && bbalance === 0) {
+          return false
+        } else if (charCode === LPAREN) {
+          pbalance++
+        } else if (charCode === LSQBRACKET) {
+          bbalance++
+        } else if (charCode === RPAREN) {
+          pbalance--
+        } else if (charCode === RSQBRACKET) {
+          bbalance--
+        } else if (pbalance !== 0 || bbalance !== 0) {
+          // Nop.
+        } else if (charCode === COMMA) {
+          return false
+        }
+        return true
+      }, helper.editor.document)
+
+      let end
+      if (afterSkip === undefined) {
+        end = direction === Backward ? DocumentStart : helper.lastCoord()
+      } else {
+        const charCode = document.lineAt(afterSkip.line).text.charCodeAt(afterSkip.character)
+        // Make sure parens are not included in the object. Deliminator commas
+        // after the argument is included as outer, but ones before are NOT.
+
+        // TODO: Kakoune seems to have more sophisticated edge cases for commas,
+        // e.g. outer last argument includes the comma before it, plus more edge
+        // cases for who owns the whitespace. Those are not implemented for now
+        // because they require extensive tests and mess a lot with the logic of
+        // selecting the whole object.
+        if (inner || charCode === paren || direction === Backward)
+          end = direction === Backward ? helper.nextPos(afterSkip) : helper.prevPos(afterSkip)
+        else
+          end = afterSkip
+      }
+      if (!inner) return end
+      const isBlank = getCharSetFunction(CharSet.Blank, document)
+      // Exclude any surrounding whitespaces.
+      end = skipWhileX(-direction, end, isBlank, helper.editor.document)
+      if (!end)
+        return direction === Backward ? DocumentStart : helper.lastCoord()
+      return end
+    }
+  }
+
+  const toStart      = toEdge(Backward, false),
+        toStartInner = toEdge(Backward,  true),
+        toEnd        = toEdge(Forward,  false),
+        toEndInner   = toEdge(Forward,   true)
+  return objectActions(toStart, toEnd, toStartInner, toEndInner)
+}
+
 type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
 const dispatch = {
   parens:            objectWithinPair(LPAREN,     RPAREN),
@@ -627,7 +690,7 @@ const dispatch = {
   whitespaces: whitespacesObject(),
   indent: indentObject(),
   number: numberObject(),
-  // TODO: argument
+  argument: argumentObject(),
   // TODO: custom
 }
 
