@@ -134,11 +134,12 @@ function objectWithinPair(startCharCode: number, endCharCode: number) {
   return actions
 }
 
-function objectWithCharSet(charSet: CharSet) {
+type CharCodePredicate = (charCode: number) => boolean
+function objectWithCharSet(charSet: CharSet | CharCodePredicate) {
   function toEdge(direction: Direction, includeTrailingWhitespace: boolean): CoordMapper {
     return (active, helper) => {
       const { document } = helper.editor
-      const isInSet = getCharSetFunction(charSet, document)
+      const isInSet = typeof charSet === 'function' ? charSet : getCharSetFunction(charSet, document)
       let col = active.character
       const text = document.lineAt(active.line).text
       if (col >= text.length) {
@@ -172,11 +173,11 @@ function objectWithCharSet(charSet: CharSet) {
   return objectActions(toStart, toEnd, toStartInner, toEndInner)
 }
 
-// I bet that's the first time you see a Greek question mark used as an actual Greek question mark,
-// rather than as a "prank" semicolon.
-const punctCharCodes = new Uint32Array(Array.from('.!?¡§¶¿;՞。', ch => ch.charCodeAt(0)))
-
 function sentenceObject() {
+  // I bet that's the first time you see a Greek question mark used as an actual Greek question mark,
+  // rather than as a "prank" semicolon.
+  const punctCharCodes = new Uint32Array(Array.from('.!?¡§¶¿;՞。', ch => ch.charCodeAt(0)))
+
   function toBeforeBlank(allowSkipToPrevious: boolean) {
     return (oldActive: Coord, helper: SelectionHelper<CommandState>) => {
       const document = helper.editor.document
@@ -597,6 +598,19 @@ function indentObject() {
   return objectActions(toStart, toEnd, toStartInner, toEndInner, scanFromStart)
 }
 
+function numberObject() {
+  // TODO: Handle optional leading minus sign for numbers.
+  const numberCharCodes = new Uint32Array(Array.from('0123456789.', ch => ch.charCodeAt(0)))
+
+  // Numbers cannot have trailing whitespaces even for outer in Kakoune, and
+  // let's match the behavior here.
+  const actions = objectWithCharSet((charCode) => numberCharCodes.indexOf(charCode) >= 0)
+  actions.select.outer = actions.select.inner
+  actions.selectToEnd.outer = actions.selectToEnd.inner
+  actions.selectToStart.outer = actions.selectToStart.inner
+  return actions
+}
+
 type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
 const dispatch = {
   parens:            objectWithinPair(LPAREN,     RPAREN),
@@ -612,7 +626,7 @@ const dispatch = {
   paragraph: paragraphObject(),
   whitespaces: whitespacesObject(),
   indent: indentObject(),
-  // TODO: number
+  number: numberObject(),
   // TODO: argument
   // TODO: custom
 }
