@@ -58,3 +58,23 @@ aaa aaa aaa
    {6} |{6} ee
     f
   gg gg gg {5}gg|{5} gg
+
+//== 14
+ab{0}
+|{0}cd
+efg
+hi
+
+//== 14 > 15
+//= dance.select.copy
+ab{0}
+|{0}cd{1}
+|{1}efg
+hi
+
+//== 15 > 16
+//= dance.select.copy
+ab{0}
+|{0}cd{1}
+|{1}ef{2}g|{2}
+hi
