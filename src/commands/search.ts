@@ -2,9 +2,11 @@
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
-
-import { Extension }        from '../extension'
-import { WritableRegister } from '../registers'
+import { Extension, SelectionBehavior } from '../state/extension'
+import { WritableRegister }   from '../registers'
+import { SavedSelection }     from '../utils/savedSelection'
+import { Direction, ExtendBehavior, Backward, Forward, DoNotExtend, Extend, SelectionHelper, Coord, DocumentStart } from '../utils/selectionHelper'
+import { getCharSetFunction, CharSet } from '../utils/charset'
 
 
 function isMultilineRegExp(regex: string) {
@@ -41,104 +43,6 @@ function isMultilineRegExp(regex: string) {
   return false
 }
 
-function findPosition(text: string, position: vscode.Position, offset: number, add = 0) {
-  let { line, character } = position
-
-  for (let i = 0; i < offset; i++) {
-    const ch = text[i + add]
-
-    if (ch === '\n') {
-      line++
-      character = 0
-    } else if (ch === '\r') {
-      line++
-      character = 0
-      i++
-    } else {
-      character++
-    }
-  }
-
-  return new vscode.Position(line, character)
-}
-
-function findPositionBackward(text: string, position: vscode.Position, offset: number) {
-  let { line, character } = position
-
-  for (let i = text.length - 1; i >= offset; i--) {
-    const ch = text[i]
-
-    if (ch === '\n') {
-      line--
-      character = 0
-    } else if (ch === '\r') {
-      line--
-      character = 0
-      i--
-    } else {
-      character--
-    }
-  }
-
-  if (line !== position.line) {
-    // The 'character' is actually the number of characters until the end of the line,
-    // so we have to find the start of the current line and do a diff
-    let startOfLine = text.lastIndexOf('\n', offset)
-
-    if (startOfLine === -1)
-      startOfLine = 0
-
-    character = offset - startOfLine
-  }
-
-  return new vscode.Position(line, character - 1)
-}
-
-// TODO: Should search strings be limited to the range between the current selection
-// and the previous/next selection, or only to the bounds of the document?
-
-function search(document: vscode.TextDocument, start: vscode.Position, regex: RegExp, allowWrap: boolean): vscode.Selection | undefined {
-  if (regex.multiline) {
-    const text = document.getText(document.lineAt(document.lineCount - 1).range.with(start))
-    const match = regex.exec(text)
-
-    if (match === null)
-      return allowWrap ? search(document, new vscode.Position(0, 0), regex, false) : undefined
-
-    const startPos = findPosition(text, start, match.index),
-          endPos = findPosition(text, startPos, match[0].length, match.index)
-
-    return new vscode.Selection(startPos, endPos)
-  } else {
-    {
-      // Custom processing for first line
-      const line = document.lineAt(start.line),
-            match = regex.exec(line.text.substr(start.character))
-
-      if (match !== null)
-        return new vscode.Selection(
-          new vscode.Position(start.line, start.character + match.index),
-          new vscode.Position(start.line, start.character + match.index + match[0].length),
-        )
-    }
-
-    for (let i = start.line + 1; i < document.lineCount; i++) {
-      const line = document.lineAt(i),
-            match = regex.exec(line.text)
-
-      if (match === null)
-        continue
-
-      return new vscode.Selection(
-        new vscode.Position(i, match.index),
-        new vscode.Position(i, match.index + match[0].length),
-      )
-    }
-
-    return allowWrap ? search(document, new vscode.Position(0, 0), regex, false) : undefined
-  }
-}
-
 function execFromEnd(regex: RegExp, input: string) {
   let match = regex.exec(input)
 
@@ -157,122 +61,139 @@ function execFromEnd(regex: RegExp, input: string) {
   }
 }
 
-function searchBackward(document: vscode.TextDocument, end: vscode.Position, regex: RegExp, allowWrap: boolean): vscode.Selection | undefined {
-  if (regex.multiline) {
-    const text = document.getText(new vscode.Range(new vscode.Position(0, 0), end))
-    const match = execFromEnd(regex, text)
+function documentEnd(document: vscode.TextDocument) {
+  const lastLine = document.lineCount - 1
+  return new vscode.Position(lastLine, document.lineAt(lastLine).text.length)
+}
 
-    if (match === null)
-      return allowWrap ? searchBackward(document, new vscode.Position(document.lineCount - 1, 10000), regex, false) : undefined
+function getSearchRange(selection: vscode.Selection, document: vscode.TextDocument, direction: Direction, isWrapped: boolean): vscode.Range {
+  if (isWrapped)
+    return new vscode.Range(DocumentStart, documentEnd(document))
+  else if (direction === Forward)
+    return new vscode.Range(selection.end, documentEnd(document))
+  else
+    return new vscode.Range(DocumentStart, selection.start)
+}
 
-    const startPos = findPositionBackward(text, end, match.index),
-          endPos = findPosition(text, startPos, match[0].length, match.index)
+interface SearchState {
+  selectionBehavior: SelectionBehavior
+  regex?: RegExp
+}
 
-    return new vscode.Selection(startPos, endPos)
-  } else {
-    {
-      // Custom processing for first line
-      const line = document.lineAt(end.line),
-            match = execFromEnd(regex, line.text.substr(0, end.character))
-
-      if (match !== null)
-        return new vscode.Selection(
-          new vscode.Position(end.line, match.index),
-          new vscode.Position(end.line, match.index + match[0].length),
-        )
+function needleInHaystack(direction: Direction, allowWrapping: boolean): (selection: vscode.Selection, helper: SelectionHelper<SearchState>) => [Coord, Coord] | undefined {
+  return (selection, helper) => {
+    const document = helper.editor.document
+    const regex = helper.state.regex!
+    // Try finding in the normal search range first, then the wrapped search range.
+    for (const isWrapped of [false, true]) {
+      const searchRange = getSearchRange(selection, document, direction, isWrapped)
+      const text = document.getText(searchRange)
+      regex.lastIndex = 0
+      const match = direction === Forward ? regex.exec(text) : execFromEnd(regex, text)
+      if (match) {
+        const startOffset = helper.offsetAt(searchRange.start) + match.index
+        const firstCharacter = helper.coordAt(startOffset)
+        const lastCharacter = helper.coordAt(startOffset + match[0].length - 1)
+        return [firstCharacter, lastCharacter]
+      }
+      if (!allowWrapping) break
     }
-
-    for (let i = end.line - 1; i >= 0; i--) {
-      const line = document.lineAt(i),
-            match = execFromEnd(regex, line.text)
-
-      if (match === null)
-        continue
-
-      return new vscode.Selection(
-        new vscode.Position(i, match.index),
-        new vscode.Position(i, match.index + match[0].length),
-      )
-    }
-
-    return allowWrap ? searchBackward(document, new vscode.Position(document.lineCount - 1, 10000), regex, false) : undefined
+    return undefined
   }
 }
 
-function registerSearchCommand(command: Command, backward: boolean, extend: boolean) {
-  let initialSelections: vscode.Selection[],
-      register: WritableRegister
+function moveToNeedleInHaystack(direction: Direction, extend: ExtendBehavior): (selection: vscode.Selection, helper: SelectionHelper<SearchState>) => vscode.Selection | undefined {
+  const find = needleInHaystack(direction, !extend)
+  return (selection, helper) => {
+    const result = find(selection, helper)
+    if (result === undefined) return undefined
+    const [start, end] = result
+    if (extend) {
+      return helper.extend(selection, direction === Forward ? end : start)
+    } else {
+      // When not extending, the result selection should always face forward,
+      // regardless of old selection or search direction.
+      return helper.selectionBetween(start, end)
+    }
+  }
+}
 
-  registerCommand(command, CommandFlags.ChangeSelections, InputKind.Text, {
+function registerSearchCommand(command: Command, direction: Direction, extend: ExtendBehavior) {
+  let initialSelections: readonly SavedSelection[],
+      register: WritableRegister,
+      helper: SelectionHelper<SearchState>
+
+  const mapper = moveToNeedleInHaystack(direction, extend)
+
+  registerCommand(command, CommandFlags.ChangeSelections, InputKind.Text, () => ({
     prompt: 'Search RegExp',
 
-    setup(editor, state) {
-      initialSelections = editor.selections
+    setup(editorState) {
+      const { documentState, editor, extension } = editorState
+      helper = SelectionHelper.for(editorState, { selectionBehavior: extension.selectionBehavior })
+      initialSelections = editor.selections.map(selection => documentState.saveSelection(selection))
 
-      const targetRegister = state.currentRegister
+      const targetRegister = extension.currentRegister
 
       if (targetRegister === undefined || !targetRegister.canWrite())
-        register = state.registers.slash
+        register = extension.registers.slash
       else
-        targetRegister
+        register = targetRegister
     },
 
-    validateInput(input) {
+    validateInput(input: string) {
       if (input.length === 0)
         return 'RegExp cannot be empty.'
 
-      const editor = vscode.window.activeTextEditor!
+      const editor = helper.editor
+      const selections = initialSelections.map(selection => selection.selection(editor.document))
 
       let regex: RegExp
-      let flags = (isMultilineRegExp(input) ? 'm' : '') + (backward ? 'g' : '')
+      let flags = (isMultilineRegExp(input) ? 'm' : '') + (direction === Backward ? 'g' : '')
 
       try {
         regex = new RegExp(input, flags)
       } catch {
+        editor.selections = selections
         return 'Invalid ECMA RegExp.'
       }
+      helper.state.regex = regex
 
-      register.set(editor, [input])
-
-      // TODO: For subsequent searches, first try to match at start of previous
-      // match by adding a ^, and then fallback to the default search routine
-      if (extend) {
-        if (backward)
-          editor.selections = initialSelections.map(selection => {
-            const newSelection = searchBackward(editor.document, selection.anchor, regex, true)
-
-            return newSelection === undefined
-              ? selection
-              : new vscode.Selection(newSelection.start, selection.end)
-          })
-        else
-          editor.selections = initialSelections.map(selection => {
-            const newSelection = search(editor.document, selection.active, regex, true)
-
-            return newSelection === undefined
-              ? selection
-              : new vscode.Selection(selection.start, newSelection.end)
-          })
-      } else {
-        editor.selections = initialSelections.map(selection => {
-          return (backward
-            ? searchBackward(editor.document, selection.anchor, regex, true)
-            : search(editor.document, selection.active, regex, true))
-          || selection
-        })
+      const newSelections = []
+      const len = selections.length
+      const repetitions = helper.editorState.extension.currentCount || 1
+      for (let i = 0; i < len; i++) {
+        let newSelection: vscode.Selection | undefined = selections[i]
+        for (let r = 0; r < repetitions; r++) {
+          newSelection = mapper(newSelection, helper)
+          if (!newSelection) break
+        }
+        if (newSelection) newSelections.push(newSelection)
       }
-
-      editor.revealRange(editor.selection)
-
-      return undefined
+      if (newSelections.length === 0) {
+        editor.selections = selections
+        editor.revealRange(editor.selection)
+        return 'No matches found'
+      } else {
+        editor.selections = newSelections
+        editor.revealRange(editor.selection)
+        return undefined
+      }
     },
-  }, () => {})
+    onDidCancel({ editor, documentState }) {
+      editor.selections = initialSelections.map(selection => selection.selection(editor.document))
+      documentState.forgetSelections(initialSelections)
+    },
+  }), ({ editor, documentState }) => {
+    register.set(editor, [helper.state.regex!.source])
+    documentState.forgetSelections(initialSelections)
+  })
 }
 
-registerSearchCommand(Command.search               , false, false)
-registerSearchCommand(Command.searchBackwards      , true , false)
-registerSearchCommand(Command.searchExtend         , false, true )
-registerSearchCommand(Command.searchBackwardsExtend, true , true )
+registerSearchCommand(Command.search               , Forward , DoNotExtend)
+registerSearchCommand(Command.searchBackwards      , Backward, DoNotExtend)
+registerSearchCommand(Command.searchExtend         , Forward , Extend)
+registerSearchCommand(Command.searchBackwardsExtend, Backward, Extend)
 
 function setSearchSelection(source: string, editor: vscode.TextEditor, state: Extension) {
   try {
@@ -296,55 +217,79 @@ function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 }
 
-registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, (editor, _, __, state) => {
+registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, ({ editor, extension }) => {
   let text = escapeRegExp(editor.document.getText(editor.selection))
 
-  return setSearchSelection(text, editor, state)
+  return setSearchSelection(text, editor, extension)
 })
 
-function isSmartSelectionPart(char: string) {
-  return (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9')
-}
+registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, ({ editor, extension }) => {
+  const isWord = getCharSetFunction(CharSet.Word, editor.document)
 
-registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, (editor, _, __, state) => {
   let text = escapeRegExp(editor.document.getText(editor.selection)),
       firstLine = editor.document.lineAt(editor.selection.start).text,
       firstLineStart = editor.selection.start.character
 
-  if (firstLineStart === 0 || !isSmartSelectionPart(firstLine[firstLineStart - 1])) {
+  if (firstLineStart === 0 || !isWord(firstLine.charCodeAt(firstLineStart - 1))) {
     text = `\\b${text}`
   }
 
   let lastLine = editor.document.lineAt(editor.selection.end).text,
       lastLineEnd = editor.selection.end.character
 
-  if (lastLineEnd >= lastLine.length || !isSmartSelectionPart(lastLine[lastLineEnd])) {
+  if (lastLineEnd >= lastLine.length || !isWord(lastLine.charCodeAt(lastLineEnd))) {
     text = `${text}\\b`
   }
 
-  return setSearchSelection(text, editor, state)
+  return setSearchSelection(text, editor, extension)
 })
 
-function registerNextCommand(command: Command, backward: boolean, replace: boolean) {
-  registerCommand(command, CommandFlags.ChangeSelections, async (editor, { currentRegister }, _, state) => {
-    const regexStr = await (currentRegister || state.registers.slash).get(editor)
+function nextNeedleInHaystack(direction: Direction): (selection: vscode.Selection, helper: SelectionHelper<SearchState>) => vscode.Selection | undefined {
+  const find = needleInHaystack(direction, /* allowWrapping = */ true)
+  return (selection, helper) => {
+    const result = find(selection, helper)
+    if (result === undefined) return undefined
+    const [start, end] = result
+    // The result selection should always face forward,
+    // regardless of old selection or search direction.
+    return helper.selectionBetween(start, end)
+  }
+}
+
+function registerNextCommand(command: Command, direction: Direction, replace: boolean) {
+  const mapper = nextNeedleInHaystack(direction)
+  registerCommand(command, CommandFlags.ChangeSelections, async (editorState, { currentRegister, selectionBehavior ,repetitions }) => {
+    const { editor, extension } = editorState
+    const regexStr = await (currentRegister ?? extension.registers.slash).get(editor)
 
     if (regexStr === undefined || regexStr.length === 0)
       return
 
-    const regex = new RegExp(regexStr[0], 'g')
-    const next = backward
-      ? searchBackward(editor.document, editor.selection.anchor, regex, true)
-      : search(editor.document, editor.selection.active, regex, true)
+    const regex = new RegExp(regexStr[0], 'g'),
+          selections = editor.selections
+    const searchState = { selectionBehavior, regex }
+    const helper = SelectionHelper.for(editorState, searchState)
+    let cur = selections[0]
 
-    if (next === undefined)
-      return
+    for (let i = repetitions; i > 0; i--) {
+      const next = mapper(cur, helper)
+      if (next === undefined) {
+        vscode.window.showErrorMessage('No matches found.')
+        return
+      }
+      cur = next
 
-    editor.selections = [next, ...editor.selections.slice(replace ? 1 : 0)]
+      if (replace)
+        selections[0] = cur
+      else
+        selections.unshift(cur)
+    }
+
+    editor.selections = selections
   })
 }
 
-registerNextCommand(Command.searchNext       , false, true )
-registerNextCommand(Command.searchNextAdd    , false, false)
-registerNextCommand(Command.searchPrevious   , true , true )
-registerNextCommand(Command.searchPreviousAdd, true , false)
+registerNextCommand(Command.searchNext       , Forward , true )
+registerNextCommand(Command.searchNextAdd    , Forward , false)
+registerNextCommand(Command.searchPrevious   , Backward, true )
+registerNextCommand(Command.searchPreviousAdd, Backward, false)

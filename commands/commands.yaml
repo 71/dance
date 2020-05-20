@@ -78,6 +78,9 @@ repeat.insert:
   title: Repeat last insert-mode change
   keys: . (normal)
 
+repeat.objectOrSelectTo:
+  title: Repeat last object select / character find
+  keys: a-. (normal)
 
 # Move around (move.ts)
 # ================================================================================================
@@ -102,22 +105,18 @@ down:
 up.page:
   title: Scroll one page up
   keys: c-b (normal), c-b (insert)
-  add: extend
 
 down.page:
   title: Scroll one page down
   keys: c-f (normal), c-f (insert)
-  add: extend
 
 up.halfPage:
   title: Scroll half a page up
   keys: c-u (normal), c-u (insert)
-  add: extend
 
 down.halfPage:
   title: Scroll half a page down
   keys: c-d (normal), c-d (insert)
-  add: extend
 
 
 # Select to / until / buffer / line (move.ts)
@@ -167,8 +166,13 @@ expandLines:
 
 trimLines:
   title: Trim lines
-  descr: Trim selections to only contain full lines (not including last end-of-line).
+  descr: Trim selections to only contain full lines (from start to line break).
   keys: s-a-x (normal)
+
+trimSelections:
+  title: Trim selections
+  descr: Trim whitespace at beginning and end of selections.
+  keys: s-- (normal)
 
 
 # Select word (move.ts)
@@ -300,7 +304,7 @@ selections.align.copy:
   keys: 's-a-7 (normal)'
 
 
-# Changes (changes.ts)
+# Yank & Paste (yankPaste.ts)
 # ================================================================================================
 
 delete.yank:
@@ -357,6 +361,10 @@ paste.replace.every:
   title: Replace with every
   descr: Replace selections with every yanked text.
   keys: s-a-r (normal)
+
+
+# Changes (changes.ts)
+# ================================================================================================
 
 replace.characters:
   title: Replace character
@@ -435,7 +443,7 @@ pipe.prepend:
   keys: s-a-1 (normal)
 
 
-# History and macros (history.ts)
+# History (history.ts)
 # ================================================================================================
 
 history.undo:
@@ -463,13 +471,19 @@ history.repeat.selection:
 history.repeat.edit:
   title: Repeat last edit change
 
+
+# Macros (macros.ts)
+# ================================================================================================
+
 macros.record.start:
   title: Start recording macro
-  keys: s-q (normal)
+  keys: s-q (normal -macro)
 
 macros.record.stop:
   title: Stop recording macro
   keys: escape (normal)
+  # Note: this command executes even if a macro recording is not in progess,
+  # so that <esc> will noop instead of defaulting to deselecting in VSCode.
 
 macros.play:
   title: Play macro
@@ -555,38 +569,34 @@ search.previous.add:
 # Objects (selectObject.ts)
 # ================================================================================================
 
-objects.select:
+_objects.select:
   title: Select whole object
   keys: a-a (normal), a-a (insert)
+  command: dance.openMenu
+  args: {menu: 'object', action: 'select'}
 
-objects.select.inner:
+_objects.select.inner:
   title: Select inner object
   keys: a-i (normal), a-i (insert)
+  command: dance.openMenu
+  args: {menu: 'object', action: 'select', inner: true}
 
-objects.selectToStart:
+_objects.selectToStart:
   title: Select to the whole object start
   keys: "[ (normal)"
-  add: inner
+  add: inner, extend
+  command: dance.openMenu
+  args: {menu: 'object', action: 'selectToStart'}
 
-objects.selectToStart.extend:
-  title: Extend to the whole object start
-  keys: "s-[ (normal)"
-  add: inner
-
-objects.selectToEnd:
+_objects.selectToEnd:
   title: Select to the whole object end
   keys: "] (normal)"
-  add: inner
+  add: inner, extend
+  command: dance.openMenu
+  args: {menu: 'object', action: 'selectToEnd'}
 
-objects.selectToEnd.extend:
-  title: Extend to the whole object end
-  keys: "s-] (normal)"
-  add: inner
-
-objects.select.repeat:
-  title: Repeat object select
-  keys: a-. (normal)
-
+objects.performSelection:
+  title: Perform selections specified in the arguments.
 
 # Goto (goto.ts)
 # ================================================================================================
@@ -596,6 +606,57 @@ goto:
   descr: Shows prompt to jump somewhere
   keys: g (normal)
   add: extend
+
+goto.lineStart:
+  title: Go to line start
+  add: extend
+
+goto.lineStart.nonBlank:
+  title: Go to non-blank line start
+  descr: Go to first non-whitespace character of the line
+  add: extend
+
+goto.lineEnd:
+  title: Go to line end
+  add: extend
+
+goto.firstLine:
+  title: Go to first line
+  add: extend
+
+goto.lastLine:
+  title: Go to last line
+  add: extend
+
+goto.lastCharacter:
+  title: Go to last character of the document
+  add: extend
+
+goto.firstVisibleLine:
+  title: Go to first visible line
+  add: extend
+
+goto.middleVisibleLine:
+  title: Go to middle visible line
+  add: extend
+
+goto.lastVisibleLine:
+  title: Go to last visible line
+  add: extend
+
+goto.selectedFile:
+  title: Open file under selection
+
+goto.lastModification:
+  title: Go to last buffer modification position
+  add: extend
+
+
+# Menus (menus.ts)
+# ================================================================================================
+
+openMenu:
+  title: Open quick-jump menu
 
 
 # Registers and marks (mark.ts)
@@ -625,3 +686,17 @@ marks.combineSelections.fromCurrent:
 marks.combineSelections.fromRegister:
   title: Combine register selections with current ones
   keys: a-z (normal)
+
+
+# Misc. (misc.ts)
+
+cancel:
+  title: Cancel operation
+  descr: Cancels waiting for input from the user
+  keys: escape (awaiting)
+
+_commandPalette:
+  title: Open Command Palette
+  descr: Open the built-in Command Palette in VSCode
+  keys: s-; (normal)
+  command: 'workbench.action.showCommands'

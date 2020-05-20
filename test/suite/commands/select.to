@@ -1,0 +1,83 @@
+{0}a|{0}bcabc
+
+//== 0 > 1
+//= dance.select.to.included
+//= type:c
+{0}abc|{0}abc
+
+//== 1 > 2
+//= dance.select.to.excluded
+//= type:c
+ab{0}cab|{0}c
+
+//== 0 > 3
+//= dance.count.2
+//= dance.select.to.excluded
+//= type:c
+{0}abcab|{0}c
+
+//== 3 > 4
+//= dance.select.to.excluded
+//= type:c
+abca{0}b|{0}c
+
+//== 4 > 0.back
+//= dance.select.to.excluded.backwards
+//= type:b
+ab|{0}cab{0}c
+
+//== 0.back > 1.back
+//= dance.select.to.included.backwards
+//= type:a
+|{0}abc{0}abc
+
+//== 100
+abc{0}defg|{0}hijk
+
+//== 100 > 101
+//= dance.select.to.included.extend.backwards
+//= type:e
+abc{0}de|{0}fghijk
+
+//== 100 > 102
+//= dance.select.to.included.extend.backwards
+//= type:g
+// Selection left unchanged since it can't find another 'g' before this.
+abc{0}defg|{0}hijk
+
+//== 100 > 103
+//= dance.select.to.included.extend.backwards
+//= type:d
+abc{0}d|{0}efghijk
+
+//== 100 > 104
+//= dance.select.to.included.extend.backwards
+//= type:b
+a|{0}bcd{0}efghijk
+
+//== 100 > 105
+//= dance.select.to.excluded.extend.backwards
+//= type:g
+// Selection left unchanged since it can't find another 'g' before this.
+abc{0}defg|{0}hijk
+
+//== 100 > 106
+//= dance.select.to.excluded.extend.backwards
+//= type:f
+// 'g' is already the character after 'f'. No changes.
+abc{0}defg|{0}hijk
+
+//== 100 > 107
+//= dance.select.to.excluded.extend.backwards
+//= type:e
+abc{0}def|{0}ghijk
+
+//== 100 > 108
+//= dance.select.to.excluded.extend.backwards
+//= type:c
+abc{0}d|{0}efghijk
+
+//== 100 > 109
+//= dance.select.to.excluded.extend.backwards
+//= type:b
+ab|{0}cd{0}efghijk

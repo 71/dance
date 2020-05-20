@@ -1,7 +1,62 @@
 import { writeFileSync } from 'fs'
 
-import { commands } from './commands'
+import { commands, Command, additionalKeyBindings } from './commands'
 
+// Key bindings
+// ============================================================================
+
+const keybindings: {command: string, key: string, when: string, args?: any}[] = additionalKeyBindings.concat()
+
+for (const command of Object.values(commands)) {
+  for (const { key, when } of command.keybindings) {
+    keybindings.push({ command: command.id, key, when })
+  }
+}
+
+// Menus
+// ============================================================================
+
+const menus: Record<string, {items: Record<string, {text: string, command: string, args?: any[]}>}> = {
+  object: {
+    items: {
+      'b()': { command: Command.objectsPerformSelection, args: [{ object: 'parens' }], text: 'parenthesis block' },
+      'B{}': { command: Command.objectsPerformSelection, args: [{ object: 'braces' }], text: 'braces block' },
+      'r[]': { command: Command.objectsPerformSelection, args: [{ object: 'brackets' }], text: 'brackets block' },
+      'a<>': { command: Command.objectsPerformSelection, args: [{ object: 'angleBrackets' }], text: 'angle block' },
+      'Q"' : { command: Command.objectsPerformSelection, args: [{ object: 'doubleQuoteString' }], text: 'double quote string' },
+      'q\'': { command: Command.objectsPerformSelection, args: [{ object: 'singleQuoteString' }], text: 'single quote string' },
+      'g`' : { command: Command.objectsPerformSelection, args: [{ object: 'graveQuoteString' }], text: 'grave quote string' },
+      'w'  : { command: Command.objectsPerformSelection, args: [{ object: 'word' }], text: 'word' },
+      'W'  : { command: Command.objectsPerformSelection, args: [{ object: 'WORD' }], text: 'WORD' },
+      's'  : { command: Command.objectsPerformSelection, args: [{ object: 'sentence' }], text: 'sentence' },
+      'p'  : { command: Command.objectsPerformSelection, args: [{ object: 'paragraph' }], text: 'paragraph' },
+      ' '  : { command: Command.objectsPerformSelection, args: [{ object: 'whitespaces' }], text: 'whitespaces' },
+      'i'  : { command: Command.objectsPerformSelection, args: [{ object: 'indent' }], text: 'indent' },
+      'n'  : { command: Command.objectsPerformSelection, args: [{ object: 'number' }], text: 'number' },
+      'u'  : { command: Command.objectsPerformSelection, args: [{ object: 'argument' }], text: 'argument' },
+      'c'  : { command: Command.objectsPerformSelection, args: [{ object: 'custom' }], text: 'custom object desc' },
+    },
+  },
+}
+
+for (const [suffix, desc] of [['', 'go to'], ['.extend', 'extend to']]) {
+  menus['goto' + suffix] = {
+    items: {
+      'h': { text: `${desc} line start`, command: 'dance.goto.lineStart' + suffix },
+      'l': { text: `${desc} line end`, command: 'dance.goto.lineEnd' + suffix },
+      'i': { text: `${desc} non-blank line start`, command: 'dance.goto.lineStart.nonBlank' + suffix },
+      'g': { text: `${desc} first line`, command: 'dance.goto.firstLine' + suffix },
+      'k': { text: `${desc} first line`, command: 'dance.goto.firstLine' + suffix },
+      'j': { text: `${desc} last line`, command: 'dance.goto.lastLine' + suffix },
+      'e': { text: `${desc} last char of last line`, command: 'dance.goto.lastCharacter' + suffix },
+      't': { text: `${desc} the first displayed line`, command: 'dance.goto.firstVisibleLine' + suffix },
+      'c': { text: `${desc} the middle displayed line`, command: 'dance.goto.middleVisibleLine' + suffix },
+      'b': { text: `${desc} the last displayed line`, command: 'dance.goto.lastVisibleLine' + suffix },
+      'f': { text: `${desc} file whose name is selected`, command: 'dance.goto.selectedFile' + suffix },
+      '.': { text: `${desc} last buffer modification position`, command: 'dance.goto.lastModification' + suffix },
+    },
+  }
+}
 
 // Package information
 // ============================================================================
@@ -34,30 +89,36 @@ const pkg = {
   main: './out/src/extension.js',
 
   engines: {
-    vscode: '^1.32.0',
+    vscode: '^1.44.0',
   },
 
   scripts: {
-    'generate'         : 'ts-node commands/generate.ts && ts-node package.ts',
+    'generate'         : 'ts-node ./commands/generate.ts && ts-node package.ts',
     'vscode:prepublish': 'yarn run generate && yarn run compile',
     'compile'          : 'tsc -p ./',
     'watch'            : 'tsc -watch -p ./',
-    'postinstall'      : 'node ./node_modules/vscode/bin/install',
-    'test'             : 'yarn run compile && node ./node_modules/vscode/bin/test',
+    'test'             : 'yarn run compile && node ./out/test/run.js',
     'package'          : 'vsce package',
     'publish'          : 'vsce publish',
   },
 
   devDependencies: {
-    '@types/js-yaml': '^3.12.1',
-    '@types/mocha'  : '^2.2.42',
-    '@types/node'   : '^10.12.21',
-    'js-yaml'   : '^3.13.0',
-    'ts-node'   : '^8.0.3',
-    'tslint'    : '^5.12.1',
-    'typescript': '^3.7.2',
-    'vsce'      : '^1.62.0',
-    'vscode'    : '^1.1.28',
+    '@types/glob': '^7.1.1',
+    '@types/js-yaml': '^3.12.3',
+    '@types/mocha': '^7.0.2',
+    '@types/node': '^13.13.4',
+    '@types/vscode': '^1.44.0',
+    '@typescript-eslint/eslint-plugin': '^2.30.0',
+    '@typescript-eslint/parser': '^2.30.0',
+    'eslint': '^6.8.0',
+    'glob': '^7.1.6',
+    'js-yaml': '^3.13.0',
+    'mocha': '^7.1.2',
+    'source-map-support': '^0.5.19',
+    'ts-node': '^8.9.1',
+    'typescript': '^3.8.3',
+    'vsce': '^1.75.0',
+    'vscode-test': '^1.3.0',
   },
 
   activationEvents: [
@@ -105,10 +166,57 @@ const pkg = {
           default: 'inherit',
           description: 'Controls the cursor style in insert mode.',
         },
+        'dance.insertMode.selectionStyle': {
+          type: 'object',
+          default: {
+            borderColor: '$editor.selectionBackground',
+            borderStyle: 'solid',
+            borderWidth: '2px',
+            borderRadius: '1px',
+          },
+          description: 'The style to apply to selections in insert mode.',
+          properties: (Object as any).fromEntries(['backgroundColor', 'borderColor', 'borderStyle', 'borderWidth', 'borderRadius'].map(x => [x, { type: 'string' }])),
+        },
+        'dance.selectionBehavior': {
+          enum: ['caret', 'character'],
+          default: 'caret',
+          description: 'Controls how selections behave within VS Code.',
+          markdownEnumDescriptions: [
+            'Selections are anchored to carets, which is the native VS Code behavior; that is, they are positioned *between* characters and can therefore be empty.',
+            'Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. Additionally, one-character selections will behave as if they were non-directional, like Kakoune.',
+          ],
+        },
         'dance.selections.allowEmpty': {
           type: 'boolean',
-          default: true,
           description: 'Controls whether selections can be empty. If false, each selection will have at least one character.',
+          deprecationMessage: 'This property will be removed in the next version of Dance and is currently being ignored. Please set dance.selectionBehavior to "caret" to allow empty selections, or to "character" to forbid them.',
+        },
+        'dance.menus': {
+          type: 'object',
+          additionalProperties: {
+            type: 'object',
+            properties: {
+              items: {
+                type: 'object',
+                additionalProperties: {
+                  type: 'object',
+                  properties: {
+                    'text': {
+                      type: 'string',
+                    },
+                    'command': {
+                      type: 'string',
+                    },
+                    'args': {
+                      type: 'array',
+                    },
+                  },
+                },
+              },
+            },
+            additionalProperties: false,
+          },
+          default: menus,
         },
       },
     },
@@ -118,11 +226,7 @@ const pkg = {
       description: x.description,
       category: 'Dance',
     })),
-    keybindings: Object.values(commands).reduce((bindings: { command: string, key: string, when: string }[], x) =>
-      bindings.concat(x.keybindings.map(k => ({ command: x.id, key: k.key, when: k.when })))
-    , [
-      { command: 'workbench.action.showCommands', key: 'Shift+;', when: 'editorTextFocus && dance.mode == \'normal\'' },
-    ]),
+    keybindings,
   },
 }
 
@@ -130,4 +234,4 @@ const pkg = {
 // Save to package.json
 // ============================================================================
 
-writeFileSync('./package.json', JSON.stringify(pkg, undefined, 2), 'utf8')
+writeFileSync('./package.json', JSON.stringify(pkg, undefined, 2) + '\n', 'utf8')

@@ -1,472 +1,717 @@
 // Objects: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
+
 import * as vscode from 'vscode'
-
-import { TextBuffer } from '../utils/textBuffer'
-
-import { registerCommand, Command, CommandFlags, InputKind } from '.'
-import { isAlphaWord } from './move'
-
-
-const objectTypePromptItems: [string, string][] = [
-  ['b, (, )', 'Select to enclosing parenthesis'],
-  ['B, {, }', 'Select to enclosing brackets'],
-  ['r, [, ]', 'Select to enclosing square brackets'],
-  ['a, <, >', 'Select to enclosing angle brackets'],
-  ['Q, "'   , 'Select to enclosing double quotes'],
-  ['q, \''  , 'Select enclosing single quotes'],
-  ['g, `'   , 'Select to enclosing grave quotes'],
-  ['w'      , 'Select word'],
-  ['W'      , 'Select non-whitespace word'],
-  ['s'      , 'Select sentence'],
-  ['p'      , 'Select paragraph'],
-  [' '      , 'Select whitespaces'],
-  ['i'      , 'Select current indentation block'],
-  ['n'      , 'Select number'],
-  ['u'      , 'Select the argument'],
-  ['c'      , 'Select custom object'],
-]
-
+import { registerCommand, Command, CommandFlags, CommandState } from '.'
+import { Direction, Forward, Backward, SelectionHelper, RemoveSelection, CoordMapper, SelectionMapper, moveActiveCoord, DoNotExtend, Extend, DocumentStart, Coord, ExtendBehavior, SeekFunc, seekToRange } from '../utils/selectionHelper'
+import { getCharSetFunction, CharSet } from '../utils/charset'
+import { findMatching, skipWhileX, skipWhile } from './select'
+import { SelectionBehavior } from '../state/extension'
 
 // Selecting is a bit harder than it sounds like:
 // 1. Dealing with multiple lines, whether forwards or backwards, is a bit of a pain.
 // 2. Dealing with strings is a bit of a pain
 // 3. Dealing with inner objects is a bit of a pain
 
-let lastObjectSelectOperation: [boolean, number, boolean, boolean, boolean] | undefined
+const [
+  LPAREN,
+  RPAREN,
+  LSQBRACKET,
+  RSQBRACKET,
+  LCRBRACKET,
+  RCRBRACKET,
+  LCHEVRON,
+  RCHEVRON,
+  LF,
+  SPACE,
+  QUOTE_DBL,
+  QUOTE_SGL,
+  BACKTICK,
+  BACKSLASH,
+  COMMA,
+] = Array.from('()[]{}<>\n "\'`\\,', ch => ch.charCodeAt(0))
 
-function findPairObject(text: TextBuffer, backwards: boolean, start: string, end: string, inner: boolean): vscode.Position | undefined {
-  let balance = start === end || backwards ? -1 : 1
-  let diff = backwards ? -1 : 1
+function objectActions(toStart: CoordMapper, toEnd: CoordMapper, toStartInner: CoordMapper, toEndInner: CoordMapper, scanFromStart: boolean = false) {
+  const selectObject: SelectionMapper = (selection, helper, i) => {
+    const active = helper.activeCoord(selection)
+    const start = toStart(active, helper, i)
+    if ('remove' in start) return RemoveSelection
+    const end = toEnd(scanFromStart ? start : active, helper, i)
+    if ('remove' in end) return RemoveSelection
+    return helper.selectionBetween(start, end)
+  }
+  const selectObjectInner: SelectionMapper = (selection, helper, i) => {
+    const active = helper.activeCoord(selection)
+    const start = toStartInner(active, helper, i)
+    if ('remove' in start) return RemoveSelection
+    const end = toEndInner(scanFromStart ? start : active, helper, i)
+    if ('remove' in end) return RemoveSelection
+    return helper.selectionBetween(start, end)
+  }
 
-  for (let i = backwards ? -1 : 0, c = text.char(i); c !== undefined; c = text.char(i += diff)) {
-    if (c === start) {
-      balance++
-    } else if (c === end) {
-      balance--
+  return {
+    select: {
+      outer: selectObject,
+      inner: selectObjectInner,
+    },
+    selectToStart: {
+      outer: {
+        doNotExtend: moveActiveCoord(toStart,      DoNotExtend),
+        extend:      moveActiveCoord(toStart,           Extend),
+      },
+      inner: {
+        doNotExtend: moveActiveCoord(toStartInner, DoNotExtend),
+        extend:      moveActiveCoord(toStartInner,      Extend),
+      },
+    },
+    selectToEnd: {
+      outer: {
+        doNotExtend: moveActiveCoord(toEnd,        DoNotExtend),
+        extend:      moveActiveCoord(toEnd,             Extend),
+      },
+      inner: {
+        doNotExtend: moveActiveCoord(toEndInner,   DoNotExtend),
+        extend:      moveActiveCoord(toEndInner,        Extend),
+      },
+    },
+  }
+}
+
+function objectWithinPair(startCharCode: number, endCharCode: number) {
+  const toStart: CoordMapper = (active, helper) => findMatching(Backward, active, startCharCode, endCharCode, helper.editor.document) ?? RemoveSelection
+  const toEnd: CoordMapper = (active, helper) => findMatching(Forward, active, endCharCode, startCharCode, helper.editor.document) ?? RemoveSelection
+
+  const toStartInner: CoordMapper = (active, helper, i) => {
+    const pos = toStart(active, helper, i)
+    if ('remove' in pos) return pos
+    return helper.nextPos(pos)
+  }
+
+  const toEndInner: CoordMapper = (active, helper, i) => {
+    const pos = toEnd(active, helper, i)
+    if ('remove' in pos) return pos
+    return helper.prevPos(pos)
+  }
+
+  const actions = objectActions(toStart, toEnd, toStartInner, toEndInner)
+
+  // Special cases for selectObject and selectObjectInner when active is at the
+  // start / end of an object, so that it always select a whole object within
+  // a matching pair. e.g. (12345) when active at first character should select
+  // the whole thing instead of error.
+  const defaultSelect = actions.select.outer
+  const defaultSelectInner = actions.select.inner
+  actions.select.outer = (selection, helper, i) => {
+    const active = helper.activeCoord(selection)
+    const currentCharCode = helper.editor.document.lineAt(active.line).text.charCodeAt(active.character)
+    if (currentCharCode === startCharCode) {
+      const end = toEnd(active, helper, i)
+      if ('remove' in end) return RemoveSelection
+      return helper.selectionBetween(active, end)
+    } else if (currentCharCode === endCharCode) {
+      const start = toStart(active, helper, i)
+      if ('remove' in start) return RemoveSelection
+      return helper.selectionBetween(start, active)
     } else {
-      continue
-    }
-
-    if (balance === 0) {
-      if (inner !== backwards)
-        return text.position(i)
-      else
-        return text.position(i + 1)
+      return defaultSelect(selection, helper, i)
     }
   }
-
-  return undefined
-}
-
-function findObjectWithChars(text: TextBuffer, backwards: boolean, inner: boolean, ok: (c: string) => boolean): vscode.Position | undefined {
-  let diff = backwards ? -1 : 1
-  let i = backwards ? -1 : 0
-
-  for (let c = text.char(i); c !== undefined; c = text.char(i += diff)) {
-    if (!ok(c))
-      break
-  }
-
-  return inner !== backwards
-    ? text.position(i)
-    : text.position(i + 1)
-}
-
-function findSentenceStart(text: TextBuffer): vscode.Position {
-  let balance = 0
-
-  for (let i = 0, c = text.char(i);; c = text.char(--i)) {
-    if (c === '(') {
-      balance++
-    } else if (c === ')') {
-      balance--
-    } else if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (balance !== 0) {
-      // Nop.
-    } else if (c === '\n' && text.char(i - 1) === '\n') {
-      return text.position(i + 1)!
-    } else if (c === '.' || c === ';' || c === '!' || c === '?') {
-      return text.position(i + 1)!
+  actions.select.inner = (selection, helper, i) => {
+    const active = helper.activeCoord(selection)
+    const currentCharCode = helper.editor.document.lineAt(active.line).text.charCodeAt(active.character)
+    if (currentCharCode === startCharCode) {
+      const end = toEndInner(active, helper, i)
+      if ('remove' in end) return RemoveSelection
+      return helper.selectionBetween(helper.nextPos(active), end)
+    } else if (currentCharCode === endCharCode) {
+      const start = toStartInner(active, helper, i)
+      if ('remove' in start) return RemoveSelection
+      return helper.selectionBetween(start, helper.prevPos(active))
+    } else {
+      return defaultSelectInner(selection, helper, i)
     }
   }
+
+  return actions
 }
 
-function findSentenceEnd(text: TextBuffer, inner: boolean): vscode.Position {
-  let balance = 0
-
-  for (let i = 0, c = text.char(i);; c = text.char(++i)) {
-    if (c === '(') {
-      balance++
-    } else if (c === ')') {
-      balance--
-    } else if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (balance !== 0) {
-      // Nop.
-    } else if (c === '\n' && text.char(i + 1) === '\n') {
-      return text.position(i)!
-    } else if (c === '.' || c === ';' || c === '!' || c === '?') {
-      return text.position(i + (inner ? 1 : 0))!
-    }
-  }
-}
-
-function findParagraphStart(text: TextBuffer): vscode.Position {
-  let balance = 0
-
-  for (let i = 0, c = text.char(i);; c = text.char(--i)) {
-    if (c === '(') {
-      balance++
-    } else if (c === ')') {
-      balance--
-    } else if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (balance !== 0) {
-      // Nop.
-    } else if (c === '\n' && text.char(i - 1) === '\n') {
-      return text.position(i + 1)!
-    }
-  }
-}
-
-function findParagraphEnd(text: TextBuffer): vscode.Position {
-  let balance = 0
-
-  for (let i = 0, c = text.char(i);; c = text.char(++i)) {
-    if (c === '(') {
-      balance++
-    } else if (c === ')') {
-      balance--
-    } else if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (balance !== 0) {
-      // Nop.
-    } else if (c === '\n' && text.char(i + 1) === '\n') {
-      return text.position(i)!
-    }
-  }
-}
-
-function findIndentBlockStart(text: TextBuffer): vscode.Position {
-  let line = text.line
-
-  while (line.isEmptyOrWhitespace) {
-    if (line.lineNumber === 0)
-      return line.range.start
-
-    line = text.doc.lineAt(line.lineNumber - 1)
-  }
-
-  let indent = line.firstNonWhitespaceCharacterIndex
-  let lastValidPosition = line.range.start
-
-  for (;;) {
-    if (line.lineNumber === 0)
-      return lastValidPosition
-
-    if (!line.isEmptyOrWhitespace) {
-      if (line.firstNonWhitespaceCharacterIndex < indent)
-        return lastValidPosition
-      else
-        lastValidPosition = line.range.start
-    }
-
-    line = text.doc.lineAt(line.lineNumber - 1)
-  }
-}
-
-function findIndentBlockEnd(text: TextBuffer): vscode.Position {
-  let line = text.line
-  let lastLine = text.doc.lineCount - 1
-
-  while (line.isEmptyOrWhitespace) {
-    if (line.lineNumber === lastLine)
-      return line.range.end
-
-    line = text.doc.lineAt(line.lineNumber + 1)
-  }
-
-  let indent = line.firstNonWhitespaceCharacterIndex
-  let lastValidPosition = line.range.end
-
-  for (;;) {
-    if (line.lineNumber === lastLine)
-      return lastValidPosition
-
-    if (!line.isEmptyOrWhitespace) {
-      if (line.firstNonWhitespaceCharacterIndex < indent)
-        return lastValidPosition
-      else
-        lastValidPosition = line.range.end
-    }
-
-    line = text.doc.lineAt(line.lineNumber + 1)
-  }
-}
-
-function findArgumentStart(text: TextBuffer): vscode.Position {
-  let bbalance = 0,
-      pbalance = 0,
-      strOpen = undefined as string | undefined
-
-  for (let i = 0, c = text.char(i);; c = text.char(--i)) {
-    if (c === undefined) {
-      return text.position(i + 1)!
-    } else if (strOpen !== undefined) {
-      if (c === strOpen && text.char(i - 1) !== '\\')
-        strOpen = undefined
-    } else if (c === '"' || c === "'" || c === '`') {
-      strOpen = c
-    } else if (c === '(' && pbalance !== 0) {
-      pbalance++
-    } else if (c === '[') {
-      bbalance++
-    } else if (c === ')') {
-      pbalance--
-    } else if (c === ']') {
-      bbalance--
-    } else if (pbalance !== 0 || bbalance !== 0) {
-      // Nop.
-    } else if (c === ',') {
-      return text.position(i + 2)!
-    } else if (c === '(') {
-      return text.position(i + 1)!
-    }
-  }
-}
-
-function findArgumentEnd(text: TextBuffer): vscode.Position {
-  let bbalance = 0,
-      pbalance = 0,
-      strOpen = undefined as string | undefined
-
-  for (let i = 0, c = text.char(i);; c = text.char(++i)) {
-    if (c === undefined) {
-      return text.position(i - 1)!
-    } else if (strOpen !== undefined) {
-      if (c === strOpen && text.char(i - 1) !== '\\')
-        strOpen = undefined
-    } else if (c === '"' || c === "'" || c === '`') {
-      strOpen = c
-    } else if (c === '(') {
-      pbalance++
-    } else if (c === '[') {
-      bbalance++
-    } else if (c === ')' && pbalance !== 0) {
-      pbalance--
-    } else if (c === ']') {
-      bbalance--
-    } else if (pbalance !== 0 || bbalance !== 0) {
-      // Nop.
-    } else if (c === ',') {
-      return text.position(i)!
-    } else if (c === ')') {
-      return text.position(i)!
-    }
-  }
-}
-
-function findObjectStart(text: TextBuffer, type: number, inner: boolean): vscode.Position | undefined {
-  switch (type) {
-    case 0: // Parentheses
-      return findPairObject(text, true, '(', ')', inner)
-
-    case 1: // Brackets
-      return findPairObject(text, true, '{', '}', inner)
-
-    case 2: // Squared brackets
-      return findPairObject(text, true, '[', ']', inner)
-
-    case 3: // Angle brackets
-      return findPairObject(text, true, '<', '>', inner)
-
-    case 4: // Double quotes
-      return findPairObject(text, true, '"', '"', inner)
-
-    case 5: // Single quotes
-      return findPairObject(text, true, "'", "'", inner)
-
-    case 6: // Grave quotes
-      return findPairObject(text, true, '`', '`', inner)
-
-
-    case 7: // Word
-      return findObjectWithChars(text, true, inner, isAlphaWord)
-
-    case 8: // Non-whitespace word
-      return findObjectWithChars(text, true, inner, c => !' \t\r\n'.includes(c))
-
-    case 11: // Whitespaces
-      return findObjectWithChars(text, true, inner, c => ' \t\r\n'.includes(c))
-
-    case 13: // Number
-      return findObjectWithChars(text, true, inner, c => c >= '0' && c <= '9')
-
-
-    case 9: // Sentence
-      return findSentenceStart(text)
-
-    case 10: // Paragraph
-      return findParagraphStart(text)
-
-    case 12: // Indentation block
-      return findIndentBlockStart(text)
-
-    case 14: // Argument
-      return findArgumentStart(text)
-  }
-
-  return undefined
-}
-
-function findObjectEnd(text: TextBuffer, type: number, inner: boolean): vscode.Position | undefined {
-  switch (type) {
-    case 0: // Parentheses
-      return findPairObject(text, false, '(', ')', inner)
-
-    case 1: // Brackets
-      return findPairObject(text, false, '{', '}', inner)
-
-    case 2: // Squared brackets
-      return findPairObject(text, false, '[', ']', inner)
-
-    case 3: // Angle brackets
-      return findPairObject(text, false, '<', '>', inner)
-
-    case 4: // Double quotes
-      return findPairObject(text, false, '"', '"', inner)
-
-    case 5: // Single quotes
-      return findPairObject(text, false, "'", "'", inner)
-
-    case 6: // Grave quotes
-      return findPairObject(text, false, '`', '`', inner)
-
-
-    case 7: // Word
-      return findObjectWithChars(text, false, inner, isAlphaWord)
-
-    case 8: // Non-whitespace word
-      return findObjectWithChars(text, false, inner, c => !' \t\r\n'.includes(c))
-
-    case 11: // Whitespaces
-      return findObjectWithChars(text, false, inner, c => ' \t\r\n'.includes(c))
-
-    case 13: // Number
-      return findObjectWithChars(text, false, inner, c => c >= '0' && c <= '9')
-
-
-    case 9: // Sentence
-      return findSentenceEnd(text, inner)
-
-    case 10: // Paragraph
-      return findParagraphEnd(text)
-
-    case 12: // Indentation block
-      return findIndentBlockEnd(text)
-
-    case 14: // Argument
-      return findArgumentEnd(text)
-  }
-
-  return undefined
-}
-
-function performObjectSelect(editor: vscode.TextEditor, count: number, inner: boolean, type: number, extend: boolean, toStart: boolean, toEnd: boolean) {
-  lastObjectSelectOperation = [inner, type, extend, toStart, toEnd]
-
-  editor.selections = editor.selections.map(selection => {
-    let start = selection.start
-    let end = selection.end
-    let inInfiniteLooop = false
-
-    for (let i = 0; i < count; i++) {
-      let sameStart = true,
-          sameEnd = true
-
-      if (toStart) {
-        const buf = new TextBuffer(editor.document, start)
-        const r = findObjectStart(buf, type, inner)
-
-        if (r === undefined)
-          break
-
-        sameStart = start.isEqual(r)
-        start = r
+type CharCodePredicate = (charCode: number) => boolean
+function objectWithCharSet(charSet: CharSet | CharCodePredicate) {
+  function toEdge(direction: Direction, includeTrailingWhitespace: boolean): CoordMapper {
+    return (active, helper) => {
+      const { document } = helper.editor
+      const isInSet = typeof charSet === 'function' ? charSet : getCharSetFunction(charSet, document)
+      let col = active.character
+      const text = document.lineAt(active.line).text
+      if (col >= text.length) {
+        // A charset object cannot contain line break, therefore the cursor active
+        // is not within any such object.
+        return RemoveSelection
       }
-
-      if (toEnd) {
-        const buf = new TextBuffer(editor.document, end)
-        const r = findObjectEnd(buf, type, inner)
-
-        if (r === undefined)
-          break
-
-        sameEnd = end.isEqual(r)
-        end = r
+      while (isInSet(text.charCodeAt(col))) {
+        col += direction
+        if (col < 0 || col >= text.length) return active.with(undefined, col - direction)
       }
+      if (col === active.character) {
+        // The cursor active is on a character outside charSet.
+        return RemoveSelection
+      }
+      if (includeTrailingWhitespace) {
+        const isBlank = getCharSetFunction(CharSet.Blank, document)
+        while (isBlank(text.charCodeAt(col))) {
+          col += direction
+          if (col < 0 || col >= text.length) return active.with(undefined, col - direction)
+        }
+      }
+      return active.with(undefined, col - direction)
+    }
+  }
 
-      if (sameStart && sameEnd) {
-        // Our object did not move, so we try again with shifted indices
-        if (inInfiniteLooop)
-          break
+  const toStart = toEdge(Backward, false)
+  const toStartInner = toStart
+  const toEnd = toEdge(Forward, true)
+  const toEndInner = toEdge(Forward, false)
+  return objectActions(toStart, toEnd, toStartInner, toEndInner)
+}
 
-        inInfiniteLooop = true
+function sentenceObject() {
+  // I bet that's the first time you see a Greek question mark used as an actual Greek question mark,
+  // rather than as a "prank" semicolon.
+  const punctCharCodes = new Uint32Array(Array.from('.!?¡§¶¿;՞。', ch => ch.charCodeAt(0)))
 
-        start = start.character === 0
-          ? (start.line === 0 ? start : new vscode.Position(start.line - 1, 0))
-          : (start.translate(0, -1))
+  function toBeforeBlank(allowSkipToPrevious: boolean) {
+    return (oldActive: Coord, helper: SelectionHelper<CommandState>) => {
+      const document = helper.editor.document
+      const isBlank = getCharSetFunction(CharSet.Blank, document)
+      let origin = oldActive // TODO: Adjust for caret mode.
 
-        const lastChar = editor.document.lineAt(end.line).range.end.character
+      let jumpedOverBlankLine = false
 
-        end = end.character === lastChar
-          ? (end.line === editor.document.lineCount - 1 ? end : new vscode.Position(end.line + 1, 0))
-          : end.translate(0, 1)
+      let skipCurrent = allowSkipToPrevious
+      let hadLf = true
+      const beforeBlank = skipWhileX(Backward, origin, (charCode) => {
+        if (charCode === LF) {
+          if (hadLf) {
+            jumpedOverBlankLine = true
+            return allowSkipToPrevious
+          }
+          hadLf = true
+          skipCurrent = false
+          return true
+        } else {
+          hadLf = false
+          if (skipCurrent) {
+            skipCurrent = false
+            return true
+          }
+          return isBlank(charCode)
+        }
+      }, document)
 
-        i--
+      if (beforeBlank === undefined) return origin
+
+      const beforeBlankChar = document.lineAt(beforeBlank.line).text.charCodeAt(beforeBlank.character)
+      const hitPunctChar = punctCharCodes.includes(beforeBlankChar)
+      if (jumpedOverBlankLine && (!allowSkipToPrevious || !hitPunctChar)) {
+        // We jumped over blank lines but didn't hit a punct char. Don't accept.
+        return origin
+      }
+      // let result = beforeBlank.isEqual(DocumentStart) ? beforeBlank : helper.prevPos(beforeBlank)
+      if (!hitPunctChar) {
+        return beforeBlank
+      }
+      if (allowSkipToPrevious) return { prevSentenceEnd: beforeBlank }
+      if (origin.line === beforeBlank.line) return beforeBlank
+      // Example below: we started from '|' and found the '.'.
+      //     foo.
+      //       |  bar
+      // In this case, technically we started from the second sentence
+      // and reached the first sentence. This is not permitted when when
+      // allowSkipToPrevious is false, so let's go back.
+      return origin
+    }
+  }
+
+  const toSentenceStart = (origin: Coord, helper: SelectionHelper<CommandState>): Coord => {
+    const document = helper.editor.document
+    const isBlank = getCharSetFunction(CharSet.Blank, document)
+
+    let originLineText = document.lineAt(origin.line).text
+    if (originLineText.length === 0 && origin.line + 1 >= document.lineCount) {
+      if (origin.line === 0) {
+        // There is only one line and that line is empty. What a life.
+        return DocumentStart
+      }
+      // Special case: If at the last line, search from the previous line.
+      originLineText = document.lineAt(origin.line - 1).text
+      origin = origin.with(origin.line - 1, originLineText.length)
+    }
+    if (originLineText.length === 0) {
+      // This line is empty. Just go to the first non-blank char on next line.
+      const nextLineText = document.lineAt(origin.line + 1).text
+      let col = 0
+      while (col < nextLineText.length && isBlank(nextLineText.charCodeAt(col))) col++
+      return new Coord(origin.line + 1, col)
+    }
+
+    let first = true
+    let hadLf = false
+    const afterSkip = skipWhileX(Backward, origin, (charCode) => {
+      if (charCode === LF) {
+        first = false
+        if (hadLf)
+          return false
+        hadLf = true
       } else {
-        inInfiniteLooop = false
+        hadLf = false
+        if (first) {
+          // Don't need to check if first character encountered is punct --
+          // that may be the current sentence end.
+          first = false
+          return true
+        }
+        if (punctCharCodes.indexOf(charCode) >= 0)
+          return false
+      }
+      return true
+    }, document)
+
+    // If we hit two LFs or document start, the current sentence starts at the
+    // first non-blank character after that.
+    if (hadLf || !afterSkip)
+      return skipWhileX(
+        Forward,
+        afterSkip ?? DocumentStart,
+        isBlank,
+        document,
+      ) ?? DocumentStart
+
+    // If we hit a punct char, then the current sentence starts on the first
+    // non-blank character on the same line, or the line break.
+    let col = afterSkip.character + 1
+    const text = document.lineAt(afterSkip.line).text
+    while (col < text.length && isBlank(text.charCodeAt(col))) col++
+    return afterSkip.with(undefined, col)
+  }
+  function toEnd(inner: boolean): CoordMapper {
+    return (origin, helper) => {
+      const document = helper.editor.document
+
+      if (document.lineAt(origin.line).text.length === 0) {
+        // We're on an empty line which does not belong to last sentence or this
+        // sentence. If next line is also empty, we should just stay here.
+        // However, start scanning from the next line if it is not empty.
+        if (origin.line + 1 >= document.lineCount || document.lineAt(origin.line + 1).text.length === 0)
+          return origin
+        else
+          origin = new Coord(origin.line + 1, 0)
+      }
+
+      const isBlank = getCharSetFunction(CharSet.Blank, document)
+
+      let hadLf = false
+      const innerEnd = skipWhileX(Forward, origin, (charCode) => {
+        if (charCode === LF) {
+          if (hadLf)
+            return false
+          hadLf = true
+        } else {
+          hadLf = false
+          if (punctCharCodes.indexOf(charCode) >= 0)
+            return false
+        }
+        return true
+      }, document)
+
+      if (!innerEnd) return helper.lastCoord()
+
+      // If a sentence ends with two LFs in a row, then the first LF is part of
+      // the inner & outer sentence while the second LF should be excluded.
+      if (hadLf) return helper.prevPos(innerEnd)
+
+      if (inner) return innerEnd
+      // If a sentence ends with punct char, then any blank characters after it
+      // but BEFORE any line breaks belongs to the outer sentence.
+      let col = innerEnd.character + 1
+      const text = document.lineAt(innerEnd.line).text
+      while (col < text.length && isBlank(text.charCodeAt(col))) col++
+      return innerEnd.with(undefined, col - 1)
+    }
+  }
+  const toBeforeBlankCurrent = toBeforeBlank(false)
+  const toCurrentStart: CoordMapper = (oldActive, helper, i) => {
+    let beforeBlank = toBeforeBlankCurrent(oldActive, helper)
+    if ('prevSentenceEnd' in beforeBlank) beforeBlank = oldActive
+    return toSentenceStart(beforeBlank, helper)
+  }
+
+  // It is imposssible to determine if active is at leading or trailing or
+  // in-sentence blank characters by just looking ahead. Therefore, we search
+  // from the sentence start, which may be slightly less efficient but
+  // always accurate.
+  const scanFromStart = true
+  const actions = objectActions(toCurrentStart, toEnd(false), toCurrentStart, toEnd(true), scanFromStart)
+
+  // Special cases to allow jumping to the previous sentence when active is at
+  // current sentence start / leading blank chars.
+  const toBeforeBlankOrPrev = toBeforeBlank(true)
+  actions.selectToStart.inner = actions.selectToStart.outer = {
+    extend: moveActiveCoord((oldActive, helper, i) => {
+      let beforeBlank = toBeforeBlankOrPrev(oldActive, helper)
+      if ('prevSentenceEnd' in beforeBlank) beforeBlank = beforeBlank.prevSentenceEnd
+      return toSentenceStart(beforeBlank, helper)
+    }, Extend),
+    doNotExtend: (selection: vscode.Selection, helper: SelectionHelper<CommandState>) => {
+      const oldActive = helper.activeCoord(selection)
+      let beforeBlank = toBeforeBlankOrPrev(oldActive, helper)
+
+      if ('prevSentenceEnd' in beforeBlank) {
+        const newAnchor = beforeBlank.prevSentenceEnd
+        console.log('hit prev end', helper._visualizeCoord(newAnchor))
+        // Special case: re-anchor when skipping to last sentence end.
+        return helper.selectionBetween(newAnchor, toSentenceStart(newAnchor, helper))
+      } else {
+        const newActive = toSentenceStart(beforeBlank, helper)
+        if (helper.selectionBehavior === SelectionBehavior.Caret) {
+          // TODO: Optimize to avoid coordAt / offsetAt.
+          let activePos = selection.active.isBeforeOrEqual(newActive) ?
+            helper.coordAt(helper.offsetAt(newActive) + 1) : newActive
+          return new vscode.Selection(selection.active, activePos)
+        }
+        return helper.selectionBetween(oldActive, newActive)
+      }
+    },
+  }
+  return actions
+}
+
+function paragraphObject() {
+  const lookBack: CoordMapper = (active, helper) => {
+    const { line } = active
+    if (line > 0 && active.character === 0 &&
+        helper.editor.document.lineAt(line - 1).text.length === 0) {
+      return new Coord(line - 1, 0) // Re-anchor to the previous line.
+    }
+    return active
+  }
+  const lookAhead: CoordMapper = (active, helper) => {
+    const { line } = active
+    if (helper.editor.document.lineAt(line).text.length === 0)
+      return new Coord(line + 1, 0)
+    return active
+  }
+
+  const toCurrentStart: CoordMapper = (active, helper) => {
+    const { document } = helper.editor
+    let { line } = active
+
+    // Move past any trailing empty lines.
+    while (line >= 0 && document.lineAt(line).text.length === 0) line--
+    if (line <= 0) return DocumentStart
+
+    // Then move to the start of the paragraph (non-empty lines).
+    while (line > 0 && document.lineAt(line - 1).text.length > 0) line--
+    return new Coord(line, 0)
+  }
+
+  function toEnd(inner: boolean): CoordMapper {
+    return (active, helper) => {
+      const { document } = helper.editor
+      let { line } = active
+
+      // Move to the end of the paragraph (non-empty lines)
+      while (line < document.lineCount && document.lineAt(line).text.length > 0)
+        line++
+      if (line >= document.lineCount) return helper.lastCoord()
+      if (inner) {
+        if (line > 0) line--
+        return new Coord(line, document.lineAt(line).text.length)
+      }
+
+      // Then move to the last trailing empty line.
+      while (line + 1 < document.lineCount && document.lineAt(line + 1).text.length === 0)
+        line++
+      return new Coord(line, document.lineAt(line).text.length)
+    }
+  }
+
+  function selectToEdge(direction: Direction, adjust: CoordMapper, toEdge: CoordMapper) {
+    return {
+      extend: moveActiveCoord((oldActive, helper, i) => {
+        const adjusted = adjust(oldActive, helper, i)
+        if ('remove' in adjusted) return RemoveSelection
+        if (direction === Forward &&
+            helper.editor.document.lineAt(adjusted.line).text.length === 0)
+          return toEdge(new Coord(adjusted.line + 1, 0), helper, i)
+        else
+          return toEdge(adjusted, helper, i)
+      }, Extend),
+      doNotExtend: seekToRange((oldActive, helper, i) => {
+        const anchor = adjust(oldActive, helper, i)
+        if ('remove' in anchor) return RemoveSelection
+
+        let active
+        if (direction === Forward &&
+            helper.editor.document.lineAt(anchor.line).text.length === 0)
+          active = toEdge(new Coord(anchor.line + 1, 0), helper, i)
+        else
+          active = toEdge(anchor, helper, i)
+
+        if ('remove' in active) return RemoveSelection
+        return [anchor, active]
+      }, DoNotExtend),
+    }
+  }
+
+  function select(inner: boolean): SelectionMapper {
+    const toEndFunc = toEnd(inner)
+    return (selection, helper, i) => {
+      let active = helper.activeCoord(selection)
+      const { document } = helper.editor
+
+      let start
+      if (active.line + 1 < document.lineCount &&
+          document.lineAt(active.line).text.length === 0 &&
+          document.lineAt(active.line + 1).text.length) {
+        // Special case: if current line is empty, check next line and select
+        // the NEXT paragraph if next line is not empty.
+        start = new Coord(active.line + 1, 0)
+      } else {
+        const startResult = toCurrentStart(active, helper, i)
+        if ('remove' in startResult) return RemoveSelection
+        start = startResult
+      }
+      // It's just much easier to check from start.
+      const end = toEndFunc(start, helper, i)
+      if ('remove' in end) return RemoveSelection
+      return helper.selectionBetween(start, end)
+    }
+  }
+
+  const selectToStart = selectToEdge(Backward, lookBack, toCurrentStart)
+  return {
+    select: {
+      outer: select(/* inner = */ false),
+      inner: select(/* inner = */ true),
+    },
+    selectToEnd: {
+      outer: selectToEdge(Forward, lookAhead, toEnd(/* inner = */ false)),
+      inner: selectToEdge(Forward, lookAhead, toEnd(/* inner = */ true)),
+    },
+    selectToStart: {
+      outer: selectToStart,
+      inner: selectToStart,
+    },
+  }
+}
+
+function whitespacesObject() {
+  // The "inner" versions of a whitespaces object excludes all line breaks and
+  // the "outer" versions includes line breaks as well. Unlike other objects,
+  // there are no actual "surrounding" parts of objects.
+
+  // The objectWithCharSet helper function can handle the inline whitespaces.
+  const actions = objectWithCharSet(CharSet.Blank)
+
+  // Let's then overwrite logic for "outer" actions to include line breaks.
+  const toStart: CoordMapper = (active, helper) => {
+    const { document } = helper.editor
+    const isBlank = getCharSetFunction(CharSet.Blank, document)
+    const afterSkip = skipWhileX(Backward, active, isBlank, document)
+    if (!afterSkip) return DocumentStart
+    if (afterSkip.isEqual(active)) return RemoveSelection
+    return helper.nextPos(afterSkip)
+  }
+  const toEnd: CoordMapper = (active, helper) => {
+    const { document } = helper.editor
+    const isBlank = getCharSetFunction(CharSet.Blank, document)
+    const afterSkip = skipWhileX(Forward, active, isBlank, document)
+    if (!afterSkip) return helper.lastCoord()
+    if (afterSkip.isEqual(active)) return RemoveSelection
+    return helper.prevPos(afterSkip)
+  }
+  actions.select.outer = (selection, helper, i) => {
+    const active = helper.activeCoord(selection)
+    const start = toStart(active, helper, i)
+    const end = toEnd(active, helper, i)
+    if ('remove' in start || 'remove' in end) return RemoveSelection
+    return helper.selectionBetween(start, end)
+  }
+  actions.selectToStart.outer = {
+    doNotExtend: moveActiveCoord(toStart, DoNotExtend),
+    extend:      moveActiveCoord(toStart,      Extend),
+  }
+  actions.selectToEnd.outer = {
+    doNotExtend: moveActiveCoord(toEnd,   DoNotExtend),
+    extend:      moveActiveCoord(toEnd,        Extend),
+  }
+  return actions
+}
+
+function indentObject() {
+  function toEdge(direction: Direction, inner: boolean): CoordMapper {
+    return (oldActive, helper) => {
+      const { document } = helper.editor
+      let { line } = oldActive
+      let lineObj = document.lineAt(line)
+
+      // First, scan backwards through blank lines. (Note that whitespace-only
+      // lines do not count -- those have a proper indentation level and should
+      // be treated as the inner part of the indent block.)
+      while (lineObj.text.length === 0) {
+        line += direction
+        if (line < 0) return DocumentStart
+        if (line >= document.lineCount) return helper.lastCoord()
+        lineObj = document.lineAt(line)
+      }
+
+      let indent = lineObj.firstNonWhitespaceCharacterIndex
+      let lastNonBlankLine = line
+
+      for (;;) {
+        line += direction
+        if (line < 0) return DocumentStart
+        if (line >= document.lineCount) return helper.lastCoord()
+        lineObj = document.lineAt(line)
+
+        if (lineObj.text.length === 0) continue
+        if (lineObj.firstNonWhitespaceCharacterIndex < indent) {
+          const resultLine = inner ? lastNonBlankLine : line - direction
+          if (direction === Forward && resultLine + 1 === document.lineCount)
+            return helper.lastCoord()
+          const resultCol = direction === Backward ? 0 : document.lineAt(resultLine).text.length
+          return new Coord(resultLine, resultCol)
+        }
+        lastNonBlankLine = line
       }
     }
+  }
+  const toStart      = toEdge(Backward, false),
+        toStartInner = toEdge(Backward,  true),
+        toEnd        = toEdge(Forward,  false),
+        toEndInner   = toEdge(Forward,   true)
 
-    if (!extend && toStart !== toEnd) {
-      if (toEnd)
-        start = selection.end
-      else
-        end = selection.start
+  // When selecting a whole indent object, scanning separately toStart and then
+  // toEnd will lead to wrong results like two different indentation levels and
+  // skipping over blank lines more than needed. We can mitigate this by finding
+  // the start first and then scan from there to find the end of indent block.
+  const scanFromStart = true
+  return objectActions(toStart, toEnd, toStartInner, toEndInner, scanFromStart)
+}
+
+function numberObject() {
+  // TODO: Handle optional leading minus sign for numbers.
+  const numberCharCodes = new Uint32Array(Array.from('0123456789.', ch => ch.charCodeAt(0)))
+
+  // Numbers cannot have trailing whitespaces even for outer in Kakoune, and
+  // let's match the behavior here.
+  const actions = objectWithCharSet((charCode) => numberCharCodes.indexOf(charCode) >= 0)
+  actions.select.outer = actions.select.inner
+  actions.selectToEnd.outer = actions.selectToEnd.inner
+  actions.selectToStart.outer = actions.selectToStart.inner
+  return actions
+}
+
+function argumentObject() {
+  function toEdge(direction: Direction, inner: boolean): CoordMapper {
+    const paren = (direction === Backward ? LPAREN : RPAREN)
+    return (oldActive, helper) => {
+      const { document } = helper.editor
+      let bbalance = 0,
+          pbalance = 0
+      const afterSkip = skipWhile(direction, oldActive, (charCode) => {
+        // TODO: Kak does not care about strings or ignoring braces in strings
+        // but maybe we should add a setting or an alternative command for that.
+        if (charCode === paren && pbalance === 0 && bbalance === 0) {
+          return false
+        } else if (charCode === LPAREN) {
+          pbalance++
+        } else if (charCode === LSQBRACKET) {
+          bbalance++
+        } else if (charCode === RPAREN) {
+          pbalance--
+        } else if (charCode === RSQBRACKET) {
+          bbalance--
+        } else if (pbalance !== 0 || bbalance !== 0) {
+          // Nop.
+        } else if (charCode === COMMA) {
+          return false
+        }
+        return true
+      }, helper.editor.document)
+
+      let end
+      if (afterSkip === undefined) {
+        end = direction === Backward ? DocumentStart : helper.lastCoord()
+      } else {
+        const charCode = document.lineAt(afterSkip.line).text.charCodeAt(afterSkip.character)
+        // Make sure parens are not included in the object. Deliminator commas
+        // after the argument is included as outer, but ones before are NOT.
+
+        // TODO: Kakoune seems to have more sophisticated edge cases for commas,
+        // e.g. outer last argument includes the comma before it, plus more edge
+        // cases for who owns the whitespace. Those are not implemented for now
+        // because they require extensive tests and mess a lot with the logic of
+        // selecting the whole object.
+        if (inner || charCode === paren || direction === Backward)
+          end = direction === Backward ? helper.nextPos(afterSkip) : helper.prevPos(afterSkip)
+        else
+          end = afterSkip
+      }
+      if (!inner) return end
+      const isBlank = getCharSetFunction(CharSet.Blank, document)
+      // Exclude any surrounding whitespaces.
+      end = skipWhileX(-direction, end, isBlank, helper.editor.document)
+      if (!end)
+        return direction === Backward ? DocumentStart : helper.lastCoord()
+      return end
     }
+  }
 
-    return selection.isReversed && !selection.isEmpty
-      ? new vscode.Selection(end, start)
-      : new vscode.Selection(start, end)
-  })
+  const toStart      = toEdge(Backward, false),
+        toStartInner = toEdge(Backward,  true),
+        toEnd        = toEdge(Forward,  false),
+        toEndInner   = toEdge(Forward,   true)
+  return objectActions(toStart, toEnd, toStartInner, toEndInner)
 }
 
-function registerObjectSelect(command: Command, inner: boolean, extend: boolean, start?: boolean) {
-  // Start === true     : Select only to start
-  // Start === false    : Select only to end
-  // Start === undefined: Select to both start and end
-
-  registerCommand(command, CommandFlags.ChangeSelections, InputKind.ListOneItem, objectTypePromptItems, (editor, state) => {
-    performObjectSelect(editor, state.currentCount || 1, inner, state.input, extend, start !== false, start !== true)
-  })
+type ObjectAction = 'select' | 'selectToStart' | 'selectToEnd'
+const dispatch = {
+  parens:            objectWithinPair(LPAREN,     RPAREN),
+  braces:            objectWithinPair(LCRBRACKET, RCRBRACKET),
+  brackets:          objectWithinPair(LSQBRACKET, RSQBRACKET),
+  angleBrackets:     objectWithinPair(LCHEVRON,   RCHEVRON),
+  doubleQuoteString: objectWithinPair(QUOTE_DBL,  QUOTE_DBL),
+  singleQuoteString: objectWithinPair(QUOTE_SGL,  QUOTE_SGL),
+  graveQuoteString:  objectWithinPair(BACKTICK,   BACKTICK),
+  word: objectWithCharSet(CharSet.Word),
+  WORD: objectWithCharSet(CharSet.NonBlank),
+  sentence: sentenceObject(),
+  paragraph: paragraphObject(),
+  whitespaces: whitespacesObject(),
+  indent: indentObject(),
+  number: numberObject(),
+  argument: argumentObject(),
+  // TODO: custom
 }
 
-registerObjectSelect(Command.objectsSelect                  , false, true )
-registerObjectSelect(Command.objectsSelectInner             , true , true )
-registerObjectSelect(Command.objectsSelectToStart           , false, false, true )
-registerObjectSelect(Command.objectsSelectToStartInner      , true , false, true )
-registerObjectSelect(Command.objectsSelectToStartExtend     , false, true , true )
-registerObjectSelect(Command.objectsSelectToStartExtendInner, true , true , true )
-registerObjectSelect(Command.objectsSelectToEnd             , false, false, false)
-registerObjectSelect(Command.objectsSelectToEndInner        , true , false, false)
-registerObjectSelect(Command.objectsSelectToEndExtend       , false, true , false)
-registerObjectSelect(Command.objectsSelectToEndExtendInner  , true , true , false)
-
-registerCommand(Command.objectsSelectRepeat, CommandFlags.ChangeSelections, (editor, state) => {
-  if (lastObjectSelectOperation === undefined)
-    return
-
-  return performObjectSelect(editor, state.currentCount || 1, ...lastObjectSelectOperation)
+registerCommand(Command.objectsPerformSelection, CommandFlags.ChangeSelections, (editorState, state) => {
+  if (!state.argument || !state.argument.object) {
+    throw new Error('Argument must have shape {object: string, action: string, extend?: boolean, inner?: boolean}')
+  }
+  const dispatch2 = dispatch[state.argument.object as keyof typeof dispatch]
+  if (!dispatch2) {
+    throw new Error('Invalid argument: object must be a string and one of ' + Object.keys(dispatch).join(','))
+  }
+  const dispatch3 = dispatch2[state.argument.action as ObjectAction]
+  if (!dispatch3) {
+    throw new Error('Invalid argument: action must be a string and one of ' + Object.keys(dispatch2).join(','))
+  }
+  const bound = state.argument.inner ? 'inner' : 'outer'
+  let mapper = dispatch3[bound]
+  if (typeof mapper === 'object') {
+    const extend = state.argument.extend ? 'extend' : 'doNotExtend'
+    mapper = mapper[extend]
+  }
+  const helper = SelectionHelper.for(editorState, state)
+  helper.mapEach(mapper)
 })

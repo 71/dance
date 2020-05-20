@@ -1,13 +1,9 @@
 // Pipes: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes-through-external-programs
 import * as cp     from 'child_process'
-import * as util   from 'util'
 import * as vscode from 'vscode'
 
 import { registerCommand, Command, CommandFlags, InputKind } from '.'
-
-
-const exec = util.promisify(cp.exec)
-const replaceMap = { '\n': '\\n', '\r': '\\r', '"': '\\"' }
+import { SelectionHelper } from '../utils/selectionHelper'
 
 function getShell() {
   let os: string
@@ -26,20 +22,27 @@ function getShell() {
   const config = vscode.workspace.getConfiguration('terminal')
 
   return config.get<string | null>(`integrated.automationShell.${os}`)
-      ?? config.get<string | null>(`integrated.shell.${os}`)
       ?? process.env.SHELL
       ?? undefined
 }
 
 function execWithInput(command: string, input: string) {
-  const shell = getShell()
+  return new Promise((resolve, reject) => {
+    const shell = getShell() ?? true,
+          child = cp.spawn(command, { shell, stdio: 'pipe' })
 
-  input = input.replace(/[\n\r"]/g, s => replaceMap[s as '\n' | '\r' | '"'])
-  command = `echo "${input}" | ${command}`
+    let stdout = '',
+        stderr = ''
 
-  return exec(command, { shell })
-          .then(x => ({ err: x.stderr, val: x.stdout.trimRight() }))
-          .catch((e: cp.ExecException) => ({ err: e.message }))
+    child.stdout.on('data', (chunk: Buffer) => stdout += chunk.toString('utf-8'))
+    child.stderr.on('data', (chunk: Buffer) => stderr += chunk.toString('utf-8'))
+    child.stdin.end(input, 'utf-8')
+
+    child.once('error', err => reject({ err }))
+    child.once('exit', code => code === 0
+      ? resolve({ val: stdout.trimRight() })
+      : reject({ err: `Command exited with error ${code}: ${stderr.length > 0 ? stderr.trimRight() : '<No error output>'}` }))
+  })
 }
 
 function parseRegExp(regexp: string) {
@@ -96,7 +99,7 @@ function pipe(command: string, selections: string[]) {
     // Shell
     command = command.substr(1)
 
-    return Promise.all(selections.map(selection => execWithInput(command, selection.trim())))
+    return Promise.all(selections.map(selection => execWithInput(command, selection)))
   } else if (command.startsWith('/')) {
     // RegExp replace
     const [regexp, replacement] = parseRegExp(command) as [RegExp, string] // Safe to do; since the input is validated
@@ -192,56 +195,88 @@ const getInputBoxOptions = (expectReplacement: boolean) => ({
 
 const inputBoxOptions = getInputBoxOptions(false)
 const inputBoxOptionsWithReplacement = getInputBoxOptions(true)
+const getInputBoxOptionsWithoutReplacement = () => inputBoxOptions
+const getInputBoxOptionsWithReplacement = () => inputBoxOptionsWithReplacement
 
 function pipeInput(input: string, editor: vscode.TextEditor) {
   return pipe(input, editor.selections.map(editor.document.getText)) as Thenable<{ val?: string, err?: string }[]>
 }
 
-registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Text, inputBoxOptions, async (editor, state) => {
+registerCommand(Command.pipeFilter, CommandFlags.ChangeSelections, InputKind.Text, getInputBoxOptionsWithoutReplacement, async ({ editor }, state) => {
   const outputs = await pipeInput(state.input, editor)
 
   displayErrors(outputs)
-  editor.selections = editor.selections.filter((_, i) => !outputs[i].err && outputs[i].val !== 'false')
+
+  const selections = [] as vscode.Selection[]
+
+  for (let i = 0; i < outputs.length; i++) {
+    const output = outputs[i]
+
+    if (!output.err && output.val !== 'false')
+      selections.push(editor.selections[i])
+  }
+
+  editor.selections = selections
 })
 
-registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, inputBoxOptions, async (editor, state) => {
+registerCommand(Command.pipeIgnore, CommandFlags.None, InputKind.Text, getInputBoxOptionsWithoutReplacement, async ({ editor }, state) => {
   const outputs = await pipeInput(state.input, editor)
 
   displayErrors(outputs)
 })
 
-registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, inputBoxOptionsWithReplacement, async (editor, state) => {
+registerCommand(Command.pipeReplace, CommandFlags.Edit, InputKind.Text, getInputBoxOptionsWithReplacement, async ({ editor }, state, undoStops) => {
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))
     return
 
-  return (builder: vscode.TextEditorEdit) => {
+  await editor.edit(builder => {
+    const selections = editor.selections
+
     for (let i = 0; i < outputs.length; i++)
-      builder.replace(editor.selections[i], outputs[i].val!)
-  }
+      builder.replace(selections[i], outputs[i].val!)
+  }, undoStops)
 })
 
-registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
+registerCommand(Command.pipeAppend, CommandFlags.Edit, InputKind.Text, getInputBoxOptionsWithoutReplacement, async (editorState, state, undoStops) => {
+  const { editor } = editorState
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))
     return
 
-  return (builder: vscode.TextEditorEdit) => {
-    for (let i = 0; i < outputs.length; i++)
-      builder.insert(editor.selections[i].end, outputs[i].val!)
+  const selections = editor.selections,
+        selectionLengths = [] as number[],
+        selectionHelper = SelectionHelper.for(editorState, state)
+
+  await editor.edit(builder => {
+    for (let i = 0; i < outputs.length; i++) {
+      const content = outputs[i].val!,
+            selection = selections[i]
+
+      builder.insert(selection.end, content)
+
+      selectionLengths.push(selectionHelper.selectionLength(selection))
+    }
+  }, undoStops)
+
+  // Restore selections that were extended automatically.
+  for (let i = 0; i < outputs.length; i++) {
+    selections[i] = selectionHelper.selectionFromLength(selections[i].anchor, selectionLengths[i])
   }
+
+  editor.selections = selections
 })
 
-registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, inputBoxOptions, async (editor, state) => {
+registerCommand(Command.pipePrepend, CommandFlags.Edit, InputKind.Text, getInputBoxOptionsWithoutReplacement, async ({ editor }, state, undoStops) => {
   const outputs = await pipeInput(state.input, editor)
 
   if (displayErrors(outputs))
     return
 
-  return (builder: vscode.TextEditorEdit) => {
+  await editor.edit(builder => {
     for (let i = 0; i < outputs.length; i++)
       builder.insert(editor.selections[i].start, outputs[i].val!)
-  }
+  }, undoStops)
 })

@@ -48,12 +48,15 @@ interface Entry {
   title: string
   descr: string
   keys?: string
-  add ?: string
+  add?: string
+
+  command?: string
+  args?: any
 }
 
 const yaml: Record<string, Entry> = load(readFileSync('./commands/commands.yaml', 'utf8'), { schema: CORE_SCHEMA })
 
-const prefixKeys = (prefix: string, keys: string) => keys.replace(/(^|, )(.)/g, `$1${prefix}$2`)
+const prefixKeys = (prefix: string, keys?: string) => keys?.replace(/(^|, )(.)/g, `$1${prefix}$2`)
 
 for (const id in yaml) {
   const command = yaml[id]
@@ -74,7 +77,8 @@ for (const id in yaml) {
       ...command,
 
       title, descr,
-      keys: prefixKeys('s-', command.keys!),
+      keys: prefixKeys('s-', command.keys),
+      args: command.args ? { ...command.args, extend: true } : undefined,
     }
   }
 }
@@ -88,6 +92,7 @@ for (const id in yaml) {
       title: `${command.title} (backwards)`,
       descr: `${command.descr} (backwards)`,
       keys: prefixKeys('a-', command.keys!),
+      args: command.args ? { ...command.args, backwards: true } : undefined,
     }
   }
 }
@@ -101,6 +106,7 @@ for (const id in yaml) {
       title: command.title.replace('whole', 'inner'),
       descr: command.descr.replace('whole', 'inner'),
       keys: prefixKeys('a-', command.keys!),
+      args: command.args ? { ...command.args, inner: true } : undefined,
     }
   }
 }
@@ -133,12 +139,18 @@ const parseWhen = (when: string) => ({
   enabled: `${prefix}.mode != 'disabled'`,
   normal : `${prefix}.mode == 'normal'`,
   insert : `${prefix}.mode == 'insert'`,
+  awaiting: `${prefix}.mode == 'awaiting'`,
+
+  'normal macro' : `${prefix}.mode == 'normal' && ${prefix}.recordingMacro`,
+  'normal -macro': `${prefix}.mode == 'normal' && !${prefix}.recordingMacro`,
 } as any)[when]
 
 const parseKey = (key: string) => key.replace('a-', 'Alt+').replace('s-', 'Shift+').replace('c-', 'Ctrl+')
 
 const writable = (id: string) => id.replace(/\.\w/g, c => c.substr(1).toUpperCase())
-const parseKeys = (key: string) => matches(/([\S]+) \((\w+)\)/g, key).map(x => ({ key: parseKey(x[1]), when: parseWhen(x[2]) }))
+const parseKeys = (key: string) => matches(/([\S]+) \(([\w- ]+)\)/g, key).map(x => ({ key: parseKey(x[1]), when: parseWhen(x[2]) }))
+
+const additionalKeyBindings: string[] = []
 
 for (const id in yaml) {
   const command = yaml[id]
@@ -152,6 +164,23 @@ for (const id in yaml) {
     ? ''
     : `\n *\n * Default key${keys.length === 1 ? '' : 's'}: ${docKeys}.`
 
+  const docCommandName = command.command ? '' : `\`${prefix}.${id}\``
+  doc.write(`| ${docCommandName} | ${command.title} | ${command.descr} | ${docKeys} |\n`)
+
+  if (command.command) {
+    // This is an additional keybinding to an existing command, instead of a
+    // new command to be implemented.
+    for (const key of keys) {
+      additionalKeyBindings.push(`  {`)
+      additionalKeyBindings.push(`    key    : '${key.key.replace('\\', '\\\\').replace("'", "\\'")}',`)
+      additionalKeyBindings.push(`    when   : 'editorTextFocus && ${key.when.replace(/'/g, '\\\'')}',`)
+      additionalKeyBindings.push(`    command: ${JSON.stringify(command.command)},`)
+      if (command.args !== undefined)
+        additionalKeyBindings.push(`    args   : ${JSON.stringify(command.args)},`)
+      additionalKeyBindings.push(`  },`)
+    }
+    continue
+  }
   commands.push(id)
 
   stream.write(`/**\n * ${command.descr}${docStringKeys}\n */\n`)
@@ -173,8 +202,6 @@ for (const id in yaml) {
   }
 
   stream.write(`}\n`)
-
-  doc.write(`| \`${prefix}.${id}\` | ${command.title} | ${command.descr} | ${docKeys} |\n`)
 }
 
 
@@ -191,6 +218,12 @@ ${commands.map(x => `  /** ${yaml[x].descr} */\n  ${writable(x)}`).join(',\n')},
 export const enum Command {
 ${commands.map(x => `  /** ${yaml[x].descr} */\n  ${writable(x)} = '${prefix}.${x}'`).join(',\n')},
 }
+
+/* eslint-disable */
+/** Additional key bindings. */
+export const additionalKeyBindings = [
+${additionalKeyBindings.join('\n')}
+]
 `)
 
 doc.write('\n')

@@ -1,0 +1,18 @@
+{0}
+
+there are |{0}two blank lines before me|{1}
+   some whitespaces around me    {1}
+{2}and some more|{2} words
+finally a selection {3}   {EOL}
+   |{3} that contains only whitespace
+
+//== 0 > 1
+//= dance.trimSelections
+
+
+{0}there are|{0} two blank lines before me
+   |{1}some whitespaces around me{1}    {EOL}
+{2}and some more|{2} words
+finally a selection    {EOL}
+    that contains only whitespace
+// which is now gone :)

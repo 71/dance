@@ -1,0 +1,66 @@
+foo
+bar{0}
+|{0}baz
+quxxx
+
+//== 0 > 1
+//= dance.left
+foo
+ba{0}r|{0}
+baz
+quxxx
+
+//== 0 > 2
+//= dance.right
+foo
+bar
+{0}b|{0}az
+quxxx
+
+//== 0 > 3
+//= dance.up
+// When at line end, moving to a different line will always select the last
+// character instead of line end. "Desired column" is set to len+1 (=4) though.
+fo{0}o|{0}
+bar
+baz
+quxxx
+
+//== 0 > 4
+//= dance.down
+// Same reason as test case 0 > 3 above, "desired column"=4 so select last char.
+foo
+bar
+ba{0}z|{0}
+quxxx
+
+//== 4 > 5
+//= dance.down
+// As explained above, 4th character should be selected because it's on the
+// desired column.
+foo
+bar
+baz
+qux{0}x|{0}x
+
+//== blank.0
+foo
+
+bar{0}
+|{0}
+
+//== blank.0 > blank.1
+//= dance.up
+// The second line is blank, so select its line break.
+// This is the only case where up/down will select line breaks.
+foo
+{0}
+|{0}bar
+{EOL}
+
+//== blank.1 > blank.2
+//= dance.up
+fo{0}o|{0}
+
+bar
+{EOL}

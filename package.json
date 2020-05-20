@@ -20,28 +20,34 @@
   ],
   "main": "./out/src/extension.js",
   "engines": {
-    "vscode": "^1.32.0"
+    "vscode": "^1.44.0"
   },
   "scripts": {
-    "generate": "ts-node commands/generate.ts && ts-node package.ts",
+    "generate": "ts-node ./commands/generate.ts && ts-node package.ts",
     "vscode:prepublish": "yarn run generate && yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
-    "test": "yarn run compile && node ./node_modules/vscode/bin/test",
+    "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package",
     "publish": "vsce publish"
   },
   "devDependencies": {
-    "@types/js-yaml": "^3.12.1",
-    "@types/mocha": "^2.2.42",
-    "@types/node": "^10.12.21",
+    "@types/glob": "^7.1.1",
+    "@types/js-yaml": "^3.12.3",
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^13.13.4",
+    "@types/vscode": "^1.44.0",
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
+    "eslint": "^6.8.0",
+    "glob": "^7.1.6",
     "js-yaml": "^3.13.0",
-    "ts-node": "^8.0.3",
-    "tslint": "^5.12.1",
-    "typescript": "^3.7.2",
-    "vsce": "^1.62.0",
-    "vscode": "^1.1.28"
+    "mocha": "^7.1.2",
+    "source-map-support": "^0.5.19",
+    "ts-node": "^8.9.1",
+    "typescript": "^3.8.3",
+    "vsce": "^1.75.0",
+    "vscode-test": "^1.3.0"
   },
   "activationEvents": [
     "*"
@@ -130,10 +136,329 @@
           "default": "inherit",
           "description": "Controls the cursor style in insert mode."
         },
+        "dance.insertMode.selectionStyle": {
+          "type": "object",
+          "default": {
+            "borderColor": "$editor.selectionBackground",
+            "borderStyle": "solid",
+            "borderWidth": "2px",
+            "borderRadius": "1px"
+          },
+          "description": "The style to apply to selections in insert mode.",
+          "properties": {
+            "backgroundColor": {
+              "type": "string"
+            },
+            "borderColor": {
+              "type": "string"
+            },
+            "borderStyle": {
+              "type": "string"
+            },
+            "borderWidth": {
+              "type": "string"
+            },
+            "borderRadius": {
+              "type": "string"
+            }
+          }
+        },
+        "dance.selectionBehavior": {
+          "enum": [
+            "caret",
+            "character"
+          ],
+          "default": "caret",
+          "description": "Controls how selections behave within VS Code.",
+          "markdownEnumDescriptions": [
+            "Selections are anchored to carets, which is the native VS Code behavior; that is, they are positioned *between* characters and can therefore be empty.",
+            "Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. Additionally, one-character selections will behave as if they were non-directional, like Kakoune."
+          ]
+        },
         "dance.selections.allowEmpty": {
           "type": "boolean",
-          "default": true,
-          "description": "Controls whether selections can be empty. If false, each selection will have at least one character."
+          "description": "Controls whether selections can be empty. If false, each selection will have at least one character.",
+          "deprecationMessage": "This property will be removed in the next version of Dance and is currently being ignored. Please set dance.selectionBehavior to \"caret\" to allow empty selections, or to \"character\" to forbid them."
+        },
+        "dance.menus": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string"
+                    },
+                    "command": {
+                      "type": "string"
+                    },
+                    "args": {
+                      "type": "array"
+                    }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "default": {
+            "object": {
+              "items": {
+                "b()": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "parens"
+                    }
+                  ],
+                  "text": "parenthesis block"
+                },
+                "B{}": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "braces"
+                    }
+                  ],
+                  "text": "braces block"
+                },
+                "r[]": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "brackets"
+                    }
+                  ],
+                  "text": "brackets block"
+                },
+                "a<>": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "angleBrackets"
+                    }
+                  ],
+                  "text": "angle block"
+                },
+                "Q\"": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "doubleQuoteString"
+                    }
+                  ],
+                  "text": "double quote string"
+                },
+                "q'": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "singleQuoteString"
+                    }
+                  ],
+                  "text": "single quote string"
+                },
+                "g`": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "graveQuoteString"
+                    }
+                  ],
+                  "text": "grave quote string"
+                },
+                "w": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "word"
+                    }
+                  ],
+                  "text": "word"
+                },
+                "W": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "WORD"
+                    }
+                  ],
+                  "text": "WORD"
+                },
+                "s": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "sentence"
+                    }
+                  ],
+                  "text": "sentence"
+                },
+                "p": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "paragraph"
+                    }
+                  ],
+                  "text": "paragraph"
+                },
+                " ": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "whitespaces"
+                    }
+                  ],
+                  "text": "whitespaces"
+                },
+                "i": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "indent"
+                    }
+                  ],
+                  "text": "indent"
+                },
+                "n": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "number"
+                    }
+                  ],
+                  "text": "number"
+                },
+                "u": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "argument"
+                    }
+                  ],
+                  "text": "argument"
+                },
+                "c": {
+                  "command": "dance.objects.performSelection",
+                  "args": [
+                    {
+                      "object": "custom"
+                    }
+                  ],
+                  "text": "custom object desc"
+                }
+              }
+            },
+            "goto": {
+              "items": {
+                "h": {
+                  "text": "go to line start",
+                  "command": "dance.goto.lineStart"
+                },
+                "l": {
+                  "text": "go to line end",
+                  "command": "dance.goto.lineEnd"
+                },
+                "i": {
+                  "text": "go to non-blank line start",
+                  "command": "dance.goto.lineStart.nonBlank"
+                },
+                "g": {
+                  "text": "go to first line",
+                  "command": "dance.goto.firstLine"
+                },
+                "k": {
+                  "text": "go to first line",
+                  "command": "dance.goto.firstLine"
+                },
+                "j": {
+                  "text": "go to last line",
+                  "command": "dance.goto.lastLine"
+                },
+                "e": {
+                  "text": "go to last char of last line",
+                  "command": "dance.goto.lastCharacter"
+                },
+                "t": {
+                  "text": "go to the first displayed line",
+                  "command": "dance.goto.firstVisibleLine"
+                },
+                "c": {
+                  "text": "go to the middle displayed line",
+                  "command": "dance.goto.middleVisibleLine"
+                },
+                "b": {
+                  "text": "go to the last displayed line",
+                  "command": "dance.goto.lastVisibleLine"
+                },
+                "f": {
+                  "text": "go to file whose name is selected",
+                  "command": "dance.goto.selectedFile"
+                },
+                ".": {
+                  "text": "go to last buffer modification position",
+                  "command": "dance.goto.lastModification"
+                }
+              }
+            },
+            "goto.extend": {
+              "items": {
+                "h": {
+                  "text": "extend to line start",
+                  "command": "dance.goto.lineStart.extend"
+                },
+                "l": {
+                  "text": "extend to line end",
+                  "command": "dance.goto.lineEnd.extend"
+                },
+                "i": {
+                  "text": "extend to non-blank line start",
+                  "command": "dance.goto.lineStart.nonBlank.extend"
+                },
+                "g": {
+                  "text": "extend to first line",
+                  "command": "dance.goto.firstLine.extend"
+                },
+                "k": {
+                  "text": "extend to first line",
+                  "command": "dance.goto.firstLine.extend"
+                },
+                "j": {
+                  "text": "extend to last line",
+                  "command": "dance.goto.lastLine.extend"
+                },
+                "e": {
+                  "text": "extend to last char of last line",
+                  "command": "dance.goto.lastCharacter.extend"
+                },
+                "t": {
+                  "text": "extend to the first displayed line",
+                  "command": "dance.goto.firstVisibleLine.extend"
+                },
+                "c": {
+                  "text": "extend to the middle displayed line",
+                  "command": "dance.goto.middleVisibleLine.extend"
+                },
+                "b": {
+                  "text": "extend to the last displayed line",
+                  "command": "dance.goto.lastVisibleLine.extend"
+                },
+                "f": {
+                  "text": "extend to file whose name is selected",
+                  "command": "dance.goto.selectedFile.extend"
+                },
+                ".": {
+                  "text": "extend to last buffer modification position",
+                  "command": "dance.goto.lastModification.extend"
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -220,6 +545,12 @@
         "command": "dance.repeat.insert",
         "title": "Repeat last insert-mode change",
         "description": "Repeat last insert-mode change.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.repeat.objectOrSelectTo",
+        "title": "Repeat last object select / character find",
+        "description": "Repeat last object select / character find.",
         "category": "Dance"
       },
       {
@@ -321,7 +652,13 @@
       {
         "command": "dance.trimLines",
         "title": "Trim lines",
-        "description": "Trim selections to only contain full lines (not including last end-of-line).",
+        "description": "Trim selections to only contain full lines (from start to line break).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.trimSelections",
+        "title": "Trim selections",
+        "description": "Trim whitespace at beginning and end of selections.",
         "category": "Dance"
       },
       {
@@ -763,51 +1100,87 @@
         "category": "Dance"
       },
       {
-        "command": "dance.objects.select",
-        "title": "Select whole object",
-        "description": "Select whole object.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.select.inner",
-        "title": "Select inner object",
-        "description": "Select inner object.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToStart",
-        "title": "Select to the whole object start",
-        "description": "Select to the whole object start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToStart.extend",
-        "title": "Extend to the whole object start",
-        "description": "Extend to the whole object start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToEnd",
-        "title": "Select to the whole object end",
-        "description": "Select to the whole object end.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToEnd.extend",
-        "title": "Extend to the whole object end",
-        "description": "Extend to the whole object end.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.select.repeat",
-        "title": "Repeat object select",
-        "description": "Repeat object select.",
+        "command": "dance.objects.performSelection",
+        "title": "Perform selections specified in the arguments.",
+        "description": "Perform selections specified in the arguments..",
         "category": "Dance"
       },
       {
         "command": "dance.goto",
         "title": "Go to...",
         "description": "Shows prompt to jump somewhere",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineStart",
+        "title": "Go to line start",
+        "description": "Go to line start.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineStart.nonBlank",
+        "title": "Go to non-blank line start",
+        "description": "Go to first non-whitespace character of the line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineEnd",
+        "title": "Go to line end",
+        "description": "Go to line end.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.firstLine",
+        "title": "Go to first line",
+        "description": "Go to first line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastLine",
+        "title": "Go to last line",
+        "description": "Go to last line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastCharacter",
+        "title": "Go to last character of the document",
+        "description": "Go to last character of the document.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.firstVisibleLine",
+        "title": "Go to first visible line",
+        "description": "Go to first visible line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.middleVisibleLine",
+        "title": "Go to middle visible line",
+        "description": "Go to middle visible line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastVisibleLine",
+        "title": "Go to last visible line",
+        "description": "Go to last visible line.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.selectedFile",
+        "title": "Open file under selection",
+        "description": "Open file under selection.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastModification",
+        "title": "Go to last buffer modification position",
+        "description": "Go to last buffer modification position.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.openMenu",
+        "title": "Open quick-jump menu",
+        "description": "Open quick-jump menu.",
         "category": "Dance"
       },
       {
@@ -847,6 +1220,12 @@
         "category": "Dance"
       },
       {
+        "command": "dance.cancel",
+        "title": "Cancel operation",
+        "description": "Cancels waiting for input from the user",
+        "category": "Dance"
+      },
+      {
         "command": "dance.left.extend",
         "title": "Move left (extend)",
         "description": "Move left (extend).",
@@ -868,30 +1247,6 @@
         "command": "dance.down.extend",
         "title": "Move down (extend)",
         "description": "Move down (extend).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.up.page.extend",
-        "title": "Scroll one page up (extend)",
-        "description": "Scroll one page up (extend).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.down.page.extend",
-        "title": "Scroll one page down (extend)",
-        "description": "Scroll one page down (extend).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.up.halfPage.extend",
-        "title": "Scroll half a page up (extend)",
-        "description": "Scroll half a page up (extend).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.down.halfPage.extend",
-        "title": "Scroll half a page down (extend)",
-        "description": "Scroll half a page down (extend).",
         "category": "Dance"
       },
       {
@@ -985,6 +1340,66 @@
         "category": "Dance"
       },
       {
+        "command": "dance.goto.lineStart.extend",
+        "title": "Go to line start (extend)",
+        "description": "Go to line start (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineStart.nonBlank.extend",
+        "title": "Go to non-blank line start (extend)",
+        "description": "Go to first non-whitespace character of the line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lineEnd.extend",
+        "title": "Go to line end (extend)",
+        "description": "Go to line end (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.firstLine.extend",
+        "title": "Go to first line (extend)",
+        "description": "Go to first line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastLine.extend",
+        "title": "Go to last line (extend)",
+        "description": "Go to last line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastCharacter.extend",
+        "title": "Go to last character of the document (extend)",
+        "description": "Go to last character of the document (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.firstVisibleLine.extend",
+        "title": "Go to first visible line (extend)",
+        "description": "Go to first visible line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.middleVisibleLine.extend",
+        "title": "Go to middle visible line (extend)",
+        "description": "Go to middle visible line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastVisibleLine.extend",
+        "title": "Go to last visible line (extend)",
+        "description": "Go to last visible line (extend).",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.goto.lastModification.extend",
+        "title": "Go to last buffer modification position (extend)",
+        "description": "Go to last buffer modification position (extend).",
+        "category": "Dance"
+      },
+      {
         "command": "dance.select.to.included.backwards",
         "title": "Select to (backwards)",
         "description": "Select to the next character pressed, including it. (backwards)",
@@ -1018,30 +1433,6 @@
         "command": "dance.select.enclosing.extend.backwards",
         "title": "Extend with enclosing characters (backwards)",
         "description": "Extend with enclosing characters. (backwards)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToStart.inner",
-        "title": "Select to the inner object start",
-        "description": "Select to the inner object start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToStart.extend.inner",
-        "title": "Extend to the inner object start",
-        "description": "Extend to the inner object start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToEnd.inner",
-        "title": "Select to the inner object end",
-        "description": "Select to the inner object end.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.selectToEnd.extend.inner",
-        "title": "Extend to the inner object end",
-        "description": "Extend to the inner object end.",
         "category": "Dance"
       },
       {
@@ -1107,9 +1498,127 @@
     ],
     "keybindings": [
       {
-        "command": "workbench.action.showCommands",
+        "key": "Alt+a",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "select"
+        }
+      },
+      {
+        "key": "Alt+a",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "select"
+        }
+      },
+      {
+        "key": "Alt+i",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "select",
+          "inner": true
+        }
+      },
+      {
+        "key": "Alt+i",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "select",
+          "inner": true
+        }
+      },
+      {
+        "key": "[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToStart"
+        }
+      },
+      {
+        "key": "]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToEnd"
+        }
+      },
+      {
         "key": "Shift+;",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "workbench.action.showCommands"
+      },
+      {
+        "key": "Shift+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToStart",
+          "extend": true
+        }
+      },
+      {
+        "key": "Shift+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToEnd",
+          "extend": true
+        }
+      },
+      {
+        "key": "Alt+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToStart",
+          "inner": true
+        }
+      },
+      {
+        "key": "Alt+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToEnd",
+          "inner": true
+        }
+      },
+      {
+        "key": "Alt+Shift+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToStart",
+          "extend": true,
+          "inner": true
+        }
+      },
+      {
+        "key": "Alt+Shift+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "object",
+          "action": "selectToEnd",
+          "extend": true,
+          "inner": true
+        }
       },
       {
         "command": "dance.set.normal",
@@ -1169,6 +1678,11 @@
       {
         "command": "dance.repeat.insert",
         "key": ".",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.repeat.objectOrSelectTo",
+        "key": "Alt+.",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1304,6 +1818,11 @@
       {
         "command": "dance.trimLines",
         "key": "Shift+Alt+x",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.trimSelections",
+        "key": "Shift+-",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -1569,7 +2088,7 @@
       {
         "command": "dance.macros.record.start",
         "key": "Shift+q",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal' && !dance.recordingMacro"
       },
       {
         "command": "dance.macros.record.stop",
@@ -1642,51 +2161,6 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.objects.select",
-        "key": "Alt+a",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.select",
-        "key": "Alt+a",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.objects.select.inner",
-        "key": "Alt+i",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.select.inner",
-        "key": "Alt+i",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.objects.selectToStart",
-        "key": "[",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToStart.extend",
-        "key": "Shift+[",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToEnd",
-        "key": "]",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToEnd.extend",
-        "key": "Shift+]",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.select.repeat",
-        "key": "Alt+.",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
         "command": "dance.goto",
         "key": "g",
         "when": "editorTextFocus && dance.mode == 'normal'"
@@ -1727,6 +2201,11 @@
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
+        "command": "dance.cancel",
+        "key": "escape",
+        "when": "editorTextFocus && dance.mode == 'awaiting'"
+      },
+      {
         "command": "dance.left.extend",
         "key": "Shift+left",
         "when": "editorTextFocus && dance.mode == 'normal'"
@@ -1765,46 +2244,6 @@
         "command": "dance.down.extend",
         "key": "Shift+j",
         "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.up.page.extend",
-        "key": "Shift+Ctrl+b",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.up.page.extend",
-        "key": "Shift+Ctrl+b",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.down.page.extend",
-        "key": "Shift+Ctrl+f",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down.page.extend",
-        "key": "Shift+Ctrl+f",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.up.halfPage.extend",
-        "key": "Shift+Ctrl+u",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.up.halfPage.extend",
-        "key": "Shift+Ctrl+u",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.down.halfPage.extend",
-        "key": "Shift+Ctrl+d",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down.halfPage.extend",
-        "key": "Shift+Ctrl+d",
-        "when": "editorTextFocus && dance.mode == 'insert'"
       },
       {
         "command": "dance.select.to.included.extend",
@@ -1919,26 +2358,6 @@
       {
         "command": "dance.select.enclosing.extend.backwards",
         "key": "Alt+Shift+m",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToStart.inner",
-        "key": "Alt+[",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToStart.extend.inner",
-        "key": "Alt+Shift+[",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToEnd.inner",
-        "key": "Alt+]",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.objects.selectToEnd.extend.inner",
-        "key": "Alt+Shift+]",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

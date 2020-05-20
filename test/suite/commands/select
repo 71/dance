@@ -1,0 +1,232 @@
+{0}f|{0}oo
+bar
+baz
+
+//== 0 > wholebuffer
+//= dance.select.buffer
+{0}foo
+bar
+baz|{0}
+
+//== 0 > 1
+//= dance.select.line
+{0}foo
+|{0}bar
+baz
+
+//== 0 > 1.x
+//= dance.select.line.extend
+{0}foo
+|{0}bar
+baz
+
+//== 1 > 2
+//= dance.select.line
+foo
+{0}bar
+|{0}baz
+
+//== 1.x > 2.x
+//= dance.select.line.extend
+{0}foo
+bar
+|{0}baz
+
+//== 4
+hel{0}lo
+world
+  m|{0}y
+    friends,
+  and welcome
+
+//== 4 > 4.select
+//= dance.select.line
+hello
+world
+{0}  my
+|{0}    friends,
+  and welcome
+
+//== 4 > 4.extend
+//= dance.select.line.extend
+hel{0}lo
+world
+  my
+|{0}    friends,
+  and welcome
+
+//== 4 > 4.select.withcount
+//= dance.count.2
+//= dance.select.line
+hello
+world
+  my
+{0}    friends,
+|{0}  and welcome
+
+//== 4 > 4.extend.withcount
+//= dance.count.2
+//= dance.select.line.extend
+hel{0}lo
+world
+  my
+    friends,
+|{0}  and welcome
+
+//== 5
+he{0}llo
+|{0}world
+
+my
+friend
+
+//== 5 > 5.select.line
+//= dance.select.line
+// The full line is not yet selected, so select it.
+{0}hello
+|{0}world
+
+my
+friend
+
+//== 5 > 5.select.line.twice
+//= dance.count.2
+//= dance.select.line
+// First select the full first line, then the next line.
+hello
+{0}world
+|{0}
+my
+friend
+
+//== 5.select.line.twice > 5.select.line.emptyLine
+//= dance.select.line
+// An empty line is selected now.
+hello
+world
+{0}
+|{0}my
+friend
+
+//== 5.select.line.emptyLine > 5.x
+//= dance.select.line
+hello
+world
+
+{0}my
+|{0}friend
+
+//== 6
+// The full line is selected, but in reverse direction.
+|{0}hello
+{0}world
+
+//== 6 > 6.select.line
+//= dance.select.line
+// The selection should be reversed without moving on.
+{0}hello
+|{0}world
+
+//== 6 > 6.select.line.extend
+//= dance.select.line.extend
+// Anchor is unchanged but active moved to the line break, thus selecting it.
+hello{0}
+|{0}world
+
+//== 6.select.line.extend > 6.select.line.extend.again
+//= dance.select.line.extend
+// Special case: Anchor (instead of active) is moved to the line start, thus
+// selecting the full line in forward direction.
+{0}hello
+|{0}world
+
+//== 7
+|{0}hello
+w{0}orld
+
+//== 7 > 7.select.line.extend
+//= dance.select.line.extend
+// The special case above does not apply if anchor is on a different line.
+hello{0}
+w|{0}orld
+
+//== 7.select.line.extend > 7.select.line.extend.again
+//= dance.select.line.extend
+// So the selection will get stuck there with more select.line.extend commands.
+hello{0}
+w|{0}orld
+
+//== 8
+h{0}e|{0}llo
+world
+m|{1}y dear{1}
+friends
+
+//== 8 > 8.trim
+//= dance.trimLines
+// Neither selection contains a full line but deleting both would eliminate
+// all selections. Thus leave everything unchanged.
+h{0}e|{0}llo
+world
+m|{1}y dear{1}
+friends
+
+//== 8 > 8.expand
+//= dance.expandLines
+{0}hello
+|{0}world
+|{1}my dear
+{1}friends
+
+//== 8.expand > 8.expand.again
+//= dance.expandLines
+// No changes, each selection is already a full line.
+{0}hello
+|{0}world
+|{1}my dear
+{1}friends
+
+//== 9
+h|{0}ello
+wo{0}rld
+my{1}
+dear
+fri|{1}ends
+
+//== 9 > 9.expand
+//= dance.expandLines
+// Selection 1 is at document end since there is no trailing line break.
+// VSCode will take care of merging the two selections next.
+|{0}hello
+world
+{0}{1}my
+dear
+friends|{1}
+
+//== 9 > 9.trim
+//= dance.trimLines
+// Old Selection 0 disappears because it contains no full lines.
+hello
+world
+my
+{0}dear
+|{0}friends
+
+//== line.0
+the quick {0}bro|{0}wn fox
+
+//== line.0 > line.1
+//= dance.select.toLineBegin
+|{0}the quick bro{0}wn fox
+
+//== line.0 > line.2
+//= dance.select.toLineBegin.extend
+|{0}the quick b{0}rown fox
+
+//== line.0 > line.3
+//= dance.select.toLineEnd
+the quick br{0}own fox|{0}
+
+//== line.0 > line.4
+//= dance.select.toLineEnd.extend
+the quick {0}brown fox|{0}

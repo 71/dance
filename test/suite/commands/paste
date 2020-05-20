@@ -1,0 +1,23 @@
+{0}foo
+|{0}bar
+
+//== 0 > 1
+//= dance.yank
+//= dance.paste.after
+{0}foo
+|{0}foo
+bar
+
+//== 1 > 2
+//= dance.paste.after
+{0}foo
+|{0}foo
+foo
+bar
+
+//== 0 > 3
+//= dance.left
+//= dance.paste.after
+fo{0}o|{0}
+foo
+bar

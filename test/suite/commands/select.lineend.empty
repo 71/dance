@@ -1,0 +1,54 @@
+// Initial case: The line break on an empty line is selected.
+foo
+{0}
+|{0}bar
+baz
+
+//== 0 > 1
+//= dance.left
+foo{0}
+|{0}
+bar
+baz
+
+//== 0 > 2
+//= dance.right
+foo
+
+{0}b|{0}ar
+baz
+
+//== 0 > 3
+//= dance.up
+{0}f|{0}oo
+
+bar
+baz
+
+//== 0 > 4
+//= dance.down
+foo
+
+{0}b|{0}ar
+baz
+
+//== 4 > 5
+//= dance.up
+foo
+{0}
+|{0}bar
+baz
+
+//== 4 > 6
+//= dance.up.extend
+foo
+|{0}
+b{0}ar
+baz
+
+//== 6 > 7
+//= dance.up.extend
+|{0}foo
+
+b{0}ar
+baz

@@ -1,26 +1,28 @@
 import * as vscode from 'vscode'
 
-import { registerCommand, setRemainingNormalCommands, Command, CommandFlags, Mode } from '.'
+import { registerCommand, setRemainingNormalCommands, Command, CommandFlags } from '.'
+import { Mode } from '../state/extension'
 
 
-registerCommand(Command.setInsert, CommandFlags.SwitchToInsert, () => {})
-registerCommand(Command.setNormal, CommandFlags.SwitchToNormal, () => {})
+registerCommand(Command.setInsert, CommandFlags.SwitchToInsertBefore, () => {
+  // Nop.
+})
 
-registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsert, (_, state, __, ctx) => {
-  let count = state.currentCount || 1
+registerCommand(Command.setNormal, CommandFlags.SwitchToNormal, () => {
+  // Nop.
+})
 
+registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsertBefore, (editorState, { repetitions }) => {
   let subscription = vscode.commands.registerCommand('type', (...args) => {
-    if (--count === 0) {
+    if (--repetitions === 0) {
       subscription.dispose()
-      ctx.setMode(Mode.Normal)
+      editorState.setMode(Mode.Normal)
     }
 
     return vscode.commands.executeCommand('default:type', ...args)
   })
 })
 
-registerCommand(Command.tmpNormal, CommandFlags.SwitchToNormal, (_, state) => {
-  let count = state.currentCount || 1
-
-  setRemainingNormalCommands(count)
+registerCommand(Command.tmpNormal, CommandFlags.SwitchToNormal, (_, { repetitions }) => {
+  setRemainingNormalCommands(repetitions)
 })
