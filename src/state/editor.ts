@@ -157,7 +157,7 @@ export class EditorState {
       if (this.extension.insertModeSelectionStyle !== undefined)
         this.editor.setDecorations(this.extension.insertModeSelectionStyle, selections)
     } else {
-      if (this._insertModeSelections !== undefined) {
+      if (this._insertModeSelections !== undefined && this._insertModeSelections.length > 0) {
         const savedSelections = this._insertModeSelections,
               editorSelections = this._editor.selections,
               document = this.documentState.document
