@@ -47,8 +47,17 @@ function getSelectionsLines(selections: vscode.Selection[]) {
   const lines: number[] = []
 
   for (const selection of selections) {
-    const startLine = selection.start.line,
-          endLine = selection.end.line
+    let startLine = selection.start.line,
+        endLine = selection.end.line
+
+    if (startLine !== endLine && selection.end.character === 0) {
+      // If the selection ends after a line break, do not consider the next line
+      // selected. This is because a selection has to end on the very first
+      // caret position of the next line in order to select the last line break.
+      // For example, `vscode.TextLine.rangeIncludingLineBreak` does this:
+      // https://github.com/microsoft/vscode/blob/c8b27b9db6afc26cf82cf07a9653c89cdd930f6a/src/vs/workbench/api/common/extHostDocumentData.ts#L273
+      endLine--
+    }
 
     // The first and last lines of the selection may contain other selections,
     // so we check for duplicates with them. However, the intermediate
