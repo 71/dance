@@ -196,7 +196,7 @@ registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editorState,
     for (let i = 0; i < len; i++) {
       const selection = selections[i]
       let line = selectionHelper.activeLine(selection),
-          isFullLine = selection.start.character === 0 && selection.end.character === 0 && Math.abs(selection.end.line - selection.start.line) === 1
+          isFullLine = selectionHelper.isEntireLines(selection)
 
       if (isFullLine)
         line++
@@ -230,7 +230,7 @@ registerCommand(Command.selectLineExtend, CommandFlags.ChangeSelections, (editor
       const anchor = isSameLine
         ? selection.anchor.with(undefined, 0)
         : selection.anchor
-      const active = selection.active.character === 0 && !selection.isReversed && selectionBehavior === SelectionBehavior.Character && !isSameLine
+      const active = selection.active.character === 0 && !selection.isReversed && !isSameLine
         ? selection.active.translate(1 + isFullLineDiff)
         : new vscode.Position(selectionHelper.activeLine(selection) + 1 + isFullLineDiff, 0)
 

@@ -205,14 +205,14 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
   }
 
   endLine(selection: vscode.Selection) {
-    if (this.selectionBehavior === SelectionBehavior.Character && selection.end === selection.active && selection.end.character === 0)
+    if (selection.end === selection.active && selection.end.character === 0)
       return selection.end.line - 1
     else
       return selection.end.line
   }
 
   activeLine(selection: vscode.Selection) {
-    if (this.selectionBehavior === SelectionBehavior.Character && selection.end === selection.active && selection.end.character === 0)
+    if (selection.end === selection.active && selection.end.character === 0)
       return selection.active.line - 1
     else
       return selection.active.line
@@ -238,6 +238,10 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
 
   isEntireLine(selection: vscode.Selection) {
     return selection.start.character === 0 && selection.end.character === 0 && selection.start.line === selection.end.line - 1
+  }
+
+  isEntireLines(selection: vscode.Selection) {
+    return selection.start.character === 0 && selection.end.character === 0
   }
 
   /**
