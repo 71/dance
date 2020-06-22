@@ -199,7 +199,7 @@ const pkg = {
               items: {
                 type: 'object',
                 additionalProperties: {
-                  type: 'object',
+                  type: ['object', 'null'],
                   properties: {
                     'text': {
                       type: 'string',

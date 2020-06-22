@@ -28,12 +28,14 @@ export namespace ModeConfiguration {
   export type LineNumbers = 'on' | 'off' | 'relative' | 'inherit'
 }
 
+export interface GotoMenuItem {
+  readonly text: string
+  readonly command: string
+  readonly args?: any[]
+}
+
 export interface GotoMenu {
-  readonly items: Record<string, {
-    readonly text: string
-    readonly command: string
-    readonly args?: any[]
-  }>
+  readonly items: Record<string, GotoMenuItem>
 }
 
 /**
@@ -281,7 +283,7 @@ export class Extension implements vscode.Disposable {
     }, true)
 
     // Configuration: menus.
-    this.observePreference<Record<string, GotoMenu>>('menus', {}, value => {
+    this.observePreference<Record<string, { items: Record<string, GotoMenuItem | null> }>>('menus', {}, value => {
       this._gotoMenus.clear()
 
       if (typeof value !== 'object' || value === null) {
@@ -301,13 +303,16 @@ export class Extension implements vscode.Disposable {
           vscode.window.showErrorMessage(`Menu ${menuDisplay} must have an subobject "items" with at least two entries.`)
         } else {
           let valid = true
-          const allKeys = new Set<number>()
+          const seenKeyCodes = new Map<number, string>()
 
           for (const key in menu.items) {
             const item = menu.items[key],
                   itemDisplay = `${JSON.stringify(key)} of ${menuDisplay}`
 
-            if (typeof item !== 'object' || item === null) {
+            if (item === null)
+              continue
+
+            if (typeof item !== 'object') {
               vscode.window.showErrorMessage(`Item ${itemDisplay} must be an object.`)
             } else if (typeof item.text !== 'string' || item.text.length === 0) {
               vscode.window.showErrorMessage(`Item ${itemDisplay} must have a non-empty "text" property.`)
@@ -320,9 +325,12 @@ export class Extension implements vscode.Disposable {
                 vscode.window.showErrorMessage(`Item ${itemDisplay} must be a non-empty string key.`)
               } else {
                 for (let i = 0; i < key.length; i++) {
-                  if (allKeys.size === allKeys.add(key.charCodeAt(i)).size) {
-                    vscode.window.showErrorMessage(`Menu ${menuDisplay} specifies the key '${key}' more than once.`)
+                  let keyCode = key.charCodeAt(i),
+                      prevKey = seenKeyCodes.get(keyCode)
+                  if (prevKey) {
+                    vscode.window.showErrorMessage(`Menu ${menuDisplay} has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`)
                   } else {
+                    seenKeyCodes.set(keyCode, key)
                     keyString = keyString === '' ? key[i] : `${keyString}, ${key[i]}`
                     continue
                   }
