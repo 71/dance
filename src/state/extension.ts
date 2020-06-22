@@ -309,7 +309,9 @@ export class Extension implements vscode.Disposable {
             const item = menu.items[key],
                   itemDisplay = `${JSON.stringify(key)} of ${menuDisplay}`
 
-            if (item === null) continue
+            if (item === null)
+              continue
+
             if (typeof item !== 'object') {
               vscode.window.showErrorMessage(`Item ${itemDisplay} must be an object.`)
             } else if (typeof item.text !== 'string' || item.text.length === 0) {
