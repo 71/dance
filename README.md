@@ -36,6 +36,12 @@ to [Visual Studio Code][VSC], rather than an emulation layer on top of it.
 
 For most [commands], the usage is the same as in [Kakoune]. However, the following changes have been made:
 
+### Selection Behavior
+
+Dance by default uses caret-based selections just like VSCode. This means a selection is anchored between two carets (i.e. positions between characters), and may be empty.
+
+If you prefer character-based selections like Kakoune, please set `"dance.selectionBehavior": "character"` in your settings. This will make Dance treat selections as between two characters (inclusive), and implies that each selection will contain at least one character. (This behavior is recommended for Kakoune-users who have already developed muscle memory, e.g. hitting `;d` to delete one character.)
+
 ### Pipes
 - Pipes no longer accept shell commands, but instead accept 'expressions', those being:
   - `#<shell command>`: Pipes each selection into a shell command (the shell is taken from the `terminal.external.exec` value).
