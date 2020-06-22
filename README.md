@@ -36,7 +36,7 @@ to [Visual Studio Code][VSC], rather than an emulation layer on top of it.
 
 For most [commands], the usage is the same as in [Kakoune]. However, the following changes have been made:
 
-### Selection Behavior
+### Selection behaviors
 
 Dance by default uses caret-based selections just like VSCode. This means a selection is anchored between two carets (i.e. positions between characters), and may be empty.
 
