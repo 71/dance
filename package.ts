@@ -65,7 +65,7 @@ const pkg = {
   name: 'dance',
   displayName: 'Dance',
   description: 'Make those cursors dance with Kakoune-inspired keybindings.',
-  version: '0.2.2',
+  version: '0.3.0',
   license: 'ISC',
 
   publisher: 'gregoire',
