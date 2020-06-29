@@ -140,8 +140,9 @@ function objectWithCharSet(charSet: CharSet | CharCodePredicate) {
     return (active, helper) => {
       const { document } = helper.editor
       const isInSet = typeof charSet === 'function' ? charSet : getCharSetFunction(charSet, document)
-      let col = active.character
       const text = document.lineAt(active.line).text
+      const offset = helper.selectionBehavior == SelectionBehavior.Caret && !isInSet(text.charCodeAt(active.character)) ? -1 : 0
+      let col = active.character + offset
       if (col >= text.length) {
         // A charset object cannot contain line break, therefore the cursor active
         // is not within any such object.
@@ -151,7 +152,7 @@ function objectWithCharSet(charSet: CharSet | CharCodePredicate) {
         col += direction
         if (col < 0 || col >= text.length) return active.with(undefined, col - direction)
       }
-      if (col === active.character) {
+      if (col === active.character + offset) {
         // The cursor active is on a character outside charSet.
         return RemoveSelection
       }
