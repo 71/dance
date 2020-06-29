@@ -241,7 +241,7 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
   }
 
   isEntireLines(selection: vscode.Selection) {
-    return selection.start.character === 0 && selection.end.character === 0
+    return selection.start.character === 0 && selection.end.character === 0 && selection.start.line !== selection.end.line
   }
 
   /**
