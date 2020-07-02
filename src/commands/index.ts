@@ -214,7 +214,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
     if (this.input !== InputKind.None && input === undefined) {
       const inputDescr = this.inputDescr?.(editorState)
-      if (inputDescr && ('onDidCancel' in inputDescr))
+      if (typeof inputDescr === 'object' && 'onDidCancel' in inputDescr)
         inputDescr.onDidCancel?.(editorState)
       return
     }
