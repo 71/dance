@@ -237,7 +237,7 @@ registerCommand(Command.splitLines, CommandFlags.ChangeSelections, ({ editor }) 
     // Restore direction of each line.
     if (isReversed) {
       for (let i = startIndex; i < newSelections.length; i++) {
-        newSelections[i] = new vscode.Selection(selections[i].active, selections[i].anchor)
+        newSelections[i] = new vscode.Selection(newSelections[i].active, newSelections[i].anchor)
       }
     }
   }
