@@ -6,7 +6,7 @@ import { promptInList } from '../utils/prompt'
 import { Command } from '../../commands'
 
 
-registerCommand(Command.openMenu, CommandFlags.None, (_, { argument, extension }) => {
+registerCommand(Command.openMenu, CommandFlags.CanRunWithoutEditor, (_, { argument, extension }) => {
   if (typeof argument !== 'object' || argument === null || typeof argument.menu !== 'string') {
     vscode.window.showErrorMessage(`Invalid argument passed to command ${Command.openMenu}.`)
 

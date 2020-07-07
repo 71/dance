@@ -36,6 +36,9 @@ export const enum CommandFlags {
 
   /** Do not reset preferred columns for moving up and down. */
   DoNotResetPreferredColumns = 1 << 8,
+
+  /** Allow the command to be run without an active editor. */
+  CanRunWithoutEditor = 1 << 9,
 }
 
 export class CommandState<Input extends InputKind = any> {
@@ -357,6 +360,18 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   }
 
   register(extension: Extension) {
+    if (this.flags & CommandFlags.CanRunWithoutEditor) {
+      return vscode.commands.registerCommand(this.command, (arg) => {
+        const editor = vscode.window.activeTextEditor
+
+        if (editor === undefined)
+          // @ts-ignore
+          return this.action(undefined, new CommandState(this, undefined, extension, arg))
+
+        return this.execute(extension.getEditorState(editor).updateEditor(editor), arg)
+      })
+    }
+
     return vscode.commands.registerCommand(this.command, (arg) => {
       const editor = vscode.window.activeTextEditor
 
