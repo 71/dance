@@ -13,7 +13,7 @@ registerCommand(Command.setNormal, CommandFlags.SwitchToNormal, () => {
 })
 
 registerCommand(Command.tmpInsert, CommandFlags.SwitchToInsertBefore, (editorState, { repetitions }) => {
-  let subscription = vscode.commands.registerCommand('type', (...args) => {
+  const subscription = vscode.commands.registerCommand('type', (...args) => {
     if (--repetitions === 0) {
       subscription.dispose()
       editorState.setMode(Mode.Normal)

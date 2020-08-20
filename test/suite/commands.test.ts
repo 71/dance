@@ -123,7 +123,7 @@ async function testCommands(editor: vscode.TextEditor, { initialContent, mutatio
     }
 
     // Ensure resulting text is valid.
-    let prefix = mutations.length === 1 ? '' : `After ${mutationIndex} mutation(s):\n  `
+    const prefix = mutations.length === 1 ? '' : `After ${mutationIndex} mutation(s):\n  `
 
     const expectedContent = getPlainContent(contentAfterMutation)
 

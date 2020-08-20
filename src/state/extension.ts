@@ -325,8 +325,8 @@ export class Extension implements vscode.Disposable {
                 vscode.window.showErrorMessage(`Item ${itemDisplay} must be a non-empty string key.`)
               } else {
                 for (let i = 0; i < key.length; i++) {
-                  let keyCode = key.charCodeAt(i),
-                      prevKey = seenKeyCodes.get(keyCode)
+                  const keyCode = key.charCodeAt(i),
+                        prevKey = seenKeyCodes.get(keyCode)
                   if (prevKey) {
                     vscode.window.showErrorMessage(`Menu ${menuDisplay} has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`)
                   } else {

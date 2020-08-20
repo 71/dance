@@ -47,8 +47,8 @@ function getSelectionsLines(selections: vscode.Selection[]) {
   const lines: number[] = []
 
   for (const selection of selections) {
-    let startLine = selection.start.line,
-        endLine = selection.end.line
+    const startLine = selection.start.line
+    let endLine = selection.end.line
 
     if (startLine !== endLine && selection.end.character === 0) {
       // If the selection ends after a line break, do not consider the next line

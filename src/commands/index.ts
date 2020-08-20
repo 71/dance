@@ -391,11 +391,11 @@ export let remainingNormalCommands = 0
 export function registerCommand(command: Command, flags: CommandFlags, action: Action<InputKind.None>): void
 export function registerCommand<Input extends InputKind>(command: Command, flags: CommandFlags, input: Input, inputDescr: (editorState: EditorState) => InputDescrMap[Input], action: Action<Input>): void
 
-export function registerCommand() {
-  if (arguments.length === 3) {
-    commands.push(new CommandDescriptor(arguments[0], arguments[1], InputKind.None, () => void 0, arguments[2]))
+export function registerCommand(...args: readonly any[]) {
+  if (args.length === 3) {
+    commands.push(new CommandDescriptor(args[0], args[1], InputKind.None, () => void 0, args[2]))
   } else {
-    commands.push(new CommandDescriptor(arguments[0], arguments[1], arguments[2], arguments[3], arguments[4]))
+    commands.push(new CommandDescriptor(args[0], args[1], args[2], args[3], args[4]))
   }
 }
 

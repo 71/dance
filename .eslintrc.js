@@ -12,6 +12,7 @@ module.exports = {
     ecmaVersion: 2019,
     sourceType: 'module',
   },
+  ignorePatterns: '*.js',
   rules: {
     'dot-location': ['error', 'property'],
     'eqeqeq': ['error', 'always', { null: 'ignore' }],

@@ -24,7 +24,7 @@ export function keypress(cancellationToken?: vscode.CancellationToken): Thenable
   return new Promise(resolve => {
     try {
       let done = false
-      let subscription = vscode.commands.registerCommand('type', ({ text }: { text: string }) => {
+      const subscription = vscode.commands.registerCommand('type', ({ text }: { text: string }) => {
         if (!done) {
           subscription.dispose()
           done = true

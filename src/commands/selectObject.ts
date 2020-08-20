@@ -182,7 +182,7 @@ function sentenceObject() {
     return (oldActive: Coord, helper: SelectionHelper<CommandState>) => {
       const document = helper.editor.document
       const isBlank = getCharSetFunction(CharSet.Blank, document)
-      let origin = oldActive // TODO: Adjust for caret mode.
+      const origin = oldActive // TODO: Adjust for caret mode.
 
       let jumpedOverBlankLine = false
 
@@ -362,7 +362,7 @@ function sentenceObject() {
     }, Extend),
     doNotExtend: (selection: vscode.Selection, helper: SelectionHelper<CommandState>) => {
       const oldActive = helper.activeCoord(selection)
-      let beforeBlank = toBeforeBlankOrPrev(oldActive, helper)
+      const beforeBlank = toBeforeBlankOrPrev(oldActive, helper)
 
       if ('prevSentenceEnd' in beforeBlank) {
         const newAnchor = beforeBlank.prevSentenceEnd
@@ -373,7 +373,7 @@ function sentenceObject() {
         const newActive = toSentenceStart(beforeBlank, helper)
         if (helper.selectionBehavior === SelectionBehavior.Caret) {
           // TODO: Optimize to avoid coordAt / offsetAt.
-          let activePos = selection.active.isBeforeOrEqual(newActive) ?
+          const activePos = selection.active.isBeforeOrEqual(newActive) ?
             helper.coordAt(helper.offsetAt(newActive) + 1) : newActive
           return new vscode.Selection(selection.active, activePos)
         }
@@ -465,7 +465,7 @@ function paragraphObject() {
   function select(inner: boolean): SelectionMapper {
     const toEndFunc = toEnd(inner)
     return (selection, helper, i) => {
-      let active = helper.activeCoord(selection)
+      const active = helper.activeCoord(selection)
       const { document } = helper.editor
 
       let start
@@ -564,7 +564,7 @@ function indentObject() {
         lineObj = document.lineAt(line)
       }
 
-      let indent = lineObj.firstNonWhitespaceCharacterIndex
+      const indent = lineObj.firstNonWhitespaceCharacterIndex
       let lastNonBlankLine = line
 
       for (;;) {

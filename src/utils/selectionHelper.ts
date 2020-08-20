@@ -352,7 +352,7 @@ export function moveActiveCoord(activeMapper: CoordMapper, extend: ExtendBehavio
 
     if (helper.selectionBehavior === SelectionBehavior.Caret) {
       // TODO: Optimize to avoid coordAt / offsetAt.
-      let activePos = selection.active.isBeforeOrEqual(newActive) ?
+      const activePos = selection.active.isBeforeOrEqual(newActive) ?
         helper.coordAt(helper.offsetAt(newActive) + 1) : newActive
       return new vscode.Selection(selection.active, activePos)
     }

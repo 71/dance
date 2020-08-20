@@ -149,7 +149,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
       const selections = initialSelections.map(selection => selection.selection(editor.document))
 
       let regex: RegExp
-      let flags = (isMultilineRegExp(input) ? 'm' : '') + (direction === Backward ? 'g' : '')
+      const flags = (isMultilineRegExp(input) ? 'm' : '') + (direction === Backward ? 'g' : '')
 
       try {
         regex = new RegExp(input, flags)
@@ -202,7 +202,7 @@ function setSearchSelection(source: string, editor: vscode.TextEditor, state: Ex
     return vscode.window.showErrorMessage('Invalid ECMA RegExp.').then(() => {})
   }
 
-  let register = state.currentRegister
+  const register = state.currentRegister
 
   if (register === undefined || !register.canWrite())
     state.registers.slash.set(editor, [source])
@@ -218,24 +218,24 @@ function escapeRegExp(str: string) {
 }
 
 registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, ({ editor, extension }) => {
-  let text = escapeRegExp(editor.document.getText(editor.selection))
+  const text = escapeRegExp(editor.document.getText(editor.selection))
 
   return setSearchSelection(text, editor, extension)
 })
 
 registerCommand(Command.searchSelectionSmart, CommandFlags.ChangeSelections, ({ editor, extension }) => {
-  const isWord = getCharSetFunction(CharSet.Word, editor.document)
+  const isWord = getCharSetFunction(CharSet.Word, editor.document),
+        firstLine = editor.document.lineAt(editor.selection.start).text,
+        firstLineStart = editor.selection.start.character
 
-  let text = escapeRegExp(editor.document.getText(editor.selection)),
-      firstLine = editor.document.lineAt(editor.selection.start).text,
-      firstLineStart = editor.selection.start.character
+  let text = escapeRegExp(editor.document.getText(editor.selection))
 
   if (firstLineStart === 0 || !isWord(firstLine.charCodeAt(firstLineStart - 1))) {
     text = `\\b${text}`
   }
 
-  let lastLine = editor.document.lineAt(editor.selection.end).text,
-      lastLineEnd = editor.selection.end.character
+  const lastLine = editor.document.lineAt(editor.selection.end).text,
+        lastLineEnd = editor.selection.end.character
 
   if (lastLineEnd >= lastLine.length || !isWord(lastLine.charCodeAt(lastLineEnd))) {
     text = `${text}\\b`

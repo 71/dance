@@ -117,7 +117,7 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async ({ editor }, stat
   if (switchToInsert === undefined)
     return
 
-  let start = i
+  const start = i
   let switchToNormal: undefined | typeof editorState.recordedCommands[0]
 
   for (i++; i < editorState.recordedCommands.length; i++) {
@@ -132,7 +132,7 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async ({ editor }, stat
 
   await CommandDescriptor.execute(editorState, editorState.recordedCommands[start])
 
-  let end = i
+  const end = i
 
   await editor.edit(builder => {
     for (let i = state.currentCount || 1; i > 0; i--) {

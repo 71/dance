@@ -126,7 +126,7 @@ for (let i = 0; i < 10; i++) {
 const commands: string[] = []
 
 const matches = (regex: RegExp, input: string) => {
-  let m: RegExpExecArray[] = []
+  const m: RegExpExecArray[] = []
   let match: RegExpExecArray | null
 
   while (match = regex.exec(input))

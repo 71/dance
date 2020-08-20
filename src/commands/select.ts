@@ -108,7 +108,7 @@ function selectByWord(editorState: EditorState, state: CommandState, extend: Ext
         (helper.selectionBehavior === SelectionBehavior.Caret) ? text.length : text.length - 1
       // 1. Starting from active, try to seek to the word start.
       if (direction === Forward ? active.character >= lineEndCol : active.character === 0) {
-        let afterEmptyLines = skipEmptyLines(active, document, direction)
+        const afterEmptyLines = skipEmptyLines(active, document, direction)
         if (afterEmptyLines === undefined) {
           if (direction === Backward && active.line > 0) {
             // This is a special case in Kakoune and we try to mimic it here.
@@ -194,9 +194,9 @@ registerCommand(Command.selectLine, CommandFlags.ChangeSelections, (editorState,
 
   if (currentCount === 0 || currentCount === 1) {
     for (let i = 0; i < len; i++) {
-      const selection = selections[i]
-      let line = selectionHelper.activeLine(selection),
-          isFullLine = selectionHelper.isEntireLines(selection)
+      const selection = selections[i],
+            isFullLine = selectionHelper.isEntireLines(selection)
+      let line = selectionHelper.activeLine(selection)
 
       if (isFullLine)
         line++
@@ -318,7 +318,7 @@ const trimToFullLines: SelectionMapper = (selection, helper) => {
   // If start is not at line start, move it to the next line start.
   const newStart = (start.character === 0) ? start : new vscode.Position(start.line + 1, 0)
   // Move end to the line start, so that the selection ends with a line break.
-  let newEnd = end.with(undefined, 0)
+  const newEnd = end.with(undefined, 0)
 
   if (newStart.isAfterOrEqual(newEnd))
     return RemoveSelection // No full line contained.
