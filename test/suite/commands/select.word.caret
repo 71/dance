@@ -1,0 +1,14 @@
+pri|{0}vate String foo;
+
+//== 0 > 1
+//= dance.select.word.end
+pri{0}vate|{0} String foo;
+
+//== 1 > 2
+//= dance.select.word.end
+private{0} String|{0} foo;
+
+//== 0 > 3
+//= dance.count.2
+//= dance.select.word.end
+private{0} String|{0} foo;
