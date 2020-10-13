@@ -1,10 +1,10 @@
-import * as vscode from 'vscode'
+import * as vscode from "vscode";
 
-import { CommandState } from '../commands'
-import { EditorState }       from '../state/editor'
-import { SelectionBehavior } from '../state/extension'
+import { CommandState } from "../commands";
+import { EditorState } from "../state/editor";
+import { SelectionBehavior } from "../state/extension";
 
-export const DocumentStart = new vscode.Position(0, 0)
+export const DocumentStart = new vscode.Position(0, 0);
 
 /**
  * Direction of an operation.
@@ -19,28 +19,31 @@ export const enum Direction {
 /**
  * Whether or not an operation should expend a selection.
  */
-export type ExtendBehavior = boolean
+export type ExtendBehavior = boolean;
 
 /** Forward direction. */
-export const Forward = Direction.Forward
+export const Forward = Direction.Forward;
 /** Backward direction. */
-export const Backward = Direction.Backward
+export const Backward = Direction.Backward;
 
 /** Do extend. */
-export const Extend = true as ExtendBehavior
+export const Extend = true as ExtendBehavior;
 /** Do not extend. */
-export const DoNotExtend = false as ExtendBehavior
+export const DoNotExtend = false as ExtendBehavior;
 
 export class SelectionHelper<State extends { selectionBehavior: SelectionBehavior }> {
-  static for(editorState: EditorState): SelectionHelper<EditorState>
-  static for<State extends { selectionBehavior: SelectionBehavior }>(editorState: EditorState, state: State): SelectionHelper<State>
+  public static for(editorState: EditorState): SelectionHelper<EditorState>;
+  public static for<State extends { selectionBehavior: SelectionBehavior }>(
+    editorState: EditorState,
+    state: State,
+  ): SelectionHelper<State>;
 
-  static for(editorState: EditorState, state?: any) {
+  public static for(editorState: EditorState, state?: any) {
     // TODO: Caching
-    return new SelectionHelper(editorState, state ?? editorState)
+    return new SelectionHelper(editorState, state ?? editorState);
   }
 
-  readonly selectionBehavior = this.state.selectionBehavior
+  public readonly selectionBehavior = this.state.selectionBehavior;
 
   /**
    * Get the "cursor active" Coord of a selection.
@@ -49,12 +52,16 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
    * method handles special cases for non-directional selections correctly.
    * @param selection
    */
-  activeCoord(selection: vscode.Selection): Coord {
-    if (this.selectionBehavior === SelectionBehavior.Caret ||
-        selection.active.isEqual(DocumentStart) ||
-        selection.isEmpty || selection.isReversed)
-      return selection.active
-    return this.coordAt(this.offsetAt(selection.active) - 1)
+  public activeCoord(selection: vscode.Selection): Coord {
+    if (
+      this.selectionBehavior === SelectionBehavior.Caret ||
+      selection.active.isEqual(DocumentStart) ||
+      selection.isEmpty ||
+      selection.isReversed
+    ) {
+      return selection.active;
+    }
+    return this.coordAt(this.offsetAt(selection.active) - 1);
   }
 
   /**
@@ -68,32 +75,33 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
    *
    * @see moveActiveCoord,jumpTo,seekToRange for utilities to create mappers for
    *                                         common select operations
-  */
-  mapEach(mapper: SelectionMapper<State>): void {
-    const newSelections: vscode.Selection[] = []
-    const editor = this.editor
-    let acceptFallback = true
-    const len = editor.selections.length
+   */
+  public mapEach(mapper: SelectionMapper<State>): void {
+    const newSelections: vscode.Selection[] = [];
+    const editor = this.editor;
+    let acceptFallback = true;
+    const len = editor.selections.length;
     for (let i = 0; i < len; i++) {
-      const moveResult = mapper(editor.selections[i], this, i)
-      if (moveResult === RemoveSelection || 'remove' in moveResult) {
-        if (acceptFallback)
-          newSelections.push(moveResult.fallback || editor.selections[i])
+      const moveResult = mapper(editor.selections[i], this, i);
+      if (moveResult === RemoveSelection || "remove" in moveResult) {
+        if (acceptFallback) {
+          newSelections.push(moveResult.fallback || editor.selections[i]);
+        }
       } else {
         if (acceptFallback) {
-          newSelections.length = 0 // Clear all fallback selections so far.
-          acceptFallback = false
+          newSelections.length = 0; // Clear all fallback selections so far.
+          acceptFallback = false;
         }
-        newSelections.push(moveResult)
+        newSelections.push(moveResult);
       }
     }
     if (acceptFallback) {
-      vscode.window.showErrorMessage('No selections remaining.')
+      vscode.window.showErrorMessage("No selections remaining.");
       // Or show error in the status bar? VSCode does not have a way to dismiss
       // messages, but they recommend setting the status bar instead.
       // See: https://github.com/Microsoft/vscode/issues/2732
     }
-    editor.selections = newSelections
+    editor.selections = newSelections;
   }
 
   /**
@@ -102,82 +110,93 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
    * @param to the coordinate of the ending symbol to include
    * @param singleCharDirection the direction of selection when from equals to
    */
-  selectionBetween(from: Coord, to: Coord, singleCharDirection: Direction = Forward): vscode.Selection {
+  public selectionBetween(
+    from: Coord,
+    to: Coord,
+    singleCharDirection: Direction = Forward,
+  ): vscode.Selection {
     // TODO: Remove this.coordAt and this.offsetAt. Use lineAt for shifting to
     // the next position.
-    if (from.isBefore(to) ||
-        (from.isEqual(to) && singleCharDirection === Forward)) {
+    if (from.isBefore(to) || (from.isEqual(to) && singleCharDirection === Forward)) {
       // Forward: 0123456 ==select(1, 4)=> 0<1234|56
       // Need to increment `to` to include the last character.
-      const active = this.coordAt(this.offsetAt(to) + 1)
-      return new vscode.Selection(from, active)
+      const active = this.coordAt(this.offsetAt(to) + 1);
+      return new vscode.Selection(from, active);
     } else {
       // Reverse: 0123456 ==select(4, 1)=> 0|1234>56
       // Need to increment `from` to include the last character.
-      const anchor = this.coordAt(this.offsetAt(from) + 1)
-      return new vscode.Selection(anchor, to)
+      const anchor = this.coordAt(this.offsetAt(from) + 1);
+      return new vscode.Selection(anchor, to);
     }
   }
 
-  extend(oldSelection: vscode.Selection, to: Coord): vscode.Selection {
+  public extend(oldSelection: vscode.Selection, to: Coord): vscode.Selection {
     // TODO: Remove this.coordAt and this.offsetAt. Use lineAt for shifting to
     // the next / previous position.
-    let { anchor } = oldSelection
+    let { anchor } = oldSelection;
     if (anchor.isBeforeOrEqual(to)) {
       // The resulting selection will be forward-facing.
       if (this.selectionBehavior === SelectionBehavior.Character && oldSelection.isReversed) {
         // Flipping selections in the opposite direction: 0|1>2345 to 0<12345|
         // Need to push anchor backwards so that the first symbol is included.
-        anchor = this.coordAt(this.offsetAt(anchor) - 1)
+        anchor = this.coordAt(this.offsetAt(anchor) - 1);
       }
-      if (this.selectionBehavior === SelectionBehavior.Character || to.isAfterOrEqual(oldSelection.active)) {
+      if (
+        this.selectionBehavior === SelectionBehavior.Character ||
+        to.isAfterOrEqual(oldSelection.active)
+      ) {
         // Moving forward (or non-directional): 01|23>456 ==(to 4)==> 01|234>56
         // Need to increment to include the the symbol at `to`.
-        const active = this.coordAt(this.offsetAt(to) + 1)
-        return new vscode.Selection(anchor, active)
+        const active = this.coordAt(this.offsetAt(to) + 1);
+        return new vscode.Selection(anchor, active);
       } else {
         // Moving backwards: 01|23>456 ==(to 2)==> 01|>23456
         // The symbol at `to` is excluded in this case, since we're
         // "deselecting" that character.
-        return new vscode.Selection(anchor, to)
+        return new vscode.Selection(anchor, to);
       }
     } else {
       // The resulting selection will be (most likely) backwards-facing.
-      const afterTo = this.coordAt(this.offsetAt(to) + 1)
+      const afterTo = this.coordAt(this.offsetAt(to) + 1);
       if (this.selectionBehavior === SelectionBehavior.Character) {
-        if ((!oldSelection.isReversed && oldSelection.anchor.isEqual(to)) ||
-            (oldSelection.isReversed && oldSelection.anchor.isEqual(afterTo))) {
+        if (
+          (!oldSelection.isReversed && oldSelection.anchor.isEqual(to)) ||
+          (oldSelection.isReversed && oldSelection.anchor.isEqual(afterTo))
+        ) {
           // Special case one character selections to face forward:
-          return new vscode.Selection(to, afterTo)
+          return new vscode.Selection(to, afterTo);
         } else if (!oldSelection.isReversed) {
           // Flipping selections in the opposite direction: 0123<4|5 to |01234>5
           // Need to push anchor forward so that the last symbol is included.
-          anchor = this.coordAt(this.offsetAt(anchor) + 1)
+          anchor = this.coordAt(this.offsetAt(anchor) + 1);
         }
       }
-      if (this.selectionBehavior === SelectionBehavior.Character || to.isBeforeOrEqual(oldSelection.active)) {
+      if (
+        this.selectionBehavior === SelectionBehavior.Character ||
+        to.isBeforeOrEqual(oldSelection.active)
+      ) {
         // Moving backward (or non-directional): 012<34|5 ==(to 2)==> 01<234|5
         // Include the symbol at `to`.
-        return new vscode.Selection(anchor, to)
+        return new vscode.Selection(anchor, to);
       } else {
         // Moving forward (or non-directional): 012<34|5 ==(to 4)==> 01234<|5
         // The symbol at `to` is excluded in this case, since we're
         // "deselecting" that character.
-        return new vscode.Selection(anchor, afterTo)
+        return new vscode.Selection(anchor, afterTo);
       }
     }
   }
 
   /** Get the next position in document. */
-  nextPos(pos: vscode.Position): vscode.Position {
+  public nextPos(pos: vscode.Position): vscode.Position {
     // TODO: Optimize
-    return this.coordAt(this.offsetAt(pos) + 1)
+    return this.coordAt(this.offsetAt(pos) + 1);
   }
 
   /** Get the previous position in document. */
-  prevPos(pos: vscode.Position): vscode.Position {
+  public prevPos(pos: vscode.Position): vscode.Position {
     // TODO: Optimize
-    return this.coordAt(this.offsetAt(pos) - 1)
+    return this.coordAt(this.offsetAt(pos) - 1);
   }
 
   /**
@@ -187,9 +206,9 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
    * the intention clear and also allow future optimization like caching.
    * @param coordOffset the nth symbol (or line break) in the document
    */
-  coordAt(coordOffset: number): Coord {
+  public coordAt(coordOffset: number): Coord {
     // TODO: Caching
-    return this.editor.document.positionAt(coordOffset)
+    return this.editor.document.positionAt(coordOffset);
   }
 
   /**
@@ -199,49 +218,73 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
    * the intention clear and also allow future optimization like caching.
    * @param coord the line and character of the symbol in the document
    */
-  offsetAt(coord: Coord): CoordOffset {
+  public offsetAt(coord: Coord): CoordOffset {
     // TODO: Caching
-    return this.editor.document.offsetAt(coord)
+    return this.editor.document.offsetAt(coord);
   }
 
-  endLine(selection: vscode.Selection) {
-    if (selection.end === selection.active && selection.end.character === 0)
-      return selection.end.line - 1
-    else
-      return selection.end.line
+  public endLine(selection: vscode.Selection) {
+    if (selection.end === selection.active && selection.end.character === 0) {
+      return selection.end.line - 1;
+    } else {
+      return selection.end.line;
+    }
   }
 
-  activeLine(selection: vscode.Selection) {
-    if (selection.end === selection.active && selection.end.character === 0)
-      return selection.active.line - 1
-    else
-      return selection.active.line
+  public activeLine(selection: vscode.Selection) {
+    if (selection.end === selection.active && selection.end.character === 0) {
+      return selection.active.line - 1;
+    } else {
+      return selection.active.line;
+    }
   }
 
-  endCharacter(selection: vscode.Selection, forPositionConstructor = false) {
-    if (this.selectionBehavior === SelectionBehavior.Character && selection.end === selection.active && selection.end.character === 0)
-      return forPositionConstructor ? Number.MAX_SAFE_INTEGER : this.editor.document.lineAt(selection.end.line - 1).text.length + 1
-    else
-      return selection.end.character
+  public endCharacter(selection: vscode.Selection, forPositionConstructor = false) {
+    if (
+      this.selectionBehavior === SelectionBehavior.Character &&
+      selection.end === selection.active &&
+      selection.end.character === 0
+    ) {
+      return forPositionConstructor
+        ? Number.MAX_SAFE_INTEGER
+        : this.editor.document.lineAt(selection.end.line - 1).text.length + 1;
+    } else {
+      return selection.end.character;
+    }
   }
 
-  activeCharacter(selection: vscode.Selection, forPositionConstructor = false) {
-    if (this.selectionBehavior === SelectionBehavior.Character && selection.end === selection.active && selection.active.character === 0)
-      return forPositionConstructor ? Number.MAX_SAFE_INTEGER : this.editor.document.lineAt(selection.active.line - 1).text.length + 1
-    else
-      return selection.active.character
+  public activeCharacter(selection: vscode.Selection, forPositionConstructor = false) {
+    if (
+      this.selectionBehavior === SelectionBehavior.Character &&
+      selection.end === selection.active &&
+      selection.active.character === 0
+    ) {
+      return forPositionConstructor
+        ? Number.MAX_SAFE_INTEGER
+        : this.editor.document.lineAt(selection.active.line - 1).text.length + 1;
+    } else {
+      return selection.active.character;
+    }
   }
 
-  isSingleLine(selection: vscode.Selection) {
-    return selection.isSingleLine || selection.start.line === this.endLine(selection)
+  public isSingleLine(selection: vscode.Selection) {
+    return selection.isSingleLine || selection.start.line === this.endLine(selection);
   }
 
-  isEntireLine(selection: vscode.Selection) {
-    return selection.start.character === 0 && selection.end.character === 0 && selection.start.line === selection.end.line - 1
+  public isEntireLine(selection: vscode.Selection) {
+    return (
+      selection.start.character === 0 &&
+      selection.end.character === 0 &&
+      selection.start.line === selection.end.line - 1
+    );
   }
 
-  isEntireLines(selection: vscode.Selection) {
-    return selection.start.character === 0 && selection.end.character === 0 && selection.start.line !== selection.end.line
+  public isEntireLines(selection: vscode.Selection) {
+    return (
+      selection.start.character === 0 &&
+      selection.end.character === 0 &&
+      selection.start.line !== selection.end.line
+    );
   }
 
   /**
@@ -249,55 +292,67 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
    *
    * If the selection is reversed, the selection length is negative.
    */
-  selectionLength(selection: vscode.Selection) {
-    if (selection.isSingleLine)
-      return selection.active.character - selection.anchor.character
+  public selectionLength(selection: vscode.Selection) {
+    if (selection.isSingleLine) {
+      return selection.active.character - selection.anchor.character;
+    }
 
-    return this.offsetAt(selection.active) - this.offsetAt(selection.anchor)
+    return this.offsetAt(selection.active) - this.offsetAt(selection.anchor);
   }
 
-  selectionFromLength(anchorCoord: Coord, length: number) {
-    return new vscode.Selection(anchorCoord, this.coordAt(this.offsetAt(anchorCoord) + length))
+  public selectionFromLength(anchorCoord: Coord, length: number) {
+    return new vscode.Selection(anchorCoord, this.coordAt(this.offsetAt(anchorCoord) + length));
   }
 
-  lastCoord(): Coord {
-    const document = this.editor.document
-    const lastLineText = document.lineAt(document.lineCount - 1).text
-    if (lastLineText.length > 0)
-      return new Coord(document.lineCount - 1, lastLineText.length - 1)
-    if (document.lineCount >= 2)
-      return new Coord(document.lineCount - 2, document.lineAt(document.lineCount - 2).text.length)
-    return DocumentStart
+  public lastCoord(): Coord {
+    const document = this.editor.document;
+    const lastLineText = document.lineAt(document.lineCount - 1).text;
+    if (lastLineText.length > 0) {
+      return new Coord(document.lineCount - 1, lastLineText.length - 1);
+    }
+    if (document.lineCount >= 2) {
+      return new Coord(document.lineCount - 2, document.lineAt(document.lineCount - 2).text.length);
+    }
+    return DocumentStart;
   }
 
   /** DEBUG ONLY method to visualize an offset. DO NOT leave calls in code. */
-  _visualizeOffset(offset: number): string {
-    const position = this.coordAt(offset)
-    return this._visualizePosition(position)
+  public _visualizeOffset(offset: number): string {
+    const position = this.coordAt(offset);
+    return this._visualizePosition(position);
   }
 
   /** DEBUG ONLY method to visualize a position. DO NOT leave calls in code. */
-  _visualizePosition(position: vscode.Position): string {
-    const text = this.editor.document.lineAt(position.line).text
-    return position.line + ':  ' + text.substr(0, position.character) + '|' + text.substr(position.character)
+  public _visualizePosition(position: vscode.Position): string {
+    const text = this.editor.document.lineAt(position.line).text;
+    return (
+      position.line +
+      ":  " +
+      text.substr(0, position.character) +
+      "|" +
+      text.substr(position.character)
+    );
   }
 
   /** DEBUG ONLY method to visualize a Coord. DO NOT leave calls in code. */
-  _visualizeCoord(coord: Coord): string {
-    const text = this.editor.document.lineAt(coord.line).text
-    let visualLine
+  public _visualizeCoord(coord: Coord): string {
+    const text = this.editor.document.lineAt(coord.line).text;
+    let visualLine;
     if (coord.character === text.length) {
-      visualLine = text + '⏎'
+      visualLine = text + "⏎";
     } else {
-      visualLine = text.substr(0, coord.character) + `[${text[coord.character]}]` + text.substr(coord.character + 1)
+      visualLine =
+        text.substr(0, coord.character) +
+        `[${text[coord.character]}]` +
+        text.substr(coord.character + 1);
     }
-    return `L${coord.line}:  ${visualLine}`
+    return `L${coord.line}:  ${visualLine}`;
   }
 
-  readonly editor: vscode.TextEditor
+  public readonly editor: vscode.TextEditor;
 
   private constructor(public readonly editorState: EditorState, public readonly state: State) {
-    this.editor = editorState.editor
+    this.editor = editorState.editor;
   }
 }
 
@@ -313,15 +368,28 @@ export interface Coord extends vscode.Position {
   // Dummy interface so that it shows as its type in generated docs, IDE hover
   // tooltips, etc. Do not add fields here.
 }
-export const Coord = vscode.Position // To allow sugar like `new Coord(1, 2)`.
-export type CoordOffset = number
+export const Coord = vscode.Position; // To allow sugar like `new Coord(1, 2)`.
+export type CoordOffset = number;
 
-export type SelectionMapper<State extends {selectionBehavior: SelectionBehavior} = CommandState> =
-    (selection: vscode.Selection, helper: SelectionHelper<State>, i: number) => vscode.Selection | {remove: true, fallback?: vscode.Selection}
-export type CoordMapper = (oldActive: Coord, helper: SelectionHelper<CommandState>, i: number) => Coord | typeof RemoveSelection
-export type SeekFunc = (oldActive: Coord, helper: SelectionHelper<CommandState>, i: number) => [Coord, Coord] | {remove: true, fallback?: [Coord | undefined, Coord]}
+export type SelectionMapper<
+  State extends { selectionBehavior: SelectionBehavior } = CommandState
+> = (
+  selection: vscode.Selection,
+  helper: SelectionHelper<State>,
+  i: number,
+) => vscode.Selection | { remove: true; fallback?: vscode.Selection };
+export type CoordMapper = (
+  oldActive: Coord,
+  helper: SelectionHelper<CommandState>,
+  i: number,
+) => Coord | typeof RemoveSelection;
+export type SeekFunc = (
+  oldActive: Coord,
+  helper: SelectionHelper<CommandState>,
+  i: number,
+) => [Coord, Coord] | { remove: true; fallback?: [Coord | undefined, Coord] };
 
-export const RemoveSelection: {remove: true} = { remove: true }
+export const RemoveSelection: { remove: true } = { remove: true };
 
 /**
  * Create a SelectionMapper that moves selection's active to a new coordinate.
@@ -341,23 +409,30 @@ export const RemoveSelection: {remove: true} = { remove: true }
  *               character. Otherwise, it is anchored to old active.
  * @returns a SelectionMapper that is suitable for SelectionHelper#mapEach
  */
-export function moveActiveCoord(activeMapper: CoordMapper, extend: ExtendBehavior): SelectionMapper {
+export function moveActiveCoord(
+  activeMapper: CoordMapper,
+  extend: ExtendBehavior,
+): SelectionMapper {
   return (selection, helper, i) => {
-    const oldActive = helper.activeCoord(selection)
-    const newActive = activeMapper(oldActive, helper, i)
-    if ('remove' in newActive) return RemoveSelection
+    const oldActive = helper.activeCoord(selection);
+    const newActive = activeMapper(oldActive, helper, i);
+    if ("remove" in newActive) {
+      return RemoveSelection;
+    }
 
-    if (extend)
-      return helper.extend(selection, newActive)
+    if (extend) {
+      return helper.extend(selection, newActive);
+    }
 
     if (helper.selectionBehavior === SelectionBehavior.Caret) {
       // TODO: Optimize to avoid coordAt / offsetAt.
-      const activePos = selection.active.isBeforeOrEqual(newActive) ?
-        helper.coordAt(helper.offsetAt(newActive) + 1) : newActive
-      return new vscode.Selection(selection.active, activePos)
+      const activePos = selection.active.isBeforeOrEqual(newActive)
+        ? helper.coordAt(helper.offsetAt(newActive) + 1)
+        : newActive;
+      return new vscode.Selection(selection.active, activePos);
     }
-    return helper.selectionBetween(oldActive, newActive)
-  }
+    return helper.selectionBetween(oldActive, newActive);
+  };
 }
 
 /**
@@ -383,18 +458,22 @@ export function moveActiveCoord(activeMapper: CoordMapper, extend: ExtendBehavio
  */
 export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): SelectionMapper {
   return (selection, helper, i) => {
-    const oldActive = helper.activeCoord(selection)
-    const newActive = activeMapper(oldActive, helper, i)
-    if ('remove' in newActive) return RemoveSelection
+    const oldActive = helper.activeCoord(selection);
+    const newActive = activeMapper(oldActive, helper, i);
+    if ("remove" in newActive) {
+      return RemoveSelection;
+    }
 
-    if (helper.selectionBehavior === SelectionBehavior.Caret)
-      return new vscode.Selection(extend ? selection.anchor : newActive, newActive)
+    if (helper.selectionBehavior === SelectionBehavior.Caret) {
+      return new vscode.Selection(extend ? selection.anchor : newActive, newActive);
+    }
 
-    if (extend)
-      return helper.extend(selection, newActive)
+    if (extend) {
+      return helper.extend(selection, newActive);
+    }
 
-    return helper.selectionBetween(newActive, newActive)
-  }
+    return helper.selectionBetween(newActive, newActive);
+  };
 }
 
 /**
@@ -418,37 +497,44 @@ export function jumpTo(activeMapper: CoordMapper, extend: ExtendBehavior): Selec
  *                            one character will face that direction
  * @returns a SelectionMapper that is suitable for SelectionHelper#mapEach
  */
-export function seekToRange(seek: SeekFunc, extend: ExtendBehavior, singleCharDirection = Forward): SelectionMapper {
+export function seekToRange(
+  seek: SeekFunc,
+  extend: ExtendBehavior,
+  singleCharDirection = Forward,
+): SelectionMapper {
   return (selection, helper, i) => {
-    const oldActive = helper.activeCoord(selection)
-    const seekResult = seek(oldActive, helper, i)
-    let remove = false
-    let start: Coord | undefined,
-        end: Coord
+    const oldActive = helper.activeCoord(selection);
+    const seekResult = seek(oldActive, helper, i);
+    let remove = false;
+    let start: Coord | undefined, end: Coord;
 
-    if ('remove' in seekResult) {
-      if (!seekResult.fallback) return RemoveSelection
+    if ("remove" in seekResult) {
+      if (!seekResult.fallback) {
+        return RemoveSelection;
+      }
       // Avoid array destructuring which is not fully optimized yet in V8.
       // See: http://bit.ly/array-destructuring-for-multi-value-returns
-      start = seekResult.fallback[0]
-      end = seekResult.fallback[1]
-      remove = true
+      start = seekResult.fallback[0];
+      end = seekResult.fallback[1];
+      remove = true;
     } else {
-      start = seekResult[0]
-      end = seekResult[1]
+      start = seekResult[0];
+      end = seekResult[1];
     }
 
-    let newSelection
-    if (!start || extend)
-      newSelection = helper.extend(selection, end)
-    else if (helper.selectionBehavior === SelectionBehavior.Caret)
-      newSelection = helper.selectionBetween(start, end, singleCharDirection)
-    else
-      newSelection = helper.selectionBetween(start, end)
+    let newSelection;
+    if (!start || extend) {
+      newSelection = helper.extend(selection, end);
+    } else if (helper.selectionBehavior === SelectionBehavior.Caret) {
+      newSelection = helper.selectionBetween(start, end, singleCharDirection);
+    } else {
+      newSelection = helper.selectionBetween(start, end);
+    }
 
-    if (remove)
-      return { remove, fallback: newSelection }
-    else
-      return newSelection
-  }
+    if (remove) {
+      return { remove, fallback: newSelection };
+    } else {
+      return newSelection;
+    }
+  };
 }

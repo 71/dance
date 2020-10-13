@@ -1,8 +1,6 @@
-
 # Most commands defined below come from Kakoune:
 # - https://github.com/mawww/kakoune/blob/master/src/normal.cc
 # - https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc
-
 
 # Meta (extension.ts & modes.ts)
 # ================================================================================================
@@ -29,7 +27,6 @@ tmp.insert:
   title: Temporary insert mode
   descr: Switches to insert mode temporarily.
   keys: c-v (normal)
-
 
 # Insert (insert.ts)
 # ================================================================================================
@@ -118,7 +115,6 @@ down.halfPage:
   title: Scroll half a page down
   keys: c-d (normal), c-d (insert)
 
-
 # Select to / until / buffer / line (move.ts)
 # ================================================================================================
 
@@ -174,7 +170,6 @@ trimSelections:
   descr: Trim whitespace at beginning and end of selections.
   keys: s-- (normal)
 
-
 # Select word (move.ts)
 # ================================================================================================
 
@@ -214,7 +209,6 @@ select.word.alt.end:
   keys: a-e (normal)
   add: extend
 
-
 # Select within current selections (multiple.ts)
 # ================================================================================================
 
@@ -245,7 +239,6 @@ select.copy:
 select.copy.backwards:
   title: Copy selection to previous line
   keys: s-a-c (normal)
-
 
 # Switch current selections and modify selections (select.ts)
 # ================================================================================================
@@ -296,13 +289,12 @@ selections.merge:
 selections.align:
   title: Align selections
   descr: Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection.
-  keys: 's-7 (normal)'
+  keys: "s-7 (normal)"
 
 selections.align.copy:
   title: Copy indentation
   descr: Copy the indentation of the main selection (or the count one if a count is given) to all other ones.
-  keys: 's-a-7 (normal)'
-
+  keys: "s-a-7 (normal)"
 
 # Yank & Paste (yankPaste.ts)
 # ================================================================================================
@@ -362,7 +354,6 @@ paste.replace.every:
   descr: Replace selections with every yanked text.
   keys: s-a-r (normal)
 
-
 # Changes (changes.ts)
 # ================================================================================================
 
@@ -384,35 +375,34 @@ join.select:
 indent:
   title: Indent
   descr: Indent selected lines.
-  keys: 's-. (normal)'
+  keys: "s-. (normal)"
 
 indent.withEmpty:
   title: Indent (including empty)
   descr: Indent selected lines (including empty lines).
-  keys: 's-a-. (normal)'
+  keys: "s-a-. (normal)"
 
 deindent:
   title: Deindent
   descr: Deindent selected lines.
-  keys: 's-a-, (normal)'
+  keys: "s-a-, (normal)"
 
 deindent.further:
   title: Deindent (including incomplete indent)
   descr: Deindent selected lines (and remove additional incomplete indent).
-  keys: 's-, (normal)'
+  keys: "s-, (normal)"
 
 toLowerCase:
   title: Transform to lowercase
-  keys: '` (normal)'
+  keys: "` (normal)"
 
 toUpperCase:
   title: Transform to uppercase
-  keys: 's-` (normal)'
+  keys: "s-` (normal)"
 
 swapCase:
   title: Swap case
-  keys: 'a-` (normal)'
-
+  keys: "a-` (normal)"
 
 # Pipes (pipe.ts)
 # ================================================================================================
@@ -442,7 +432,6 @@ pipe.prepend:
   descr: Pipe each selection to a command, prepending the output before the selection.
   keys: s-a-1 (normal)
 
-
 # History (history.ts)
 # ================================================================================================
 
@@ -471,7 +460,6 @@ history.repeat.selection:
 history.repeat.edit:
   title: Repeat last edit change
 
-
 # Macros (macros.ts)
 # ================================================================================================
 
@@ -488,7 +476,6 @@ macros.record.stop:
 macros.play:
   title: Play macro
   keys: q (normal)
-
 
 # Rotate (rotate.ts)
 # ================================================================================================
@@ -520,7 +507,6 @@ rotate.contentOnly:
 rotate.contentOnly.backwards:
   title: Rotate content only backwards
   descr: Rotate each selection content counter-clockwise, without changing selections.
-
 
 # Search (search.ts)
 # ================================================================================================
@@ -565,7 +551,6 @@ search.previous.add:
   descr: Add a new selection with the previous match before the main selection.
   keys: s-a-n (normal)
 
-
 # Objects (selectObject.ts)
 # ================================================================================================
 
@@ -573,27 +558,27 @@ _objects.select:
   title: Select whole object
   keys: a-a (normal), a-a (insert)
   command: dance.openMenu
-  args: {menu: 'object', action: 'select'}
+  args: { menu: "object", action: "select" }
 
 _objects.select.inner:
   title: Select inner object
   keys: a-i (normal), a-i (insert)
   command: dance.openMenu
-  args: {menu: 'object', action: 'select', inner: true}
+  args: { menu: "object", action: "select", inner: true }
 
 _objects.selectToStart:
   title: Select to the whole object start
   keys: "[ (normal)"
   add: inner, extend
   command: dance.openMenu
-  args: {menu: 'object', action: 'selectToStart'}
+  args: { menu: "object", action: "selectToStart" }
 
 _objects.selectToEnd:
   title: Select to the whole object end
   keys: "] (normal)"
   add: inner, extend
   command: dance.openMenu
-  args: {menu: 'object', action: 'selectToEnd'}
+  args: { menu: "object", action: "selectToEnd" }
 
 objects.performSelection:
   title: Perform selections specified in the arguments.
@@ -651,13 +636,11 @@ goto.lastModification:
   title: Go to last buffer modification position
   add: extend
 
-
 # Menus (menus.ts)
 # ================================================================================================
 
 openMenu:
   title: Open quick-jump menu
-
 
 # Registers and marks (mark.ts)
 # ================================================================================================
@@ -669,7 +652,6 @@ registers.insert:
 registers.select:
   title: Select register for next command
   keys: s-\' (normal)
-
 
 marks.saveSelections:
   title: Save selections
@@ -687,7 +669,6 @@ marks.combineSelections.fromRegister:
   title: Combine register selections with current ones
   keys: a-z (normal)
 
-
 # Misc. (misc.ts)
 
 cancel:
@@ -699,4 +680,4 @@ _commandPalette:
   title: Open Command Palette
   descr: Open the built-in Command Palette in VSCode
   keys: s-; (normal)
-  command: 'workbench.action.showCommands'
+  command: "workbench.action.showCommands"

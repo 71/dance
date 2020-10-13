@@ -3,6 +3,7 @@
 Command tests are plain text files that are separated in several sections.
 
 ### Sections
+
 Each section has a name, which is any string that has no whitespace.
 
 Except for the first section (implicitly named `0` or `root`), each section
@@ -28,6 +29,7 @@ For instance, let's look at the following code:
 ```
 
 It defines three sections:
+
 - `1`, which is reached after executing `dance.select.line` from section `0`.
 - `2`, which is reached after executing `dance.select.line.extend` from section `1`.
 - `3`, which is reached after executing `dance.select.line` and then `dance.select.line.extend` from section `1`.
@@ -37,6 +39,7 @@ sections must be defined in order; that is, a section `a` cannot depend on a sec
 if section `b` is defined after `a`.
 
 ### Section content
+
 Each section has content (the `...` in the example above). That content is plain text to which
 one or more selections must be added using a `{...}` / `|{...}` syntax, where `...` is a number.
 
@@ -47,6 +50,7 @@ selections `0`, `1`, and `2` must be defined at some point too. The anchor can b
 the active position.
 
 ### Tests generation
+
 For each transition, a test will be generated making sure that executing the corresponding commands
 will lead to some document with selections at some locations.
 

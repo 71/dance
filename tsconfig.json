@@ -3,18 +3,12 @@
     "module": "commonjs",
     "target": "es2015",
     "outDir": "out",
-    "lib": [
-      "es6"
-    ],
+    "lib": ["es6"],
     "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "experimentalDecorators": true,
+    "experimentalDecorators": true
   },
-  "exclude": [
-    "node_modules",
-    ".vscode-test",
-    "package.ts"
-  ],
+  "exclude": ["node_modules", ".vscode-test", "package.ts"]
 }

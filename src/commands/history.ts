@@ -1,52 +1,77 @@
-import * as vscode from 'vscode'
+import * as vscode from "vscode";
 
-import { registerCommand, Command, CommandDescriptor, CommandFlags } from '.'
+import { Command, CommandDescriptor, CommandFlags, registerCommand } from ".";
 
+registerCommand(
+  Command.historyUndo,
+  CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory,
+  () => {
+    return vscode.commands.executeCommand("undo");
+  },
+);
 
-registerCommand(Command.historyUndo, CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory, () => {
-  return vscode.commands.executeCommand('undo')
-})
+registerCommand(
+  Command.historyRedo,
+  CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory,
+  () => {
+    return vscode.commands.executeCommand("redo");
+  },
+);
 
-registerCommand(Command.historyRedo, CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory, () => {
-  return vscode.commands.executeCommand('redo')
-})
+registerCommand(
+  Command.historyRepeat,
+  CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory,
+  (editorState) => {
+    const commands = editorState.recordedCommands;
 
-registerCommand(Command.historyRepeat, CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory, (editorState) => {
-  const commands = editorState.recordedCommands
+    if (commands.length === 0) {
+      return;
+    }
 
-  if (commands.length === 0)
-    return
+    const lastCommandState = commands[commands.length - 1];
 
-  const lastCommandState = commands[commands.length - 1]
+    return CommandDescriptor.execute(editorState, lastCommandState);
+  },
+);
 
-  return CommandDescriptor.execute(editorState, lastCommandState)
-})
+registerCommand(
+  Command.historyRepeatSelection,
+  CommandFlags.ChangeSelections | CommandFlags.IgnoreInHistory,
+  (editorState) => {
+    const commands = editorState.recordedCommands;
 
-registerCommand(Command.historyRepeatSelection, CommandFlags.ChangeSelections | CommandFlags.IgnoreInHistory, (editorState) => {
-  const commands = editorState.recordedCommands
+    for (let i = commands.length - 1; i >= 0; i--) {
+      const commandState = commands[i];
 
-  for (let i = commands.length - 1; i >= 0; i--) {
-    const commandState = commands[i]
+      if (
+        commandState.descriptor.flags & CommandFlags.ChangeSelections &&
+        !(commandState.descriptor.flags & CommandFlags.Edit)
+      ) {
+        return CommandDescriptor.execute(editorState, commandState);
+      }
+    }
 
-    if (commandState.descriptor.flags & CommandFlags.ChangeSelections && !(commandState.descriptor.flags & CommandFlags.Edit))
-      return CommandDescriptor.execute(editorState, commandState)
-  }
+    return;
+  },
+);
 
-  return
-})
+registerCommand(
+  Command.historyRepeatEdit,
+  CommandFlags.Edit | CommandFlags.IgnoreInHistory,
+  (editorState) => {
+    const commands = editorState.recordedCommands;
 
-registerCommand(Command.historyRepeatEdit, CommandFlags.Edit | CommandFlags.IgnoreInHistory, (editorState) => {
-  const commands = editorState.recordedCommands
+    for (let i = commands.length - 1; i >= 0; i--) {
+      const commandState = commands[i];
 
-  for (let i = commands.length - 1; i >= 0; i--) {
-    const commandState = commands[i]
+      if (commandState.descriptor.flags & CommandFlags.Edit) {
+        return CommandDescriptor.execute(editorState, commandState);
+      }
+    }
 
-    if (commandState.descriptor.flags & CommandFlags.Edit)
-      return CommandDescriptor.execute(editorState, commandState)
-  }
-
-  return
-})
+    return;
+  },
+);
 
 const ObjectOrSelectToCommands = new Set([
   Command.objectsPerformSelection,
@@ -58,17 +83,18 @@ const ObjectOrSelectToCommands = new Set([
   Command.selectToIncludedBackwards,
   Command.selectToIncludedExtend,
   Command.selectToIncludedExtendBackwards,
-])
+]);
 
 registerCommand(Command.repeatObjectOrSelectTo, CommandFlags.ChangeSelections, (editorState) => {
-  const commands = editorState.recordedCommands
+  const commands = editorState.recordedCommands;
 
   for (let i = commands.length - 1; i >= 0; i--) {
-    const commandState = commands[i]
+    const commandState = commands[i];
 
-    if (ObjectOrSelectToCommands.has(commandState.descriptor.command))
-      return CommandDescriptor.execute(editorState, commandState)
+    if (ObjectOrSelectToCommands.has(commandState.descriptor.command)) {
+      return CommandDescriptor.execute(editorState, commandState);
+    }
   }
 
-  return undefined
-})
+  return undefined;
+});

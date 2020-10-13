@@ -1,9 +1,12 @@
 {
   "files.associations": {
-    "test/suite/commands/*": "text",
+    "test/suite/commands/*": "text"
   },
   "search.exclude": {
     "out": true
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
+  "[typescript]": {
+    "editor.rulers": [80, 100]
+  },
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

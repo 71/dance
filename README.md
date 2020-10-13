@@ -1,36 +1,36 @@
-Dance
-=====
+# Dance
 
-[Kakoune]-inspired key bindings for [Visual Studio Code][VSC].
-
+[Kakoune]-inspired key bindings for [Visual Studio Code][vsc].
 
 ## Huh?
 
-Dance provides [Kakoune]-inspired commands and key bindings for [Visual Studio Code][VSC].
+Dance provides [Kakoune]-inspired commands and key bindings for [Visual Studio Code][vsc].
 
 These key bindings are (mostly) compatible with [Kakoune]'s, but are meant to be an addition
-to [Visual Studio Code][VSC], rather than an emulation layer on top of it.
+to [Visual Studio Code][vsc], rather than an emulation layer on top of it.
 
-#### Why [VS Code][VSC], and not [Kakoune] directly?
+#### Why [VS Code][vsc], and not [Kakoune] directly?
+
 - Kakoune is an efficient and lightweight editor with a very small ecosystem.
   VS Code is an entire IDE with a huge ecosystem and many existing extensions.
 - Kakoune is Unix only.
 
 #### Why [Kakoune]'s key bindings, and not [Vim]'s?
+
 - Whether you prefer Vim, Emacs or Kakoune key bindings is a matter of preference. I, for one,
   prefer [Kakoune's](https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc).
-- Vim's key bindings are [already available to VS Code users][VSCodeVim].
+- Vim's key bindings are [already available to VS Code users][vscodevim].
 
 #### Why is it merely 'inspired' by [Kakoune]?
+
 - Unlike [VSCodeVim] which attempts to emulate Vim, Dance's only goal is to provide
-  VS Code-native [commands][VSCCommands] and [key bindings][VSCKeyBindings] that are inspired by [Kakoune].
+  VS Code-native [commands][vsccommands] and [key bindings][vsckeybindings] that are inspired by [Kakoune].
   - Some features are provided to mimic Kakoune's behavior (e.g. treating positions as coordonates
     of characters, rather than carets between characters like VS Code), but are optional.
 - Kakoune, Vim and VS Code are all fully-fledged text editors; therefore, they have overlapping
   features. For instance, where [VSCodeVim] provides its own multi-cursor and command engines
   to feel more familiar to existing Vim users, Dance leaves multi-cursor mode and editor
   commands to VS Code entirely.
-
 
 ## User Guide
 
@@ -47,15 +47,19 @@ selection will contain at least one character. (This behavior is recommended for
 developed muscle memory, e.g. hitting `;d` to delete one character.)
 
 ### Pipes
+
 - Pipes no longer accept shell commands, but instead accept 'expressions', those being:
+
   - `#<shell command>`: Pipes each selection into a shell command (the shell is taken from the `terminal.external.exec` value).
   - `/<pattern>[/<replacement>[/<flags>]`: A RegExp literal, as [defined in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions). Do note the addition of a `replacement`, for commands that add or replace text.
   - `<JS expression>`: A JavaScript expression in which the following variables are available:
+
     - `$`: Text of the current selection.
     - `$$`: Array of the text of all the selections.
     - `i`: Index of the current selection.
 
     Depending on the result of the expression, it will be inserted differently:
+
     - `string`: Inserted directly.
     - `number`: Inserted in its string representation.
     - `boolean`: Inserted as `true` or `false`.
@@ -65,11 +69,12 @@ developed muscle memory, e.g. hitting `;d` to delete one character.)
     - Any other type: Leads to an error.
 
 #### Examples
+
 - `/(\d+),(\d+)/$1.$2/g` replaces `12,34` into `12.34`.
 - `i + 1` replaces `1,1,1,1,1` into `1,2,3,4,5`, assuming that each selection is on a different digit.
 
-
 ### Miscellaneous changes
+
 A few changes were made from Kakoune, mostly out of personal preference, and to make the
 extension integrate better in VS Code. If you disagree with any of these changes,
 you're welcome to open an issue to discuss it, or to add an option for it by submitting a PR.
@@ -83,13 +88,12 @@ you're welcome to open an issue to discuss it, or to add an option for it by sub
 - There are some additional features not documented here but mentioned in [issues] and/or in
   the configuration of the plugin. TODO: document them here.
 
-
 ### Troubleshooting
+
 Dance uses the built-in VS Code key bindings, and therefore does not override the `type` command.
 **However**, it sometimes needs access to the `type` command, in dialogs and register selection,
 for instance. Consequently, it is not compatible with extensions that always override the `type`
 command, such as [VSCodeVim]; these extensions must therefore be disabled.
-
 
 ## Progress
 
@@ -102,54 +106,55 @@ In the following list, if a command is implemented, then its extending equivalen
 
 Most (but not all) commands defined in [`commands`][commands] are implemented.
 
-- [X] Basic movements:
-  - [X] Arrows, hjkl.
-  - [X] Move to character, move until character.
-  - [X] Move to next word, move to previous word.
-- [X] Insert mode:
-  - [X] Enter insert mode with `a`, `i`, `o`, and their `Alt` / `Shift` equivalents.
-  - [X] Exit insert mode with `Escape`.
-- [X] Basic selections:
-  - [X] Search in selections.
-  - [X] Split in selections.
-  - [X] Split selections by lines.
-  - [X] Extend selections by taking lines.
-  - [X] Trim selections.
-- [X] Pipes.
-- [X] Object selection.
-- [X] Yanking:
-  - [X] Yank.
-  - [X] Paste.
-- [X] Rotate:
-  - [X] Rotate selections only.
-  - [X] Rotate selections content only.
-  - [X] Rotate selections and content.
-- [X] Changes:
-  - [X] Join.
-  - [X] Replace.
-  - [X] Delete.
-  - [X] Indent.
-  - [X] Dedent.
-  - [X] Change case.
-- [X] Search.
+- [x] Basic movements:
+  - [x] Arrows, hjkl.
+  - [x] Move to character, move until character.
+  - [x] Move to next word, move to previous word.
+- [x] Insert mode:
+  - [x] Enter insert mode with `a`, `i`, `o`, and their `Alt` / `Shift` equivalents.
+  - [x] Exit insert mode with `Escape`.
+- [x] Basic selections:
+  - [x] Search in selections.
+  - [x] Split in selections.
+  - [x] Split selections by lines.
+  - [x] Extend selections by taking lines.
+  - [x] Trim selections.
+- [x] Pipes.
+- [x] Object selection.
+- [x] Yanking:
+  - [x] Yank.
+  - [x] Paste.
+- [x] Rotate:
+  - [x] Rotate selections only.
+  - [x] Rotate selections content only.
+  - [x] Rotate selections and content.
+- [x] Changes:
+  - [x] Join.
+  - [x] Replace.
+  - [x] Delete.
+  - [x] Indent.
+  - [x] Dedent.
+  - [x] Change case.
+- [x] Search.
 - [ ] History:
-  - [X] Undo / redo.
+  - [x] Undo / redo.
   - [ ] Forward / backward.
-  - [X] Repeat command.
+  - [x] Repeat command.
   - [ ] Repeat insertion.
-- [X] Macros.
+- [x] Macros.
 - [ ] Registers.
-
 
 ## Contributing
 
 ### Plugins
+
 Dance was designed to nicely interopate with other extensions: it does not override
 the `type` command, and allows any extension to execute its commands.  
 It should therefore be possible to create other extensions that work with Dance. If
 you'd like to add new features to Dance directly, please file an issue.
 
 ### Bugs and features
+
 There are unfortunately still bugs lurking around features missing. If you'd like to
 fix bugs or add features, please look at the [issues] and file one if no other issue
 matches your request. This will ensure that no two people work on the same feature
@@ -162,12 +167,14 @@ Your PR will be rebased on top of `master` in order to keep a clean commit histo
 Please avoid unnecessary commits (`git commit --amend` is your friend).
 
 ### Tests
+
 We recently started adding tests to Dance. Most tests are in `test/suite/commands`,
 as plain text files that are separated into several sections.
 
 Tests can be run and debugged in VS Code in the run menu, under "Run Extension Tests".
 
 #### Sections
+
 Each section has a name, which is any string that has no whitespace.
 
 Except for the first section (implicitly named `0` or `root`), each section
@@ -193,6 +200,7 @@ For instance, let's look at the following code:
 ```
 
 It defines three sections:
+
 - `1`, which is reached after executing `dance.select.line` from section `0`.
 - `2`, which is reached after executing `dance.select.line.extend` from section `1`.
 - `3`, which is reached after executing `dance.select.line` and then `dance.select.line.extend` from section `1`.
@@ -202,6 +210,7 @@ sections must be defined in order; that is, a section `a` cannot depend on a sec
 if section `b` is defined after `a`.
 
 #### Section content
+
 Each section has content (the `...` in the example above). That content is plain text to which
 one or more selections must be added using a `{...}` / `|{...}` syntax, where `...` is a number.
 
@@ -212,6 +221,7 @@ selections `0`, `1`, and `2` must be defined at some point too. The anchor can b
 the active position.
 
 #### Tests generation
+
 For each transition, a test will be generated making sure that executing the corresponding commands
 will lead to some document with selections at some locations.
 
@@ -236,6 +246,7 @@ The second generated test asserts that calling `dance.delete.yank` in the docume
 the main selection leads to a document `fo` with `o` selected.
 
 #### Other features
+
 - Command test files ending with `.caret` will we run with `selectionBehavior == "caret"`. Otherwise,
   `selectionBehavior == "character"` is used.
 - Comments can be added by having lines start with "// ".
@@ -249,12 +260,11 @@ the main selection leads to a document `fo` with `o` selected.
   //= type:c
   ```
 
-
 [commands]: ./commands
 [issues]: https://github.com/71/dance/issues
-[Vim]: https://www.vim.org
-[Kakoune]: https://github.com/mawww/kakoune
-[VSC]: https://github.com/Microsoft/vscode
-[VSCodeVim]: https://github.com/VSCodeVim/Vim
-[VSCCommands]: https://code.visualstudio.com/api/extension-guides/command
-[VSCKeyBindings]: https://code.visualstudio.com/docs/getstarted/keybindings
+[vim]: https://www.vim.org
+[kakoune]: https://github.com/mawww/kakoune
+[vsc]: https://github.com/Microsoft/vscode
+[vscodevim]: https://github.com/VSCodeVim/Vim
+[vsccommands]: https://code.visualstudio.com/api/extension-guides/command
+[vsckeybindings]: https://code.visualstudio.com/docs/getstarted/keybindings
