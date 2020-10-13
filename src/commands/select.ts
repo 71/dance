@@ -142,96 +142,95 @@ function selectByWord(
     isBlank = getCharSetFunction(CharSet.Blank, document),
     isPunctuation = getCharSetFunction(CharSet.Punctuation, document);
 
-  helper.mapEach(
-    seekToRange(
-      (from) => {
-        let anchor = undefined,
-          active = from;
-        for (let i = repetitions; i > 0; i--) {
-          const text = document.lineAt(active.line).text;
-          const lineEndCol =
-            helper.selectionBehavior === SelectionBehavior.Caret ? text.length : text.length - 1;
-          // 1. Starting from active, try to seek to the word start.
-          if (direction === Forward ? active.character >= lineEndCol : active.character === 0) {
-            const afterEmptyLines = skipEmptyLines(active, document, direction);
-            if (afterEmptyLines === undefined) {
-              if (direction === Backward && active.line > 0) {
-                // This is a special case in Kakoune and we try to mimic it here.
-                // Instead of overflowing, put anchor at document start and
-                // active always on the first character on the second line.
-                anchor = new Coord(0, 0);
-                active = new Coord(1, 0);
-                continue;
+  for (let i = repetitions; i > 0; i--) {
+    helper.mapEach(
+      seekToRange(
+        (from) => {
+          let anchor = undefined,
+            active = from;
+            const text = document.lineAt(active.line).text;
+            const lineEndCol =
+              helper.selectionBehavior === SelectionBehavior.Caret ? text.length : text.length - 1;
+            // 1. Starting from active, try to seek to the word start.
+            const isAtLineBoundary = direction === Forward ? (active.character >= lineEndCol) : (active.character === 0);
+            if (isAtLineBoundary) {
+              const afterEmptyLines = skipEmptyLines(active, document, direction);
+              if (afterEmptyLines === undefined) {
+                if (direction === Backward && active.line > 0) {
+                  // This is a special case in Kakoune and we try to mimic it here.
+                  // Instead of overflowing, put anchor at document start and
+                  // active always on the first character on the second line.
+                  return [new Coord(0, 0), new Coord(1, 0)];
+                } else {
+                  // Otherwise the selection overflows.
+                  return { remove: true, fallback: [anchor, active] };
+                }
+              }
+              anchor = afterEmptyLines;
+            } else if (direction === Backward && active.character >= text.length) {
+              anchor = new Coord(active.line, text.length - 1);
+            } else {
+              let shouldSkip;
+              if (helper.selectionBehavior === SelectionBehavior.Character) {
+                // Skip current character if it is at boundary. (e.g. "ab[c]  " =>`w`)
+                const column = active.character;
+                shouldSkip =
+                  categorize(text.charCodeAt(column), isBlank, isWord) !==
+                  categorize(text.charCodeAt(column + direction), isBlank, isWord);
               } else {
-                // Otherwise the selection overflows.
-                return { remove: true, fallback: [anchor, active] };
+                // Ignore the character on the right of the caret.
+                shouldSkip = direction === Backward;
+              }
+              anchor = shouldSkip ? new Coord(active.line, active.character + direction) : active;
+            }
+
+            active = anchor;
+
+            // 2. Then scan within the current line until the word ends.
+
+            const curLineText = document.lineAt(active).text;
+            let nextCol = active.character; // The next character to be tested.
+            if (end) {
+              // Select the whitespace before word, if any.
+              while (
+                nextCol >= 0 &&
+                nextCol < curLineText.length &&
+                isBlank(curLineText.charCodeAt(nextCol))
+              ) {
+                nextCol += direction;
               }
             }
-            anchor = afterEmptyLines;
-          } else if (direction === Backward && active.character >= text.length) {
-            anchor = new Coord(active.line, text.length - 1);
-          } else {
-            let shouldSkip;
-            if (helper.selectionBehavior === SelectionBehavior.Character) {
-              // Skip current character if it is at boundary. (e.g. "ab[c]  " =>`w`)
-              const column = active.character;
-              shouldSkip =
-                categorize(text.charCodeAt(column), isBlank, isWord) !==
-                categorize(text.charCodeAt(column + direction), isBlank, isWord);
-            } else {
-              // Ignore the character on the right of the caret.
-              shouldSkip = direction === Backward;
+            if (nextCol >= 0 && nextCol < curLineText.length) {
+              const startCharCode = curLineText.charCodeAt(nextCol);
+              const isSameCategory = isWord(startCharCode) ? isWord : isPunctuation;
+              while (
+                nextCol >= 0 &&
+                nextCol < curLineText.length &&
+                isSameCategory(curLineText.charCodeAt(nextCol))
+              ) {
+                nextCol += direction;
+              }
             }
-            anchor = shouldSkip ? new Coord(active.line, active.character + direction) : active;
-          }
-
-          active = anchor;
-
-          // 2. Then scan within the current line until the word ends.
-
-          const curLineText = document.lineAt(active).text;
-          let nextCol = active.character; // The next character to be tested.
-          if (end) {
-            // Select the whitespace before word, if any.
-            while (
-              nextCol >= 0 &&
-              nextCol < curLineText.length &&
-              isBlank(curLineText.charCodeAt(nextCol))
-            ) {
-              nextCol += direction;
+            if (!end) {
+              // Select the whitespace after word, if any.
+              while (
+                nextCol >= 0 &&
+                nextCol < curLineText.length &&
+                isBlank(curLineText.charCodeAt(nextCol))
+              ) {
+                nextCol += direction;
+              }
             }
-          }
-          if (nextCol >= 0 && nextCol < curLineText.length) {
-            const startCharCode = curLineText.charCodeAt(nextCol);
-            const isSameCategory = isWord(startCharCode) ? isWord : isPunctuation;
-            while (
-              nextCol >= 0 &&
-              nextCol < curLineText.length &&
-              isSameCategory(curLineText.charCodeAt(nextCol))
-            ) {
-              nextCol += direction;
-            }
-          }
-          if (!end) {
-            // Select the whitespace after word, if any.
-            while (
-              nextCol >= 0 &&
-              nextCol < curLineText.length &&
-              isBlank(curLineText.charCodeAt(nextCol))
-            ) {
-              nextCol += direction;
-            }
-          }
-          // If we reach here, nextCol must be the first character we encounter that
-          // does not belong to the current word (or -1 / line break). Exclude it.
-          active = new Coord(active.line, nextCol - direction);
-        }
-        return [anchor!, active];
-      },
-      extend,
-      /* singleCharDirection = */ direction,
-    ),
-  );
+            // If we reach here, nextCol must be the first character we encounter that
+            // does not belong to the current word (or -1 / line break). Exclude it.
+            active = new Coord(active.line, nextCol - direction);
+          return [anchor!, active];
+        },
+        extend,
+        /* singleCharDirection = */ direction,
+      ),
+    );
+  }
 }
 
 registerCommand(Command.selectWord, CommandFlags.ChangeSelections, (editorState, state) =>
