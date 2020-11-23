@@ -28,7 +28,7 @@ function getShell() {
 }
 
 function execWithInput(command: string, input: string) {
-  return new Promise((resolve, reject) => {
+  return new Promise<{ readonly val: string } | { readonly err: string }>((resolve) => {
     const shell = getShell() ?? true,
       child = cp.spawn(command, { shell, stdio: "pipe" });
 
@@ -39,11 +39,11 @@ function execWithInput(command: string, input: string) {
     child.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString("utf-8")));
     child.stdin.end(input, "utf-8");
 
-    child.once("error", (err) => reject({ err }));
+    child.once("error", (err) => resolve({ err: err.message }));
     child.once("exit", (code) =>
       code === 0
         ? resolve({ val: stdout.trimRight() })
-        : reject({
+        : resolve({
             err: `Command exited with error ${code}: ${
               stderr.length > 0 ? stderr.trimRight() : "<No error output>"
             }`,
