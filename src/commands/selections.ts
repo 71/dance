@@ -340,7 +340,7 @@ function copySelections(editorState: EditorState, { repetitions }: CommandState,
 
       if (copiedSelection !== undefined) {
         if (!selections.some(s => s.contains(copiedSelection)))
-          selections.push(copiedSelection)
+          selections.unshift(copiedSelection)
 
         i++
 
