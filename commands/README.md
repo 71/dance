@@ -135,6 +135,10 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.goto.lastVisibleLine` | Go to last visible line | Go to last visible line. |  |
 | `dance.goto.selectedFile` | Open file under selection | Open file under selection. |  |
 | `dance.goto.lastModification` | Go to last buffer modification position | Go to last buffer modification position. |  |
+| `dance.view` | View... | Shows prompt to change view | `V` (`dance.mode == 'normal'`) |
+| `dance.view.center.vertical` | Center cursor | Centers the cursor |  |
+| `dance.view.top` | Cursor on top | Moves the cursor to the top |  |
+| `dance.view.bottom` | Cursor on bottom | Moves the cursor to the bottom |  |
 | `dance.openMenu` | Open quick-jump menu | Open quick-jump menu. |  |
 | `dance.registers.insert` | Insert value in register | Insert value in register. | `Ctrl+R` (`dance.mode == 'normal'`), `Ctrl+R` (`dance.mode == 'insert'`) |
 | `dance.registers.select` | Select register for next command | Select register for next command. | `Shift+\'` (`dance.mode == 'normal'`) |

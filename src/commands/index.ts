@@ -471,6 +471,7 @@ export function setRemainingNormalCommands(remaining: number) {
 import "./changes";
 import "./count";
 import "./goto";
+import "./view";
 import "./history";
 import "./insert";
 import "./macros";

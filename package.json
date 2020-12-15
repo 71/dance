@@ -459,6 +459,22 @@
                   "command": "dance.goto.lastModification.extend"
                 }
               }
+            },
+            "view": {
+              "items": {
+                "c": {
+                  "text": "Cursor center",
+                  "command": "dance.view.center.vertical"
+                },
+                "t": {
+                  "text": "Cursor top",
+                  "command": "dance.view.top"
+                },
+                "b": {
+                  "text": "Cursor bottom",
+                  "command": "dance.view.bottom"
+                }
+              }
             }
           }
         }
@@ -1177,6 +1193,30 @@
         "command": "dance.goto.lastModification",
         "title": "Go to last buffer modification position",
         "description": "Go to last buffer modification position.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.view",
+        "title": "View...",
+        "description": "Shows prompt to change view",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.view.center.vertical",
+        "title": "Center cursor",
+        "description": "Centers the cursor",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.view.top",
+        "title": "Cursor on top",
+        "description": "Moves the cursor to the top",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.view.bottom",
+        "title": "Cursor on bottom",
+        "description": "Moves the cursor to the bottom",
         "category": "Dance"
       },
       {
@@ -2165,6 +2205,11 @@
       {
         "command": "dance.goto",
         "key": "g",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.view",
+        "key": "v",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

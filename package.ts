@@ -166,6 +166,23 @@ for (const [suffix, desc] of [
   };
 }
 
+menus["view"] = {
+  items: {
+    "c": {
+      text: `Cursor center`,
+      command: "dance.view.center.vertical",
+    },
+    "t": {
+      text: `Cursor top`,
+      command: "dance.view.top",
+    },
+    "b": {
+      text: `Cursor bottom`,
+      command: "dance.view.bottom",
+    }
+  }
+}
+
 // Package information
 // ============================================================================
 
@@ -329,7 +346,7 @@ const pkg = {
           markdownEnumDescriptions: [
             "Selections are anchored to carets, which is the native VS Code behavior; that is, they are positioned *between* characters and can therefore be empty.",
             "Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. " +
-              "Additionally, one-character selections will behave as if they were non-directional, like Kakoune.",
+            "Additionally, one-character selections will behave as if they were non-directional, like Kakoune.",
           ],
         },
         "dance.menus": {

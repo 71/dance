@@ -1608,6 +1608,50 @@ export const gotoLastModification: ICommand<"dance.goto.lastModification"> = {
 };
 
 /**
+ * Shows prompt to change view
+ *
+ * Default key: `V` (`dance.mode == 'normal'`).
+ */
+export const view: ICommand<"dance.view"> = {
+  id         : "dance.view",
+  title      : "View...",
+  description: "Shows prompt to change view",
+  keybindings: [
+    { key: "v", when: "editorTextFocus && dance.mode == 'normal'" },
+  ],
+};
+
+/**
+ * Centers the cursor
+ */
+export const viewCenterVertical: ICommand<"dance.view.center.vertical"> = {
+  id         : "dance.view.center.vertical",
+  title      : "Center cursor",
+  description: "Centers the cursor",
+  keybindings: [],
+};
+
+/**
+ * Moves the cursor to the top
+ */
+export const viewTop: ICommand<"dance.view.top"> = {
+  id         : "dance.view.top",
+  title      : "Cursor on top",
+  description: "Moves the cursor to the top",
+  keybindings: [],
+};
+
+/**
+ * Moves the cursor to the bottom
+ */
+export const viewBottom: ICommand<"dance.view.bottom"> = {
+  id         : "dance.view.bottom",
+  title      : "Cursor on bottom",
+  description: "Moves the cursor to the bottom",
+  keybindings: [],
+};
+
+/**
  * Open quick-jump menu.
  */
 export const openMenu: ICommand<"dance.openMenu"> = {
@@ -2555,6 +2599,14 @@ export const commands = {
   gotoSelectedFile,
   /** Go to last buffer modification position. */
   gotoLastModification,
+  /** Shows prompt to change view */
+  view,
+  /** Centers the cursor */
+  viewCenterVertical,
+  /** Moves the cursor to the top */
+  viewTop,
+  /** Moves the cursor to the bottom */
+  viewBottom,
   /** Open quick-jump menu. */
   openMenu,
   /** Insert value in register. */
@@ -2905,6 +2957,14 @@ export const enum Command {
   gotoSelectedFile = "dance.goto.selectedFile",
   /** Go to last buffer modification position. */
   gotoLastModification = "dance.goto.lastModification",
+  /** Shows prompt to change view */
+  view = "dance.view",
+  /** Centers the cursor */
+  viewCenterVertical = "dance.view.center.vertical",
+  /** Moves the cursor to the top */
+  viewTop = "dance.view.top",
+  /** Moves the cursor to the bottom */
+  viewBottom = "dance.view.bottom",
   /** Open quick-jump menu. */
   openMenu = "dance.openMenu",
   /** Insert value in register. */

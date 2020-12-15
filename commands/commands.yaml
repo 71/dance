@@ -636,6 +636,26 @@ goto.lastModification:
   title: Go to last buffer modification position
   add: extend
 
+# View (view.ts)
+# ================================================================================================
+
+view:
+  title: View...
+  descr: Shows prompt to change view
+  keys: v (normal)
+
+view.center.vertical:
+  title: Center cursor
+  descr: Centers the cursor
+
+view.top:
+  title: Cursor on top
+  descr: Moves the cursor to the top
+
+view.bottom:
+  title: Cursor on bottom
+  descr: Moves the cursor to the bottom
+
 # Menus (menus.ts)
 # ================================================================================================
 
