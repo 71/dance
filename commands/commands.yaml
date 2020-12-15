@@ -643,6 +643,8 @@ view:
   title: View...
   descr: Shows prompt to change view
   keys: v (normal)
+  command: dance.openMenu
+  args: { menu: "view" }
 
 view.center.vertical:
   title: Center cursor

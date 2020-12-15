@@ -1196,12 +1196,6 @@
         "category": "Dance"
       },
       {
-        "command": "dance.view",
-        "title": "View...",
-        "description": "Shows prompt to change view",
-        "category": "Dance"
-      },
-      {
         "command": "dance.view.center.vertical",
         "title": "Center cursor",
         "description": "Centers the cursor",
@@ -1593,6 +1587,14 @@
         "args": {
           "menu": "object",
           "action": "selectToEnd"
+        }
+      },
+      {
+        "key": "v",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "view"
         }
       },
       {

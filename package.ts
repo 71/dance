@@ -179,9 +179,9 @@ menus["view"] = {
     "b": {
       text: `Cursor bottom`,
       command: "dance.view.bottom",
-    }
-  }
-}
+    },
+  },
+};
 
 // Package information
 // ============================================================================

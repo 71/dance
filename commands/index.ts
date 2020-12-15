@@ -1608,20 +1608,6 @@ export const gotoLastModification: ICommand<"dance.goto.lastModification"> = {
 };
 
 /**
- * Shows prompt to change view
- *
- * Default key: `V` (`dance.mode == 'normal'`).
- */
-export const view: ICommand<"dance.view"> = {
-  id         : "dance.view",
-  title      : "View...",
-  description: "Shows prompt to change view",
-  keybindings: [
-    { key: "v", when: "editorTextFocus && dance.mode == 'normal'" },
-  ],
-};
-
-/**
  * Centers the cursor
  */
 export const viewCenterVertical: ICommand<"dance.view.center.vertical"> = {
@@ -2599,8 +2585,6 @@ export const commands = {
   gotoSelectedFile,
   /** Go to last buffer modification position. */
   gotoLastModification,
-  /** Shows prompt to change view */
-  view,
   /** Centers the cursor */
   viewCenterVertical,
   /** Moves the cursor to the top */
@@ -2957,8 +2941,6 @@ export const enum Command {
   gotoSelectedFile = "dance.goto.selectedFile",
   /** Go to last buffer modification position. */
   gotoLastModification = "dance.goto.lastModification",
-  /** Shows prompt to change view */
-  view = "dance.view",
   /** Centers the cursor */
   viewCenterVertical = "dance.view.center.vertical",
   /** Moves the cursor to the top */
@@ -3112,6 +3094,12 @@ export const additionalKeyBindings = [
     when   : "editorTextFocus && dance.mode == 'normal'",
     command: "dance.openMenu",
     args   : { "menu": "object", "action": "selectToEnd" },
+  },
+  {
+    key    : "v",
+    when   : "editorTextFocus && dance.mode == 'normal'",
+    command: "dance.openMenu",
+    args   : { "menu": "view" },
   },
   {
     key    : "Shift+;",
