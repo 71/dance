@@ -676,6 +676,10 @@ cancel:
   descr: Cancels waiting for input from the user
   keys: escape (awaiting)
 
+run:
+  title: Run code
+  descr: Runs JavaScript code passed in a 'code' argument
+
 _commandPalette:
   title: Open Command Palette
   descr: Open the built-in Command Palette in VSCode

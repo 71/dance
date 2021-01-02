@@ -143,6 +143,7 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.marks.combineSelections.fromCurrent` | Combine current selections with ones from register | Combine current selections with ones from register. | `Shift+Alt+Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromRegister` | Combine register selections with current ones | Combine register selections with current ones. | `Alt+Z` (`dance.mode == 'normal'`) |
 | `dance.cancel` | Cancel operation | Cancels waiting for input from the user | `Escape` (`dance.mode == 'awaiting'`) |
+| `dance.run` | Run code | Runs JavaScript code passed in a 'code' argument |  |
 |  | Open Command Palette | Open the built-in Command Palette in VSCode | `Shift+;` (`dance.mode == 'normal'`) |
 | `dance.left.extend` | Move left (extend) | Move left (extend). | `Shift+Left` (`dance.mode == 'normal'`), `Shift+H` (`dance.mode == 'normal'`) |
 | `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `Shift+L` (`dance.mode == 'normal'`) |

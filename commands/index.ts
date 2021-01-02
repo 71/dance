@@ -1717,6 +1717,16 @@ export const cancel: ICommand<"dance.cancel"> = {
 };
 
 /**
+ * Runs JavaScript code passed in a 'code' argument
+ */
+export const run: ICommand<"dance.run"> = {
+  id         : "dance.run",
+  title      : "Run code",
+  description: "Runs JavaScript code passed in a 'code' argument",
+  keybindings: [],
+};
+
+/**
  * Move left (extend).
  *
  * Default keys: `Shift+Left` (`dance.mode == 'normal'`), `Shift+H` (`dance.mode == 'normal'`).
@@ -2571,6 +2581,8 @@ export const commands = {
   marksCombineSelectionsFromRegister,
   /** Cancels waiting for input from the user */
   cancel,
+  /** Runs JavaScript code passed in a 'code' argument */
+  run,
   /** Move left (extend). */
   leftExtend,
   /** Move right (extend). */
@@ -2921,6 +2933,8 @@ export const enum Command {
   marksCombineSelectionsFromRegister = "dance.marks.combineSelections.fromRegister",
   /** Cancels waiting for input from the user */
   cancel = "dance.cancel",
+  /** Runs JavaScript code passed in a 'code' argument */
+  run = "dance.run",
   /** Move left (extend). */
   leftExtend = "dance.left.extend",
   /** Move right (extend). */
