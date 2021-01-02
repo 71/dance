@@ -2,12 +2,12 @@
   "name": "dance",
   "displayName": "Dance",
   "description": "Make those cursors dance with Kakoune-inspired keybindings.",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "license": "ISC",
   "publisher": "gregoire",
   "author": {
     "name": "Grégoire Geis",
-    "email": "git@gregoirege.is"
+    "email": "opensource@gregoirege.is"
   },
   "repository": {
     "type": "git",
@@ -1228,6 +1228,12 @@
         "category": "Dance"
       },
       {
+        "command": "dance.run",
+        "title": "Run code",
+        "description": "Runs JavaScript code passed in a 'code' argument",
+        "category": "Dance"
+      },
+      {
         "command": "dance.left.extend",
         "title": "Move left (extend)",
         "description": "Move left (extend).",
@@ -2410,6 +2416,51 @@
       {
         "command": "dance.count.9",
         "key": "9",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "v",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "Shift+d",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "Shift+v",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "Shift+y",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "Shift+2",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "Shift+3",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "Shift+6",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": ",",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.cancel",
+        "key": "'",
         "when": "editorTextFocus && dance.mode == 'normal'"
       }
     ]

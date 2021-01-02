@@ -12,10 +12,22 @@ const keybindings: {
   args?: any;
 }[] = additionalKeyBindings.concat();
 
+const alphanum = [..."abcdefghijklmnopqrstuvwxyz0123456789"],
+  keysToAssign = new Set([...alphanum, ...alphanum.map((x) => `Shift+${x}`), ...",'"]);
+
 for (const command of Object.values(commands)) {
   for (const { key, when } of command.keybindings) {
+    keysToAssign.delete(key);
     keybindings.push({ command: command.id, key, when });
   }
+}
+
+for (const keyToAssign of keysToAssign) {
+  keybindings.push({
+    command: "dance.cancel",
+    key: keyToAssign,
+    when: "editorTextFocus && dance.mode == 'normal'",
+  });
 }
 
 // Menus
@@ -173,13 +185,13 @@ const pkg = {
   name: "dance",
   displayName: "Dance",
   description: "Make those cursors dance with Kakoune-inspired keybindings.",
-  version: "0.3.2",
+  version: "0.4.0",
   license: "ISC",
 
   publisher: "gregoire",
   author: {
     name: "Grégoire Geis",
-    email: "git@gregoirege.is",
+    email: "opensource@gregoirege.is",
   },
 
   repository: {
