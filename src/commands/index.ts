@@ -271,8 +271,8 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         }
       }
     } catch (e) {
-      console.error(e.stack);
-      throw e;
+      vscode.window.showErrorMessage(e.toString());
+      return;
     }
 
     if (flags & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter)) {

@@ -21,7 +21,7 @@ registerCommand(Command.run, CommandFlags.IgnoreInHistory, async (_, state) => {
   try {
     func = AsyncFunction("vscode", "args", code) as any;
   } catch (e) {
-    throw new Error(`cannot parse function body: ${code}`);
+    throw new Error(`cannot parse function body: ${code}: ${e}`);
   }
 
   try {
