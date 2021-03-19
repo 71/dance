@@ -96,10 +96,7 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
       }
     }
     if (acceptFallback) {
-      vscode.window.showErrorMessage("No selections remaining.");
-      // Or show error in the status bar? VSCode does not have a way to dismiss
-      // messages, but they recommend setting the status bar instead.
-      // See: https://github.com/Microsoft/vscode/issues/2732
+      throw new Error("no selections remaining");
     }
     editor.selections = newSelections;
   }

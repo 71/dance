@@ -157,7 +157,9 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
     switch (this.input) {
     case InputKind.RegExp:
-      if (typeof argument === "object" && typeof argument.input === "string") {
+      if (typeof argument === "object" && argument?.input instanceof RegExp) {
+        input = argument.input;
+      } else if (typeof argument === "object" && typeof argument.input === "string") {
         input = new RegExp(argument.input, this.inputDescr(editorState) as string) as any;
       } else {
         input = await promptRegex(this.inputDescr(editorState) as string, cancellationToken) as any;
@@ -199,7 +201,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       if (typeof argument === "object" && typeof argument.input === "string") {
         const error = await Promise.resolve(inputDescr.validateInput?.(argument.input));
         if (error) {
-          vscode.window.showErrorMessage(error);
+          throw new Error(`invalid text input: ${error}`);
         }
         input = argument.input;
       } else {
@@ -289,6 +291,9 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         message = e.message;
       }
 
+      // Or show error in the status bar? VSCode does not have a way to dismiss
+      // messages, but they recommend setting the status bar instead.
+      // See: https://github.com/Microsoft/vscode/issues/2732
       vscode.window.showErrorMessage(`Error executing command "${this.command}": ${message}`);
       return;
     }

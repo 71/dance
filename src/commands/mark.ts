@@ -85,11 +85,7 @@ function combineSelections(
   }
 
   if (from.length !== add.length) {
-    vscode.window.showErrorMessage(
-      `The current selections and marked selections do not have the same number of elements.`,
-    );
-
-    return;
+    throw new Error("the current and marked selections have different sizes");
   }
 
   const selections = [] as vscode.Selection[];

@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import * as path from "path";
 import * as vscode from "vscode";
 
@@ -24,13 +23,7 @@ const executeMenuItem = async (editorState: EditorState, name: string, i: number
   const menuItems = editorState.extension.menus.get(name)!.items;
   const menuItem = Object.values(menuItems)[i];
 
-  try {
-    await vscode.commands.executeCommand(menuItem.command, menuItem.args);
-  } catch (e) {
-    const str = `${e}`.replace(/^Error: /, "");
-
-    vscode.window.showErrorMessage(`Command did not succeed successfully: ${str}.`);
-  }
+  await vscode.commands.executeCommand(menuItem.command, menuItem.args);
 };
 
 // TODO: Make just merely opening the menu not count as a command execution
@@ -250,33 +243,12 @@ registerCommand(
 registerCommand(Command.gotoSelectedFile, CommandFlags.ChangeSelections, ({ editor }) => {
   const basePath = path.dirname(editor.document.fileName);
 
-  return new Promise<void>((resolve) =>
-    fs.exists(basePath, (exists) => {
-      if (!exists) {
-        return;
-      }
+  return Promise.all(editor.selections.map((selection) => {
+    const filename = editor.document.getText(selection),
+          filepath = path.resolve(basePath, filename);
 
-      const selections = editor.selections;
-      let remaining = selections.length;
-
-      for (const selection of selections) {
-        const filename = editor.document.getText(selection);
-        const filepath = path.resolve(basePath, filename);
-
-        fs.exists(filepath, (exists) => {
-          if (exists) {
-            vscode.workspace.openTextDocument(filepath).then(vscode.window.showTextDocument);
-          } else {
-            vscode.window.showErrorMessage(`File ${filepath} does not exist.`);
-          }
-
-          if (--remaining === 0) {
-            resolve();
-          }
-        });
-      }
-    }),
-  );
+    return vscode.workspace.openTextDocument(filepath).then(vscode.window.showTextDocument);
+  })).then(() => void 0);
 });
 
 function toLastBufferModification(editorState: EditorState, extend: ExtendBehavior) {

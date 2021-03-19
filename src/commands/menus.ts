@@ -33,9 +33,7 @@ export async function openMenu(
   const menu = extension.menus.get(menuName);
 
   if (menu === undefined) {
-    vscode.window.showErrorMessage(`Menu ${menuName} does not exist.`);
-
-    return;
+    throw new Error(`menu ${JSON.stringify(menuName)} does not exist`);
   }
 
   const entries = Object.entries(menu.items);
@@ -53,11 +51,5 @@ export async function openMenu(
     args = [Object.assign({}, argFields, args[0]), ...args.slice(1)];
   }
 
-  try {
-    await vscode.commands.executeCommand(pickedItem.command, ...args);
-  } catch (e) {
-    const str = `${e}`.replace(/^Error: /, "");
-
-    vscode.window.showErrorMessage(`Command did not succeed successfully: ${str}.`);
-  }
+  await vscode.commands.executeCommand(pickedItem.command, ...args);
 }

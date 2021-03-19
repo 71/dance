@@ -190,7 +190,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
 
       validateInput(input: string) {
         if (input.length === 0) {
-          return "RegExp cannot be empty.";
+          return "RegExp cannot be empty";
         }
 
         const editor = helper.editor;
@@ -205,7 +205,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
           regex = new RegExp(input, flags);
         } catch {
           editor.selections = selections;
-          return "Invalid ECMA RegExp.";
+          return "invalid ECMA RegExp";
         }
         helper.state.regex = regex;
 
@@ -257,7 +257,8 @@ function setSearchSelection(source: string, editor: vscode.TextEditor, state: Ex
   try {
     new RegExp(source, "g");
   } catch {
-    return vscode.window.showErrorMessage("Invalid ECMA RegExp.").then(() => {});
+    return Promise.reject(new Error(
+      "this should not happen -- please report this error along with the faulty RegExp"));
   }
 
   const register = state.currentRegister;
@@ -268,7 +269,7 @@ function setSearchSelection(source: string, editor: vscode.TextEditor, state: Ex
     register.set(editor, [source]);
   }
 
-  return;
+  return Promise.resolve();
 }
 
 function escapeRegExp(str: string) {
@@ -348,8 +349,7 @@ function registerNextCommand(command: Command, direction: Direction, replace: bo
       for (let i = repetitions; i > 0; i--) {
         const next = mapper(cur, helper);
         if (next === undefined) {
-          vscode.window.showErrorMessage("No matches found.");
-          return;
+          throw new Error("no matches found");
         }
         cur = next;
 
