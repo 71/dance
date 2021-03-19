@@ -10,9 +10,7 @@ registerCommand(
   CommandFlags.CanRunWithoutEditor,
   (_, { argument, extension }) => {
     if (typeof argument !== "object" || argument === null || typeof argument.menu !== "string") {
-      vscode.window.showErrorMessage(`Invalid argument passed to command ${Command.openMenu}.`);
-
-      return;
+      throw new Error(`invalid argument`);
     }
 
     const menuName = argument.menu;

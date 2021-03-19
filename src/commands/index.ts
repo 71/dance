@@ -271,7 +271,15 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         }
       }
     } catch (e) {
-      vscode.window.showErrorMessage(e.toString());
+      let message = e;
+
+      if (typeof e === "object" && e !== null && e.constructor === Error) {
+        // Note that we purposedly do not use `instanceof` above to keep
+        // prefixes like "SyntaxError:".
+        message = e.message;
+      }
+
+      vscode.window.showErrorMessage(`Error executing command "${this.command}": ${message}`);
       return;
     }
 
@@ -485,4 +493,5 @@ import "./search";
 import "./select";
 import "./selections";
 import "./selectObject";
-import "./yankPaste";
+import "./yankPaste";import { type } from "os";
+

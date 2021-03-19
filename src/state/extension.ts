@@ -219,6 +219,10 @@ export class ModeConfiguration {
 // ==  EXTENSION  ================================================================================
 // ===============================================================================================
 
+function showValidationError(message: string) {
+  vscode.window.showErrorMessage(`Configuration error: ${message}`);
+}
+
 /**
  * Global state of the extension.
  */
@@ -337,89 +341,82 @@ export class Extension implements vscode.Disposable {
         this._gotoMenus.clear();
 
         if (typeof value !== "object" || value === null) {
-          vscode.window.showErrorMessage(`Configuration ${extensionName}.menus must be an object.`);
-
-          return;
+          return showValidationError(`"${extensionName}.menus" must be an object.`);
         }
 
         for (const menuName in value) {
           const menu = value[menuName],
-            builtMenu: GotoMenu = { items: {} },
-            menuDisplay = `${extensionName}.menus[${JSON.stringify(menuName)}]`;
+                builtMenu: GotoMenu = { items: {} },
+                menuDisplay = `${extensionName}.menus[${JSON.stringify(menuName)}]`;
 
           if (typeof menu !== "object" || menu === null) {
-            vscode.window.showErrorMessage(`Menu ${menuDisplay} must be an object.`);
-          } else if (
-            typeof menu.items !== "object" ||
-            menu.items === null ||
-            Object.keys(menu.items).length < 2
-          ) {
-            vscode.window.showErrorMessage(
-              `Menu ${menuDisplay} must have an subobject "items" with at least two entries.`,
+            showValidationError(`menu ${menuDisplay} must be an object.`);
+            continue;
+          }
+          if (typeof menu.items !== "object" || Object.keys(menu.items ?? {}).length < 2) {
+            showValidationError(
+              `menu ${menuDisplay} must have an subobject "items" with at least two entries.`,
             );
-          } else {
-            let valid = true;
-            const seenKeyCodes = new Map<number, string>();
+            continue;
+          }
 
-            for (const key in menu.items) {
-              const item = menu.items[key],
-                itemDisplay = `${JSON.stringify(key)} of ${menuDisplay}`;
+          const seenKeyCodes = new Map<number, string>();
 
-              if (item === null) {
+          for (const key in menu.items) {
+            const item = menu.items[key],
+                  itemDisplay = `${JSON.stringify(key)} of ${menuDisplay}`;
+
+            if (item === null) {
+              continue;
+            }
+
+            if (typeof item !== "object") {
+              showValidationError(`item ${itemDisplay} must be an object.`);
+              continue;
+            }
+            if (typeof item.text !== "string" || item.text.length === 0) {
+              showValidationError(`item ${itemDisplay} must have a non-empty "text" property.`);
+              continue;
+            }
+            if (typeof item.command !== "string" || item.command.length === 0) {
+              showValidationError(`item ${itemDisplay} must have a non-empty "command" property.`);
+              continue;
+            }
+            if (key.length === 0) {
+              showValidationError(`item ${itemDisplay} must be a non-empty string key.`);
+              continue;
+            }
+
+            let keyString = "";
+
+            for (let i = 0; i < key.length; i++) {
+              const keyCode = key.charCodeAt(i),
+                    prevKey = seenKeyCodes.get(keyCode);
+
+              if (prevKey) {
+                showValidationError(
+                  `menu ${menuDisplay} has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`,
+                );
                 continue;
               }
 
-              if (typeof item !== "object") {
-                vscode.window.showErrorMessage(`Item ${itemDisplay} must be an object.`);
-              } else if (typeof item.text !== "string" || item.text.length === 0) {
-                vscode.window.showErrorMessage(
-                  `Item ${itemDisplay} must have a non-empty "text" property.`,
-                );
-              } else if (typeof item.command !== "string" || item.command.length === 0) {
-                vscode.window.showErrorMessage(
-                  `Item ${itemDisplay} must have a non-empty "command" property.`,
-                );
-              } else {
-                let keyString = "";
-
-                if (key.length === 0) {
-                  vscode.window.showErrorMessage(
-                    `Item ${itemDisplay} must be a non-empty string key.`,
-                  );
-                } else {
-                  for (let i = 0; i < key.length; i++) {
-                    const keyCode = key.charCodeAt(i),
-                      prevKey = seenKeyCodes.get(keyCode);
-                    if (prevKey) {
-                      vscode.window.showErrorMessage(
-                        `Menu ${menuDisplay} has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`,
-                      );
-                    } else {
-                      seenKeyCodes.set(keyCode, key);
-                      keyString = keyString === "" ? key[i] : `${keyString}, ${key[i]}`;
-                      continue;
-                    }
-
-                    valid = false;
-                  }
-                }
-
-                if (valid) {
-                  builtMenu.items[keyString] = {
-                    command: item.command,
-                    text: item.text,
-                    args: item.args,
-                  };
-                  continue;
-                }
-              }
-
-              valid = false;
+              seenKeyCodes.set(keyCode, key);
+              keyString = keyString === "" ? key[i] : `${keyString}, ${key[i]}`;
             }
 
-            if (valid) {
-              this._gotoMenus.set(menuName, builtMenu);
+            if (keyString.length === 0) {
+              continue;
             }
+
+            builtMenu.items[keyString] = {
+              command: item.command,
+              text: item.text,
+              args: item.args,
+            };
+          }
+
+          if (Object.keys(builtMenu.items).length > 0) {
+            this._gotoMenus.set(menuName, builtMenu);
           }
         }
       },
