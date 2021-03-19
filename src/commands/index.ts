@@ -168,10 +168,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         input = argument.input;
       } else {
         input = await promptInList(
-          false,
-            this.inputDescr(editorState) as [string, string][],
-            cancellationToken,
-        ) as any;
+          false, this.inputDescr(editorState) as [string, string][], cancellationToken) as any;
       }
       break;
     case InputKind.ListOneItemOrCount:
@@ -179,10 +176,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         input = argument.input;
       } else if (editorState.extension.currentCount === 0) {
         input = await promptInList(
-          false,
-            this.inputDescr(editorState) as [string, string][],
-            cancellationToken,
-        ) as any;
+          false, this.inputDescr(editorState) as [string, string][], cancellationToken) as any;
       } else {
         input = null as any;
       }
@@ -192,10 +186,7 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         input = argument.input;
       } else {
         input = await promptInList(
-          true,
-            this.inputDescr(editorState) as [string, string][],
-            cancellationToken,
-        ) as any;
+          true, this.inputDescr(editorState) as [string, string][], cancellationToken) as any;
       }
       break;
     case InputKind.Text:

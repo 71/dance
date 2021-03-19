@@ -357,10 +357,8 @@ function tryCopySelection(
 
     // TODO: Generalize below for all cases
     return newLine.text.length >= selection.end.character
-      ? new vscode.Selection(
-          anchor.with(newActiveLine),
-          active.with(newActiveLine, selectionHelper.activeCharacter(selection)),
-        )
+      ? new vscode.Selection(anchor.with(newActiveLine),
+                             active.with(newActiveLine, selectionHelper.activeCharacter(selection)))
       : undefined;
   }
 

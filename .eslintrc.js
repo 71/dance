@@ -19,6 +19,9 @@ module.exports = {
   ],
   rules: {
     "indent": ["error", 2, {
+      "CallExpression": { arguments: "first" },
+      "FunctionDeclaration": { parameters: "first" },
+      "FunctionExpression": { parameters: "first" },
       "VariableDeclarator": "first",
       "flatTernaryExpressions": true,
       "offsetTernaryExpressions": true,
