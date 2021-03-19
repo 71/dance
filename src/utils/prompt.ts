@@ -19,11 +19,11 @@ export function promptRegex(flags?: string, cancellationToken?: vscode.Cancellat
       },
     },
     cancellationToken,
-  ).then((x) => (x === undefined ? undefined : new RegExp(x, flags)));
+  ).then((x) => x === undefined ? undefined : new RegExp(x, flags));
 }
 
-export function keypress(cancellationToken?: vscode.CancellationToken): Thenable<string> {
-  return new Promise((resolve) => {
+export function keypress(cancellationToken?: vscode.CancellationToken): Thenable<string | undefined> {
+  return new Promise((resolve, reject) => {
     try {
       let done = false;
       const subscription = vscode.commands.registerCommand("type", ({ text }: { text: string }) => {
@@ -44,11 +44,9 @@ export function keypress(cancellationToken?: vscode.CancellationToken): Thenable
         }
       });
     } catch {
-      vscode.window.showErrorMessage(
-        'Unable to listen to keyboard events; is an extension overriding the "type" command (e.g VSCodeVim)?',
+      reject(
+        new Error('Unable to listen to keyboard events; is an extension overriding the "type" command (e.g VSCodeVim)?'),
       );
-
-      resolve(undefined);
     }
   });
 }
