@@ -118,30 +118,30 @@ export class Registers {
 
   public get(key: string) {
     switch (key) {
-      case '"':
-        return this.dquote;
-      case "/":
-        return this.slash;
-      case "@":
-        return this.arobase;
-      case "^":
-        return this.caret;
-      case "|":
-        return this.pipe;
+    case '"':
+      return this.dquote;
+    case "/":
+      return this.slash;
+    case "@":
+      return this.arobase;
+    case "^":
+      return this.caret;
+    case "|":
+      return this.pipe;
 
-      case "%":
-        return this.percent;
-      case ".":
-        return this.dot;
-      case "#":
-        return this.hash;
-      case "_":
-        return this.underscore;
-      case ":":
-        return this.colon;
+    case "%":
+      return this.percent;
+    case ".":
+      return this.dot;
+    case "#":
+      return this.hash;
+    case "_":
+      return this.underscore;
+    case ":":
+      return this.colon;
 
-      default:
-        return this.alpha[key] || (this.alpha[key] = new GeneralPurposeRegister(key));
+    default:
+      return this.alpha[key] || (this.alpha[key] = new GeneralPurposeRegister(key));
     }
   }
 }

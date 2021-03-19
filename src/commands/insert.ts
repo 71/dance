@@ -25,11 +25,12 @@ registerCommand(
   CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore,
   ({ editor }) => {
     const selections = editor.selections,
-      len = selections.length;
+          len = selections.length;
 
     for (let i = 0; i < len; i++) {
       const selection = selections[i],
-        lineStart = editor.document.lineAt(selection.start.line).firstNonWhitespaceCharacterIndex;
+            lineStart = editor.document.lineAt(selection.start.line)
+              .firstNonWhitespaceCharacterIndex;
 
       selections[i] = new vscode.Selection(
         selection.anchor,
@@ -46,7 +47,7 @@ registerCommand(
   CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter,
   ({ editor }) => {
     const selections = editor.selections,
-      len = selections.length;
+          len = selections.length;
 
     for (let i = 0; i < len; i++) {
       const selection = selections[i];
@@ -105,13 +106,13 @@ registerCommand(Command.newLineAbove, CommandFlags.Edit, (editorState, state, un
       const processedLines = new Set<number>();
 
       const selections = editor.selections,
-        len = selections.length,
-        selectionHelper = SelectionHelper.for(editorState, state);
+            len = selections.length,
+            selectionHelper = SelectionHelper.for(editorState, state);
 
       for (let i = 0; i < len; i++) {
         const selection = selections[i],
-          activeLine =
-            selection.active === selection.end
+              activeLine
+            = selection.active === selection.end
               ? selectionHelper.endLine(selection)
               : selection.active.line;
 
@@ -131,13 +132,13 @@ registerCommand(Command.newLineBelow, CommandFlags.Edit, (editorState, state, un
       const processedLines = new Set<number>();
 
       const selections = editor.selections,
-        len = selections.length,
-        selectionHelper = SelectionHelper.for(editorState, state);
+            len = selections.length,
+            selectionHelper = SelectionHelper.for(editorState, state);
 
       for (let i = 0; i < len; i++) {
         const selection = selections[i],
-          activeLine =
-            selection.active === selection.end
+              activeLine
+            = selection.active === selection.end
               ? selectionHelper.endLine(selection)
               : selection.active.line;
 
@@ -188,7 +189,7 @@ registerCommand(Command.repeatInsert, CommandFlags.Edit, async ({ editor }, stat
     for (let i = state.currentCount || 1; i > 0; i--) {
       for (let j = start; j <= end; j++) {
         const commandState = editorState.recordedCommands[j],
-          changes = commandState.followingChanges;
+              changes = commandState.followingChanges;
 
         if (changes === undefined) {
           continue;

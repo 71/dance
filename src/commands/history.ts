@@ -44,8 +44,8 @@ registerCommand(
       const commandState = commands[i];
 
       if (
-        commandState.descriptor.flags & CommandFlags.ChangeSelections &&
-        !(commandState.descriptor.flags & CommandFlags.Edit)
+        commandState.descriptor.flags & CommandFlags.ChangeSelections
+        && !(commandState.descriptor.flags & CommandFlags.Edit)
       ) {
         return CommandDescriptor.execute(editorState, commandState);
       }

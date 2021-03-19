@@ -1,4 +1,5 @@
-// Search: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#searching
+// Search
+// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#searching
 import * as vscode from "vscode";
 
 import { Command, CommandFlags, InputKind, registerCommand } from ".";
@@ -110,7 +111,8 @@ function needleInHaystack(
   return (selection, helper) => {
     const document = helper.editor.document;
     const regex = helper.state.regex!;
-    // Try finding in the normal search range first, then the wrapped search range.
+    // Try finding in the normal search range first, then the wrapped search
+    // range.
     for (const isWrapped of [false, true]) {
       const searchRange = getSearchRange(selection, document, direction, isWrapped);
       const text = document.getText(searchRange);
@@ -156,8 +158,8 @@ function moveToNeedleInHaystack(
 
 function registerSearchCommand(command: Command, direction: Direction, extend: ExtendBehavior) {
   let initialSelections: readonly SavedSelection[],
-    register: WritableRegister,
-    helper: SelectionHelper<SearchState>;
+      register: WritableRegister,
+      helper: SelectionHelper<SearchState>;
 
   const mapper = moveToNeedleInHaystack(direction, extend);
 
@@ -285,8 +287,8 @@ registerCommand(
   CommandFlags.ChangeSelections,
   ({ editor, extension }) => {
     const isWord = getCharSetFunction(CharSet.Word, editor.document),
-      firstLine = editor.document.lineAt(editor.selection.start).text,
-      firstLineStart = editor.selection.start.character;
+          firstLine = editor.document.lineAt(editor.selection.start).text,
+          firstLineStart = editor.selection.start.character;
 
     let text = escapeRegExp(editor.document.getText(editor.selection));
 
@@ -295,7 +297,7 @@ registerCommand(
     }
 
     const lastLine = editor.document.lineAt(editor.selection.end).text,
-      lastLineEnd = editor.selection.end.character;
+          lastLineEnd = editor.selection.end.character;
 
     if (lastLineEnd >= lastLine.length || !isWord(lastLine.charCodeAt(lastLineEnd))) {
       text = `${text}\\b`;
@@ -338,7 +340,7 @@ function registerNextCommand(command: Command, direction: Direction, replace: bo
       }
 
       const regex = new RegExp(regexStr[0], "g"),
-        selections = editor.selections;
+            selections = editor.selections;
       const searchState = { selectionBehavior, regex };
       const helper = SelectionHelper.for(editorState, searchState);
       let cur = selections[0];

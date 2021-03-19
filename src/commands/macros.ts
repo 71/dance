@@ -5,8 +5,8 @@ registerCommand(
   Command.macrosRecordStart,
   CommandFlags.IgnoreInHistory,
   (editorState, { currentRegister, extension }) => {
-    const reg =
-      ((currentRegister as any) as MacroRegister & Register) ?? extension.registers.arobase;
+    const reg
+      = ((currentRegister as any) as MacroRegister & Register) ?? extension.registers.arobase;
 
     if (typeof reg.setMacro === "function") {
       return editorState.startMacroRecording(reg)?.then(() => void 0);

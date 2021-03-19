@@ -1,4 +1,5 @@
-// Objects: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
+// Objects
+// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
 
 import * as vscode from "vscode";
 import { Command, CommandFlags, CommandState, registerCommand } from ".";
@@ -10,10 +11,8 @@ import {
   DoNotExtend,
   DocumentStart,
   Extend,
-  ExtendBehavior,
   Forward,
   RemoveSelection,
-  SeekFunc,
   SelectionHelper,
   SelectionMapper,
   moveActiveCoord,
@@ -24,7 +23,8 @@ import { findMatching, skipWhile, skipWhileX } from "./select";
 import { SelectionBehavior } from "../state/extension";
 
 // Selecting is a bit harder than it sounds like:
-// 1. Dealing with multiple lines, whether forwards or backwards, is a bit of a pain.
+// 1. Dealing with multiple lines, whether forwards or backwards, is a bit of a
+//    pain.
 // 2. Dealing with strings is a bit of a pain
 // 3. Dealing with inner objects is a bit of a pain
 
@@ -108,11 +108,11 @@ function objectActions(
 
 function objectWithinPair(startCharCode: number, endCharCode: number) {
   const toStart: CoordMapper = (active, helper) =>
-    findMatching(Backward, active, startCharCode, endCharCode, helper.editor.document) ??
-    RemoveSelection;
+    findMatching(Backward, active, startCharCode, endCharCode, helper.editor.document)
+    ?? RemoveSelection;
   const toEnd: CoordMapper = (active, helper) =>
-    findMatching(Forward, active, endCharCode, startCharCode, helper.editor.document) ??
-    RemoveSelection;
+    findMatching(Forward, active, endCharCode, startCharCode, helper.editor.document)
+    ?? RemoveSelection;
 
   const toStartInner: CoordMapper = (active, helper, i) => {
     const pos = toStart(active, helper, i);
@@ -189,13 +189,13 @@ function objectWithCharSet(charSet: CharSet | CharCodePredicate) {
   function toEdge(direction: Direction, includeTrailingWhitespace: boolean): CoordMapper {
     return (active, helper) => {
       const { document } = helper.editor;
-      const isInSet =
-        typeof charSet === "function" ? charSet : getCharSetFunction(charSet, document);
+      const isInSet
+        = typeof charSet === "function" ? charSet : getCharSetFunction(charSet, document);
       let col = active.character;
       const text = document.lineAt(active.line).text;
       if (col >= text.length) {
-        // A charset object cannot contain line break, therefore the cursor active
-        // is not within any such object.
+        // A charset object cannot contain line break, therefore the cursor
+        // active is not within any such object.
         return RemoveSelection;
       }
       while (isInSet(text.charCodeAt(col))) {
@@ -229,8 +229,8 @@ function objectWithCharSet(charSet: CharSet | CharCodePredicate) {
 }
 
 function sentenceObject() {
-  // I bet that's the first time you see a Greek question mark used as an actual Greek question mark,
-  // rather than as a "prank" semicolon.
+  // I bet that's the first time you see a Greek question mark used as an actual
+  // Greek question mark, rather than as a "prank" semicolon.
   const punctCharCodes = new Uint32Array(Array.from(".!?¡§¶¿;՞。", (ch) => ch.charCodeAt(0)));
 
   function toBeforeBlank(allowSkipToPrevious: boolean) {
@@ -279,7 +279,9 @@ function sentenceObject() {
         // We jumped over blank lines but didn't hit a punct char. Don't accept.
         return origin;
       }
-      // let result = beforeBlank.isEqual(DocumentStart) ? beforeBlank : helper.prevPos(beforeBlank)
+      // let result = beforeBlank.isEqual(DocumentStart)
+      //     ? beforeBlank
+      //     : helper.prevPos(beforeBlank)
       if (!hitPunctChar) {
         return beforeBlank;
       }
@@ -376,8 +378,8 @@ function sentenceObject() {
         // sentence. If next line is also empty, we should just stay here.
         // However, start scanning from the next line if it is not empty.
         if (
-          origin.line + 1 >= document.lineCount ||
-          document.lineAt(origin.line + 1).text.length === 0
+          origin.line + 1 >= document.lineCount
+          || document.lineAt(origin.line + 1).text.length === 0
         ) {
           return origin;
         } else {
@@ -493,9 +495,9 @@ function paragraphObject() {
   const lookBack: CoordMapper = (active, helper) => {
     const { line } = active;
     if (
-      line > 0 &&
-      active.character === 0 &&
-      helper.editor.document.lineAt(line - 1).text.length === 0
+      line > 0
+      && active.character === 0
+      && helper.editor.document.lineAt(line - 1).text.length === 0
     ) {
       return new Coord(line - 1, 0); // Re-anchor to the previous line.
     }
@@ -563,8 +565,8 @@ function paragraphObject() {
           return RemoveSelection;
         }
         if (
-          direction === Forward &&
-          helper.editor.document.lineAt(adjusted.line).text.length === 0
+          direction === Forward
+          && helper.editor.document.lineAt(adjusted.line).text.length === 0
         ) {
           return toEdge(new Coord(adjusted.line + 1, 0), helper, i);
         } else {
@@ -600,9 +602,9 @@ function paragraphObject() {
 
       let start;
       if (
-        active.line + 1 < document.lineCount &&
-        document.lineAt(active.line).text.length === 0 &&
-        document.lineAt(active.line + 1).text.length
+        active.line + 1 < document.lineCount
+        && document.lineAt(active.line).text.length === 0
+        && document.lineAt(active.line + 1).text.length
       ) {
         // Special case: if current line is empty, check next line and select
         // the NEXT paragraph if next line is not empty.
@@ -743,9 +745,9 @@ function indentObject() {
     };
   }
   const toStart = toEdge(Backward, false),
-    toStartInner = toEdge(Backward, true),
-    toEnd = toEdge(Forward, false),
-    toEndInner = toEdge(Forward, true);
+        toStartInner = toEdge(Backward, true),
+        toEnd = toEdge(Forward, false),
+        toEndInner = toEdge(Forward, true);
 
   // When selecting a whole indent object, scanning separately toStart and then
   // toEnd will lead to wrong results like two different indentation levels and
@@ -774,13 +776,14 @@ function argumentObject() {
     return (oldActive, helper) => {
       const { document } = helper.editor;
       let bbalance = 0,
-        pbalance = 0;
+          pbalance = 0;
       const afterSkip = skipWhile(
         direction,
         oldActive,
         (charCode) => {
           // TODO: Kak does not care about strings or ignoring braces in strings
-          // but maybe we should add a setting or an alternative command for that.
+          // but maybe we should add a setting or an alternative command for
+          // that.
           if (charCode === paren && pbalance === 0 && bbalance === 0) {
             return false;
           } else if (charCode === LPAREN) {
@@ -834,9 +837,9 @@ function argumentObject() {
   }
 
   const toStart = toEdge(Backward, false),
-    toStartInner = toEdge(Backward, true),
-    toEnd = toEdge(Forward, false),
-    toEndInner = toEdge(Forward, true);
+        toStartInner = toEdge(Backward, true),
+        toEnd = toEdge(Forward, false),
+        toEndInner = toEdge(Forward, true);
   return objectActions(toStart, toEnd, toStartInner, toEndInner);
 }
 
@@ -866,7 +869,8 @@ registerCommand(
   (editorState, state) => {
     if (!state.argument || !state.argument.object) {
       throw new Error(
-        "Argument must have shape {object: string, action: string, extend?: boolean, inner?: boolean}",
+        "Argument must have shape "
+        + "{object: string, action: string, extend?: boolean, inner?: boolean}",
       );
     }
     const dispatch2 = dispatch[state.argument.object as keyof typeof dispatch];

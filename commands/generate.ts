@@ -178,8 +178,9 @@ for (const id in yaml) {
     )
     .join(", ");
 
-  const docStringKeys =
-    docKeys.length === 0 ? "" : `\n *\n * Default key${keys.length === 1 ? "" : "s"}: ${docKeys}.`;
+  const docStringKeys = docKeys.length === 0
+    ? ""
+    : `\n *\n * Default key${keys.length === 1 ? "" : "s"}: ${docKeys}.`;
 
   const docCommandName = command.command ? "" : `\`${prefix}.${id}\``;
   doc.write(`| ${docCommandName} | ${command.title} | ${command.descr} | ${docKeys} |\n`);
@@ -250,8 +251,8 @@ ${commands.map((x) => `  /** ${yaml[x].descr} */\n  ${writable(x)}`).join(",\n")
  */
 export const enum Command {
 ${commands
-  .map((x) => `  /** ${yaml[x].descr} */\n  ${writable(x)} = "${prefix}.${x}"`)
-  .join(",\n")},
+    .map((x) => `  /** ${yaml[x].descr} */\n  ${writable(x)} = "${prefix}.${x}"`)
+    .join(",\n")},
 }
 
 /**

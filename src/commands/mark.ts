@@ -1,4 +1,5 @@
-// Marks: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
+// Marks
+// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
 import * as vscode from "vscode";
 
 import { Command, CommandFlags, InputKind, registerCommand } from ".";
@@ -35,7 +36,7 @@ registerCommand(
   CommandFlags.None,
   ({ editor, extension, documentState }, { currentRegister }) => {
     const map = marksForRegister(currentRegister ?? extension.registers.caret),
-      existingMarks = map.get(editor.document);
+          existingMarks = map.get(editor.document);
 
     if (existingMarks !== undefined) {
       documentState.forgetSelections(existingMarks);
@@ -53,7 +54,7 @@ registerCommand(
   CommandFlags.ChangeSelections,
   ({ editor, extension }, { currentRegister }) => {
     const map = marksForRegister(currentRegister ?? extension.registers.caret),
-      marks = map.get(editor.document);
+          marks = map.get(editor.document);
 
     if (marks !== undefined) {
       editor.selections = marks.map((savedSelection) => savedSelection.selection(editor.document));
@@ -95,64 +96,64 @@ function combineSelections(
 
   for (let i = 0; i < from.length; i++) {
     const a = from[i],
-      b = add[i];
+          b = add[i];
 
     switch (type) {
-      case 1: {
-        const anchor = a.start.isBefore(b.start) ? a.start : b.start,
-          active = a.end.isAfter(b.end) ? a.end : b.end;
+    case 1: {
+      const anchor = a.start.isBefore(b.start) ? a.start : b.start,
+            active = a.end.isAfter(b.end) ? a.end : b.end;
 
-        selections.push(new vscode.Selection(anchor, active));
-        break;
+      selections.push(new vscode.Selection(anchor, active));
+      break;
+    }
+
+    case 2: {
+      const anchor = a.start.isAfter(b.start) ? a.start : b.start,
+            active = a.end.isBefore(b.end) ? a.end : b.end;
+
+      selections.push(new vscode.Selection(anchor, active));
+      break;
+    }
+
+    case 3:
+      if (a.active.isBeforeOrEqual(b.active)) {
+        selections.push(a);
+      } else {
+        selections.push(b);
       }
+      break;
 
-      case 2: {
-        const anchor = a.start.isAfter(b.start) ? a.start : b.start,
-          active = a.end.isBefore(b.end) ? a.end : b.end;
-
-        selections.push(new vscode.Selection(anchor, active));
-        break;
+    case 4:
+      if (a.active.isAfterOrEqual(b.active)) {
+        selections.push(a);
+      } else {
+        selections.push(b);
       }
+      break;
 
-      case 3:
-        if (a.active.isBeforeOrEqual(b.active)) {
-          selections.push(a);
-        } else {
-          selections.push(b);
-        }
-        break;
+    case 5: {
+      const aLength = editor.document.offsetAt(a.end) - editor.document.offsetAt(a.start),
+            bLength = editor.document.offsetAt(b.end) - editor.document.offsetAt(b.start);
 
-      case 4:
-        if (a.active.isAfterOrEqual(b.active)) {
-          selections.push(a);
-        } else {
-          selections.push(b);
-        }
-        break;
-
-      case 5: {
-        const aLength = editor.document.offsetAt(a.end) - editor.document.offsetAt(a.start),
-          bLength = editor.document.offsetAt(b.end) - editor.document.offsetAt(b.start);
-
-        if (aLength > bLength) {
-          selections.push(a);
-        } else {
-          selections.push(b);
-        }
-        break;
+      if (aLength > bLength) {
+        selections.push(a);
+      } else {
+        selections.push(b);
       }
+      break;
+    }
 
-      case 6: {
-        const aLength = editor.document.offsetAt(a.end) - editor.document.offsetAt(a.start),
-          bLength = editor.document.offsetAt(b.end) - editor.document.offsetAt(b.start);
+    case 6: {
+      const aLength = editor.document.offsetAt(a.end) - editor.document.offsetAt(a.start),
+            bLength = editor.document.offsetAt(b.end) - editor.document.offsetAt(b.start);
 
-        if (aLength < bLength) {
-          selections.push(a);
-        } else {
-          selections.push(b);
-        }
-        break;
+      if (aLength < bLength) {
+        selections.push(a);
+      } else {
+        selections.push(b);
       }
+      break;
+    }
     }
   }
 
@@ -166,7 +167,7 @@ registerCommand(
   combineOpts,
   ({ editor, extension }, { currentRegister, input }) => {
     const map = marksForRegister(currentRegister ?? extension.registers.caret),
-      marks = map.get(editor.document);
+          marks = map.get(editor.document);
 
     if (marks === undefined) {
       return;
@@ -188,7 +189,7 @@ registerCommand(
   combineOpts,
   ({ editor, extension }, { currentRegister, input }) => {
     const map = marksForRegister(currentRegister ?? extension.registers.caret),
-      marks = map.get(editor.document);
+          marks = map.get(editor.document);
 
     if (marks === undefined) {
       return;

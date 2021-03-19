@@ -4,9 +4,9 @@ import * as vscode from "vscode";
 // ==  CHARACTER SETS  ===========================================================================
 // ===============================================================================================
 
-const blankCharacters =
-  "\r\n\t " +
-  String.fromCharCode(
+const blankCharacters
+  = "\r\n\t "
+  + String.fromCharCode(
     0xa0,
     0x1680,
     0x2000,
@@ -45,7 +45,8 @@ export const enum CharSet {
 }
 
 /**
- * Returns a string containing all the characters belonging to the given charset.
+ * Returns a string containing all the characters belonging to the given
+ * charset.
  */
 export function getCharacters(charSet: CharSet, document: vscode.TextDocument) {
   let characters = "";
@@ -68,11 +69,12 @@ export function getCharacters(charSet: CharSet, document: vscode.TextDocument) {
 }
 
 /**
- * Returns an array containing all the characters belonging to the given charset.
+ * Returns an array containing all the characters belonging to the given
+ * charset.
  */
 export function getCharCodes(charSet: CharSet, document: vscode.TextDocument) {
   const characters = getCharacters(charSet, document),
-    charCodes = new Uint32Array(characters.length);
+        charCodes = new Uint32Array(characters.length);
 
   for (let i = 0; i < characters.length; i++) {
     charCodes[i] = characters.charCodeAt(i);
@@ -82,7 +84,8 @@ export function getCharCodes(charSet: CharSet, document: vscode.TextDocument) {
 }
 
 /**
- * Returns a function that tests whether a character belongs to the given charset.
+ * Returns a function that tests whether a character belongs to the given
+ * charset.
  */
 export function getCharSetFunction(charSet: CharSet, document: vscode.TextDocument) {
   const charCodes = getCharCodes(charSet, document);

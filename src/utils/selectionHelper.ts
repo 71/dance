@@ -54,10 +54,10 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
    */
   public activeCoord(selection: vscode.Selection): Coord {
     if (
-      this.selectionBehavior === SelectionBehavior.Caret ||
-      selection.active.isEqual(DocumentStart) ||
-      selection.isEmpty ||
-      selection.isReversed
+      this.selectionBehavior === SelectionBehavior.Caret
+      || selection.active.isEqual(DocumentStart)
+      || selection.isEmpty
+      || selection.isReversed
     ) {
       return selection.active;
     }
@@ -142,8 +142,8 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
         anchor = this.coordAt(this.offsetAt(anchor) - 1);
       }
       if (
-        this.selectionBehavior === SelectionBehavior.Character ||
-        to.isAfterOrEqual(oldSelection.active)
+        this.selectionBehavior === SelectionBehavior.Character
+        || to.isAfterOrEqual(oldSelection.active)
       ) {
         // Moving forward (or non-directional): 01|23>456 ==(to 4)==> 01|234>56
         // Need to increment to include the the symbol at `to`.
@@ -160,8 +160,8 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
       const afterTo = this.coordAt(this.offsetAt(to) + 1);
       if (this.selectionBehavior === SelectionBehavior.Character) {
         if (
-          (!oldSelection.isReversed && oldSelection.anchor.isEqual(to)) ||
-          (oldSelection.isReversed && oldSelection.anchor.isEqual(afterTo))
+          (!oldSelection.isReversed && oldSelection.anchor.isEqual(to))
+          || (oldSelection.isReversed && oldSelection.anchor.isEqual(afterTo))
         ) {
           // Special case one character selections to face forward:
           return new vscode.Selection(to, afterTo);
@@ -172,8 +172,8 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
         }
       }
       if (
-        this.selectionBehavior === SelectionBehavior.Character ||
-        to.isBeforeOrEqual(oldSelection.active)
+        this.selectionBehavior === SelectionBehavior.Character
+        || to.isBeforeOrEqual(oldSelection.active)
       ) {
         // Moving backward (or non-directional): 012<34|5 ==(to 2)==> 01<234|5
         // Include the symbol at `to`.
@@ -241,9 +241,9 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
 
   public endCharacter(selection: vscode.Selection, forPositionConstructor = false) {
     if (
-      this.selectionBehavior === SelectionBehavior.Character &&
-      selection.end === selection.active &&
-      selection.end.character === 0
+      this.selectionBehavior === SelectionBehavior.Character
+      && selection.end === selection.active
+      && selection.end.character === 0
     ) {
       return forPositionConstructor
         ? Number.MAX_SAFE_INTEGER
@@ -255,9 +255,9 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
 
   public activeCharacter(selection: vscode.Selection, forPositionConstructor = false) {
     if (
-      this.selectionBehavior === SelectionBehavior.Character &&
-      selection.end === selection.active &&
-      selection.active.character === 0
+      this.selectionBehavior === SelectionBehavior.Character
+      && selection.end === selection.active
+      && selection.active.character === 0
     ) {
       return forPositionConstructor
         ? Number.MAX_SAFE_INTEGER
@@ -273,22 +273,23 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
 
   public isEntireLine(selection: vscode.Selection) {
     return (
-      selection.start.character === 0 &&
-      selection.end.character === 0 &&
-      selection.start.line === selection.end.line - 1
+      selection.start.character === 0
+      && selection.end.character === 0
+      && selection.start.line === selection.end.line - 1
     );
   }
 
   public isEntireLines(selection: vscode.Selection) {
     return (
-      selection.start.character === 0 &&
-      selection.end.character === 0 &&
-      selection.start.line !== selection.end.line
+      selection.start.character === 0
+      && selection.end.character === 0
+      && selection.start.line !== selection.end.line
     );
   }
 
   /**
-   * The selection length of the given selection, as defined by `offsetAt(active) - offsetAt(anchor)`.
+   * The selection length of the given selection, as defined by
+   * `offsetAt(active) - offsetAt(anchor)`.
    *
    * If the selection is reversed, the selection length is negative.
    */
@@ -326,11 +327,11 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
   public _visualizePosition(position: vscode.Position): string {
     const text = this.editor.document.lineAt(position.line).text;
     return (
-      position.line +
-      ":  " +
-      text.substr(0, position.character) +
-      "|" +
-      text.substr(position.character)
+      position.line
+      + ":  "
+      + text.substr(0, position.character)
+      + "|"
+      + text.substr(position.character)
     );
   }
 
@@ -341,10 +342,10 @@ export class SelectionHelper<State extends { selectionBehavior: SelectionBehavio
     if (coord.character === text.length) {
       visualLine = text + "⏎";
     } else {
-      visualLine =
-        text.substr(0, coord.character) +
-        `[${text[coord.character]}]` +
-        text.substr(coord.character + 1);
+      visualLine
+        = text.substr(0, coord.character)
+        + `[${text[coord.character]}]`
+        + text.substr(coord.character + 1);
     }
     return `L${coord.line}:  ${visualLine}`;
   }

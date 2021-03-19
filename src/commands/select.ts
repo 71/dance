@@ -1,4 +1,5 @@
-// Select / extend: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
+// Select / extend
+// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from "vscode";
 
 import { Command, CommandFlags, CommandState, InputKind, registerCommand } from ".";
@@ -38,8 +39,8 @@ function toNextCharacter(direction: Direction, include: boolean): CoordMapper {
         if (character === undefined) {
           character = text.length;
         }
-        const idx: number =
-          direction === Backward
+        const idx: number
+          = direction === Backward
             ? text.lastIndexOf(key, character - 1)
             : text.indexOf(key, character + 1);
 
@@ -50,8 +51,8 @@ function toNextCharacter(direction: Direction, include: boolean): CoordMapper {
         }
 
         // No match on this line, let's keep going.
-        const isDocumentEdge =
-          direction === Backward ? line-- === 0 : ++line === helper.editor.document.lineCount;
+        const isDocumentEdge
+          = direction === Backward ? line-- === 0 : ++line === helper.editor.document.lineCount;
 
         if (isDocumentEdge) {
           // ... except if we've reached the start or end of the document.
@@ -139,91 +140,97 @@ function selectByWord(
   const { repetitions } = state;
   const document = editorState.editor.document;
   const isWord = getCharSetFunction(wordCharset, document),
-    isBlank = getCharSetFunction(CharSet.Blank, document),
-    isPunctuation = getCharSetFunction(CharSet.Punctuation, document);
+        isBlank = getCharSetFunction(CharSet.Blank, document),
+        isPunctuation = getCharSetFunction(CharSet.Punctuation, document);
 
   for (let i = repetitions; i > 0; i--) {
     helper.mapEach(
       seekToRange(
         (from) => {
           let anchor = undefined,
-            active = from;
-            const text = document.lineAt(active.line).text;
-            const lineEndCol =
-              helper.selectionBehavior === SelectionBehavior.Caret ? text.length : text.length - 1;
+              active = from;
+          const text = document.lineAt(active.line).text;
+          const lineEndCol = helper.selectionBehavior === SelectionBehavior.Caret
+            ? text.length
+            : text.length - 1;
             // 1. Starting from active, try to seek to the word start.
-            const isAtLineBoundary = direction === Forward ? (active.character >= lineEndCol) : (active.character === 0);
-            if (isAtLineBoundary) {
-              const afterEmptyLines = skipEmptyLines(active, document, direction);
-              if (afterEmptyLines === undefined) {
-                if (direction === Backward && active.line > 0) {
-                  // This is a special case in Kakoune and we try to mimic it here.
-                  // Instead of overflowing, put anchor at document start and
-                  // active always on the first character on the second line.
-                  return [new Coord(0, 0), new Coord(1, 0)];
-                } else {
-                  // Otherwise the selection overflows.
-                  return { remove: true, fallback: [anchor, active] };
-                }
-              }
-              anchor = afterEmptyLines;
-            } else if (direction === Backward && active.character >= text.length) {
-              anchor = new Coord(active.line, text.length - 1);
-            } else {
-              let shouldSkip;
-              if (helper.selectionBehavior === SelectionBehavior.Character) {
-                // Skip current character if it is at boundary. (e.g. "ab[c]  " =>`w`)
-                const column = active.character;
-                shouldSkip =
-                  categorize(text.charCodeAt(column), isBlank, isWord) !==
-                  categorize(text.charCodeAt(column + direction), isBlank, isWord);
+          const isAtLineBoundary = direction === Forward
+            ? (active.character >= lineEndCol)
+            : (active.character === 0);
+          if (isAtLineBoundary) {
+            const afterEmptyLines = skipEmptyLines(active, document, direction);
+            if (afterEmptyLines === undefined) {
+              if (direction === Backward && active.line > 0) {
+                // This is a special case in Kakoune and we try to mimic it
+                // here.
+                // Instead of overflowing, put anchor at document start and
+                // active always on the first character on the second line.
+                return [new Coord(0, 0), new Coord(1, 0)];
               } else {
-                // Ignore the character on the right of the caret.
-                shouldSkip = direction === Backward;
+                // Otherwise the selection overflows.
+                return { remove: true, fallback: [anchor, active] };
               }
-              anchor = shouldSkip ? new Coord(active.line, active.character + direction) : active;
             }
+            anchor = afterEmptyLines;
+          } else if (direction === Backward && active.character >= text.length) {
+            anchor = new Coord(active.line, text.length - 1);
+          } else {
+            let shouldSkip;
+            if (helper.selectionBehavior === SelectionBehavior.Character) {
+              // Skip current character if it is at boundary.
+              // (e.g. "ab[c]  " =>`w`)
+              const column = active.character;
+              shouldSkip
+                  = categorize(text.charCodeAt(column), isBlank, isWord)
+                  !== categorize(text.charCodeAt(column + direction), isBlank, isWord);
+            } else {
+              // Ignore the character on the right of the caret.
+              shouldSkip = direction === Backward;
+            }
+            anchor = shouldSkip ? new Coord(active.line, active.character + direction) : active;
+          }
 
-            active = anchor;
+          active = anchor;
 
-            // 2. Then scan within the current line until the word ends.
+          // 2. Then scan within the current line until the word ends.
 
-            const curLineText = document.lineAt(active).text;
-            let nextCol = active.character; // The next character to be tested.
-            if (end) {
-              // Select the whitespace before word, if any.
-              while (
-                nextCol >= 0 &&
-                nextCol < curLineText.length &&
-                isBlank(curLineText.charCodeAt(nextCol))
-              ) {
-                nextCol += direction;
-              }
+          const curLineText = document.lineAt(active).text;
+          let nextCol = active.character; // The next character to be tested.
+          if (end) {
+            // Select the whitespace before word, if any.
+            while (
+              nextCol >= 0
+                && nextCol < curLineText.length
+                && isBlank(curLineText.charCodeAt(nextCol))
+            ) {
+              nextCol += direction;
             }
-            if (nextCol >= 0 && nextCol < curLineText.length) {
-              const startCharCode = curLineText.charCodeAt(nextCol);
-              const isSameCategory = isWord(startCharCode) ? isWord : isPunctuation;
-              while (
-                nextCol >= 0 &&
-                nextCol < curLineText.length &&
-                isSameCategory(curLineText.charCodeAt(nextCol))
-              ) {
-                nextCol += direction;
-              }
+          }
+          if (nextCol >= 0 && nextCol < curLineText.length) {
+            const startCharCode = curLineText.charCodeAt(nextCol);
+            const isSameCategory = isWord(startCharCode) ? isWord : isPunctuation;
+            while (
+              nextCol >= 0
+                && nextCol < curLineText.length
+                && isSameCategory(curLineText.charCodeAt(nextCol))
+            ) {
+              nextCol += direction;
             }
-            if (!end) {
-              // Select the whitespace after word, if any.
-              while (
-                nextCol >= 0 &&
-                nextCol < curLineText.length &&
-                isBlank(curLineText.charCodeAt(nextCol))
-              ) {
-                nextCol += direction;
-              }
+          }
+          if (!end) {
+            // Select the whitespace after word, if any.
+            while (
+              nextCol >= 0
+                && nextCol < curLineText.length
+                && isBlank(curLineText.charCodeAt(nextCol))
+            ) {
+              nextCol += direction;
             }
-            // If we reach here, nextCol must be the first character we encounter that
-            // does not belong to the current word (or -1 / line break). Exclude it.
-            active = new Coord(active.line, nextCol - direction);
+          }
+          // If we reach here, nextCol must be the first character we encounter
+          // that does not belong to the current word (or -1 / line break).
+          // Exclude it.
+          active = new Coord(active.line, nextCol - direction);
           return [anchor!, active];
         },
         extend,
@@ -288,14 +295,14 @@ registerCommand(
   CommandFlags.ChangeSelections,
   (editorState, { currentCount }) => {
     const editor = editorState.editor,
-      selections = editor.selections,
-      len = selections.length,
-      selectionHelper = SelectionHelper.for(editorState);
+          selections = editor.selections,
+          len = selections.length,
+          selectionHelper = SelectionHelper.for(editorState);
 
     if (currentCount === 0 || currentCount === 1) {
       for (let i = 0; i < len; i++) {
         const selection = selections[i],
-          isFullLine = selectionHelper.isEntireLines(selection);
+              isFullLine = selectionHelper.isEntireLines(selection);
         let line = selectionHelper.activeLine(selection);
 
         if (isFullLine) {
@@ -307,10 +314,10 @@ registerCommand(
     } else {
       for (let i = 0; i < len; i++) {
         const selection = selections[i],
-          targetLine = Math.min(
-            selectionHelper.activeLine(selection) + currentCount - 1,
-            editor.document.lineCount - 1,
-          );
+              targetLine = Math.min(
+                selectionHelper.activeLine(selection) + currentCount - 1,
+                editor.document.lineCount - 1,
+              );
 
         selections[i] = new vscode.Selection(targetLine, 0, targetLine + 1, 0);
       }
@@ -325,19 +332,19 @@ registerCommand(
   CommandFlags.ChangeSelections,
   (editorState, { currentCount, selectionBehavior }) => {
     const editor = editorState.editor,
-      selections = editor.selections,
-      len = selections.length,
-      selectionHelper = SelectionHelper.for(editorState);
+          selections = editor.selections,
+          len = selections.length,
+          selectionHelper = SelectionHelper.for(editorState);
 
     if (currentCount === 0 || currentCount === 1) {
       for (let i = 0; i < len; i++) {
         const selection = selections[i],
-          isSameLine = selectionHelper.isSingleLine(selection),
-          isFullLineDiff = selectionHelper.isEntireLine(selection) ? 1 : 0;
+              isSameLine = selectionHelper.isSingleLine(selection),
+              isFullLineDiff = selectionHelper.isEntireLine(selection) ? 1 : 0;
 
         const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor;
-        const active =
-          selection.active.character === 0 && !selection.isReversed && !isSameLine
+        const active
+          = selection.active.character === 0 && !selection.isReversed && !isSameLine
             ? selection.active.translate(1 + isFullLineDiff)
             : new vscode.Position(selectionHelper.activeLine(selection) + 1 + isFullLineDiff, 0);
 
@@ -346,11 +353,11 @@ registerCommand(
     } else {
       for (let i = 0; i < len; i++) {
         const selection = selections[i],
-          targetLine = Math.min(
-            selectionHelper.activeLine(selection) + currentCount - 1,
-            editor.document.lineCount - 1,
-          ),
-          isSameLine = selectionHelper.isSingleLine(selection);
+              targetLine = Math.min(
+                selectionHelper.activeLine(selection) + currentCount - 1,
+                editor.document.lineCount - 1,
+              ),
+              isSameLine = selectionHelper.isSingleLine(selection);
 
         const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor;
         const active = new vscode.Position(targetLine + 1, 0);
@@ -404,7 +411,7 @@ registerCommand(
 const expandLine: SelectionMapper = (selection, helper) => {
   // This command is idempotent. state.currentCount is intentionally ignored.
   const { start, end } = selection,
-    document = helper.editor.document;
+        document = helper.editor.document;
   // Move start to line start and end to include line break.
   const newStart = start.with(undefined, 0);
   let newEnd;
@@ -447,10 +454,9 @@ const trimToFullLines: SelectionMapper = (selection, helper) => {
   // After trimming, the selection should be in the same direction as before.
   // Except when selecting only one empty line in non-directional mode, prefer
   // to keep the selection facing forward.
-  if (
-    selection.isReversed &&
-    !(helper.selectionBehavior === SelectionBehavior.Character && newStart.line + 1 === newEnd.line)
-  ) {
+  if (selection.isReversed
+      && !(helper.selectionBehavior === SelectionBehavior.Character
+           && newStart.line + 1 === newEnd.line)) {
     return new vscode.Selection(newEnd, newStart);
   } else {
     return new vscode.Selection(newStart, newEnd);
@@ -478,8 +484,8 @@ export function skipWhile(
   endLine?: number,
 ): Coord | undefined {
   let col = current.character,
-    line = current.line,
-    text = document.lineAt(line).text;
+      line = current.line,
+      text = document.lineAt(line).text;
   if (endLine === undefined) {
     endLine = direction === Forward ? document.lineCount - 1 : 0;
   }
@@ -516,7 +522,7 @@ export function skipWhileX(
   endLine?: number,
 ): Coord | undefined {
   let col = current.character,
-    line = current.line;
+      line = current.line;
   if (endLine === undefined) {
     endLine = direction === Forward ? document.lineCount - 1 : 0;
   }
@@ -616,7 +622,8 @@ export function findMatching(
 }
 
 function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
-  // This command intentionally ignores repetitions to be consistent with Kakoune.
+  // This command intentionally ignores repetitions to be consistent with
+  // Kakoune.
   // It only finds one next enclosing character and drags only once to its
   // matching counterpart. Repetitions > 1 does exactly the same with rep=1,
   // even though executing the command again will jump back and forth.
@@ -627,21 +634,23 @@ function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
       // First, find an enclosing char (which may be the current character).
       let currentCharacter = from;
       if (helper.selectionBehavior === SelectionBehavior.Caret) {
-        // When moving backwards, the first character to consider is the character
-        // to the left, not the right. However, we hackily special case `|[foo]>`
-        // (> is anchor, | is active) to jump to the end in the current group.
+        // When moving backwards, the first character to consider is the
+        // character to the left, not the right. However, we hackily special
+        // case `|[foo]>` (> is anchor, | is active) to jump to the end in the
+        // current group.
         const selection = helper.editor.selections[i];
         if (direction === Backward && selection.isReversed) {
           currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1);
         }
-        // Similarly, we special case `<[foo]|` to jump back in the current group.
+        // Similarly, we special case `<[foo]|` to jump back in the current
+        // group.
         if (direction === Forward && !selection.isReversed && !selection.isEmpty) {
           currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1);
         }
       }
       if (helper.selectionBehavior === SelectionBehavior.Caret && direction === Backward) {
-        // When moving backwards, the first character to consider is the character
-        // to the left, not the right.
+        // When moving backwards, the first character to consider is the
+        // character to the left, not the right.
         currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1);
       }
       const anchor = skipWhile(direction, currentCharacter, isNotEnclosingChar, document);
@@ -651,17 +660,19 @@ function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
 
       // Then, find the matching char of the anchor.
       const enclosingChar = document.lineAt(anchor.line).text.charCodeAt(anchor.character),
-        idxOfEnclosingChar = enclosingChars.indexOf(enclosingChar);
+            idxOfEnclosingChar = enclosingChars.indexOf(enclosingChar);
 
       let active;
       if (idxOfEnclosingChar & 1) {
-        // Odd enclosingChar index <=> enclosingChar is closing character
-        //                         <=> we go backward looking for the opening character
+        // Odd enclosingChar index
+        //     <=> enclosingChar is closing character
+        //     <=> we go backward looking for the opening character
         const matchingChar = enclosingChars[idxOfEnclosingChar - 1];
         active = findMatching(Backward, anchor, matchingChar, enclosingChar, document);
       } else {
-        // Even enclosingChar index <=> enclosingChar is opening character
-        //                          <=> we go forward looking for the closing character
+        // Even enclosingChar index
+        //     <=> enclosingChar is opening character
+        //     <=> we go forward looking for the closing character
         const matchingChar = enclosingChars[idxOfEnclosingChar + 1];
         active = findMatching(Forward, anchor, matchingChar, enclosingChar, document);
       }

@@ -1,7 +1,8 @@
-// Movement: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
+// Movement
+// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from "vscode";
 
-import { Command, CommandFlags, CommandState, preferredColumnsPerEditor, registerCommand } from ".";
+import { Command, CommandFlags, registerCommand } from ".";
 import {
   Backward,
   Direction,
@@ -9,11 +10,9 @@ import {
   Extend,
   ExtendBehavior,
   Forward,
-  SelectionMapper,
   jumpTo,
 } from "../utils/selectionHelper";
 import { Coord, SelectionHelper } from "../utils/selectionHelper";
-import { EditorState } from "../state/editor";
 import { SelectionBehavior } from "../state/extension";
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
@@ -74,7 +73,7 @@ function registerMoveVertical(command: Command, direction: Direction, extend: Ex
     CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns,
     (editorState, state) => {
       const { editor, preferredColumns } = editorState,
-        selectionHelper = SelectionHelper.for(editorState, state);
+            selectionHelper = SelectionHelper.for(editorState, state);
 
       if (preferredColumns.length === 0) {
         for (let i = 0; i < editor.selections.length; i++) {

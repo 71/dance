@@ -147,35 +147,55 @@ export class ModeConfiguration {
 
   private lineNumbersStringToLineNumbersStyle(lineNumbers: ModeConfiguration.LineNumbers) {
     switch (lineNumbers) {
+    case "on":
+      return vscode.TextEditorLineNumbersStyle.On;
+    case "off":
+      return vscode.TextEditorLineNumbersStyle.Off;
+    case "relative":
+      return vscode.TextEditorLineNumbersStyle.Relative;
+    case "inherit":
+    default:
+      const vscodeLineNumbers = vscode.workspace
+        .getConfiguration()
+        .get<ModeConfiguration.LineNumbers | "interval">("editor.lineNumbers", "on");
+
+      switch (vscodeLineNumbers) {
       case "on":
         return vscode.TextEditorLineNumbersStyle.On;
       case "off":
         return vscode.TextEditorLineNumbersStyle.Off;
       case "relative":
         return vscode.TextEditorLineNumbersStyle.Relative;
-      case "inherit":
+      case "interval": // This is a real option but its not in vscode.d.ts
+        return 3;
       default:
-        const vscodeLineNumbers = vscode.workspace
-          .getConfiguration()
-          .get<ModeConfiguration.LineNumbers | "interval">("editor.lineNumbers", "on");
-
-        switch (vscodeLineNumbers) {
-          case "on":
-            return vscode.TextEditorLineNumbersStyle.On;
-          case "off":
-            return vscode.TextEditorLineNumbersStyle.Off;
-          case "relative":
-            return vscode.TextEditorLineNumbersStyle.Relative;
-          case "interval": // This is a real option but its not in vscode.d.ts
-            return 3;
-          default:
-            return vscode.TextEditorLineNumbersStyle.On;
-        }
+        return vscode.TextEditorLineNumbersStyle.On;
+      }
     }
   }
 
   private cursorStyleStringToCursorStyle(cursorStyle: ModeConfiguration.CursorStyle) {
     switch (cursorStyle) {
+    case "block":
+      return vscode.TextEditorCursorStyle.Block;
+    case "block-outline":
+      return vscode.TextEditorCursorStyle.BlockOutline;
+    case "line":
+      return vscode.TextEditorCursorStyle.Line;
+    case "line-thin":
+      return vscode.TextEditorCursorStyle.LineThin;
+    case "underline":
+      return vscode.TextEditorCursorStyle.Underline;
+    case "underline-thin":
+      return vscode.TextEditorCursorStyle.UnderlineThin;
+
+    case "inherit":
+    default:
+      const vscodeCursorStyle = vscode.workspace
+        .getConfiguration()
+        .get<ModeConfiguration.CursorStyle>("editor.cursorStyle", "line");
+
+      switch (vscodeCursorStyle) {
       case "block":
         return vscode.TextEditorCursorStyle.Block;
       case "block-outline":
@@ -188,29 +208,9 @@ export class ModeConfiguration {
         return vscode.TextEditorCursorStyle.Underline;
       case "underline-thin":
         return vscode.TextEditorCursorStyle.UnderlineThin;
-
-      case "inherit":
       default:
-        const vscodeCursorStyle = vscode.workspace
-          .getConfiguration()
-          .get<ModeConfiguration.CursorStyle>("editor.cursorStyle", "line");
-
-        switch (vscodeCursorStyle) {
-          case "block":
-            return vscode.TextEditorCursorStyle.Block;
-          case "block-outline":
-            return vscode.TextEditorCursorStyle.BlockOutline;
-          case "line":
-            return vscode.TextEditorCursorStyle.Line;
-          case "line-thin":
-            return vscode.TextEditorCursorStyle.LineThin;
-          case "underline":
-            return vscode.TextEditorCursorStyle.Underline;
-          case "underline-thin":
-            return vscode.TextEditorCursorStyle.UnderlineThin;
-          default:
-            return vscode.TextEditorCursorStyle.Line;
-        }
+        return vscode.TextEditorCursorStyle.Line;
+      }
     }
   }
 }
@@ -251,7 +251,8 @@ export class Extension implements vscode.Disposable {
   public enabled: boolean = false;
 
   /**
-   * The `CancellationTokenSource` for cancellable operations running in this editor.
+   * The `CancellationTokenSource` for cancellable operations running in this
+   * editor.
    */
   public cancellationTokenSource?: vscode.CancellationTokenSource;
 
@@ -279,8 +280,8 @@ export class Extension implements vscode.Disposable {
       "selectionBehavior",
       "caret",
       (value) => {
-        this._selectionBehavior =
-          value === "caret" ? SelectionBehavior.Caret : SelectionBehavior.Character;
+        this._selectionBehavior
+          = value === "caret" ? SelectionBehavior.Caret : SelectionBehavior.Character;
       },
       true,
     );
@@ -394,9 +395,8 @@ export class Extension implements vscode.Disposable {
                     prevKey = seenKeyCodes.get(keyCode);
 
               if (prevKey) {
-                showValidationError(
-                  `menu ${menuDisplay} has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`,
-                );
+                showValidationError(`menu ${menuDisplay} has duplicate key '${key[i]}' `
+                                  + `(specified by '${prevKey}' and '${key}').`);
                 continue;
               }
 
@@ -437,11 +437,13 @@ export class Extension implements vscode.Disposable {
   }
 
   /**
-   * Listen for changes to the specified preference and calls the given handler when a change occurs.
+   * Listen for changes to the specified preference and calls the given handler
+   * when a change occurs.
    *
    * Must be called in the constructor.
    *
-   * @param triggerNow If `true`, the handler will also be triggered immediately with the current value.
+   * @param triggerNow If `true`, the handler will also be triggered immediately
+   *   with the current value.
    */
   public observePreference<T>(
     section: string,
@@ -564,7 +566,7 @@ export class Extension implements vscode.Disposable {
    */
   public *documentStates() {
     const documents = vscode.workspace.textDocuments,
-      len = documents.length;
+          len = documents.length;
 
     for (let i = 0; i < len; i++) {
       const documentState = this._documentStates.get(documents[i]);

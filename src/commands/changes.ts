@@ -1,4 +1,5 @@
-// Changes: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes
+// Changes
+// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes
 import * as vscode from "vscode";
 
 import { Command, CommandFlags, registerCommand } from ".";
@@ -13,28 +14,28 @@ registerCommand(
   ({ editor }, _, undoStops) => {
     // Select all line endings.
     const selections = editor.selections,
-      len = selections.length,
-      newSelections = [] as vscode.Selection[],
-      document = editor.document;
+          len = selections.length,
+          newSelections = [] as vscode.Selection[],
+          document = editor.document;
 
     for (let i = 0; i < len; i++) {
       const selection = selections[i],
-        startLine = selection.start.line,
-        endLine = selection.end.line,
-        startAnchor = new vscode.Position(startLine, Number.MAX_SAFE_INTEGER),
-        startActive = new vscode.Position(
-          startLine + 1,
-          document.lineAt(startLine + 1).firstNonWhitespaceCharacterIndex,
-        );
+            startLine = selection.start.line,
+            endLine = selection.end.line,
+            startAnchor = new vscode.Position(startLine, Number.MAX_SAFE_INTEGER),
+            startActive = new vscode.Position(
+              startLine + 1,
+              document.lineAt(startLine + 1).firstNonWhitespaceCharacterIndex,
+            );
 
       newSelections.push(new vscode.Selection(startAnchor, startActive));
 
       for (let line = startLine + 1; line < endLine; line++) {
         const anchor = new vscode.Position(line, Number.MAX_SAFE_INTEGER),
-          active = new vscode.Position(
-            line + 1,
-            document.lineAt(line + 1).firstNonWhitespaceCharacterIndex,
-          );
+              active = new vscode.Position(
+                line + 1,
+                document.lineAt(line + 1).firstNonWhitespaceCharacterIndex,
+              );
 
         newSelections.push(new vscode.Selection(anchor, active));
       }
@@ -92,8 +93,9 @@ function getSelectionsLines(selections: vscode.Selection[]) {
 function indent(editor: vscode.TextEditor, ignoreEmpty: boolean) {
   return editor
     .edit((builder) => {
-      const indent =
-        editor.options.insertSpaces === true ? " ".repeat(editor.options.tabSize as number) : "\t";
+      const indent = editor.options.insertSpaces === true
+        ? " ".repeat(editor.options.tabSize as number)
+        : "\t";
 
       for (const i of getSelectionsLines(editor.selections)) {
         if (ignoreEmpty && editor.document.lineAt(i).isEmptyOrWhitespace) {
@@ -120,10 +122,10 @@ function deindent(editor: vscode.TextEditor, repetitions: number, further: boole
 
       for (const i of getSelectionsLines(editor.selections)) {
         const line = doc.lineAt(i),
-          text = line.text;
+              text = line.text;
 
         let column = 0, // Column, accounting for tab size
-          j = 0; // Index in source line, and number of characters to remove
+            j = 0; // Index in source line, and number of characters to remove
 
         for (; column < needed; j++) {
           const char = text[j];
@@ -191,7 +193,7 @@ registerCommand(Command.swapCase, CommandFlags.Edit, ({ editor }) =>
 
         for (let i = 0; i < text.length; i++) {
           const x = text[i],
-            loCase = x.toLocaleLowerCase();
+                loCase = x.toLocaleLowerCase();
 
           builtText += loCase === x ? x.toLocaleUpperCase() : loCase;
         }

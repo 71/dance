@@ -4,8 +4,8 @@ import { Command, CommandFlags, registerCommand } from ".";
 
 function rotateSelections(editor: vscode.TextEditor) {
   const selections = editor.selections.slice(),
-    last = selections.length - 1,
-    firstSelection = selections[0];
+        last = selections.length - 1,
+        firstSelection = selections[0];
 
   for (let i = 0; i < last; i++) {
     selections[i] = selections[i + 1];
@@ -17,8 +17,8 @@ function rotateSelections(editor: vscode.TextEditor) {
 
 function rotateSelectionsBackwards(editor: vscode.TextEditor) {
   const selections = editor.selections.slice(),
-    last = selections.length - 1,
-    lastSelection = selections[last];
+        last = selections.length - 1,
+        lastSelection = selections[last];
 
   for (let i = last; i > 0; i--) {
     selections[i] = selections[i - 1];

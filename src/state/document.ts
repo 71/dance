@@ -22,7 +22,8 @@ export class DocumentState {
   ) {}
 
   /**
-   * Disposes of the resources owned by and of the subscriptions of this instance.
+   * Disposes of the resources owned by and of the subscriptions of this
+   * instance.
    */
   public dispose() {
     const editorStates = this._editorStates.splice(0);
@@ -35,20 +36,22 @@ export class DocumentState {
   }
 
   /**
-   * Returns the `EditorState` of each known `vscode.TextEditor`, where `editor.document === this.document`.
+   * Returns the `EditorState` of each known `vscode.TextEditor`, where
+   * `editor.document === this.document`.
    */
   public editorStates() {
     return this._editorStates as readonly EditorState[];
   }
 
   /**
-   * Gets the `EditorState` for the given `vscode.TextEditor`, where `editor.document === this.document`.
+   * Gets the `EditorState` for the given `vscode.TextEditor`, where
+   * `editor.document === this.document`.
    */
   public getEditorState(editor: vscode.TextEditor) {
     assert(editor.document === this.document);
 
     const editorStates = this._editorStates,
-      len = editorStates.length;
+          len = editorStates.length;
 
     for (let i = 0; i < len; i++) {
       const editorState = editorStates[i];
@@ -95,13 +98,13 @@ export class DocumentState {
   // =============================================================================================
 
   /**
-   * Saves the given selection, tracking changes to the given document and updating
-   * the selection correspondingly over time.
+   * Saves the given selection, tracking changes to the given document and
+   * updating the selection correspondingly over time.
    */
   public saveSelection(selection: vscode.Selection) {
     const anchorOffset = this.document.offsetAt(selection.anchor),
-      activeOffset = this.document.offsetAt(selection.active),
-      savedSelection = new SavedSelection(anchorOffset, activeOffset);
+          activeOffset = this.document.offsetAt(selection.active),
+          savedSelection = new SavedSelection(anchorOffset, activeOffset);
 
     this._savedSelections.push(savedSelection);
 
@@ -140,7 +143,8 @@ export class DocumentState {
   }
 
   /**
-   * Adds the given changes to the history of the editor following the given command.
+   * Adds the given changes to the history of the editor following the given
+   * command.
    */
   private recordChanges(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
     this._lastCommand?.recordFollowingChanges(changes);
@@ -153,10 +157,10 @@ export class DocumentState {
 
     for (let i = 0, len = changes.length; i < len; i++) {
       const change = changes[i],
-        savedSelection = new SavedSelection(
-          change.rangeOffset,
-          change.rangeOffset + change.rangeLength,
-        );
+            savedSelection = new SavedSelection(
+              change.rangeOffset,
+              change.rangeOffset + change.rangeLength,
+            );
 
       this._savedSelections.push(savedSelection);
       recordedChanges.push(new RecordedChange(savedSelection, change.text));

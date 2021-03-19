@@ -156,83 +156,84 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     let input: InputTypeMap[Input] | undefined;
 
     switch (this.input) {
-      case InputKind.RegExp:
-        if (typeof argument === "object" && typeof argument.input === "string") {
-          input = new RegExp(argument.input, this.inputDescr(editorState) as string) as any;
-        } else {
-          input = await promptRegex(this.inputDescr(editorState) as string, cancellationToken) as any;
-        }
-        break;
-      case InputKind.ListOneItem:
-        if (typeof argument === "object" && typeof argument.input === "string") {
-          input = argument.input;
-        } else {
-          input = await promptInList(
-            false,
+    case InputKind.RegExp:
+      if (typeof argument === "object" && typeof argument.input === "string") {
+        input = new RegExp(argument.input, this.inputDescr(editorState) as string) as any;
+      } else {
+        input = await promptRegex(this.inputDescr(editorState) as string, cancellationToken) as any;
+      }
+      break;
+    case InputKind.ListOneItem:
+      if (typeof argument === "object" && typeof argument.input === "string") {
+        input = argument.input;
+      } else {
+        input = await promptInList(
+          false,
             this.inputDescr(editorState) as [string, string][],
             cancellationToken,
-          ) as any;
-        }
-        break;
-      case InputKind.ListOneItemOrCount:
-        if (typeof argument === "object" && typeof argument.input === "string") {
-          input = argument.input;
-        } else if (editorState.extension.currentCount === 0) {
-          input = await promptInList(
-            false,
+        ) as any;
+      }
+      break;
+    case InputKind.ListOneItemOrCount:
+      if (typeof argument === "object" && typeof argument.input === "string") {
+        input = argument.input;
+      } else if (editorState.extension.currentCount === 0) {
+        input = await promptInList(
+          false,
             this.inputDescr(editorState) as [string, string][],
             cancellationToken,
-          ) as any;
-        } else {
-          input = null as any;
-        }
-        break;
-      case InputKind.ListManyItems:
-        if (typeof argument === "object" && typeof argument.input === "string") {
-          input = argument.input;
-        } else {
-          input = await promptInList(
-            true,
+        ) as any;
+      } else {
+        input = null as any;
+      }
+      break;
+    case InputKind.ListManyItems:
+      if (typeof argument === "object" && typeof argument.input === "string") {
+        input = argument.input;
+      } else {
+        input = await promptInList(
+          true,
             this.inputDescr(editorState) as [string, string][],
             cancellationToken,
-          ) as any;
-        }
-        break;
-      case InputKind.Text:
-        const inputDescr = this.inputDescr(editorState) as InputDescrMap[InputKind.Text];
+        ) as any;
+      }
+      break;
+    case InputKind.Text:
+      const inputDescr = this.inputDescr(editorState) as InputDescrMap[InputKind.Text];
 
-        if (inputDescr.setup !== undefined) {
-          inputDescr.setup(editorState);
-        }
+      if (inputDescr.setup !== undefined) {
+        inputDescr.setup(editorState);
+      }
 
-        if (typeof argument === "object" && typeof argument.input === "string") {
-          const error = await Promise.resolve(inputDescr.validateInput?.(argument.input));
-          if (error) {
-            vscode.window.showErrorMessage(error);
-          }
-          input = argument.input;
-        } else {
-          input = await prompt(inputDescr, cancellationToken) as any;
+      if (typeof argument === "object" && typeof argument.input === "string") {
+        const error = await Promise.resolve(inputDescr.validateInput?.(argument.input));
+        if (error) {
+          vscode.window.showErrorMessage(error);
         }
-        break;
-      case InputKind.Key:
-        if (typeof argument === "object" && typeof argument.input === "string") {
-          input = argument.input;
-        } else {
-          const prevMode = editorState.mode;
+        input = argument.input;
+      } else {
+        input = await prompt(inputDescr, cancellationToken) as any;
+      }
+      break;
+    case InputKind.Key:
+      if (typeof argument === "object" && typeof argument.input === "string") {
+        input = argument.input;
+      } else {
+        const prevMode = editorState.mode;
 
-          editorState.setMode(Mode.Awaiting);
-          input = await keypress(cancellationToken) as any;
-          editorState.setMode(prevMode);
-        }
-        break;
+        editorState.setMode(Mode.Awaiting);
+        input = await keypress(cancellationToken) as any;
+        editorState.setMode(prevMode);
+      }
+      break;
     }
 
     return input;
   }
 
   /**
-   * Executes the command completely, prompting the user for input and saving history entries if needed.
+   * Executes the command completely, prompting the user for input and saving
+   * history entries if needed.
    */
   public async execute(editorState: EditorState, argument: any) {
     const { extension, editor } = editorState;
@@ -262,8 +263,8 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
     }
 
     if (
-      this.flags & CommandFlags.ChangeSelections &&
-      !(this.flags & CommandFlags.DoNotResetPreferredColumns)
+      this.flags & CommandFlags.ChangeSelections
+      && !(this.flags & CommandFlags.DoNotResetPreferredColumns)
     ) {
       editorState.preferredColumns.length = 0;
     }
@@ -310,8 +311,8 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       for (let i = 0; i < len; i++) {
         const selection = selections[i];
 
-        selections[i] =
-          selection.isReversed === shouldBeReversed
+        selections[i]
+          = selection.isReversed === shouldBeReversed
             ? selection
             : new vscode.Selection(selection.active, selection.anchor);
       }
@@ -321,8 +322,8 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
 
       for (let i = 0; i < len; i++) {
         const position = flags & CommandFlags.SwitchToInsertBefore
-            ? selections[i].start
-            : selections[i].end;
+          ? selections[i].start
+          : selections[i].end;
 
         selections[i] = new vscode.Selection(position, position);
       }
@@ -381,11 +382,17 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
   }
 
   /**
-   * Executes the given commands as part of a batch operation started by a macro, for example.
+   * Executes the given commands as part of a batch operation started by a
+   * macro, for example.
    */
-  public static async executeMany(editorState: EditorState, commands: readonly CommandState<any>[]) {
-    // In a batch execution, we don't change modes, and some things are not prompted again.
-    // Furthermore, a single entry is added to VS Code's history for the entire batch operation.
+  public static async executeMany(
+    editorState: EditorState,
+    commands: readonly CommandState<any>[],
+  ) {
+    // In a batch execution, we don't change modes, and some things are not
+    // prompted again.
+    // Furthermore, a single entry is added to VS Code's history for the entire
+    // batch operation.
     let firstEditIdx = 0,
         lastEditIdx = commands.length - 1;
 
@@ -427,8 +434,8 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       }
 
       if (
-        descriptor.flags &
-        (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter)
+        descriptor.flags
+        & (CommandFlags.SwitchToInsertBefore | CommandFlags.SwitchToInsertAfter)
       ) {
         currentMode = Mode.Insert;
       } else if (descriptor.flags & CommandFlags.SwitchToNormal) {
@@ -494,7 +501,9 @@ export function registerCommand(...args: readonly any[]) {
 }
 
 export function setRemainingNormalCommands(remaining: number) {
-  remainingNormalCommands = remaining + 1; // Gotta add 1 to account for the currently executing command
+  remainingNormalCommands = remaining + 1;
+  //                                  ^^^ to account for the currently
+  //                                      executing command.
 }
 
 import "./changes";

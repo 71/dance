@@ -1,12 +1,21 @@
 import * as vscode from "vscode";
-import { Command, CommandDescriptor, CommandFlags, CommandState, InputKind, commandsByName, registerCommand } from ".";
+import {
+  Command,
+  CommandDescriptor,
+  CommandFlags,
+  CommandState,
+  InputKind,
+  commandsByName,
+  registerCommand,
+} from ".";
 
 registerCommand(Command.cancel, CommandFlags.IgnoreInHistory, () => {
   // Nop, because the caller cancels everything before calling us.
 });
 
 type RunFunction = (vscodeObj: typeof vscode, danceObj: object, args: any) => Promise<any> | any;
-type RunFunctionConstructor = (vscodeObj: "vscode", danceObj: "dance", args: "args", code: string) => RunFunction;
+type RunFunctionConstructor =
+  (vscodeObj: "vscode", danceObj: "dance", args: "args", code: string) => RunFunction;
 
 const AsyncFunction = async function () {}.constructor as RunFunctionConstructor;
 
@@ -62,7 +71,9 @@ registerCommand(Command.run, CommandFlags.IgnoreInHistory, async (editorState, s
           commandName = command[0];
           commandArgument = command[1];
         } else {
-          throw new Error("execute arguments must be command names or [command name, argument] tuples");
+          throw new Error(
+            "execute arguments must be command names or [command name, argument] tuples",
+          );
         }
 
         if (commandName.startsWith(".")) {
@@ -71,7 +82,10 @@ registerCommand(Command.run, CommandFlags.IgnoreInHistory, async (editorState, s
 
         if (commandName in commandsByName) {
           const descriptor = commandsByName[commandName as Command],
-                input = await descriptor.getInput(editorState, commandArgument, extension.cancellationTokenSource?.token);
+                input = await descriptor.getInput(
+                  editorState,
+                  commandArgument,
+                  extension.cancellationTokenSource?.token);
 
           if (descriptor.input !== InputKind.None && input === undefined) {
             return;

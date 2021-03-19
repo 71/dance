@@ -53,7 +53,7 @@ export class SavedSelection {
    */
   public updateAfterDocumentChanged(e: vscode.TextDocumentContentChangeEvent) {
     const diff = e.text.length - e.rangeLength,
-      offset = e.rangeOffset + e.rangeLength;
+          offset = e.rangeOffset + e.rangeLength;
 
     if (offset <= this._activeOffset) {
       this._activeOffset += diff;

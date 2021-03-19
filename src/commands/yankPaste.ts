@@ -11,7 +11,7 @@ function getRegister(state: CommandState<any>, ctx: Extension) {
 function deleteSelections(editor: vscode.TextEditor, undoStops: UndoStops) {
   return editor.edit((builder) => {
     const selections = editor.selections,
-      len = selections.length;
+          len = selections.length;
 
     for (let i = 0; i < len; i++) {
       builder.delete(selections[i]);
@@ -82,7 +82,7 @@ async function getContentsToPaste(
   }
 
   const results = [] as string[],
-    yankedLength = yanked.length;
+        yankedLength = yanked.length;
 
   let i = 0;
 
@@ -99,8 +99,8 @@ async function getContentsToPaste(
 
 registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editorState, state, undoStops) => {
   const { editor, extension } = editorState,
-    selections = editor.selections,
-    selectionHelper = SelectionHelper.for(editorState, state);
+        selections = editor.selections,
+        selectionHelper = SelectionHelper.for(editorState, state);
 
   const contents = await getContentsToPaste(editor, state, extension);
 
@@ -113,7 +113,7 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editorState, state
   await editor.edit((builder) => {
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i],
-        selection = selections[i];
+            selection = selections[i];
 
       if (content.endsWith("\n")) {
         builder.insert(new vscode.Position(selectionHelper.endLine(selection) + 1, 0), content);
@@ -146,7 +146,7 @@ registerCommand(
     await editor.edit((builder) => {
       for (let i = 0; i < contents.length; i++) {
         const content = contents[i],
-          selection = editor.selections[i];
+              selection = editor.selections[i];
 
         if (content.endsWith("\n")) {
           builder.insert(selection.start.with(undefined, 0), content);
@@ -163,19 +163,19 @@ registerCommand(
   CommandFlags.ChangeSelections | CommandFlags.Edit,
   async (editorState, state, undoStops) => {
     const { editor, extension } = editorState,
-      contents = await getContentsToPaste(editor, state, extension);
+          contents = await getContentsToPaste(editor, state, extension);
 
     if (contents === undefined) {
       return;
     }
 
     const reverseSelection = [] as boolean[],
-      selectionHelper = SelectionHelper.for(editorState, state);
+          selectionHelper = SelectionHelper.for(editorState, state);
 
     await editor.edit((builder) => {
       for (let i = 0; i < contents.length; i++) {
         const content = contents[i],
-          selection = editor.selections[i];
+              selection = editor.selections[i];
 
         if (content.endsWith("\n")) {
           builder.insert(selection.end.with(selectionHelper.endLine(selection) + 1, 0), content);
@@ -187,7 +187,8 @@ registerCommand(
       }
     }, undoStops);
 
-    // Reverse selections that were empty, since they are now extended in the wrong way.
+    // Reverse selections that were empty, since they are now extended in the
+    // wrong way.
     for (let i = 0; i < contents.length; i++) {
       const content = contents[i];
 
@@ -217,7 +218,7 @@ registerCommand(
     await editor.edit((builder) => {
       for (let i = 0; i < contents.length; i++) {
         const content = contents[i],
-          selection = editor.selections[i];
+              selection = editor.selections[i];
 
         if (content.endsWith("\n")) {
           builder.replace(selection.start.with(undefined, 0), content);
@@ -246,7 +247,7 @@ registerCommand(
     await editor.edit((builder) => {
       for (let i = 0; i < contents.length; i++) {
         const content = contents[i],
-          selection = editor.selections[i];
+              selection = editor.selections[i];
 
         builder.replace(selection, content);
       }

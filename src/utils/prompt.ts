@@ -22,7 +22,9 @@ export function promptRegex(flags?: string, cancellationToken?: vscode.Cancellat
   ).then((x) => x === undefined ? undefined : new RegExp(x, flags));
 }
 
-export function keypress(cancellationToken?: vscode.CancellationToken): Thenable<string | undefined> {
+export function keypress(
+  cancellationToken?: vscode.CancellationToken,
+): Thenable<string | undefined> {
   return new Promise((resolve, reject) => {
     try {
       let done = false;
@@ -44,9 +46,8 @@ export function keypress(cancellationToken?: vscode.CancellationToken): Thenable
         }
       });
     } catch {
-      reject(
-        new Error('Unable to listen to keyboard events; is an extension overriding the "type" command (e.g VSCodeVim)?'),
-      );
+      reject(new Error("Unable to listen to keyboard events; is an extension "
+                      + 'overriding the "type" command (e.g VSCodeVim)?'));
     }
   });
 }
@@ -69,7 +70,7 @@ export function promptInList(
 ): Thenable<undefined | number | number[]> {
   return new Promise<undefined | number | number[]>((resolve) => {
     const quickPick = vscode.window.createQuickPick(),
-      quickPickItems = [] as vscode.QuickPickItem[];
+          quickPickItems = [] as vscode.QuickPickItem[];
 
     let isCaseSignificant = false;
 

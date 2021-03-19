@@ -1,4 +1,5 @@
-// Pipes: https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes-through-external-programs
+// Pipes
+// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes-through-external-programs
 import * as cp from "child_process";
 import * as vscode from "vscode";
 
@@ -30,10 +31,10 @@ function getShell() {
 function execWithInput(command: string, input: string) {
   return new Promise<{ readonly val: string } | { readonly err: string }>((resolve) => {
     const shell = getShell() ?? true,
-      child = cp.spawn(command, { shell, stdio: "pipe" });
+          child = cp.spawn(command, { shell, stdio: "pipe" });
 
     let stdout = "",
-      stderr = "";
+        stderr = "";
 
     child.stdout.on("data", (chunk: Buffer) => (stdout += chunk.toString("utf-8")));
     child.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString("utf-8")));
@@ -44,10 +45,10 @@ function execWithInput(command: string, input: string) {
       code === 0
         ? resolve({ val: stdout.trimRight() })
         : resolve({
-            err: `Command exited with error ${code}: ${
-              stderr.length > 0 ? stderr.trimRight() : "<No error output>"
-            }`,
-          }),
+          err: `Command exited with error ${code}: ${
+            stderr.length > 0 ? stderr.trimRight() : "<No error output>"
+          }`,
+        }),
     );
   });
 }
@@ -114,8 +115,9 @@ function pipe(command: string, selections: string[]) {
 
     return Promise.all(selections.map((selection) => execWithInput(command, selection)));
   } else if (command.startsWith("/")) {
-    // RegExp replace
-    const [regexp, replacement] = parseRegExp(command) as [RegExp, string]; // Safe to do; since the input is validated
+    // RegExp replace (note that it's safe to call parseRegExp since the input
+    // is validated)
+    const [regexp, replacement] = parseRegExp(command) as [RegExp, string];
 
     return Promise.resolve(selections.map((x) => ({ val: x.replace(regexp, replacement) })));
   } else {
@@ -306,13 +308,13 @@ registerCommand(
     }
 
     const selections = editor.selections,
-      selectionLengths = [] as number[],
-      selectionHelper = SelectionHelper.for(editorState, state);
+          selectionLengths = [] as number[],
+          selectionHelper = SelectionHelper.for(editorState, state);
 
     await editor.edit((builder) => {
       for (let i = 0; i < outputs.length; i++) {
         const content = outputs[i].val!,
-          selection = selections[i];
+              selection = selections[i];
 
         builder.insert(selection.end, content);
 

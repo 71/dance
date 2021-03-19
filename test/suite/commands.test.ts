@@ -79,18 +79,18 @@ function getSelections(document: vscode.TextDocument, templatedContent: string) 
 function stringifySelection(document: vscode.TextDocument, selection: vscode.Selection) {
   const content = document.getText();
   const startOffset = document.offsetAt(selection.start),
-    endOffset = document.offsetAt(selection.end),
-    [startString, endString] = selection.isReversed ? ["|", "<"] : [">", "|"];
+        endOffset = document.offsetAt(selection.end),
+        [startString, endString] = selection.isReversed ? ["|", "<"] : [">", "|"];
 
   if (selection.isEmpty) {
     return content.substring(0, startOffset) + "|" + content.substring(startOffset);
   } else {
     return (
-      content.substring(0, startOffset) +
-      startString +
-      content.substring(startOffset, endOffset) +
-      endString +
-      content.substring(endOffset)
+      content.substring(0, startOffset)
+      + startString
+      + content.substring(startOffset, endOffset)
+      + endString
+      + content.substring(endOffset)
     );
   }
 }
@@ -127,15 +127,15 @@ async function testCommands(
     // Execute commands.
     for (let i = 0; i < commands.length; i++) {
       const command = commands[i];
-      const { command: commandName, args } =
-        typeof command === "string" ? { command, args: [] } : command;
+      const { command: commandName, args }
+        = typeof command === "string" ? { command, args: [] } : command;
 
       const promise = vscode.commands.executeCommand(commandName, ...args);
 
       while (
-        i < commands.length - 1 &&
-        typeof commands[i + 1] === "string" &&
-        (commands[i + 1] as string).startsWith("type:")
+        i < commands.length - 1
+        && typeof commands[i + 1] === "string"
+        && (commands[i + 1] as string).startsWith("type:")
       ) {
         await new Promise((resolve) => {
           setTimeout(() => {
@@ -169,7 +169,8 @@ async function testCommands(
     assert.strictEqual(
       editor.selections.length,
       expectedSelections.length,
-      `${prefix}Expected ${expectedSelections.length} selection(s), but had ${editor.selections.length}.`,
+      `${prefix}Expected ${expectedSelections.length} selection(s), `
+      + `but had ${editor.selections.length}.`,
     );
 
     for (let i = 0; i < expectedSelections.length; i++) {
@@ -189,7 +190,8 @@ async function testCommands(
       assert.deepStrictEqual(
         editor.selections[i],
         expectedSelections[i],
-        `(Actual Selection #${i} is at same spots in document as expected, but with different numbers)`,
+        `(Actual Selection #${i} is at same spots in document as expected, `
+        + `but with different numbers)`,
       );
       assert.fail();
     }
@@ -224,8 +226,8 @@ suite("Running commands", function () {
       });
     } catch (err) {
       if (
-        err instanceof Error &&
-        err.message === `Expected Selection #0 to match ('>' is anchor, '|' is cursor).`
+        err instanceof Error
+        && err.message === `Expected Selection #0 to match ('>' is anchor, '|' is cursor).`
       ) {
         return;
       }
@@ -237,11 +239,11 @@ suite("Running commands", function () {
   });
 
   const basedir = this.file!.replace("\\out\\", "\\").replace("/out/", "/").replace(".test.js", ""),
-    fileNames = fs.readdirSync(basedir),
-    longestFileName = fileNames.reduce((longest, curr) =>
-      curr.length > longest.length ? curr : longest,
-    ),
-    fileNamePadding = longestFileName.length;
+        fileNames = fs.readdirSync(basedir),
+        longestFileName = fileNames.reduce((longest, curr) =>
+          curr.length > longest.length ? curr : longest,
+        ),
+        fileNamePadding = longestFileName.length;
 
   for (const file of fileNames) {
     const fullPath = path.join(basedir, file.padEnd(fileNamePadding));
@@ -279,7 +281,7 @@ suite("Running commands", function () {
     // Run all tests in the file.
     for (let i = 1; i < sections.length; i += 2) {
       const metadata = sections[i],
-        content = sections[i + 1];
+            content = sections[i + 1];
 
       const [full, from, to] = /^\/\/== ([\w.]+)(?: > ([\w.]+))?$/m.exec(metadata)!;
       const commands = metadata

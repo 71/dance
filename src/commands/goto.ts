@@ -43,7 +43,7 @@ registerCommand(
   (editorState, state) => {
     if (state.input === null) {
       const { editor } = editorState,
-        { document } = editor;
+            { document } = editor;
       let line = state.currentCount - 1;
 
       if (line >= document.lineCount) {
@@ -51,7 +51,7 @@ registerCommand(
       }
 
       const active = new vscode.Position(line, 0),
-        anchor = new vscode.Position(line, 0);
+            anchor = new vscode.Position(line, 0);
 
       editor.selections = [new vscode.Selection(anchor, active)];
 
@@ -72,7 +72,7 @@ registerCommand(
   (editorState, state) => {
     if (state.input === null) {
       const { editor } = editorState,
-        { document, selection } = editor;
+            { document, selection } = editor;
       let line = state.currentCount - 1;
 
       if (line >= document.lineCount) {
@@ -80,7 +80,7 @@ registerCommand(
       }
 
       const anchor = selection.anchor,
-        active = new vscode.Position(line, 0);
+            active = new vscode.Position(line, 0);
 
       editor.selections = [new vscode.Selection(anchor, active)];
 
@@ -284,7 +284,7 @@ function toLastBufferModification(editorState: EditorState, extend: ExtendBehavi
 
   if (documentState.recordedChanges.length > 0) {
     const range = documentState.recordedChanges[documentState.recordedChanges.length - 1].range,
-      selection = range.selection(documentState.document);
+          selection = range.selection(documentState.document);
 
     editor.selection = extend
       ? new vscode.Selection(editor.selection.anchor, selection.active)

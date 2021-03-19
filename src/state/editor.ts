@@ -29,7 +29,9 @@ export class EditorState {
   /** Selections that we had before entering insert mode. */
   private _insertModeSelections?: readonly SavedSelection[];
 
-  /** Whether a selection change event should be expected while in insert mode. */
+  /**
+   * Whether a selection change event should be expected while in insert mode.
+   */
   private _expectSelectionChangeEvent = false;
 
   /** Whether the next selection change event should be ignored. */
@@ -91,20 +93,21 @@ export class EditorState {
   }
 
   /**
-   * Disposes of the resources owned by and of the subscriptions of this instance.
+   * Disposes of the resources owned by and of the subscriptions of this
+   * instance.
    */
   public dispose() {
     const lineNumbering = vscode.workspace.getConfiguration("editor").get("lineNumbers"),
-      options = this._editor.options;
+          options = this._editor.options;
 
-    options.lineNumbers =
-      lineNumbering === "on"
+    options.lineNumbers
+      = lineNumbering === "on"
         ? vscode.TextEditorLineNumbersStyle.On
         : lineNumbering === "relative"
-        ? vscode.TextEditorLineNumbersStyle.Relative
-        : lineNumbering === "interval"
-        ? vscode.TextEditorLineNumbersStyle.Relative + 1
-        : vscode.TextEditorLineNumbersStyle.Off;
+          ? vscode.TextEditorLineNumbersStyle.Relative
+          : lineNumbering === "interval"
+            ? vscode.TextEditorLineNumbersStyle.Relative + 1
+            : vscode.TextEditorLineNumbersStyle.Off;
 
     this.clearDecorations(this.extension.normalMode.decorationType);
     this.clearDecorations(this.extension.insertMode.decorationType);
@@ -138,7 +141,7 @@ export class EditorState {
     }
 
     const { insertMode, normalMode } = this.extension,
-      documentState = this.documentState;
+          documentState = this.documentState;
 
     this._mode = mode;
 
@@ -147,8 +150,8 @@ export class EditorState {
       this.setDecorations(insertMode.decorationType);
 
       const selections = this.editor.selections,
-        documentState = this.documentState,
-        savedSelections = [] as SavedSelection[];
+            documentState = this.documentState,
+            savedSelections = [] as SavedSelection[];
 
       for (let i = 0, len = selections.length; i < len; i++) {
         savedSelections.push(documentState.saveSelection(selections[i]));
@@ -163,8 +166,8 @@ export class EditorState {
     } else {
       if (this._insertModeSelections !== undefined && this._insertModeSelections.length > 0) {
         const savedSelections = this._insertModeSelections,
-          editorSelections = this._editor.selections,
-          document = this.documentState.document;
+              editorSelections = this._editor.selections,
+              document = this.documentState.document;
 
         assert(editorSelections.length === savedSelections.length);
 
@@ -224,12 +227,13 @@ export class EditorState {
   }
 
   /**
-   * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with this editor.
+   * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with
+   * this editor.
    */
   public onDidBecomeActive() {
     const { editor, mode } = this,
-      modeConfiguration =
-        mode === Mode.Insert ? this.extension.insertMode : this.extension.normalMode;
+          modeConfiguration
+        = mode === Mode.Insert ? this.extension.insertMode : this.extension.normalMode;
 
     if (mode === Mode.Insert) {
       this.extension.statusBarItem.text = "$(pencil) INSERT";
@@ -246,7 +250,8 @@ export class EditorState {
   }
 
   /**
-   * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with another editor.
+   * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with
+   * another editor.
    */
   public onDidBecomeInactive() {
     if (this.mode === Mode.Awaiting) {
@@ -277,13 +282,13 @@ export class EditorState {
       this.setDecorations(this.extension.insertMode.decorationType);
 
       // Update insert mode decorations that keep track of previous selections.
-      const mustDropSelections =
-        e.kind === vscode.TextEditorSelectionChangeKind.Command ||
-        e.kind === vscode.TextEditorSelectionChangeKind.Mouse ||
-        !this._expectSelectionChangeEvent;
+      const mustDropSelections
+        = e.kind === vscode.TextEditorSelectionChangeKind.Command
+        || e.kind === vscode.TextEditorSelectionChangeKind.Mouse
+        || !this._expectSelectionChangeEvent;
 
       const selectionStyle = this.extension.insertModeSelectionStyle,
-        decorationRanges = [] as vscode.Range[];
+            decorationRanges = [] as vscode.Range[];
 
       if (mustDropSelections) {
         this._insertModeSelections = [];
@@ -329,7 +334,8 @@ export class EditorState {
   }
 
   /**
-   * Called when `vscode.workspace.onDidChangeTextDocument` is triggered on the document of the editor.
+   * Called when `vscode.workspace.onDidChangeTextDocument` is triggered on the
+   * document of the editor.
    */
   public onDidChangeTextDocument(e: vscode.TextDocumentChangeEvent) {
     if (this._mode === Mode.Insert) {
@@ -348,8 +354,8 @@ export class EditorState {
 
         for (const selection of remainingSelections) {
           if (
-            selection.active.isEqual(change.range.start) ||
-            selection.active.isEqual(change.range.end)
+            selection.active.isEqual(change.range.start)
+            || selection.active.isEqual(change.range.end)
           ) {
             remainingSelections.delete(selection);
 
@@ -384,13 +390,13 @@ export class EditorState {
     }
 
     const editor = this._editor,
-      selection = editor.selection,
-      extension = this.extension;
+          selection = editor.selection,
+          extension = this.extension;
 
     if (
-      selection.end.character === 0 &&
-      selection.end.line > 0 &&
-      extension.selectionBehavior === SelectionBehavior.Character
+      selection.end.character === 0
+      && selection.end.line > 0
+      && extension.selectionBehavior === SelectionBehavior.Character
     ) {
       editor.setDecorations(decorationType, [
         new vscode.Range(selection.start, selection.end.with(selection.end.line - 1, 0)),
@@ -398,8 +404,8 @@ export class EditorState {
       editor.options.cursorStyle = vscode.TextEditorCursorStyle.LineThin;
     } else {
       editor.setDecorations(decorationType, [selection]);
-      editor.options.cursorStyle =
-        this.mode === Mode.Insert
+      editor.options.cursorStyle
+        = this.mode === Mode.Insert
           ? extension.insertMode.cursorStyle
           : extension.normalMode.cursorStyle;
     }
@@ -412,7 +418,8 @@ export class EditorState {
   private readonly _commands = [] as CommandState<any>[];
 
   /**
-   * The commands that were last used in this editor, from the earliest to the latest.
+   * The commands that were last used in this editor, from the earliest to the
+   * latest.
    */
   public get recordedCommands() {
     return this._commands as readonly CommandState<any>[];
@@ -446,18 +453,20 @@ export class EditorState {
   private normalizeTimeoutToken: NodeJS.Timeout | undefined = undefined;
 
   /**
-   * Whether selection changes should be ignored, therefore not automatically normalizing selections.
+   * Whether selection changes should be ignored, therefore not automatically
+   * normalizing selections.
    */
   public ignoreSelectionChanges = false;
 
   /**
-   * Make all selections in the editor non-empty by selecting at least one character.
+   * Make all selections in the editor non-empty by selecting at least one
+   * character.
    */
   public normalizeSelections() {
     if (
-      this._mode !== Mode.Normal ||
-      this.extension.selectionBehavior === SelectionBehavior.Caret ||
-      this.ignoreSelectionChanges
+      this._mode !== Mode.Normal
+      || this.extension.selectionBehavior === SelectionBehavior.Caret
+      || this.ignoreSelectionChanges
     ) {
       return;
     }
@@ -472,9 +481,9 @@ export class EditorState {
       const selection = editor.selections[i];
       const isReversedOneCharacterSelection = selection.isSingleLine
         ? selection.anchor.character === selection.active.character + 1
-        : selection.anchor.character === 0 &&
-          selection.anchor.line === selection.active.line + 1 &&
-          editor.document.lineAt(selection.active).text.length === selection.active.character;
+        : selection.anchor.character === 0
+          && selection.anchor.line === selection.active.line + 1
+          && editor.document.lineAt(selection.active).text.length === selection.active.character;
 
       if (isReversedOneCharacterSelection) {
         if (normalizedSelections === undefined) {
@@ -494,10 +503,12 @@ export class EditorState {
         if (active.character >= editor.document.lineAt(active.line).range.end.character) {
           // Selection is at line end. Select line break.
           if (active.line === editor.document.lineCount - 1) {
-            // Selection is at the very end of the document as well. Select the last character instead.
+            // Selection is at the very end of the document as well. Select the
+            // last character instead.
             if (active.character === 0) {
               if (active.line === 0) {
-                // There is no character in this document, so we give up on normalizing.
+                // There is no character in this document, so we give up on
+                // normalizing.
                 continue;
               } else {
                 normalizedSelections.push(
@@ -523,7 +534,8 @@ export class EditorState {
             // Move cursor forward.
             normalizedSelections.push(new vscode.Selection(active, active.translate(0, 1)));
           } else {
-            // Selection is at the very end of the document. Select the last character instead.
+            // Selection is at the very end of the document. Select the last
+            // character instead.
             normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active));
           }
         }

@@ -23,7 +23,7 @@ registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (editor
 
 registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections,
-    len = selections.length;
+        len = selections.length;
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i];
@@ -36,7 +36,7 @@ registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, ({ editor
 
 registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections,
-    len = selections.length;
+        len = selections.length;
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i];
@@ -51,7 +51,7 @@ registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, ({ edi
 
 registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections,
-    len = selections.length;
+        len = selections.length;
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i];
@@ -76,7 +76,7 @@ registerCommand(Command.selectionsAlign, CommandFlags.Edit, ({ editor }, _, undo
   return editor
     .edit((builder) => {
       const selections = editor.selections,
-        len = selections.length;
+            len = selections.length;
 
       for (let i = 0; i < len; i++) {
         const selection = selections[i];
@@ -95,7 +95,7 @@ registerCommand(Command.selectionsAlignCopy, CommandFlags.Edit, ({ editor }, sta
   return editor
     .edit((builder) => {
       const selections = editor.selections,
-        len = selections.length;
+            len = selections.length;
 
       for (let i = 0; i < len; i++) {
         if (i === sourceSelection.start.line) {
@@ -143,9 +143,9 @@ registerCommand(
   () => "",
   ({ editor }, { input: regex }) => {
     const document = editor.document,
-      newSelections = editor.selections.filter((selection) =>
-        regex.test(document.getText(selection)),
-      );
+          newSelections = editor.selections.filter((selection) =>
+            regex.test(document.getText(selection)),
+          );
 
     if (newSelections.length > 0) {
       editor.selections = newSelections;
@@ -160,9 +160,9 @@ registerCommand(
   () => "",
   ({ editor }, { input: regex }) => {
     const document = editor.document,
-      newSelections = editor.selections.filter(
-        (selection) => !regex.test(document.getText(selection)),
-      );
+          newSelections = editor.selections.filter(
+            (selection) => !regex.test(document.getText(selection)),
+          );
 
     if (newSelections.length > 0) {
       editor.selections = newSelections;
@@ -180,13 +180,13 @@ registerCommand(
   () => "gm",
   ({ editor }, { input: regex }) => {
     const { document, selections } = editor,
-      len = selections.length,
-      newSelections = [] as vscode.Selection[];
+          len = selections.length,
+          newSelections = [] as vscode.Selection[];
 
     for (let i = 0; i < len; i++) {
       const selection = selections[i],
-        selectionText = document.getText(selection),
-        selectionStartOffset = document.offsetAt(selection.start);
+            selectionText = document.getText(selection),
+            selectionStartOffset = document.offsetAt(selection.start);
 
       let match: RegExpExecArray | null;
 
@@ -215,13 +215,13 @@ registerCommand(
   () => "gm",
   ({ editor }, { input: regex }) => {
     const { document, selections } = editor,
-      len = selections.length,
-      newSelections = [] as vscode.Selection[];
+          len = selections.length,
+          newSelections = [] as vscode.Selection[];
 
     for (let i = 0; i < len; i++) {
       const selection = selections[i],
-        selectionText = document.getText(selection),
-        selectionStartOffset = document.offsetAt(selection.start);
+            selectionText = document.getText(selection),
+            selectionStartOffset = document.offsetAt(selection.start);
 
       let match: RegExpExecArray | null;
       let index = 0;
@@ -253,8 +253,8 @@ registerCommand(
 
 registerCommand(Command.splitLines, CommandFlags.ChangeSelections, ({ editor }) => {
   const selections = editor.selections,
-    len = selections.length,
-    newSelections = [] as vscode.Selection[];
+        len = selections.length,
+        newSelections = [] as vscode.Selection[];
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i];
@@ -266,12 +266,12 @@ registerCommand(Command.splitLines, CommandFlags.ChangeSelections, ({ editor }) 
     }
 
     const startLine = selection.start.line,
-      startIndex = newSelections.length,
-      isReversed = selection.isReversed;
+          startIndex = newSelections.length,
+          isReversed = selection.isReversed;
 
     // Compute end line.
     const endAnchor = selection.end.with(undefined, 0),
-      endActive = selection.end;
+          endActive = selection.end;
 
     const endSelection = new vscode.Selection(endAnchor, endActive);
 
@@ -286,7 +286,7 @@ registerCommand(Command.splitLines, CommandFlags.ChangeSelections, ({ editor }) 
     // Add intermediate lines.
     for (let line = startLine + 1; line < selection.end.line; line++) {
       const anchor = new vscode.Position(line, 0),
-        active = new vscode.Position(line, Number.MAX_SAFE_INTEGER);
+            active = new vscode.Position(line, Number.MAX_SAFE_INTEGER);
 
       newSelections.unshift(new vscode.Selection(anchor, active));
     }
@@ -307,13 +307,13 @@ registerCommand(Command.splitLines, CommandFlags.ChangeSelections, ({ editor }) 
 
 registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, ({ editor }) => {
   const { document, selections } = editor,
-    len = selections.length,
-    newSelections = [] as vscode.Selection[];
+        len = selections.length,
+        newSelections = [] as vscode.Selection[];
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i],
-      selectionStartOffset = document.offsetAt(selection.start),
-      selectionEndOffset = document.offsetAt(selection.end);
+          selectionStartOffset = document.offsetAt(selection.start),
+          selectionEndOffset = document.offsetAt(selection.end);
 
     if (selectionEndOffset - selectionStartOffset < 2) {
       newSelections.push(selection);
@@ -321,7 +321,7 @@ registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, ({ edito
       // Select start character.
       {
         const start = selection.start,
-          end = document.positionAt(document.offsetAt(start) + 1);
+              end = document.positionAt(document.offsetAt(start) + 1);
 
         newSelections.push(new vscode.Selection(start, end));
       }
@@ -329,7 +329,7 @@ registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, ({ edito
       // Select end character.
       {
         const end = selection.end,
-          start = document.positionAt(document.offsetAt(end) - 1);
+              start = document.positionAt(document.offsetAt(end) - 1);
 
         newSelections.push(new vscode.Selection(start, end));
       }
@@ -349,8 +349,8 @@ function tryCopySelection(
   newActiveLine: number,
 ) {
   const active = selection.active,
-    anchor = selection.anchor,
-    activeLine = selectionHelper.activeLine(selection);
+        anchor = selection.anchor,
+        activeLine = selectionHelper.activeLine(selection);
 
   if (activeLine === anchor.line) {
     const newLine = document.lineAt(newActiveLine);
@@ -383,16 +383,16 @@ function tryCopySelection(
   }
 
   const newSelection = new vscode.Selection(anchor.with(newAnchorLine), active.with(newActiveLine));
-  const hasOverlap =
-    !(
-      selection.start.line < newSelection.start.line ||
-      (selection.end.line === newSelection.start.line &&
-        selection.end.character < newSelection.start.character)
-    ) &&
-    !(
-      newSelection.start.line < selection.start.line ||
-      (newSelection.end.line === selection.start.line &&
-        newSelection.end.character < selection.start.character)
+  const hasOverlap
+    = !(
+      selection.start.line < newSelection.start.line
+      || (selection.end.line === newSelection.start.line
+        && selection.end.character < newSelection.start.character)
+    )
+    && !(
+      newSelection.start.line < selection.start.line
+      || (newSelection.end.line === selection.start.line
+        && newSelection.end.character < selection.start.character)
     );
 
   if (hasOverlap) {
@@ -408,15 +408,15 @@ function copySelections(
   direction: Direction,
 ) {
   const editor = editorState.editor,
-    selections = editor.selections,
-    len = selections.length,
-    document = editor.document,
-    lineCount = document.lineCount,
-    selectionHelper = SelectionHelper.for(editorState);
+        selections = editor.selections,
+        len = selections.length,
+        document = editor.document,
+        lineCount = document.lineCount,
+        selectionHelper = SelectionHelper.for(editorState);
 
   for (let i = 0; i < len; i++) {
     const selection = selections[i],
-      selectionActiveLine = selectionHelper.activeLine(selection);
+          selectionActiveLine = selectionHelper.activeLine(selection);
 
     for (
       let i = 0, currentLine = selectionActiveLine + direction;

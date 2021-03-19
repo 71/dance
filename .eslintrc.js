@@ -18,6 +18,11 @@ module.exports = {
     },
   ],
   rules: {
+    "indent": ["error", 2, {
+      "VariableDeclarator": "first",
+      "flatTernaryExpressions": true,
+      "offsetTernaryExpressions": true,
+    }],
     "curly": ["error", "all"],
     "dot-location": ["error", "property"],
     "eqeqeq": ["error", "always", { null: "ignore" }],
@@ -31,16 +36,18 @@ module.exports = {
     "max-len": [
       "warn",
       {
-        code: 200,
-        comments: 120,
-        ignorePattern: "^ +(\\*|\\/\\/) http\\S+\\)?.?$",
+        code: 100,
+        comments: 80,
+        ignorePattern: "^ *(\\*|//) ([sS]ee )?http\\S+\\)?.?$|^ *// =+(  [^=]+  =+)?$",
       },
     ],
+    "multiline-ternary": ["error", "always-multiline"],
     "no-tabs": "error",
     "no-trailing-spaces": "error",
     "no-unexpected-multiline": "error",
     "no-unneeded-ternary": "error",
     "object-curly-spacing": ["error", "always"],
+    "operator-linebreak": ["error", "before"],
     "object-shorthand": "error",
     "quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
     "semi": ["error", "always"],

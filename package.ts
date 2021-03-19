@@ -13,7 +13,7 @@ const keybindings: {
 }[] = additionalKeyBindings.concat();
 
 const alphanum = [..."abcdefghijklmnopqrstuvwxyz0123456789"],
-  keysToAssign = new Set([...alphanum, ...alphanum.map((x) => `Shift+${x}`), ...",'"]);
+      keysToAssign = new Set([...alphanum, ...alphanum.map((x) => `Shift+${x}`), ...",'"]);
 
 for (const command of Object.values(commands)) {
   for (const { key, when } of command.keybindings) {
@@ -210,8 +210,8 @@ const pkg = {
   },
 
   scripts: {
-    "check": "prettier --check . && eslint .",
-    "format": "prettier --write .",
+    "check": "eslint .",
+    "format": "eslint . --fix",
     "generate": "ts-node ./commands/generate.ts && ts-node package.ts",
     "vscode:prepublish": "yarn run generate && yarn run compile",
     "compile": "tsc -p ./",
@@ -226,19 +226,17 @@ const pkg = {
     "@types/js-yaml": "^3.12.3",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.6.0",
-    "@types/prettier": "^2.1.2",
     "@types/vscode": "^1.44.0",
-    "@typescript-eslint/eslint-plugin": "^4.4.1",
-    "@typescript-eslint/parser": "^4.4.1",
-    "eslint": "^7.11.0",
+    "@typescript-eslint/eslint-plugin": "^4.18.0",
+    "@typescript-eslint/parser": "^4.18.0",
+    "eslint": "^7.22.0",
     "glob": "^7.1.6",
     "js-yaml": "^3.13.0",
     "mocha": "^8.1.1",
-    "prettier": "^2.1.2",
     "source-map-support": "^0.5.19",
-    "ts-node": "^8.9.1",
-    "typescript": "^4.0.2",
-    "vsce": "^1.75.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.3",
+    "vsce": "^1.87.0",
     "vscode-test": "^1.3.0",
   },
 
@@ -257,15 +255,17 @@ const pkg = {
           type: ["string", "null"],
           default: "editor.hoverHighlightBackground",
           markdownDescription:
-            "Controls the line highlighting applied to active lines in normal mode. " +
-            "Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.",
+            "Controls the line highlighting applied to active lines in normal mode. "
+            + "Can be an hex color, a [theme color]("
+            + "https://code.visualstudio.com/api/references/theme-color) or null.",
         },
         "dance.insertMode.lineHighlight": {
           type: ["string", "null"],
           default: null,
           markdownDescription:
-            "Controls the line highlighting applied to active lines in insert mode. " +
-            "Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.",
+            "Controls the line highlighting applied to active lines in insert mode. "
+            + "Can be an hex color, a [theme color]("
+            + "https://code.visualstudio.com/api/references/theme-color) or null.",
         },
         "dance.normalMode.lineNumbers": {
           enum: ["off", "on", "relative", "inherit"],
@@ -339,9 +339,11 @@ const pkg = {
           default: "caret",
           description: "Controls how selections behave within VS Code.",
           markdownEnumDescriptions: [
-            "Selections are anchored to carets, which is the native VS Code behavior; that is, they are positioned *between* characters and can therefore be empty.",
-            "Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. " +
-              "Additionally, one-character selections will behave as if they were non-directional, like Kakoune.",
+            "Selections are anchored to carets, which is the native VS Code behavior; that is, "
+            + "they are positioned *between* characters and can therefore be empty.",
+            "Selections are anchored to characters, like Kakoune; that is, they are positioned "
+            + "*on* characters, and therefore cannot be empty. Additionally, one-character "
+            + "selections will behave as if they were non-directional, like Kakoune.",
           ],
         },
         "dance.menus": {
