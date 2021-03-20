@@ -8,6 +8,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 
 import { Command } from "../../commands";
+import { CommandDescriptor } from "../../src/commands";
 import { extensionState } from "../../src/extension";
 import { SelectionBehavior } from "../../src/state/extension";
 
@@ -21,6 +22,7 @@ export namespace testCommands {
     readonly initialContent: string;
     readonly mutations: readonly Mutation[];
     readonly selectionBehavior: SelectionBehavior;
+    readonly allowErrors: boolean;
   }
 }
 
@@ -97,10 +99,11 @@ function stringifySelection(document: vscode.TextDocument, selection: vscode.Sel
 
 async function testCommands(
   editor: vscode.TextEditor,
-  { initialContent, mutations, selectionBehavior }: testCommands.Options,
+  { initialContent, mutations, selectionBehavior, allowErrors }: testCommands.Options,
 ) {
   // @ts-ignore
   extensionState._selectionBehavior = selectionBehavior;
+  CommandDescriptor.throwOnError = !allowErrors;
 
   const content = getPlainContent(initialContent);
   const document = editor.document;
@@ -214,6 +217,7 @@ suite("Running commands", function () {
       initialContent: `{0}f|{0}oo`,
       mutations: [{ contentAfterMutation: `{0}fo|{0}o`, commands: [Command.rightExtend] }],
       selectionBehavior: SelectionBehavior.Character,
+      allowErrors: false,
     });
   });
 
@@ -223,6 +227,7 @@ suite("Running commands", function () {
         initialContent: `|{0}foo`,
         mutations: [{ contentAfterMutation: `|{0}foo`, commands: [Command.rightExtend] }],
         selectionBehavior: SelectionBehavior.Character,
+        allowErrors: false,
       });
     } catch (err) {
       if (
@@ -325,6 +330,7 @@ suite("Running commands", function () {
             initialContent,
             mutations: [{ contentAfterMutation, commands }],
             selectionBehavior,
+            allowErrors: true,
           });
 
           success = true;

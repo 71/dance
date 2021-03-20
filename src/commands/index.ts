@@ -134,6 +134,11 @@ export interface InputDescrMap {
  * Defines a command's behavior, as well as its inputs.
  */
 export class CommandDescriptor<Input extends InputKind = InputKind> {
+  /**
+   * Whether errors in command executions should lead to hard exceptions.
+   */
+  public static throwOnError = false;
+
   public constructor(
     public readonly command: Command,
     public readonly flags: CommandFlags,
@@ -269,6 +274,10 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       argument,
     );
 
+    if (!this.command.startsWith("dance.count.")) {
+      extension.currentCount = 0;
+    }
+
     editorState.ignoreSelectionChanges = true;
 
     let result;
@@ -283,6 +292,11 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
         }
       }
     } catch (e) {
+      if (CommandDescriptor.throwOnError) {
+        console.error(e);
+        throw e;
+      }
+
       let message = e;
 
       if (typeof e === "object" && e !== null && e.constructor === Error) {
@@ -334,10 +348,6 @@ export class CommandDescriptor<Input extends InputKind = InputKind> {
       const position = editor.selection.active;
 
       editor.revealRange(new vscode.Range(position, position));
-    }
-
-    if (!this.command.startsWith("dance.count.")) {
-      extension.currentCount = 0;
     }
 
     if (remainingNormalCommands === 1) {
