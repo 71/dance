@@ -2,7 +2,8 @@
 // https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from "vscode";
 
-import { Command, CommandFlags, CommandState, InputKind, registerCommand } from ".";
+import { Command, CommandFlags, CommandState, InputKind, define } from ".";
+import { moveWhile } from "../api";
 import { EditorState } from "../state/editor";
 import { SelectionBehavior } from "../state/extension";
 import { CharSet, getCharSetFunction } from "../utils/charset";
@@ -20,7 +21,7 @@ import {
   SelectionMapper,
   moveActiveCoord,
   seekToRange,
-} from "../utils/selectionHelper";
+} from "../utils/selection-helper";
 
 // Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
 // ===============================================================================================
@@ -76,12 +77,13 @@ function registerSelectTo(
   direction: Direction,
 ) {
   const mapper = moveActiveCoord(toNextCharacter(direction, include), extend);
-  registerCommand(
+  define(
     commandName,
     CommandFlags.ChangeSelections,
     InputKind.Key,
-    () => void 0,
+    () => undefined,
     (editorState, state) => {
+      const target = moveWhile(direction, (ch) => )
       SelectionHelper.for(editorState, state).mapEach(mapper);
       // TODO: Reveal
     },
@@ -240,47 +242,47 @@ function selectByWord(
   }
 }
 
-registerCommand(Command.selectWord, CommandFlags.ChangeSelections, (editorState, state) =>
+define(Command.selectWord, CommandFlags.ChangeSelections, (editorState, state) =>
   selectByWord(editorState, state, DoNotExtend, Forward, false, CharSet.Word),
 );
-registerCommand(Command.selectWordExtend, CommandFlags.ChangeSelections, (editorState, state) =>
+define(Command.selectWordExtend, CommandFlags.ChangeSelections, (editorState, state) =>
   selectByWord(editorState, state, Extend, Forward, false, CharSet.Word),
 );
-registerCommand(Command.selectWordAlt, CommandFlags.ChangeSelections, (editorState, state) =>
+define(Command.selectWordAlt, CommandFlags.ChangeSelections, (editorState, state) =>
   selectByWord(editorState, state, DoNotExtend, Forward, false, CharSet.NonBlank),
 );
-registerCommand(Command.selectWordAltExtend, CommandFlags.ChangeSelections, (editorState, state) =>
+define(Command.selectWordAltExtend, CommandFlags.ChangeSelections, (editorState, state) =>
   selectByWord(editorState, state, Extend, Forward, false, CharSet.NonBlank),
 );
-registerCommand(Command.selectWordEnd, CommandFlags.ChangeSelections, (editorState, state) =>
+define(Command.selectWordEnd, CommandFlags.ChangeSelections, (editorState, state) =>
   selectByWord(editorState, state, DoNotExtend, Forward, true, CharSet.Word),
 );
-registerCommand(Command.selectWordEndExtend, CommandFlags.ChangeSelections, (editorState, state) =>
+define(Command.selectWordEndExtend, CommandFlags.ChangeSelections, (editorState, state) =>
   selectByWord(editorState, state, Extend, Forward, true, CharSet.Word),
 );
-registerCommand(Command.selectWordAltEnd, CommandFlags.ChangeSelections, (editorState, state) =>
+define(Command.selectWordAltEnd, CommandFlags.ChangeSelections, (editorState, state) =>
   selectByWord(editorState, state, DoNotExtend, Forward, true, CharSet.NonBlank),
 );
-registerCommand(
+define(
   Command.selectWordAltEndExtend,
   CommandFlags.ChangeSelections,
   (editorState, state) => selectByWord(editorState, state, Extend, Forward, true, CharSet.NonBlank),
 );
-registerCommand(Command.selectWordPrevious, CommandFlags.ChangeSelections, (editorState, state) =>
+define(Command.selectWordPrevious, CommandFlags.ChangeSelections, (editorState, state) =>
   selectByWord(editorState, state, DoNotExtend, Backward, true, CharSet.Word),
 );
-registerCommand(
+define(
   Command.selectWordPreviousExtend,
   CommandFlags.ChangeSelections,
   (editorState, state) => selectByWord(editorState, state, Extend, Backward, true, CharSet.Word),
 );
-registerCommand(
+define(
   Command.selectWordAltPrevious,
   CommandFlags.ChangeSelections,
   (editorState, state) =>
     selectByWord(editorState, state, DoNotExtend, Backward, true, CharSet.NonBlank),
 );
-registerCommand(
+define(
   Command.selectWordAltPreviousExtend,
   CommandFlags.ChangeSelections,
   (editorState, state) =>
@@ -290,7 +292,7 @@ registerCommand(
 // Line selecting key bindings (x, X, alt+[xX], home, end)
 // ===============================================================================================
 
-registerCommand(
+define(
   Command.selectLine,
   CommandFlags.ChangeSelections,
   (editorState, { currentCount }) => {
@@ -327,7 +329,7 @@ registerCommand(
   },
 );
 
-registerCommand(
+define(
   Command.selectLineExtend,
   CommandFlags.ChangeSelections,
   (editorState, { currentCount, selectionBehavior }) => {
@@ -373,12 +375,12 @@ registerCommand(
 const toLineBegin: CoordMapper = (from) => from.with(undefined, 0);
 
 const selectToLineBegin = moveActiveCoord(toLineBegin, DoNotExtend);
-registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editorState, state) => {
+define(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editorState, state) => {
   SelectionHelper.for(editorState, state).mapEach(selectToLineBegin);
 });
 
 const selectToLineBeginExtend = moveActiveCoord(toLineBegin, Extend);
-registerCommand(
+define(
   Command.selectToLineBeginExtend,
   CommandFlags.ChangeSelections,
   (editorState, state) => {
@@ -395,12 +397,12 @@ const toLineEnd: CoordMapper = (from, helper) => {
 };
 
 const selectToLineEnd = moveActiveCoord(toLineEnd, DoNotExtend);
-registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editorState, state) => {
+define(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editorState, state) => {
   SelectionHelper.for(editorState, state).mapEach(selectToLineEnd);
 });
 
 const selectToLineEndExtend = moveActiveCoord(toLineEnd, Extend);
-registerCommand(
+define(
   Command.selectToLineEndExtend,
   CommandFlags.ChangeSelections,
   (editorState, state) => {
@@ -435,7 +437,7 @@ const expandLine: SelectionMapper = (selection, helper) => {
   }
 };
 
-registerCommand(Command.expandLines, CommandFlags.ChangeSelections, (editorState, state) => {
+define(Command.expandLines, CommandFlags.ChangeSelections, (editorState, state) => {
   SelectionHelper.for(editorState, state).mapEach(expandLine);
 });
 
@@ -463,7 +465,7 @@ const trimToFullLines: SelectionMapper = (selection, helper) => {
   }
 };
 
-registerCommand(Command.trimLines, CommandFlags.ChangeSelections, (editorState, state) => {
+define(Command.trimLines, CommandFlags.ChangeSelections, (editorState, state) => {
   SelectionHelper.for(editorState, state).mapEach(trimToFullLines);
 });
 
@@ -572,7 +574,7 @@ const trimSelections: SelectionMapper = (selection, helper) => {
   }
 };
 
-registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editorState, state) => {
+define(Command.trimSelections, CommandFlags.ChangeSelections, (editorState, state) => {
   SelectionHelper.for(editorState, state).mapEach(trimSelections);
 });
 
@@ -691,22 +693,22 @@ function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
   };
 }
 
-registerCommand(
+define(
   Command.selectEnclosing,
   CommandFlags.ChangeSelections,
   selectEnclosing(DoNotExtend, Forward),
 );
-registerCommand(
+define(
   Command.selectEnclosingExtend,
   CommandFlags.ChangeSelections,
   selectEnclosing(Extend, Forward),
 );
-registerCommand(
+define(
   Command.selectEnclosingBackwards,
   CommandFlags.ChangeSelections,
   selectEnclosing(DoNotExtend, Backward),
 );
-registerCommand(
+define(
   Command.selectEnclosingExtendBackwards,
   CommandFlags.ChangeSelections,
   selectEnclosing(Extend, Backward),

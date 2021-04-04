@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 
+import * as api from "./api";
 import { Extension } from "./state/extension";
 
 /**
@@ -15,14 +16,19 @@ export let extensionState: Extension;
 /**
  * Function called by VS Code to activate the extension.
  */
-export function activate(context: vscode.ExtensionContext) {
+export function activate() {
   extensionState = new Extension();
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(extensionName + ".toggle", () =>
-      extensionState.setEnabled(!extensionState.enabled, false),
-    ),
-  );
+  const extensionData = vscode.extensions.getExtension(`gregoire.${extensionName}`),
+        extensionPackageJSON = extensionData?.packageJSON;
+
+  if (extensionPackageJSON?.[`${extensionName}.disableArbitraryCodeExecution`]) {
+    api.run.disable();
+  }
+
+  if (extensionPackageJSON?.[`${extensionName}.disableArbitraryCommandExecution`]) {
+    api.execute.disable();
+  }
 
   if (process.env.VERBOSE_LOGGING === "true") {
     // Log all commands we need to implement
@@ -44,3 +50,5 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
   extensionState.dispose();
 }
+
+export { api };

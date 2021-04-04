@@ -2,10 +2,10 @@
 // https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#searching
 import * as vscode from "vscode";
 
-import { Command, CommandFlags, InputKind, registerCommand } from ".";
+import { Command, CommandFlags, InputKind, define } from ".";
 import { Extension, SelectionBehavior } from "../state/extension";
-import { WritableRegister } from "../registers";
-import { SavedSelection } from "../utils/savedSelection";
+import { WritableRegister } from "../register";
+import { TrackedSelectionSet } from "../utils/tracked-selection";
 import {
   Backward,
   Coord,
@@ -16,7 +16,7 @@ import {
   ExtendBehavior,
   Forward,
   SelectionHelper,
-} from "../utils/selectionHelper";
+} from "../utils/selection-helper";
 import { CharSet, getCharSetFunction } from "../utils/charset";
 
 function isMultilineRegExp(regex: string) {
@@ -157,13 +157,13 @@ function moveToNeedleInHaystack(
 }
 
 function registerSearchCommand(command: Command, direction: Direction, extend: ExtendBehavior) {
-  let initialSelections: readonly SavedSelection[],
+  let initialSelections: TrackedSelectionSet,
       register: WritableRegister,
       helper: SelectionHelper<SearchState>;
 
   const mapper = moveToNeedleInHaystack(direction, extend);
 
-  registerCommand(
+  define(
     command,
     CommandFlags.ChangeSelections,
     InputKind.Text,
@@ -175,9 +175,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
         helper = SelectionHelper.for(editorState, {
           selectionBehavior: extension.selectionBehavior,
         });
-        initialSelections = editor.selections.map((selection) =>
-          documentState.saveSelection(selection),
-        );
+        initialSelections = documentState.trackSelections(editor.selections);
 
         const targetRegister = extension.currentRegister;
 
@@ -194,9 +192,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
         }
 
         const editor = helper.editor;
-        const selections = initialSelections.map((selection) =>
-          selection.selection(editor.document),
-        );
+        const selections = initialSelections.restore(editor.document);
 
         let regex: RegExp;
         const flags = (isMultilineRegExp(input) ? "m" : "") + (direction === Backward ? "g" : "");
@@ -235,9 +231,7 @@ function registerSearchCommand(command: Command, direction: Direction, extend: E
         }
       },
       onDidCancel({ editor, documentState }) {
-        editor.selections = initialSelections.map((selection) =>
-          selection.selection(editor.document),
-        );
+        editor.selections = initialSelections.restore(editor.document);
         documentState.forgetSelections(initialSelections);
       },
     }),
@@ -277,13 +271,13 @@ function escapeRegExp(str: string) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, ({ editor, extension }) => {
+define(Command.searchSelection, CommandFlags.ChangeSelections, ({ editor, extension }) => {
   const text = escapeRegExp(editor.document.getText(editor.selection));
 
   return setSearchSelection(text, editor, extension);
 });
 
-registerCommand(
+define(
   Command.searchSelectionSmart,
   CommandFlags.ChangeSelections,
   ({ editor, extension }) => {
@@ -329,10 +323,10 @@ function nextNeedleInHaystack(
 
 function registerNextCommand(command: Command, direction: Direction, replace: boolean) {
   const mapper = nextNeedleInHaystack(direction);
-  registerCommand(
+  define(
     command,
     CommandFlags.ChangeSelections,
-    async (editorState, { currentRegister, selectionBehavior, repetitions }) => {
+    async (editorState, { currentRegister, repetitions }) => {
       const { editor, extension } = editorState;
       const regexStr = await (currentRegister ?? extension.registers.slash).get(editor);
 

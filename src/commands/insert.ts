@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { Command, CommandDescriptor, CommandFlags, registerCommand } from ".";
+import { Command, CommandDescriptor, CommandFlags, define } from ".";
 import { SelectionBehavior } from "../state/extension";
-import { SelectionHelper } from "../utils/selectionHelper";
+import { SelectionHelper } from "../utils/selection-helper";
 
-registerCommand(
+define(
   Command.insertBefore,
   CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore,
   () => {
@@ -12,7 +12,7 @@ registerCommand(
   },
 );
 
-registerCommand(
+define(
   Command.insertAfter,
   CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter,
   () => {
@@ -20,7 +20,7 @@ registerCommand(
   },
 );
 
-registerCommand(
+define(
   Command.insertLineStart,
   CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore,
   ({ editor }) => {
@@ -42,7 +42,7 @@ registerCommand(
   },
 );
 
-registerCommand(
+define(
   Command.insertLineEnd,
   CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter,
   ({ editor }) => {
@@ -74,7 +74,7 @@ function normalizeSelectionsForLineInsertion(editor: vscode.TextEditor) {
   });
 }
 
-registerCommand(
+define(
   Command.insertNewLineAbove,
   CommandFlags.Edit | CommandFlags.SwitchToInsertBefore,
   ({ editor }, { selectionBehavior }) => {
@@ -86,7 +86,7 @@ registerCommand(
   },
 );
 
-registerCommand(
+define(
   Command.insertNewLineBelow,
   CommandFlags.Edit | CommandFlags.SwitchToInsertBefore,
   ({ editor }, { selectionBehavior }) => {
@@ -98,59 +98,7 @@ registerCommand(
   },
 );
 
-registerCommand(Command.newLineAbove, CommandFlags.Edit, (editorState, state, undoStops) =>
-  editorState.editor
-    .edit((builder) => {
-      const { editor } = editorState;
-      const newLine = editor.document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n";
-      const processedLines = new Set<number>();
-
-      const selections = editor.selections,
-            len = selections.length,
-            selectionHelper = SelectionHelper.for(editorState, state);
-
-      for (let i = 0; i < len; i++) {
-        const selection = selections[i],
-              activeLine
-            = selection.active === selection.end
-              ? selectionHelper.endLine(selection)
-              : selection.active.line;
-
-        if (processedLines.size !== processedLines.add(activeLine).size) {
-          builder.insert(new vscode.Position(activeLine, 0), newLine);
-        }
-      }
-    }, undoStops)
-    .then(() => void 0),
-);
-
-registerCommand(Command.newLineBelow, CommandFlags.Edit, (editorState, state, undoStops) =>
-  editorState.editor
-    .edit((builder) => {
-      const { editor } = editorState;
-      const newLine = editor.document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n";
-      const processedLines = new Set<number>();
-
-      const selections = editor.selections,
-            len = selections.length,
-            selectionHelper = SelectionHelper.for(editorState, state);
-
-      for (let i = 0; i < len; i++) {
-        const selection = selections[i],
-              activeLine
-            = selection.active === selection.end
-              ? selectionHelper.endLine(selection)
-              : selection.active.line;
-
-        if (processedLines.size !== processedLines.add(activeLine).size) {
-          builder.insert(new vscode.Position(activeLine + 1, 0), newLine);
-        }
-      }
-    }, undoStops)
-    .then(() => void 0),
-);
-
-registerCommand(Command.repeatInsert, CommandFlags.Edit, async ({ editor }, state) => {
+define(Command.repeatInsert, CommandFlags.Edit, async ({ editor }, state) => {
   const editorState = state.extension.getEditorState(editor);
 
   let switchToInsert: undefined | typeof editorState.recordedCommands[0];

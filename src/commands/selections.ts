@@ -1,452 +1,423 @@
-// Manipulate existing selections.
 import * as vscode from "vscode";
-
-import { Command, CommandFlags, CommandState, InputKind, registerCommand } from ".";
-import {
-  Backward,
-  Direction,
-  DoNotExtend,
-  Forward,
-  SelectionHelper,
-  SelectionMapper,
-  jumpTo,
-} from "../utils/selectionHelper";
-import { EditorState } from "../state/editor";
-
-// Swap cursors (;, a-;, a-:)
-// ===============================================================================================
-
-const reduceToActive: SelectionMapper = jumpTo((active) => active, DoNotExtend);
-registerCommand(Command.selectionsReduce, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).mapEach(reduceToActive);
-});
-
-registerCommand(Command.selectionsFlip, CommandFlags.ChangeSelections, ({ editor }) => {
-  const selections = editor.selections,
-        len = selections.length;
-
-  for (let i = 0; i < len; i++) {
-    const selection = selections[i];
-
-    selections[i] = new vscode.Selection(selection.active, selection.anchor);
-  }
-
-  editor.selections = selections;
-});
-
-registerCommand(Command.selectionsForward, CommandFlags.ChangeSelections, ({ editor }) => {
-  const selections = editor.selections,
-        len = selections.length;
-
-  for (let i = 0; i < len; i++) {
-    const selection = selections[i];
-
-    if (selection.isReversed) {
-      selections[i] = new vscode.Selection(selection.active, selection.anchor);
-    }
-  }
-
-  editor.selections = selections;
-});
-
-registerCommand(Command.selectionsBackward, CommandFlags.ChangeSelections, ({ editor }) => {
-  const selections = editor.selections,
-        len = selections.length;
-
-  for (let i = 0; i < len; i++) {
-    const selection = selections[i];
-
-    if (!selection.isReversed) {
-      selections[i] = new vscode.Selection(selection.active, selection.anchor);
-    }
-  }
-
-  editor.selections = selections;
-});
-
-// Align (&, a-&)
-// ===============================================================================================
-
-registerCommand(Command.selectionsAlign, CommandFlags.Edit, ({ editor }, _, undoStops) => {
-  const startChar = editor.selections.reduce(
-    (max, sel) => (sel.start.character > max ? sel.start.character : max),
-    0,
-  );
-
-  return editor
-    .edit((builder) => {
-      const selections = editor.selections,
-            len = selections.length;
-
-      for (let i = 0; i < len; i++) {
-        const selection = selections[i];
-
-        builder.insert(selection.start, " ".repeat(startChar - selection.start.character));
-      }
-    }, undoStops)
-    .then(() => undefined);
-});
-
-registerCommand(Command.selectionsAlignCopy, CommandFlags.Edit, ({ editor }, state, undoStops) => {
-  const sourceSelection = editor.selections[state.currentCount - 1] ?? editor.selection;
-  const sourceIndent = editor.document.lineAt(sourceSelection.start)
-    .firstNonWhitespaceCharacterIndex;
-
-  return editor
-    .edit((builder) => {
-      const selections = editor.selections,
-            len = selections.length;
-
-      for (let i = 0; i < len; i++) {
-        if (i === sourceSelection.start.line) {
-          continue;
-        }
-
-        const line = editor.document.lineAt(selections[i].start);
-        const indent = line.firstNonWhitespaceCharacterIndex;
-
-        if (indent > sourceIndent) {
-          builder.delete(
-            line.range.with(
-              undefined,
-              line.range.start.translate(undefined, indent - sourceIndent),
-            ),
-          );
-        } else if (indent < sourceIndent) {
-          builder.insert(line.range.start, " ".repeat(indent - sourceIndent));
-        }
-      }
-    }, undoStops)
-    .then(() => void 0);
-});
-
-// Clear, filter (spc, a-spc, a-k, a-K)
-// ===============================================================================================
-
-registerCommand(Command.selectionsClear, CommandFlags.ChangeSelections, ({ editor }) => {
-  editor.selections = [editor.selection];
-});
-
-registerCommand(Command.selectionsClearMain, CommandFlags.ChangeSelections, ({ editor }) => {
-  const selections = editor.selections;
-
-  if (selections.length > 1) {
-    selections.shift();
-    editor.selections = selections;
-  }
-});
-
-registerCommand(
-  Command.selectionsKeepMatching,
-  CommandFlags.ChangeSelections,
-  InputKind.RegExp,
-  () => "",
-  ({ editor }, { input: regex }) => {
-    const document = editor.document,
-          newSelections = editor.selections.filter((selection) =>
-            regex.test(document.getText(selection)),
-          );
-
-    if (newSelections.length > 0) {
-      editor.selections = newSelections;
-    }
-  },
-);
-
-registerCommand(
-  Command.selectionsClearMatching,
-  CommandFlags.ChangeSelections,
-  InputKind.RegExp,
-  () => "",
-  ({ editor }, { input: regex }) => {
-    const document = editor.document,
-          newSelections = editor.selections.filter(
-            (selection) => !regex.test(document.getText(selection)),
-          );
-
-    if (newSelections.length > 0) {
-      editor.selections = newSelections;
-    }
-  },
-);
-
-// Select within, split (s, S)
-// ===============================================================================================
-
-registerCommand(
-  Command.select,
-  CommandFlags.ChangeSelections,
-  InputKind.RegExp,
-  () => "gm",
-  ({ editor }, { input: regex }) => {
-    const { document, selections } = editor,
-          len = selections.length,
-          newSelections = [] as vscode.Selection[];
-
-    for (let i = 0; i < len; i++) {
-      const selection = selections[i],
-            selectionText = document.getText(selection),
-            selectionStartOffset = document.offsetAt(selection.start);
-
-      let match: RegExpExecArray | null;
-
-      while ((match = regex.exec(selectionText))) {
-        const anchor = document.positionAt(selectionStartOffset + match.index);
-        const active = document.positionAt(selectionStartOffset + match.index + match[0].length);
-
-        newSelections.push(new vscode.Selection(anchor, active));
-
-        if (match[0].length === 0) {
-          regex.lastIndex++;
-        }
-      }
-    }
-
-    if (newSelections.length > 0) {
-      editor.selections = newSelections;
-    }
-  },
-);
-
-registerCommand(
-  Command.split,
-  CommandFlags.ChangeSelections,
-  InputKind.RegExp,
-  () => "gm",
-  ({ editor }, { input: regex }) => {
-    const { document, selections } = editor,
-          len = selections.length,
-          newSelections = [] as vscode.Selection[];
-
-    for (let i = 0; i < len; i++) {
-      const selection = selections[i],
-            selectionText = document.getText(selection),
-            selectionStartOffset = document.offsetAt(selection.start);
-
-      let match: RegExpExecArray | null;
-      let index = 0;
-
-      while ((match = regex.exec(selectionText))) {
-        const anchor = document.positionAt(selectionStartOffset + index);
-        const active = document.positionAt(selectionStartOffset + match.index);
-
-        newSelections.push(new vscode.Selection(anchor, active));
-
-        index = match.index + match[0].length;
-
-        if (match[0].length === 0) {
-          regex.lastIndex++;
-        }
-      }
-
-      newSelections.push(
-        new vscode.Selection(document.positionAt(selectionStartOffset + index), selection.end),
-      );
-    }
-
-    editor.selections = newSelections;
-  },
-);
-
-// Split lines, select first & last, merge (a-s, a-S, a-_)
-// ===============================================================================================
-
-registerCommand(Command.splitLines, CommandFlags.ChangeSelections, ({ editor }) => {
-  const selections = editor.selections,
-        len = selections.length,
-        newSelections = [] as vscode.Selection[];
-
-  for (let i = 0; i < len; i++) {
-    const selection = selections[i];
-
-    if (selection.isSingleLine) {
-      newSelections.unshift(selection);
-
-      return;
-    }
-
-    const startLine = selection.start.line,
-          startIndex = newSelections.length,
-          isReversed = selection.isReversed;
-
-    // Compute end line.
-    const endAnchor = selection.end.with(undefined, 0),
-          endActive = selection.end;
-
-    const endSelection = new vscode.Selection(endAnchor, endActive);
-
-    // Add start line.
-    newSelections.push(
-      new vscode.Selection(
-        selection.start,
-        selection.start.with(undefined, Number.MAX_SAFE_INTEGER),
-      ),
-    );
-
-    // Add intermediate lines.
-    for (let line = startLine + 1; line < selection.end.line; line++) {
-      const anchor = new vscode.Position(line, 0),
-            active = new vscode.Position(line, Number.MAX_SAFE_INTEGER);
-
-      newSelections.unshift(new vscode.Selection(anchor, active));
-    }
-
-    // Add end line.
-    newSelections.unshift(endSelection);
-
-    // Restore direction of each line.
-    if (isReversed) {
-      for (let i = startIndex; i < newSelections.length; i++) {
-        newSelections[i] = new vscode.Selection(newSelections[i].active, newSelections[i].anchor);
-      }
-    }
-  }
-
-  editor.selections = newSelections;
-});
-
-registerCommand(Command.selectFirstLast, CommandFlags.ChangeSelections, ({ editor }) => {
-  const { document, selections } = editor,
-        len = selections.length,
-        newSelections = [] as vscode.Selection[];
-
-  for (let i = 0; i < len; i++) {
-    const selection = selections[i],
-          selectionStartOffset = document.offsetAt(selection.start),
-          selectionEndOffset = document.offsetAt(selection.end);
-
-    if (selectionEndOffset - selectionStartOffset < 2) {
-      newSelections.push(selection);
-    } else {
-      // Select start character.
-      {
-        const start = selection.start,
-              end = document.positionAt(document.offsetAt(start) + 1);
-
-        newSelections.push(new vscode.Selection(start, end));
-      }
-
-      // Select end character.
-      {
-        const end = selection.end,
-              start = document.positionAt(document.offsetAt(end) - 1);
-
-        newSelections.push(new vscode.Selection(start, end));
-      }
-    }
-  }
-
-  editor.selections = newSelections;
-});
-
-// Copy selections (C, a-C)
-// ===============================================================================================
-
-function tryCopySelection(
-  selectionHelper: SelectionHelper<EditorState>,
-  document: vscode.TextDocument,
-  selection: vscode.Selection,
-  newActiveLine: number,
+import { Context, EmptySelectionsError, moveWhile, Positions, Selections, switchRun } from "../api";
+import { Mode } from "../mode";
+import { Register } from "../register";
+import { Extension } from "../state/extension";
+import { CharSet, getCharacters, getCharSetFunction } from "../utils/charset";
+import { prompt, promptInList } from "../utils/prompt";
+import { SettingsValidator } from "../utils/settings-validator";
+import { TrackedSelection, TrackedSelectionSet } from "../utils/tracked-selection";
+
+/**
+ * Interacting with selections.
+ */
+declare module "./selections";
+
+/**
+ * Save selections.
+ *
+ * @keys `s-z` (normal)
+ */
+export function save(
+  editor: vscode.TextEditor,
+  extension: Extension,
+  register?: Register.WithFlags<Register.Flags.CanReadSelections>,
 ) {
-  const active = selection.active,
-        anchor = selection.anchor,
-        activeLine = selectionHelper.activeLine(selection);
-
-  if (activeLine === anchor.line) {
-    const newLine = document.lineAt(newActiveLine);
-
-    // TODO: Generalize below for all cases
-    return newLine.text.length >= selection.end.character
-      ? new vscode.Selection(anchor.with(newActiveLine),
-                             active.with(newActiveLine, selectionHelper.activeCharacter(selection)))
-      : undefined;
+  // TODO dispose of selection set automatically
+  if (register === undefined) {
+    register = extension.registers.caret;
   }
 
-  const newAnchorLine = newActiveLine + anchor.line - activeLine;
+  const existingMarks = register.getSelectionSet(editor.document);
 
-  if (newAnchorLine < 0 || newAnchorLine >= document.lineCount) {
-    return undefined;
+  if (existingMarks !== undefined) {
+    documentState.forgetSelections(existingMarks);
   }
 
-  const newAnchorTextLine = document.lineAt(newAnchorLine);
+  const style = argument.style,
+        trackedSelections = TrackedSelection.fromArray(editor.selections, editor.document);
+  let trackedSelectionSet: TrackedSelectionSet;
 
-  if (anchor.character > newAnchorTextLine.text.length) {
-    return undefined;
+  if (typeof style === "object") {
+    const validator = new SettingsValidator(),
+          renderOptions = Mode.decorationObjectToDecorationRenderOptions(style, validator);
+
+    validator.throwErrorIfNeeded();
+
+    trackedSelectionSet
+      = new TrackedSelectionSet.Styled(editor, trackedSelections, renderOptions);
+  } else {
+    trackedSelectionSet = new TrackedSelectionSet(trackedSelections);
   }
 
-  const newActiveTextLine = document.lineAt(newActiveLine);
-
-  if (active.character > newActiveTextLine.text.length) {
-    return undefined;
-  }
-
-  const newSelection = new vscode.Selection(anchor.with(newAnchorLine), active.with(newActiveLine));
-  const hasOverlap
-    = !(
-      selection.start.line < newSelection.start.line
-      || (selection.end.line === newSelection.start.line
-        && selection.end.character < newSelection.start.character)
-    )
-    && !(
-      newSelection.start.line < selection.start.line
-      || (newSelection.end.line === selection.start.line
-        && newSelection.end.character < selection.start.character)
-    );
-
-  if (hasOverlap) {
-    return undefined;
-  }
-
-  return newSelection;
+  documentState.trackSelectionSet(trackedSelectionSet);
+  register.setSelectionSet(editor.document, trackedSelectionSet);
 }
 
-function copySelections(
-  editorState: EditorState,
-  { repetitions }: CommandState,
-  direction: Direction,
+/**
+ * Restore selections.
+ *
+ * @keys `z` (normal)
+ */
+export function restore(
+  editor: vscode.TextEditor,
+  extension: Extension,
+  register?: Register.WithFlags<Register.Flags.CanReadSelections>,
 ) {
-  const editor = editorState.editor,
-        selections = editor.selections,
-        len = selections.length,
-        document = editor.document,
-        lineCount = document.lineCount,
-        selectionHelper = SelectionHelper.for(editorState);
+  register ??= extension.registers.caret;
 
-  for (let i = 0; i < len; i++) {
-    const selection = selections[i],
-          selectionActiveLine = selectionHelper.activeLine(selection);
+  const marks = throwIfRegisterHasNoSelections(register, editor.document);
 
-    for (
-      let i = 0, currentLine = selectionActiveLine + direction;
-      i < repetitions && currentLine >= 0 && currentLine < lineCount;
+  editor.selections = marks;
+}
 
-    ) {
-      const copiedSelection = tryCopySelection(selectionHelper, document, selection, currentLine);
+/**
+ * Combine register selections with current ones.
+ *
+ * @keys `a-z` (normal)
+ *
+ * The following keybinding is also available:
+ *
+ * | Keybinding       | Command                                                    |
+ * | ---------------- | ---------------------------------------------------------- |
+ * | `s-a-z` (normal) | `[".selections.restore.withCurrent", { "reverse": true }]` |
+ *
+ * See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
+ */
+export async function restore_withCurrent(
+  editor: vscode.TextEditor,
+  extension: Extension,
+  cancellationToken: vscode.CancellationToken,
+  register?: Register.WithFlags<Register.Flags.CanReadSelections>,
+  argument?: { reverse?: boolean },
+) {
+  if (register === undefined) {
+    register = extension.registers.caret;
+  }
 
-      if (copiedSelection !== undefined) {
-        if (!selections.some((s) => s.contains(copiedSelection))) {
-          selections.push(copiedSelection);
-        }
+  const marks = throwIfRegisterHasNoSelections(register, editor.document);
+  let from = marks,
+      add = editor.selections;
 
-        i++;
+  if (argument?.reverse) {
+    from = editor.selections;
+    add = marks;
+  }
 
-        if (direction === Backward) {
-          currentLine = copiedSelection.end.line - 1;
-        } else {
-          currentLine = copiedSelection.start.line + 1;
-        }
+  const type = await promptInList(false, [
+    ["a", "Append lists"],
+    ["u", "Union"],
+    ["i", "Intersection"],
+    ["<", "Select leftmost cursor"],
+    [">", "Select rightmost cursor"],
+    ["+", "Select longest"],
+    ["-", "Select shortest"],
+  ], cancellationToken);
+
+  if (type === 0) {
+    editor.selections = from.concat(add);
+
+    return;
+  }
+
+  if (from.length !== add.length) {
+    throw new Error("the current and register selections have different sizes");
+  }
+
+  const selections = [] as vscode.Selection[];
+
+  for (let i = 0; i < from.length; i++) {
+    const a = from[i],
+          b = add[i];
+
+    switch (type) {
+    case 1: {
+      const anchor = a.start.isBefore(b.start) ? a.start : b.start,
+            active = a.end.isAfter(b.end) ? a.end : b.end;
+
+      selections.push(new vscode.Selection(anchor, active));
+      break;
+    }
+
+    case 2: {
+      const anchor = a.start.isAfter(b.start) ? a.start : b.start,
+            active = a.end.isBefore(b.end) ? a.end : b.end;
+
+      selections.push(new vscode.Selection(anchor, active));
+      break;
+    }
+
+    case 3:
+      if (a.active.isBeforeOrEqual(b.active)) {
+        selections.push(a);
       } else {
-        currentLine += direction;
+        selections.push(b);
       }
+      break;
+
+    case 4:
+      if (a.active.isAfterOrEqual(b.active)) {
+        selections.push(a);
+      } else {
+        selections.push(b);
+      }
+      break;
+
+    case 5: {
+      const aLength = editor.document.offsetAt(a.end) - editor.document.offsetAt(a.start),
+            bLength = editor.document.offsetAt(b.end) - editor.document.offsetAt(b.start);
+
+      if (aLength > bLength) {
+        selections.push(a);
+      } else {
+        selections.push(b);
+      }
+      break;
+    }
+
+    case 6: {
+      const aLength = editor.document.offsetAt(a.end) - editor.document.offsetAt(a.start),
+            bLength = editor.document.offsetAt(b.end) - editor.document.offsetAt(b.start);
+
+      if (aLength < bLength) {
+        selections.push(a);
+      } else {
+        selections.push(b);
+      }
+      break;
+    }
     }
   }
 
   editor.selections = selections;
 }
 
-registerCommand(Command.selectCopy, CommandFlags.ChangeSelections, (editorState, state) =>
-  copySelections(editorState, state, Forward),
-);
-registerCommand(Command.selectCopyBackwards, CommandFlags.ChangeSelections, (editorState, state) =>
-  copySelections(editorState, state, Backward),
-);
+/**
+ * Pipe selections.
+ *
+ * Run the specified command or code with the contents of each selection, and
+ * save the result to a register.
+ *
+ * @keys `a-|` (normal)
+ *
+ * See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes-through-external-programs
+ *
+ * #### Additional commands
+ *
+ * | Title               | Identifier     | Keybinding     | Commands                                                                        |
+ * | ------------------- | -------------- | -------------- | ------------------------------------------------------------------------------- |
+ * | Pipe and replace    | `pipe.replace` | `|` (normal)   | `[".selections.pipe"], [".edit.insert", { "register": "|" }]`                   |
+ * | Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe"], [".edit.insert", { "register": "|", "where": "end" }]`   |
+ * | Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe"], [".edit.insert", { "register": "|", "where": "start" }]` |
+ */
+export async function pipe(
+  _: Context,
+  extension: Extension,
+  cancellationToken: vscode.CancellationToken,
+  register?: Register.WithFlags<Register.Flags.CanWrite>,
+  input?: string,
+) {
+  if (input === undefined) {
+    input = await prompt({
+      validateInput(value) {
+        try {
+          switchRun.validate(value);
+        } catch (e) {
+          return e?.message ?? `${e}`;
+        }
+      },
+      prompt: "Enter an expression",
+    }, cancellationToken);
+  }
+
+  if (register === undefined) {
+    register = extension.registers.pipe;
+  }
+
+  const selections = _.selections,
+        document = _.document,
+        selectionsStrings = selections.map((selection) => document.getText(selection));
+
+  const results = await Promise.all(_.run((_) => selectionsStrings.map((string, i, strings) =>
+    switchRun(input!, { $: string, $$: strings, i }),
+  )));
+
+  const strings = results.map((result) => {
+    if (result === null) {
+      return "null";
+    }
+    if (result === undefined) {
+      return "";
+    }
+    if (typeof result === "string") {
+      return result;
+    }
+    if (typeof result === "number" || typeof result === "boolean") {
+      return result.toString();
+    }
+    if (typeof result === "object") {
+      return JSON.stringify(result);
+    }
+
+    throw new Error("invalid returned value by expression");
+  });
+
+  await register.set(strings);
+}
+
+/**
+ * Extend to lines.
+ *
+ * Extend selections to contain full lines (including end-of-line characters).
+ *
+ * @keys `a-x` (normal)
+ */
+export function extendToLines(_: Context) {
+  return Selections.update.byIndex((_, selection, editor) => {
+    const start = selection.start,
+          end = selection.end;
+
+    // Move start to line start and end to include line break.
+    const newStart = start.with(undefined, 0);
+    let newEnd: vscode.Position;
+
+    if (end.character === 0) {
+      // End is next line start, which means the selection already includes the
+      // line break of last line.
+      newEnd = end;
+    } else if (end.line + 1 < editor.document.lineCount) {
+      // Move end to the next line start to include the line break.
+      newEnd = new vscode.Position(end.line + 1, 0);
+    } else {
+      // End is at the last line, so try to include all text.
+      const textLen = editor.document.lineAt(end.line).text.length;
+      newEnd = end.with(undefined, textLen);
+    }
+
+    // After expanding, the selection should be in the same direction as before.
+    return Selections.fromStartEnd(newStart, newEnd, selection.isReversed);
+  });
+}
+
+/**
+ * Trim lines.
+ *
+ * Trim selections to only contain full lines (from start to line break).
+ *
+ * @keys `s-a-x` (normal)
+ */
+export function trimLines(_: Context) {
+  return Selections.update.byIndex((_, selection) => {
+    const start = selection.start,
+          end = selection.end;
+
+    // If start is not at line start, move it to the next line start.
+    const newStart = start.character === 0 ? start : new vscode.Position(start.line + 1, 0);
+    // Move end to the line start, so that the selection ends with a line break.
+    const newEnd = new vscode.Position(end.line, 0);
+
+    if (newStart.isAfterOrEqual(newEnd)) {
+      return undefined;  // No full line contained.
+    }
+
+    // After trimming, the selection should be in the same direction as before.
+    // Except when selecting only one empty line in non-directional mode, prefer
+    // to keep the selection facing forward.
+    if (selection.isReversed && newStart.line + 1 !== newEnd.line) {
+      return new vscode.Selection(newEnd, newStart);
+    } else {
+      return new vscode.Selection(newStart, newEnd);
+    }
+  });
+}
+
+/**
+ * Trim whitespace.
+ *
+ * Trim whitespace at beginning and end of selections.
+ *
+ * @keys `_` (normal)
+ */
+export function trimWhitespace(_: Context) {
+  const blank = getCharacters(CharSet.Blank, _.document),
+        isBlank = (character: string) => blank.includes(character);
+
+  return Selections.update.byIndex((_, selection, editor) => {
+    const document = editor.document;
+
+    const firstCharacter = selection.start,
+          lastCharacter = Positions.previous(selection.end, document);
+
+    if (lastCharacter === undefined) {
+      return selection;
+    }
+
+    const start = moveWhile.forward(isBlank, firstCharacter),
+          end = moveWhile.backward(isBlank, lastCharacter);
+
+    if (start.isAfter(end)) {
+      return undefined;
+    }
+
+    return Selections.fromStartEnd(start, end, selection.isReversed);
+  });
+}
+
+/**
+ * Filter selections.
+ *
+ * @keys `$` (normal)
+ *
+ * #### Additional commands
+ *
+ * | Title               | Identifier      | Keybinding     | Commands                                          |
+ * | ------------------- | --------------- | -------------- | ------------------------------------------------- |
+ * | Filter with RegExp  | `filter.regexp` | `s` (normal)   | `[".selections.filter", { "defaultInput": "/" }]` |
+ */
+export async function filter(
+  _: Context,
+  cancellationToken: vscode.CancellationToken,
+  argument?: { defaultInput?: string },
+  input?: string,
+) {
+  const defaultInput = argument?.defaultInput;
+
+  if (input === undefined) {
+    input = await prompt({
+      value: defaultInput,
+      validateInput(value) {
+        try {
+          switchRun.validate(value);
+        } catch (e) {
+          return e?.message ?? `${e}`;
+        }
+      },
+      prompt: "Enter an expression",
+    }, cancellationToken);
+  }
+
+  const document = _.document,
+        selections = _.selections,
+        strings = selections.map((selection) => document.getText(selection));
+
+  return _.run(() =>
+    Selections.filter.byIndex(async (i) => {
+      try {
+        return !!await switchRun(strings[i], { $: strings[i], $$: strings, i });
+      } catch {
+        return false;
+      }
+    }).then(Selections.set),
+  );
+}
+
+function throwIfRegisterHasNoSelections(
+  register: Register & Register.ReadableSelections,
+  document: vscode.TextDocument,
+) {
+  const selections = register.getSelections(document);
+
+  EmptySelectionsError.throwIfRegisterIsEmpty(selections, register.name);
+
+  return selections;
+}

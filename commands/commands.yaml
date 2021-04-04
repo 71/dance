@@ -2,31 +2,8 @@
 # - https://github.com/mawww/kakoune/blob/master/src/normal.cc
 # - https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc
 
-# Meta (extension.ts & modes.ts)
-# ================================================================================================
-
-toggle:
-  title: Toggle
-  descr: Toggles Dance key bindings.
-
-set.normal:
-  title: Set mode to Normal
-  descr: Set Dance mode to Normal.
-  keys: escape (insert)
-
-set.insert:
-  title: Set mode to Insert
-  descr: Set Dance mode to Insert.
-
-tmp.normal:
-  title: Temporary normal mode
-  descr: Switches to normal mode temporarily.
-  keys: c-v (insert)
-
-tmp.insert:
-  title: Temporary insert mode
-  descr: Switches to insert mode temporarily.
-  keys: c-v (normal)
+# Specify a title if the command is to appear in the command palette.
+# Specify a list of commands or a single command with arguments to assign a keyboard shortcut.
 
 # Insert (insert.ts)
 # ================================================================================================
@@ -50,34 +27,6 @@ insert.lineEnd:
   title: Insert at line end
   descr: Start insert at line end of each selection.
   keys: s-a (normal)
-
-insert.newLine.below:
-  title: Insert new line below
-  descr: Create new line and start insert below.
-  keys: o (normal)
-
-insert.newLine.above:
-  title: Insert new line above
-  descr: Create new line and start insert above.
-  keys: s-o (normal)
-
-newLine.below:
-  title: Add new line below
-  descr: Add a new line below, without entering insert mode.
-  keys: a-o (normal)
-
-newLine.above:
-  title: Add new line above
-  descr: Add a new line above, without entering insert mode.
-  keys: s-a-o (normal)
-
-repeat.insert:
-  title: Repeat last insert-mode change
-  keys: . (normal)
-
-repeat.objectOrSelectTo:
-  title: Repeat last object select / character find
-  keys: a-. (normal)
 
 # Move around (move.ts)
 # ================================================================================================
@@ -154,21 +103,6 @@ select.enclosing:
   title: Select enclosing characters
   keys: m (normal)
   add: extend back
-
-expandLines:
-  title: Extend lines
-  descr: Extend selections to contain full lines (including end-of-lines).
-  keys: a-x (normal)
-
-trimLines:
-  title: Trim lines
-  descr: Trim selections to only contain full lines (from start to line break).
-  keys: s-a-x (normal)
-
-trimSelections:
-  title: Trim selections
-  descr: Trim whitespace at beginning and end of selections.
-  keys: s-- (normal)
 
 # Select word (move.ts)
 # ================================================================================================
@@ -286,16 +220,6 @@ selections.merge:
   descr: Merge contiguous selections together, including across lines.
   keys: s-a-- (normal)
 
-selections.align:
-  title: Align selections
-  descr: Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection.
-  keys: "s-7 (normal)"
-
-selections.align.copy:
-  title: Copy indentation
-  descr: Copy the indentation of the main selection (or the count one if a count is given) to all other ones.
-  keys: "s-a-7 (normal)"
-
 # Yank & Paste (yankPaste.ts)
 # ================================================================================================
 
@@ -353,160 +277,6 @@ paste.replace.every:
   title: Replace with every
   descr: Replace selections with every yanked text.
   keys: s-a-r (normal)
-
-# Changes (changes.ts)
-# ================================================================================================
-
-replace.characters:
-  title: Replace character
-  descr: Replace each selected character with the next entered one.
-  keys: r (normal)
-
-join:
-  title: Join lines
-  descr: Join selected lines.
-  keys: a-j (normal)
-
-join.select:
-  title: Join lines and select spaces
-  descr: Join selected lines and select spaces inserted in place of line breaks.
-  keys: s-a-j (normal)
-
-indent:
-  title: Indent
-  descr: Indent selected lines.
-  keys: "s-. (normal)"
-
-indent.withEmpty:
-  title: Indent (including empty)
-  descr: Indent selected lines (including empty lines).
-  keys: "s-a-. (normal)"
-
-deindent:
-  title: Deindent
-  descr: Deindent selected lines.
-  keys: "s-a-, (normal)"
-
-deindent.further:
-  title: Deindent (including incomplete indent)
-  descr: Deindent selected lines (and remove additional incomplete indent).
-  keys: "s-, (normal)"
-
-toLowerCase:
-  title: Transform to lowercase
-  keys: "` (normal)"
-
-toUpperCase:
-  title: Transform to uppercase
-  keys: "s-` (normal)"
-
-swapCase:
-  title: Swap case
-  keys: "a-` (normal)"
-
-# Pipes (pipe.ts)
-# ================================================================================================
-
-pipe.filter:
-  title: Filter through pipe
-  descr: Pipe each selection to a program, and keeps it if the program returns 0.
-  keys: s-4 (normal)
-
-pipe.replace:
-  title: Pipe and replace
-  descr: Pipe each selection to a command, and replaces it with its output.
-  keys: s-\ (normal)
-
-pipe.ignore:
-  title: Pipe
-  descr: Pipe each selection to a command, ignoring their results.
-  keys: s-a-\ (normal)
-
-pipe.append:
-  title: Pipe and append
-  descr: Pipe each selection to a command, appending the output after the selection.
-  keys: s-1 (normal)
-
-pipe.prepend:
-  title: Pipe and prepend
-  descr: Pipe each selection to a command, prepending the output before the selection.
-  keys: s-a-1 (normal)
-
-# History (history.ts)
-# ================================================================================================
-
-history.undo:
-  title: Undo
-  keys: u (normal)
-
-history.backward:
-  title: Move backward in history
-  keys: a-u (normal)
-
-history.redo:
-  title: Redo
-  keys: s-u (normal)
-
-history.forward:
-  title: Move forward in history
-  keys: s-a-u (normal)
-
-history.repeat:
-  title: Repeat last change
-
-history.repeat.selection:
-  title: Repeat last selection change
-
-history.repeat.edit:
-  title: Repeat last edit change
-
-# Macros (macros.ts)
-# ================================================================================================
-
-macros.record.start:
-  title: Start recording macro
-  keys: s-q (normal -macro)
-
-macros.record.stop:
-  title: Stop recording macro
-  keys: escape (normal)
-  # Note: this command executes even if a macro recording is not in progess,
-  # so that <esc> will noop instead of defaulting to deselecting in VSCode.
-
-macros.play:
-  title: Play macro
-  keys: q (normal)
-
-# Rotate (rotate.ts)
-# ================================================================================================
-
-rotate:
-  title: Rotate
-  descr: Rotate each selection clockwise.
-  keys: s-9 (normal)
-
-rotate.backwards:
-  title: Rotate backwards
-  descr: Rotate each selection counter-clockwise.
-  keys: s-0 (normal)
-
-rotate.content:
-  title: Rotate selection content
-  descr: Rotate each selection (as well as its content) clockwise.
-  keys: s-a-9 (normal)
-
-rotate.content.backwards:
-  title: Rotate selection content backwards
-  descr: Rotate each selection (as well as its content) counter-clockwise.
-  keys: s-a-0 (normal)
-
-rotate.contentOnly:
-  title: Rotate content only
-  descr: Rotate each selection content clockwise, without changing selections.
-
-rotate.contentOnly.backwards:
-  title: Rotate content only backwards
-  descr: Rotate each selection content counter-clockwise, without changing selections.
 
 # Search (search.ts)
 # ================================================================================================
@@ -635,53 +405,3 @@ goto.selectedFile:
 goto.lastModification:
   title: Go to last buffer modification position
   add: extend
-
-# Menus (menus.ts)
-# ================================================================================================
-
-openMenu:
-  title: Open quick-jump menu
-
-# Registers and marks (mark.ts)
-# ================================================================================================
-
-registers.insert:
-  title: Insert value in register
-  keys: c-r (normal), c-r (insert)
-
-registers.select:
-  title: Select register for next command
-  keys: s-\' (normal)
-
-marks.saveSelections:
-  title: Save selections
-  keys: s-z (normal)
-
-marks.restoreSelections:
-  title: Restore selections
-  keys: z (normal)
-
-marks.combineSelections.fromCurrent:
-  title: Combine current selections with ones from register
-  keys: s-a-z (normal)
-
-marks.combineSelections.fromRegister:
-  title: Combine register selections with current ones
-  keys: a-z (normal)
-
-# Misc. (misc.ts)
-
-cancel:
-  title: Cancel operation
-  descr: Cancels waiting for input from the user
-  keys: escape (awaiting)
-
-run:
-  title: Run code
-  descr: Runs JavaScript code passed in a 'code' argument
-
-_commandPalette:
-  title: Open Command Palette
-  descr: Open the built-in Command Palette in VSCode
-  keys: s-; (normal)
-  command: "workbench.action.showCommands"

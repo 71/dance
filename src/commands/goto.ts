@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as vscode from "vscode";
 
-import { Command, CommandFlags, CommandState, InputKind, registerCommand } from ".";
+import { Command, CommandFlags, CommandState, InputKind, define } from ".";
 import { EditorState } from "../state/editor";
 import { SelectionBehavior } from "../state/extension";
 import {
@@ -11,7 +11,7 @@ import {
   ExtendBehavior,
   SelectionHelper,
   jumpTo,
-} from "../utils/selectionHelper";
+} from "../utils/selection-helper";
 
 const getMenu = (name: string) => (editorState: EditorState) => {
   const menuItems = editorState.extension.menus.get(name)!.items;
@@ -28,7 +28,7 @@ const executeMenuItem = async (editorState: EditorState, name: string, i: number
 
 // TODO: Make just merely opening the menu not count as a command execution
 // and do not record it. The count+goto version (e.g. `10g`) should still count.
-registerCommand(
+define(
   Command.goto,
   CommandFlags.ChangeSelections,
   InputKind.ListOneItemOrCount,
@@ -57,7 +57,7 @@ registerCommand(
 
 // TODO: Make just merely opening the menu not count as a command execution
 // and do not record it. The count+goto version (e.g. `10G`) should still count.
-registerCommand(
+define(
   Command.gotoExtend,
   CommandFlags.ChangeSelections,
   InputKind.ListOneItemOrCount,
@@ -115,32 +115,32 @@ function toCharacter(func: CoordMapper, extend: ExtendBehavior) {
     SelectionHelper.for(editorState, commandState).mapEach(mapper);
 }
 
-registerCommand(
+define(
   Command.gotoLineStart,
   CommandFlags.ChangeSelections,
   toCharacter(toStartCharacterFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoLineStartExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toStartCharacterFunc, Extend),
 );
-registerCommand(
+define(
   Command.gotoLineStartNonBlank,
   CommandFlags.ChangeSelections,
   toCharacter(toFirstNonBlankCharacterFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoLineStartNonBlankExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toFirstNonBlankCharacterFunc, Extend),
 );
-registerCommand(
+define(
   Command.gotoLineEnd,
   CommandFlags.ChangeSelections,
   toCharacter(toEndCharacterFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoLineEndExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toEndCharacterFunc, Extend),
@@ -155,32 +155,32 @@ const toLastVisibleLineFunc: CoordMapper = (from, { editor }) =>
 const toMiddleVisibleLineFunc: CoordMapper = (from, { editor }) =>
   from.with(((editor.visibleRanges[0].end.line + editor.visibleRanges[0].start.line) / 2) | 0, 0);
 
-registerCommand(
+define(
   Command.gotoFirstVisibleLine,
   CommandFlags.ChangeSelections,
   toCharacter(toFirstVisibleLineFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoFirstVisibleLineExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toFirstVisibleLineFunc, Extend),
 );
-registerCommand(
+define(
   Command.gotoMiddleVisibleLine,
   CommandFlags.ChangeSelections,
   toCharacter(toMiddleVisibleLineFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoMiddleVisibleLineExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toMiddleVisibleLineFunc, Extend),
 );
-registerCommand(
+define(
   Command.gotoLastVisibleLine,
   CommandFlags.ChangeSelections,
   toCharacter(toLastVisibleLineFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoLastVisibleLineExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toLastVisibleLineFunc, Extend),
@@ -208,39 +208,39 @@ const toLastLineEndFunc: CoordMapper = (_, helper) => {
   return new vscode.Position(line, lineLen);
 };
 
-registerCommand(
+define(
   Command.gotoFirstLine,
   CommandFlags.ChangeSelections,
   toCharacter(toFirstLineFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoFirstLineExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toFirstLineFunc, Extend),
 );
 
-registerCommand(
+define(
   Command.gotoLastLine,
   CommandFlags.ChangeSelections,
   toCharacter(toLastLineStartFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoLastLineExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toLastLineStartFunc, Extend),
 );
-registerCommand(
+define(
   Command.gotoLastCharacter,
   CommandFlags.ChangeSelections,
   toCharacter(toLastLineEndFunc, DoNotExtend),
 );
-registerCommand(
+define(
   Command.gotoLastCharacterExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toLastLineEndFunc, Extend),
 );
 
-registerCommand(Command.gotoSelectedFile, CommandFlags.ChangeSelections, ({ editor }) => {
+define(Command.gotoSelectedFile, CommandFlags.ChangeSelections, ({ editor }) => {
   const basePath = path.dirname(editor.document.fileName);
 
   return Promise.all(editor.selections.map((selection) => {
@@ -256,7 +256,7 @@ function toLastBufferModification(editorState: EditorState, extend: ExtendBehavi
 
   if (documentState.recordedChanges.length > 0) {
     const range = documentState.recordedChanges[documentState.recordedChanges.length - 1].range,
-          selection = range.selection(documentState.document);
+          selection = range.restore(documentState.document);
 
     editor.selection = extend
       ? new vscode.Selection(editor.selection.anchor, selection.active)
@@ -264,9 +264,9 @@ function toLastBufferModification(editorState: EditorState, extend: ExtendBehavi
   }
 }
 
-registerCommand(Command.gotoLastModification, CommandFlags.ChangeSelections, (editorState) =>
+define(Command.gotoLastModification, CommandFlags.ChangeSelections, (editorState) =>
   toLastBufferModification(editorState, DoNotExtend),
 );
-registerCommand(Command.gotoLastModificationExtend, CommandFlags.ChangeSelections, (editorState) =>
+define(Command.gotoLastModificationExtend, CommandFlags.ChangeSelections, (editorState) =>
   toLastBufferModification(editorState, Extend),
 );

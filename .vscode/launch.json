@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Run Extension",
+      "name": "Launch extension",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
@@ -11,7 +11,19 @@
       "preLaunchTask": "npm: watch"
     },
     {
-      "name": "Run Extension Tests",
+      "name": "Run all tests",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/out/test/suite",
+      ],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "preLaunchTask": "npm: watch",
+    },
+    {
+      "name": "Run tests in this file",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
@@ -20,7 +32,10 @@
         "--extensionTestsPath=${workspaceFolder}/out/test/suite"
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch"
+      "preLaunchTask": "npm: watch",
+      "env": {
+        "CURRENT_FILE": "${relativeFile}"
+      }
     }
   ]
 }

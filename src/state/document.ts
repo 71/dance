@@ -3,15 +3,21 @@ import * as vscode from "vscode";
 import { EditorState } from "./editor";
 import { Extension } from "./extension";
 import { CommandState, InputKind } from "../commands";
-import { assert } from "../utils/assert";
-import { SavedSelection } from "../utils/savedSelection";
+import { assert } from "../utils/errors";
+import { TrackedSelection, TrackedSelectionSet } from "../utils/tracked-selection";
 
 /**
  * Document-specific state.
  */
 export class DocumentState {
   private readonly _editorStates: EditorState[] = [];
-  private readonly _savedSelections: SavedSelection[] = [];
+  private readonly _history = new History(this.document);
+  private readonly _trackedSelections: TrackedSelectionSet[] = [];
+
+  private readonly _recordedChanges: RecordedChange[] = [];
+  private readonly _recordedSelectionSet = new TrackedSelectionSet([]);
+
+  private _lastCommand?: CommandState<any>;
 
   public constructor(
     /** The extension for which state is being kept. */
@@ -19,20 +25,35 @@ export class DocumentState {
 
     /** The editor for which state is being kept. */
     public readonly document: vscode.TextDocument,
-  ) {}
+  ) {
+    this._trackedSelections.push(this._recordedSelectionSet);
+  }
 
   /**
    * Disposes of the resources owned by and of the subscriptions of this
    * instance.
    */
   public dispose() {
-    const editorStates = this._editorStates.splice(0);
+    const editorStates = this._editorStates;
 
     for (let i = 0, len = editorStates.length; i < len; i++) {
       editorStates[i].dispose();
     }
 
-    this._savedSelections.length = 0;
+    editorStates.length = 0;
+
+    const trackedSelectionSets = this._trackedSelections;
+
+    for (let i = 0, len = trackedSelectionSets.length; i < len; i++) {
+      trackedSelectionSets[i].dispose();
+    }
+
+    trackedSelectionSets.length = 0;
+
+    this._lastCommand = undefined;
+
+    this._history.clear();
+    this._recordedChanges.length = 0;
   }
 
   /**
@@ -72,16 +93,10 @@ export class DocumentState {
    * Called when `vscode.workspace.onDidChangeTextDocument` is triggered.
    */
   public onDidChangeTextDocument(e: vscode.TextDocumentChangeEvent) {
-    const savedSelections = this._savedSelections;
+    const trackedSelectionSets = this._trackedSelections;
 
-    if (savedSelections !== undefined) {
-      for (let i = 0; i < savedSelections.length; i++) {
-        const savedSelection = savedSelections[i];
-
-        for (let j = 0; j < e.contentChanges.length; j++) {
-          savedSelection.updateAfterDocumentChanged(e.contentChanges[j]);
-        }
-      }
+    for (let i = 0; i < trackedSelectionSets.length; i++) {
+      trackedSelectionSets[i].updateAfterDocumentChanged(e.contentChanges);
     }
 
     const editorStates = this._editorStates;
@@ -91,6 +106,7 @@ export class DocumentState {
     }
 
     this.recordChanges(e.contentChanges);
+    this._history.recordChanges(e.contentChanges);
   }
 
   // =============================================================================================
@@ -98,42 +114,42 @@ export class DocumentState {
   // =============================================================================================
 
   /**
-   * Saves the given selection, tracking changes to the given document and
-   * updating the selection correspondingly over time.
+   * Saves the given selection set, tracking changes to the given document and
+   * updating its selections correspondingly over time.
    */
-  public saveSelection(selection: vscode.Selection) {
-    const anchorOffset = this.document.offsetAt(selection.anchor),
-          activeOffset = this.document.offsetAt(selection.active),
-          savedSelection = new SavedSelection(anchorOffset, activeOffset);
+  public trackSelectionSet(selectionSet: TrackedSelectionSet) {
+    this._trackedSelections.push(selectionSet);
+  }
 
-    this._savedSelections.push(savedSelection);
+  /**
+   * Saves the given selections, tracking changes to the given document and
+   * updating the selections correspondingly over time.
+   */
+  public trackSelections(selections: readonly vscode.Selection[]) {
+    const trackedSelections = TrackedSelection.fromArray(selections, this.document),
+          trackedSelectionSet = new TrackedSelectionSet(trackedSelections);
 
-    return savedSelection;
+    this.trackSelectionSet(trackedSelectionSet);
+
+    return trackedSelectionSet;
   }
 
   /**
    * Forgets the given saved selections.
    */
-  public forgetSelections(selections: readonly SavedSelection[]) {
-    const savedSelections = this._savedSelections;
+  public forgetSelections(trackedSelectionSet: TrackedSelectionSet) {
+    const index = this._trackedSelections.indexOf(trackedSelectionSet);
 
-    if (savedSelections !== undefined) {
-      for (let i = 0; i < selections.length; i++) {
-        const index = savedSelections.indexOf(selections[i]);
-
-        if (index !== -1) {
-          savedSelections.splice(index, 1);
-        }
-      }
+    if (index !== -1) {
+      this._trackedSelections.splice(index, 1);
     }
+
+    trackedSelectionSet.dispose();
   }
 
   // =============================================================================================
   // ==  HISTORY  ================================================================================
   // =============================================================================================
-
-  private _lastCommand?: CommandState<any>;
-  private readonly _recordedChanges = [] as RecordedChange[];
 
   /**
    * The changes that were last made in this editor.
@@ -143,7 +159,7 @@ export class DocumentState {
   }
 
   /**
-   * Adds the given changes to the history of the editor following the given
+   * Adds the given changes to the history of the document following the last
    * command.
    */
   private recordChanges(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
@@ -157,12 +173,12 @@ export class DocumentState {
 
     for (let i = 0, len = changes.length; i < len; i++) {
       const change = changes[i],
-            savedSelection = new SavedSelection(
+            savedSelection = new TrackedSelection(
               change.rangeOffset,
               change.rangeOffset + change.rangeLength,
             );
 
-      this._savedSelections.push(savedSelection);
+      this._recordedSelectionSet.addTrackedSelection(savedSelection);
       recordedChanges.push(new RecordedChange(savedSelection, change.text));
     }
   }
@@ -178,9 +194,146 @@ export class DocumentState {
 export class RecordedChange {
   public constructor(
     /** The range that got replaced. */
-    public readonly range: SavedSelection,
+    public readonly range: TrackedSelection,
 
     /** The new text for the range. */
     public readonly text: string,
   ) {}
+}
+
+/**
+ * The history of changes in a document.
+ */
+export class History {
+  private readonly _buffers = [new Float64Array(History.Constants.BufferSize)];
+  private _currentBufferOffset = 0;
+
+  public constructor(
+    public readonly document: vscode.TextDocument,
+  ) {}
+
+  /**
+   * Returns a `ChangeIdentifier` that can later be used to compute selections
+   * that evolved from now.
+   */
+  public currentIdentifier(): History.ChangeIdentifier {
+    return ((this._buffers.length - 1) << History.Constants.IdentifierStructOffsetBits)
+         | this._currentBufferOffset;
+  }
+
+  /**
+   * Records changes to the document.
+   */
+  public recordChanges(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
+    for (let i = 0, len = changes.length; i < len; i++) {
+      this.recordChange(changes[i]);
+    }
+  }
+
+  /**
+   * Records a change to the document and returns a `ChangeIdentifier`.
+   */
+  public recordChange(change: vscode.TextDocumentContentChangeEvent): History.ChangeIdentifier {
+    const buffers = this._buffers,
+          bufferIdx = buffers.length - 1,
+          buffer = buffers[bufferIdx],
+          currentOffset = this._currentBufferOffset;
+
+    buffer[currentOffset + History.Constants.OffsetIndex] = change.rangeOffset + change.rangeLength;
+    buffer[currentOffset + History.Constants.DiffIndex] = change.text.length - change.rangeLength;
+
+    if (currentOffset + History.Constants.EntrySize === History.Constants.BufferSize) {
+      this._buffers.push(new Float64Array(History.Constants.BufferSize));
+      this._currentBufferOffset = 0;
+    } else {
+      this._currentBufferOffset = currentOffset + History.Constants.EntrySize;
+    }
+
+    return (bufferIdx << History.Constants.IdentifierStructOffsetBits) | currentOffset;
+  }
+
+  /**
+   * Returns a snapshot of the selection with the given anchor and active
+   * positions. Values of this snapshot can later be given to
+   * `computeSelectionOffsets` to compute the anchor and active positions of the
+   * selection at a future state of the document.
+   */
+  public snapshot(anchor: vscode.Position, active: vscode.Position): History.SelectionSnapshot {
+    const document = this.document,
+          anchorOffset = document.offsetAt(anchor),
+          activeOffset = anchor.isEqual(active) ? anchorOffset : document.offsetAt(active);
+
+    return [this.currentIdentifier(), anchorOffset, activeOffset];
+  }
+
+  /**
+   * Computes the new offsets of the anchor and active positions of a selection
+   * that were snapshotted at the given `ChangeIdentifier`.
+   */
+  public computeSelectionOffsets(
+    startId: History.ChangeIdentifier,
+    anchorOffset: number,
+    activeOffset: number,
+  ): [anchorOffset: number, activeOffset: number] {
+    let structOffset = startId & History.Constants.IdentifierStructOffsetMask,
+        bufferOffset = startId >> History.Constants.IdentifierStructOffsetBits;
+    const buffers = this._buffers,
+          buffersLen = buffers.length,
+          buffer = this._buffers[bufferOffset];
+
+    while (bufferOffset < buffersLen) {
+      while (structOffset < History.Constants.BufferSize) {
+        const offset = buffer[structOffset + History.Constants.OffsetIndex],
+              diff = buffer[structOffset + History.Constants.DiffIndex];
+
+        if (offset <= activeOffset) {
+          activeOffset += diff;
+        }
+
+        if (offset <= anchorOffset) {
+          anchorOffset += diff;
+        }
+
+        structOffset += History.Constants.EntrySize;
+      }
+
+      bufferOffset++;
+      structOffset = 0;
+    }
+
+    return [anchorOffset, activeOffset];
+  }
+
+  public computeSelection(startId: number, anchorOffset: number, activeOffset: number) {
+    const updatedOffsets = this.computeSelectionOffsets(startId, anchorOffset, activeOffset),
+          document = this.document,
+          anchorPosition = document.positionAt(updatedOffsets[0]),
+          activePosition = anchorOffset === activeOffset
+            ? anchorPosition
+            : document.positionAt(updatedOffsets[1]);
+
+    return new vscode.Selection(anchorPosition, activePosition);
+  }
+
+  public clear() {
+    this._currentBufferOffset = 0;
+    this._buffers.splice(0, this._buffers.length, new Float64Array(History.Constants.BufferSize));
+  }
+}
+
+export namespace History {
+  export type ChangeIdentifier = number;
+  export type SelectionSnapshot
+    = readonly [changeId: ChangeIdentifier, anchorOffset: number, activeOffset: number];
+
+  export const enum Constants {
+    BufferSize = 4096,
+    EntrySize = 2,
+
+    OffsetIndex = 0,
+    DiffIndex = 1,
+
+    IdentifierStructOffsetBits = 12,
+    IdentifierStructOffsetMask = (1 << IdentifierStructOffsetBits) - 1,
+  }
 }

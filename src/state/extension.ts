@@ -4,224 +4,24 @@ import { DocumentState } from "./document";
 import { EditorState } from "./editor";
 import { commands } from "../commands";
 import { extensionName } from "../extension";
-import { Register, Registers } from "../registers";
+import { Register, Registers } from "../register";
+import { Menu, validateMenu } from "../api/menu";
+import { Modes } from "../mode";
+import { SettingsValidator } from "../utils/settings-validator";
+import { CancellationError } from "../utils/errors";
 
 // =============================================================================================
 // ==  MODE-SPECIFIC CONFIGURATION  ============================================================
 // =============================================================================================
-
-export const enum Mode {
-  Normal = "normal",
-  Insert = "insert",
-
-  Awaiting = "awaiting",
-}
 
 export const enum SelectionBehavior {
   Caret = 1,
   Character = 2,
 }
 
-export namespace ModeConfiguration {
-  export type CursorStyle =
-    | "line"
-    | "block"
-    | "underline"
-    | "line-thin"
-    | "block-outline"
-    | "underline-thin"
-    | "inherit";
-  export type LineNumbers = "on" | "off" | "relative" | "inherit";
-}
-
-export interface GotoMenuItem {
-  readonly text: string;
-  readonly command: string;
-  readonly args?: any[];
-}
-
-export interface GotoMenu {
-  readonly items: Record<string, GotoMenuItem>;
-}
-
-/**
- * Mode-specific configuration.
- */
-export class ModeConfiguration {
-  private constructor(
-    public readonly mode: Mode,
-    public readonly modePrefix: string,
-
-    public lineNumbers: vscode.TextEditorLineNumbersStyle,
-    public cursorStyle: vscode.TextEditorCursorStyle,
-    public decorationType?: vscode.TextEditorDecorationType,
-  ) {}
-
-  public static insert() {
-    return new ModeConfiguration(
-      Mode.Insert,
-      "insertMode",
-
-      vscode.TextEditorLineNumbersStyle.On,
-      vscode.TextEditorCursorStyle.Line,
-    );
-  }
-
-  public static normal() {
-    return new ModeConfiguration(
-      Mode.Normal,
-      "normalMode",
-
-      vscode.TextEditorLineNumbersStyle.Relative,
-      vscode.TextEditorCursorStyle.Line,
-    );
-  }
-
-  public observeLineHighlightPreference(extension: Extension, defaultValue: string | null) {
-    extension.observePreference<string | null>(
-      this.modePrefix + ".lineHighlight",
-      defaultValue,
-      (value) => {
-        this.decorationType?.dispose();
-
-        if (value === null || value.length === 0) {
-          return (this.decorationType = undefined);
-        }
-
-        this.decorationType = vscode.window.createTextEditorDecorationType({
-          backgroundColor: value[0] === "#" ? value : new vscode.ThemeColor(value),
-          isWholeLine: true,
-        });
-
-        for (const editor of extension.editorStates()) {
-          if (editor.mode === this.mode && editor.isActive) {
-            editor.setDecorations(this.decorationType);
-          }
-        }
-
-        return;
-      },
-      true,
-    );
-  }
-
-  public observeLineNumbersPreference(
-    extension: Extension,
-    defaultValue: ModeConfiguration.LineNumbers,
-  ) {
-    extension.observePreference<ModeConfiguration.LineNumbers>(
-      this.modePrefix + ".lineNumbers",
-      defaultValue,
-      (value) => {
-        this.lineNumbers = this.lineNumbersStringToLineNumbersStyle(value);
-      },
-      true,
-    );
-  }
-
-  public updateLineNumbers(extension: Extension, defaultValue: ModeConfiguration.LineNumbers) {
-    this.lineNumbers = this.lineNumbersStringToLineNumbersStyle(
-      extension.configuration.get(this.modePrefix + ".lineNumbers") ?? defaultValue,
-    );
-  }
-
-  public observeCursorStylePreference(
-    extension: Extension,
-    defaultValue: ModeConfiguration.CursorStyle,
-  ) {
-    extension.observePreference<ModeConfiguration.CursorStyle>(
-      this.modePrefix + ".cursorStyle",
-      defaultValue,
-      (value) => {
-        this.cursorStyle = this.cursorStyleStringToCursorStyle(value);
-      },
-      true,
-    );
-  }
-
-  public updateCursorStyle(extension: Extension, defaultValue: ModeConfiguration.CursorStyle) {
-    this.cursorStyle = this.cursorStyleStringToCursorStyle(
-      extension.configuration.get(this.modePrefix + ".cursorStyle") ?? defaultValue,
-    );
-  }
-
-  private lineNumbersStringToLineNumbersStyle(lineNumbers: ModeConfiguration.LineNumbers) {
-    switch (lineNumbers) {
-    case "on":
-      return vscode.TextEditorLineNumbersStyle.On;
-    case "off":
-      return vscode.TextEditorLineNumbersStyle.Off;
-    case "relative":
-      return vscode.TextEditorLineNumbersStyle.Relative;
-    case "inherit":
-    default:
-      const vscodeLineNumbers = vscode.workspace
-        .getConfiguration()
-        .get<ModeConfiguration.LineNumbers | "interval">("editor.lineNumbers", "on");
-
-      switch (vscodeLineNumbers) {
-      case "on":
-        return vscode.TextEditorLineNumbersStyle.On;
-      case "off":
-        return vscode.TextEditorLineNumbersStyle.Off;
-      case "relative":
-        return vscode.TextEditorLineNumbersStyle.Relative;
-      case "interval": // This is a real option but its not in vscode.d.ts
-        return 3;
-      default:
-        return vscode.TextEditorLineNumbersStyle.On;
-      }
-    }
-  }
-
-  private cursorStyleStringToCursorStyle(cursorStyle: ModeConfiguration.CursorStyle) {
-    switch (cursorStyle) {
-    case "block":
-      return vscode.TextEditorCursorStyle.Block;
-    case "block-outline":
-      return vscode.TextEditorCursorStyle.BlockOutline;
-    case "line":
-      return vscode.TextEditorCursorStyle.Line;
-    case "line-thin":
-      return vscode.TextEditorCursorStyle.LineThin;
-    case "underline":
-      return vscode.TextEditorCursorStyle.Underline;
-    case "underline-thin":
-      return vscode.TextEditorCursorStyle.UnderlineThin;
-
-    case "inherit":
-    default:
-      const vscodeCursorStyle = vscode.workspace
-        .getConfiguration()
-        .get<ModeConfiguration.CursorStyle>("editor.cursorStyle", "line");
-
-      switch (vscodeCursorStyle) {
-      case "block":
-        return vscode.TextEditorCursorStyle.Block;
-      case "block-outline":
-        return vscode.TextEditorCursorStyle.BlockOutline;
-      case "line":
-        return vscode.TextEditorCursorStyle.Line;
-      case "line-thin":
-        return vscode.TextEditorCursorStyle.LineThin;
-      case "underline":
-        return vscode.TextEditorCursorStyle.Underline;
-      case "underline-thin":
-        return vscode.TextEditorCursorStyle.UnderlineThin;
-      default:
-        return vscode.TextEditorCursorStyle.Line;
-      }
-    }
-  }
-}
-
 // ===============================================================================================
 // ==  EXTENSION  ================================================================================
 // ===============================================================================================
-
-function showValidationError(message: string) {
-  vscode.window.showErrorMessage(`Configuration error: ${message}`);
-}
 
 /**
  * Global state of the extension.
@@ -232,17 +32,12 @@ export class Extension implements vscode.Disposable {
   private readonly subscriptions: vscode.Disposable[] = [];
 
   // Configuration.
-  private readonly _gotoMenus = new Map<string, GotoMenu>();
-  private _selectionBehavior = SelectionBehavior.Caret;
+  private readonly _gotoMenus = new Map<string, Menu>();
 
   public configuration = vscode.workspace.getConfiguration(extensionName);
 
-  public get selectionBehavior() {
-    return this._selectionBehavior;
-  }
-
   public get menus() {
-    return this._gotoMenus as ReadonlyMap<string, GotoMenu>;
+    return this._gotoMenus as ReadonlyMap<string, Menu>;
   }
 
   // General state.
@@ -261,11 +56,10 @@ export class Extension implements vscode.Disposable {
    */
   public readonly registers = new Registers();
 
-  // Mode-specific configuration.
-  public readonly insertMode = ModeConfiguration.insert();
-  public readonly normalMode = ModeConfiguration.normal();
-
-  public insertModeSelectionStyle?: vscode.TextEditorDecorationType;
+  /**
+   * `Modes` for this instance of the extension.
+   */
+  public readonly modes = new Modes();
 
   // Ephemeral state needed by commands.
   public currentCount: number = 0;
@@ -274,149 +68,34 @@ export class Extension implements vscode.Disposable {
   public constructor() {
     this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100);
     this.statusBarItem.tooltip = "Current mode";
-
-    // This needs to be before setEnabled for normalizing selections on start.
-    this.observePreference<"caret" | "character">(
-      "selectionBehavior",
-      "caret",
-      (value) => {
-        this._selectionBehavior
-          = value === "caret" ? SelectionBehavior.Caret : SelectionBehavior.Character;
-      },
-      true,
-    );
-
-    // Configuration: line highlight.
-    this.insertMode.observeLineHighlightPreference(this, null);
-    this.normalMode.observeLineHighlightPreference(this, "editor.hoverHighlightBackground");
-
-    // Configuration: line numbering.
-    this.insertMode.observeLineNumbersPreference(this, "inherit");
-    this.normalMode.observeLineNumbersPreference(this, "relative");
-
-    this.configurationChangeHandlers.set("editor.lineNumbers", () => {
-      this.insertMode.updateLineNumbers(this, "inherit");
-      this.normalMode.updateLineNumbers(this, "relative");
-    });
-
-    // Configuration: cursor style.
-    this.insertMode.observeCursorStylePreference(this, "inherit");
-    this.normalMode.observeCursorStylePreference(this, "inherit");
-
-    this.configurationChangeHandlers.set("editor.cursorStyle", () => {
-      this.insertMode.updateCursorStyle(this, "inherit");
-      this.normalMode.updateCursorStyle(this, "inherit");
-    });
-
-    // Configuration: selection style.
-    this.observePreference<Record<string, string | vscode.ThemeColor>>(
-      "insertMode.selectionStyle",
-      {},
-      (value) => {
-        if (typeof value !== "object" || value === null) {
-          return;
-        }
-
-        for (const key in value) {
-          const val = value[key];
-
-          if (typeof val !== "string") {
-            return;
-          }
-          if (val.startsWith("$")) {
-            value[key] = new vscode.ThemeColor(val.substr(1));
-          }
-        }
-
-        this.insertModeSelectionStyle?.dispose();
-        this.insertModeSelectionStyle = vscode.window.createTextEditorDecorationType(value);
-      },
-      true,
-    );
+    // Configuration: modes.
+    this.modes.observePreferences(this);
 
     // Configuration: menus.
-    this.observePreference<Record<string, { items: Record<string, GotoMenuItem | null> }>>(
-      "menus",
+    this.observePreference<Record<string, Menu>>(
+      ".menus",
       {},
       (value) => {
         this._gotoMenus.clear();
 
+        const validator = new SettingsValidator("menus");
+
         if (typeof value !== "object" || value === null) {
-          return showValidationError(`"${extensionName}.menus" must be an object.`);
+          validator.reportInvalidSetting("must be an object");
         }
 
         for (const menuName in value) {
           const menu = value[menuName],
-                builtMenu: GotoMenu = { items: {} },
-                menuDisplay = `${extensionName}.menus[${JSON.stringify(menuName)}]`;
+                validationErrors = validateMenu(menu);
 
-          if (typeof menu !== "object" || menu === null) {
-            showValidationError(`menu ${menuDisplay} must be an object.`);
-            continue;
-          }
-          if (typeof menu.items !== "object" || Object.keys(menu.items ?? {}).length < 2) {
-            showValidationError(
-              `menu ${menuDisplay} must have an subobject "items" with at least two entries.`,
-            );
-            continue;
-          }
-
-          const seenKeyCodes = new Map<number, string>();
-
-          for (const key in menu.items) {
-            const item = menu.items[key],
-                  itemDisplay = `${JSON.stringify(key)} of ${menuDisplay}`;
-
-            if (item === null) {
-              continue;
+          if (validationErrors.length === 0) {
+            this._gotoMenus.set(menuName, menu);
+          } else {
+            for (const error of validationErrors) {
+              validator.reportInvalidSetting(`error in menu ${menuName}: ${error}`);
             }
 
-            if (typeof item !== "object") {
-              showValidationError(`item ${itemDisplay} must be an object.`);
-              continue;
-            }
-            if (typeof item.text !== "string" || item.text.length === 0) {
-              showValidationError(`item ${itemDisplay} must have a non-empty "text" property.`);
-              continue;
-            }
-            if (typeof item.command !== "string" || item.command.length === 0) {
-              showValidationError(`item ${itemDisplay} must have a non-empty "command" property.`);
-              continue;
-            }
-            if (key.length === 0) {
-              showValidationError(`item ${itemDisplay} must be a non-empty string key.`);
-              continue;
-            }
-
-            let keyString = "";
-
-            for (let i = 0; i < key.length; i++) {
-              const keyCode = key.charCodeAt(i),
-                    prevKey = seenKeyCodes.get(keyCode);
-
-              if (prevKey) {
-                showValidationError(`menu ${menuDisplay} has duplicate key '${key[i]}' `
-                                  + `(specified by '${prevKey}' and '${key}').`);
-                continue;
-              }
-
-              seenKeyCodes.set(keyCode, key);
-              keyString = keyString === "" ? key[i] : `${keyString}, ${key[i]}`;
-            }
-
-            if (keyString.length === 0) {
-              continue;
-            }
-
-            builtMenu.items[keyString] = {
-              command: item.command,
-              text: item.text,
-              args: item.args,
-            };
-          }
-
-          if (Object.keys(builtMenu.items).length > 0) {
-            this._gotoMenus.set(menuName, builtMenu);
+            validator.displayErrorIfNeeded();
           }
         }
       },
@@ -447,16 +126,40 @@ export class Extension implements vscode.Disposable {
    */
   public observePreference<T>(
     section: string,
-    defaultValue: T,
-    handler: (value: T) => void,
+    defaultValue: T | undefined,
+    handler: (value: T, validator: SettingsValidator) => void,
     triggerNow = false,
   ) {
-    this.configurationChangeHandlers.set("dance." + section, () => {
-      handler(this.configuration.get(section, defaultValue));
+    let configuration: vscode.WorkspaceConfiguration,
+        fullName: string;
+
+    if (section[0] === ".") {
+      fullName = extensionName + section;
+      section = section.slice(1);
+      configuration = this.configuration;
+    } else {
+      fullName = section;
+      configuration = vscode.workspace.getConfiguration();
+    }
+
+    if (defaultValue === undefined) {
+      defaultValue = configuration.inspect<T>(section)!.defaultValue!;
+    }
+
+    this.configurationChangeHandlers.set(fullName, () => {
+      const validator = new SettingsValidator(fullName);
+
+      handler(configuration.get(section, defaultValue!), validator);
+
+      validator.displayErrorIfNeeded();
     });
 
     if (triggerNow) {
-      handler(this.configuration.get(section, defaultValue));
+      const validator = new SettingsValidator(fullName);
+
+      handler(configuration.get(section, defaultValue), validator);
+
+      validator.displayErrorIfNeeded();
     }
   }
 
@@ -584,5 +287,47 @@ export class Extension implements vscode.Disposable {
     for (const documentState of this.documentStates()) {
       yield* documentState.editorStates();
     }
+  }
+
+  // =============================================================================================
+  // ==  ERRORS  =================================================================================
+  // =============================================================================================
+
+  /**
+   * Runs the given function, displaying an error message and returning the
+   * specified value if it throws an exception during its execution.
+   */
+  public runSafely<T>(
+    f: () => T,
+    errorValue: () => T,
+    errorMessage: (error: any) => T extends Thenable<any> ? never : string,
+  ) {
+    try {
+      return f();
+    } catch (e) {
+      if (!(e instanceof CancellationError)) {
+        vscode.window.showErrorMessage(errorMessage(e));
+      }
+
+      return errorValue();
+    }
+  }
+
+  /**
+   * Runs the given async function, displaying an error message and returning
+   * the specified value if it throws an exception during its execution.
+   */
+  public runPromiseSafely<T>(
+    f: () => Thenable<T>,
+    errorValue: () => T,
+    errorMessage: (error: any) => string,
+  ) {
+    return f().then(undefined, (e) => {
+      if (!(e instanceof CancellationError)) {
+        vscode.window.showErrorMessage(errorMessage(e));
+      }
+
+      return errorValue();
+    });
   }
 }

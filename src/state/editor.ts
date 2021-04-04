@@ -1,12 +1,13 @@
 import * as vscode from "vscode";
 
 import { DocumentState } from "./document";
-import { Mode, SelectionBehavior } from "./extension";
 import { Command, CommandState, InputKind } from "../commands";
 import { extensionName } from "../extension";
-import { assert } from "../utils/assert";
-import { SavedSelection } from "../utils/savedSelection";
-import { MacroRegister } from "../registers";
+import { assert } from "../utils/errors";
+import { TrackedSelection } from "../utils/tracked-selection";
+import { MacroRegister } from "../register";
+import { commands, selectionsLines } from "../api";
+import { Mode } from "../mode";
 
 /**
  * Editor-specific state.
@@ -27,7 +28,7 @@ export class EditorState {
   private _editor: vscode.TextEditor;
 
   /** Selections that we had before entering insert mode. */
-  private _insertModeSelections?: readonly SavedSelection[];
+  private _insertModeSelections?: readonly TrackedSelection[];
 
   /**
    * Whether a selection change event should be expected while in insert mode.
@@ -37,10 +38,16 @@ export class EditorState {
   /** Whether the next selection change event should be ignored. */
   private _ignoreSelectionChangeEvent = false;
 
+  /**
+   * Whether the editor is currently executing functions to change modes.
+   */
+  private _isChangingMode = false;
+
   /** The ongoing recording of a macro in this editor. */
   private _macroRecording?: MacroRecording;
 
   private _mode!: Mode;
+  private _previousMode?: Mode;
 
   /**
    * The mode of the editor.
@@ -70,10 +77,6 @@ export class EditorState {
     return vscode.window.activeTextEditor === this._editor;
   }
 
-  public get selectionBehavior() {
-    return this.documentState.extension.selectionBehavior;
-  }
-
   /**
    * Preferred columns when navigating up and down.
    */
@@ -89,7 +92,7 @@ export class EditorState {
     this._id = getEditorId(editor);
     this._editor = editor;
 
-    this.setMode(Mode.Normal);
+    this.setMode(documentState.extension.modes.defaultMode);
   }
 
   /**
@@ -97,20 +100,13 @@ export class EditorState {
    * instance.
    */
   public dispose() {
-    const lineNumbering = vscode.workspace.getConfiguration("editor").get("lineNumbers"),
-          options = this._editor.options;
+    const options = this._editor.options,
+          vscodeMode = this._mode.modes.vscodeMode;
 
-    options.lineNumbers
-      = lineNumbering === "on"
-        ? vscode.TextEditorLineNumbersStyle.On
-        : lineNumbering === "relative"
-          ? vscode.TextEditorLineNumbersStyle.Relative
-          : lineNumbering === "interval"
-            ? vscode.TextEditorLineNumbersStyle.Relative + 1
-            : vscode.TextEditorLineNumbersStyle.Off;
+    options.cursorStyle = vscodeMode.cursorStyle;
+    options.lineNumbers = vscodeMode.lineNumbers;
 
-    this.clearDecorations(this.extension.normalMode.decorationType);
-    this.clearDecorations(this.extension.insertMode.decorationType);
+    this.clearDecorations(this.mode);
     this._macroRecording?.dispose();
   }
 
@@ -135,62 +131,44 @@ export class EditorState {
   /**
    * Sets the mode of the editor.
    */
-  public setMode(mode: Mode) {
+  public async setMode(mode: Mode, temporary = false) {
+    if (this._isChangingMode) {
+      throw new Error("calling EditorState.setMode in a mode change handler is forbidden");
+    }
+
     if (this._mode === mode) {
       return;
     }
 
-    const { insertMode, normalMode } = this.extension,
-          documentState = this.documentState;
+    this.clearDecorations(this._mode);
+    this._isChangingMode = true;
 
+    await this.extension.runPromiseSafely(
+      () => commands(...this._mode.onLeaveMode),
+      () => undefined,
+      (e) => `error trying to execute onLeaveMode commands for mode ${
+        JSON.stringify(this._mode.name)}: ${e}`,
+    );
+
+    if (temporary && this._previousMode === undefined) {
+      this._previousMode = this._mode;
+    }
     this._mode = mode;
 
-    if (mode === Mode.Insert) {
-      this.clearDecorations(normalMode.decorationType);
-      this.setDecorations(insertMode.decorationType);
+    this.updateDecorations(mode);
 
-      const selections = this.editor.selections,
-            documentState = this.documentState,
-            savedSelections = [] as SavedSelection[];
-
-      for (let i = 0, len = selections.length; i < len; i++) {
-        savedSelections.push(documentState.saveSelection(selections[i]));
-      }
-
-      this._insertModeSelections = savedSelections;
-      this._ignoreSelectionChangeEvent = true;
-
-      if (this.extension.insertModeSelectionStyle !== undefined) {
-        this.editor.setDecorations(this.extension.insertModeSelectionStyle, selections);
-      }
-    } else {
-      if (this._insertModeSelections !== undefined && this._insertModeSelections.length > 0) {
-        const savedSelections = this._insertModeSelections,
-              editorSelections = this._editor.selections,
-              document = this.documentState.document;
-
-        assert(editorSelections.length === savedSelections.length);
-
-        for (let i = 0, len = savedSelections.length; i < len; i++) {
-          editorSelections[i] = savedSelections[i].selection(document);
-        }
-
-        documentState.forgetSelections(this._insertModeSelections);
-
-        this._editor.selections = editorSelections;
-        this._insertModeSelections = undefined;
-      }
-
-      this.clearDecorations(insertMode.decorationType);
-      this.clearDecorations(this.extension.insertModeSelectionStyle);
-      this.setDecorations(normalMode.decorationType);
-
-      this.normalizeSelections();
-    }
+    await this.extension.runPromiseSafely(
+      () => commands(...mode.onEnterMode),
+      () => undefined,
+      (e) => `error trying to execute onEnterMode commands for mode ${
+        JSON.stringify(mode.name)}: ${e}`,
+    );
 
     if (this.isActive) {
-      this.onDidBecomeActive();
+      await this.onDidBecomeActive();
     }
+
+    this._isChangingMode = false;
   }
 
   /**
@@ -231,22 +209,16 @@ export class EditorState {
    * this editor.
    */
   public onDidBecomeActive() {
-    const { editor, mode } = this,
-          modeConfiguration
-        = mode === Mode.Insert ? this.extension.insertMode : this.extension.normalMode;
+    const { editor, mode } = this;
 
-    if (mode === Mode.Insert) {
-      this.extension.statusBarItem.text = "$(pencil) INSERT";
-    } else if (mode === Mode.Normal) {
-      this.extension.statusBarItem.text = "$(beaker) NORMAL";
-    }
+    this.extension.statusBarItem.text = "$(chevron-right) " + mode.name;
 
     this._macroRecording?.show();
 
-    editor.options.lineNumbers = modeConfiguration.lineNumbers;
-    editor.options.cursorStyle = modeConfiguration.cursorStyle;
+    editor.options.lineNumbers = mode.lineNumbers;
+    editor.options.cursorStyle = mode.cursorStyle;
 
-    vscode.commands.executeCommand("setContext", extensionName + ".mode", mode);
+    return vscode.commands.executeCommand("setContext", extensionName + ".mode", mode.name);
   }
 
   /**
@@ -254,83 +226,27 @@ export class EditorState {
    * another editor.
    */
   public onDidBecomeInactive() {
-    if (this.mode === Mode.Awaiting) {
-      this.setMode(Mode.Normal);
+    this._macroRecording?.hide();
+
+    if (this._previousMode !== undefined) {
+      return this.setMode(this._previousMode);
     }
 
-    this._macroRecording?.hide();
+    return Promise.resolve();
   }
 
   /**
    * Called when `vscode.window.onDidChangeTextEditorSelection` is triggered.
    */
-  public onDidChangeTextEditorSelection(e: vscode.TextEditorSelectionChangeEvent) {
-    const mode = this.mode;
-
-    if (mode === Mode.Awaiting) {
-      this.setMode(Mode.Normal);
+  public async onDidChangeTextEditorSelection(e: vscode.TextEditorSelectionChangeEvent) {
+    if (this._previousMode !== undefined) {
+      await this.setMode(this._previousMode);
     }
+
+    const mode = this._mode;
 
     // Update decorations.
-    if (mode === Mode.Insert) {
-      if (this._ignoreSelectionChangeEvent) {
-        this._ignoreSelectionChangeEvent = false;
-
-        return;
-      }
-
-      this.setDecorations(this.extension.insertMode.decorationType);
-
-      // Update insert mode decorations that keep track of previous selections.
-      const mustDropSelections
-        = e.kind === vscode.TextEditorSelectionChangeKind.Command
-        || e.kind === vscode.TextEditorSelectionChangeKind.Mouse
-        || !this._expectSelectionChangeEvent;
-
-      const selectionStyle = this.extension.insertModeSelectionStyle,
-            decorationRanges = [] as vscode.Range[];
-
-      if (mustDropSelections) {
-        this._insertModeSelections = [];
-
-        if (selectionStyle !== undefined) {
-          this.editor.setDecorations(selectionStyle, []);
-        }
-      } else if (selectionStyle !== undefined) {
-        const insertModeSelections = this._insertModeSelections;
-
-        if (insertModeSelections !== undefined) {
-          const document = this.documentState.document;
-
-          for (let i = 0, len = insertModeSelections.length; i < len; i++) {
-            const insertModeSelection = insertModeSelections[i];
-
-            if (insertModeSelection.activeOffset !== insertModeSelection.anchorOffset) {
-              decorationRanges.push(insertModeSelection.selection(document));
-            }
-          }
-        }
-
-        this.editor.setDecorations(selectionStyle, decorationRanges);
-      }
-    } else {
-      this.setDecorations(this.extension.normalMode.decorationType);
-    }
-
-    // Debounce normalization.
-    if (this.normalizeTimeoutToken !== undefined) {
-      clearTimeout(this.normalizeTimeoutToken);
-      this.normalizeTimeoutToken = undefined;
-    }
-
-    if (e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
-      this.normalizeTimeoutToken = setTimeout(() => {
-        this.normalizeSelections();
-        this.normalizeTimeoutToken = undefined;
-      }, 200);
-    } else {
-      this.normalizeSelections();
-    }
+    this.updateDecorations(mode);
   }
 
   /**
@@ -338,77 +254,59 @@ export class EditorState {
    * document of the editor.
    */
   public onDidChangeTextDocument(e: vscode.TextDocumentChangeEvent) {
-    if (this._mode === Mode.Insert) {
-      const changes = e.contentChanges;
-
-      if (this.editor.selections.length !== changes.length) {
-        return;
-      }
-
-      // Find all matching selections for the given changes.
-      // If all selections have a match, we can continue.
-      const remainingSelections = new Set(this.editor.selections);
-
-      for (let i = 0, len = changes.length; i < len; i++) {
-        const change = changes[i];
-
-        for (const selection of remainingSelections) {
-          if (
-            selection.active.isEqual(change.range.start)
-            || selection.active.isEqual(change.range.end)
-          ) {
-            remainingSelections.delete(selection);
-
-            break;
-          }
-        }
-
-        if (remainingSelections.size !== len - i - 1) {
-          return;
-        }
-      }
-
-      this._expectSelectionChangeEvent = true;
-
-      setImmediate(() => (this._expectSelectionChangeEvent = false));
-    }
   }
 
   // =============================================================================================
   // ==  DECORATIONS  ============================================================================
   // =============================================================================================
 
-  private clearDecorations(decorationType: vscode.TextEditorDecorationType | undefined) {
-    if (decorationType !== undefined) {
-      this._editor.setDecorations(decorationType, []);
+  private clearDecorations(mode: Mode) {
+    const lineDecorationType = mode.lineDecorationType,
+          selectionDecorationType = mode.selectionDecorationType,
+          editor = this._editor;
+
+    if (lineDecorationType !== undefined) {
+      editor.setDecorations(lineDecorationType, []);
+    }
+
+    if (selectionDecorationType !== undefined) {
+      editor.setDecorations(selectionDecorationType, []);
     }
   }
 
-  public setDecorations(decorationType: vscode.TextEditorDecorationType | undefined) {
-    if (decorationType === undefined) {
-      return;
+  private updateDecorations(mode: Mode) {
+    const lineDecorationType = mode.lineDecorationType,
+          selectionDecorationType = mode.selectionDecorationType,
+          editor = this._editor;
+
+    if (lineDecorationType !== undefined) {
+      const lines = selectionsLines(editor.selections),
+            ranges: vscode.Range[] = [];
+
+      for (let i = 0, len = lines.length; i < len; i++) {
+        const startLine = lines[i];
+        let endLine = startLine;
+
+        while (i + 1 < lines.length && lines[i + 1] === endLine + 1) {
+          i++;
+          endLine++;
+        }
+
+        const start = new vscode.Position(startLine, 0),
+              end = startLine === endLine ? start : new vscode.Position(endLine, 0);
+
+        ranges.push(new vscode.Range(start, end));
+      }
+
+      editor.setDecorations(lineDecorationType, ranges);
     }
 
-    const editor = this._editor,
-          selection = editor.selection,
-          extension = this.extension;
-
-    if (
-      selection.end.character === 0
-      && selection.end.line > 0
-      && extension.selectionBehavior === SelectionBehavior.Character
-    ) {
-      editor.setDecorations(decorationType, [
-        new vscode.Range(selection.start, selection.end.with(selection.end.line - 1, 0)),
-      ]);
-      editor.options.cursorStyle = vscode.TextEditorCursorStyle.LineThin;
-    } else {
-      editor.setDecorations(decorationType, [selection]);
-      editor.options.cursorStyle
-        = this.mode === Mode.Insert
-          ? extension.insertMode.cursorStyle
-          : extension.normalMode.cursorStyle;
+    if (selectionDecorationType !== undefined) {
+      editor.setDecorations(selectionDecorationType, editor.selections);
     }
+
+    editor.options.cursorStyle = mode.cursorStyle;
+    editor.options.lineNumbers = mode.lineNumbers;
   }
 
   // =============================================================================================
@@ -443,109 +341,6 @@ export class EditorState {
       while (this._commands.length > 20) {
         this._commands.shift();
       }
-    }
-  }
-
-  // =============================================================================================
-  // ==  SELECTION NORMALIZATION  ================================================================
-  // =============================================================================================
-
-  private normalizeTimeoutToken: NodeJS.Timeout | undefined = undefined;
-
-  /**
-   * Whether selection changes should be ignored, therefore not automatically
-   * normalizing selections.
-   */
-  public ignoreSelectionChanges = false;
-
-  /**
-   * Make all selections in the editor non-empty by selecting at least one
-   * character.
-   */
-  public normalizeSelections() {
-    if (
-      this._mode !== Mode.Normal
-      || this.extension.selectionBehavior === SelectionBehavior.Caret
-      || this.ignoreSelectionChanges
-    ) {
-      return;
-    }
-
-    const editor = this._editor;
-
-    // Since this is called every time when selection changes, avoid allocations
-    // unless really needed and iterate manually without using helper functions.
-    let normalizedSelections: vscode.Selection[] | undefined = undefined;
-
-    for (let i = 0; i < editor.selections.length; i++) {
-      const selection = editor.selections[i];
-      const isReversedOneCharacterSelection = selection.isSingleLine
-        ? selection.anchor.character === selection.active.character + 1
-        : selection.anchor.character === 0
-          && selection.anchor.line === selection.active.line + 1
-          && editor.document.lineAt(selection.active).text.length === selection.active.character;
-
-      if (isReversedOneCharacterSelection) {
-        if (normalizedSelections === undefined) {
-          // Change needed. Allocate the new array and copy what we have so far.
-          normalizedSelections = editor.selections.slice(0, i);
-        }
-
-        normalizedSelections.push(new vscode.Selection(selection.active, selection.anchor));
-      } else if (selection.isEmpty) {
-        if (normalizedSelections === undefined) {
-          // Change needed. Allocate the new array and copy what we have so far.
-          normalizedSelections = editor.selections.slice(0, i);
-        }
-
-        const active = selection.active;
-
-        if (active.character >= editor.document.lineAt(active.line).range.end.character) {
-          // Selection is at line end. Select line break.
-          if (active.line === editor.document.lineCount - 1) {
-            // Selection is at the very end of the document as well. Select the
-            // last character instead.
-            if (active.character === 0) {
-              if (active.line === 0) {
-                // There is no character in this document, so we give up on
-                // normalizing.
-                continue;
-              } else {
-                normalizedSelections.push(
-                  new vscode.Selection(
-                    new vscode.Position(active.line - 1, Number.MAX_SAFE_INTEGER),
-                    active,
-                  ),
-                );
-              }
-            } else {
-              normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active));
-            }
-          } else {
-            normalizedSelections.push(
-              new vscode.Selection(active, new vscode.Position(active.line + 1, 0)),
-            );
-          }
-        } else {
-          const offset = editor.document.offsetAt(selection.active);
-          const nextPos = editor.document.positionAt(offset + 1);
-
-          if (nextPos.isAfter(selection.active)) {
-            // Move cursor forward.
-            normalizedSelections.push(new vscode.Selection(active, active.translate(0, 1)));
-          } else {
-            // Selection is at the very end of the document. Select the last
-            // character instead.
-            normalizedSelections.push(new vscode.Selection(active.translate(0, -1), active));
-          }
-        }
-      } else if (normalizedSelections !== undefined) {
-        normalizedSelections.push(selection);
-      }
-    }
-
-    if (normalizedSelections !== undefined) {
-      editor.selections = normalizedSelections;
     }
   }
 }

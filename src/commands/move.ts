@@ -2,7 +2,7 @@
 // https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from "vscode";
 
-import { Command, CommandFlags, registerCommand } from ".";
+import { Command, CommandFlags, define } from ".";
 import {
   Backward,
   Direction,
@@ -11,8 +11,8 @@ import {
   ExtendBehavior,
   Forward,
   jumpTo,
-} from "../utils/selectionHelper";
-import { Coord, SelectionHelper } from "../utils/selectionHelper";
+} from "../utils/selection-helper";
+import { Coord, SelectionHelper } from "../utils/selection-helper";
 import { SelectionBehavior } from "../state/extension";
 
 // Move around (h, j, k, l, H, J, K, L, arrows, shift+arrows)
@@ -35,7 +35,7 @@ function registerMoveHorizontal(command: Command, direction: Direction, extend: 
     return helper.coordAt(helper.offsetAt(from) + helper.state.repetitions * direction);
   }, extend);
 
-  registerCommand(command, CommandFlags.ChangeSelections, (editorState, state) => {
+  define(command, CommandFlags.ChangeSelections, (editorState, state) => {
     SelectionHelper.for(editorState, state).mapEach(selectionMapper);
     revealActiveTowards(direction, editorState.editor);
   });
@@ -68,7 +68,7 @@ function registerMoveVertical(command: Command, direction: Direction, extend: Ex
     return new Coord(actualLine, preferredColumn);
   }, extend);
 
-  registerCommand(
+  define(
     command,
     CommandFlags.ChangeSelections | CommandFlags.DoNotResetPreferredColumns,
     (editorState, state) => {
@@ -111,23 +111,23 @@ function scrollBy(iterations: number, to: "up" | "down", by: "page" | "halfPage"
   }) as Promise<void>;
 }
 
-registerCommand(Command.upPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
+define(Command.upPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
   scrollBy(repetitions, "up", "page"),
 );
-registerCommand(Command.upHalfPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
+define(Command.upHalfPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
   scrollBy(repetitions, "up", "halfPage"),
 );
-registerCommand(Command.downPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
+define(Command.downPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
   scrollBy(repetitions, "down", "page"),
 );
-registerCommand(Command.downHalfPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
+define(Command.downHalfPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
   scrollBy(repetitions, "down", "halfPage"),
 );
 
 // Other bindings (%)
 // ===============================================================================================
 
-registerCommand(Command.selectBuffer, CommandFlags.ChangeSelections, ({ editor }) => {
+define(Command.selectBuffer, CommandFlags.ChangeSelections, ({ editor }) => {
   const start = new vscode.Position(0, 0);
   const end = editor.document.lineAt(editor.document.lineCount - 1).range.end;
 

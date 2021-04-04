@@ -25,6 +25,7 @@ module.exports = {
       "VariableDeclarator": "first",
       "flatTernaryExpressions": true,
       "offsetTernaryExpressions": true,
+      "ignoredNodes": ["TemplateLiteral *"],
     }],
     "curly": ["error", "all"],
     "dot-location": ["error", "property"],
@@ -41,7 +42,7 @@ module.exports = {
       {
         code: 100,
         comments: 80,
-        ignorePattern: "^ *(\\*|//) ([sS]ee )?http\\S+\\)?.?$|^ *// =+(  [^=]+  =+)?$",
+        ignorePattern: "^ *(\\*|//) ([sS]ee )?http\\S+\\)?.?$|^ *// =+(  [^=]+  =+)?$|\|$",
       },
     ],
     "multiline-ternary": ["error", "always-multiline"],
@@ -57,6 +58,7 @@ module.exports = {
     "sort-imports": [
       "error",
       {
+        ignoreCase: true,
         ignoreDeclarationSort: true,
         memberSyntaxSortOrder: ["none", "all", "single", "multiple"],
       },

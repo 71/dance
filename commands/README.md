@@ -13,10 +13,8 @@ They are implemented in [`src/commands`](../src/commands).
 | ID | Title | Description | Key bindings |
 | -- | ----- | ----------- | ------------ |
 | `dance.toggle` | Toggle | Toggles Dance key bindings. |  |
-| `dance.set.normal` | Set mode to Normal | Set Dance mode to Normal. | `Escape` (`dance.mode == 'insert'`) |
-| `dance.set.insert` | Set mode to Insert | Set Dance mode to Insert. |  |
-| `dance.tmp.normal` | Temporary normal mode | Switches to normal mode temporarily. | `Ctrl+V` (`dance.mode == 'insert'`) |
-| `dance.tmp.insert` | Temporary insert mode | Switches to insert mode temporarily. | `Ctrl+V` (`dance.mode == 'normal'`) |
+| `dance.modes.set` | Set mode | Set Dance mode. |  |
+| `dance.modes.set.temporarily` | Set mode temporarily | Set Dance mode for a limited number of commands and edits. |  |
 | `dance.insert.before` | Insert before | Start insert before the current selections. | `I` (`dance.mode == 'normal'`) |
 | `dance.insert.after` | Insert after | Start insert after the current selections. | `A` (`dance.mode == 'normal'`) |
 | `dance.insert.lineStart` | Insert at line start | Start insert at line start of each selection. | `Shift+I` (`dance.mode == 'normal'`) |
@@ -68,6 +66,8 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.selections.merge` | Merge contiguous selections | Merge contiguous selections together, including across lines. | `Shift+Alt+-` (`dance.mode == 'normal'`) |
 | `dance.selections.align` | Align selections | Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection. | `Shift+7` (`dance.mode == 'normal'`) |
 | `dance.selections.align.copy` | Copy indentation | Copy the indentation of the main selection (or the count one if a count is given) to all other ones. | `Shift+Alt+7` (`dance.mode == 'normal'`) |
+| `dance.selections.track` | Track selections | Track selections to restore them later. |  |
+| `dance.selections.restore` | Restore tracked selections | Restore tracked selections. |  |
 | `dance.delete.yank` | Yank and delete | Yank and delete selections. | `D` (`dance.mode == 'normal'`) |
 | `dance.delete.insert.yank` | Yank, delete and insert | Yank, delete and enter insert mode. | `C` (`dance.mode == 'normal'`) |
 | `dance.delete.noYank` | Delete without yank | Delete selections without yanking. | `Alt+D` (`dance.mode == 'normal'`) |
@@ -118,10 +118,6 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.search.next.add` | Add next match | Add a new selection with the next match after the main selection. | `Shift+N` (`dance.mode == 'normal'`) |
 | `dance.search.previous` | Select previous match | Select previous match before the main selection. | `Alt+N` (`dance.mode == 'normal'`) |
 | `dance.search.previous.add` | Add previous match | Add a new selection with the previous match before the main selection. | `Shift+Alt+N` (`dance.mode == 'normal'`) |
-|  | Select whole object | Select whole object. | `Alt+A` (`dance.mode == 'normal'`), `Alt+A` (`dance.mode == 'insert'`) |
-|  | Select inner object | Select inner object. | `Alt+I` (`dance.mode == 'normal'`), `Alt+I` (`dance.mode == 'insert'`) |
-|  | Select to the whole object start | Select to the whole object start. | `[` (`dance.mode == 'normal'`) |
-|  | Select to the whole object end | Select to the whole object end. | `]` (`dance.mode == 'normal'`) |
 | `dance.objects.performSelection` | Perform selections specified in the arguments. | Perform selections specified in the arguments.. |  |
 | `dance.goto` | Go to... | Shows prompt to jump somewhere | `G` (`dance.mode == 'normal'`) |
 | `dance.goto.lineStart` | Go to line start | Go to line start. |  |
@@ -143,8 +139,8 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.marks.combineSelections.fromCurrent` | Combine current selections with ones from register | Combine current selections with ones from register. | `Shift+Alt+Z` (`dance.mode == 'normal'`) |
 | `dance.marks.combineSelections.fromRegister` | Combine register selections with current ones | Combine register selections with current ones. | `Alt+Z` (`dance.mode == 'normal'`) |
 | `dance.cancel` | Cancel operation | Cancels waiting for input from the user | `Escape` (`dance.mode == 'awaiting'`) |
-| `dance.run` | Run code | Runs JavaScript code passed in a 'code' argument |  |
-|  | Open Command Palette | Open the built-in Command Palette in VSCode | `Shift+;` (`dance.mode == 'normal'`) |
+| `dance.run` | Run code | Runs JavaScript code given as input |  |
+| `dance.run.selections` | Run selections as code | Runs selected JavaScript code |  |
 | `dance.left.extend` | Move left (extend) | Move left (extend). | `Shift+Left` (`dance.mode == 'normal'`), `Shift+H` (`dance.mode == 'normal'`) |
 | `dance.right.extend` | Move right (extend) | Move right (extend). | `Shift+Right` (`dance.mode == 'normal'`), `Shift+L` (`dance.mode == 'normal'`) |
 | `dance.up.extend` | Move up (extend) | Move up (extend). | `Shift+Up` (`dance.mode == 'normal'`), `Shift+K` (`dance.mode == 'normal'`) |
@@ -163,8 +159,6 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.select.word.alt.end.extend` | Extend to next non-whitespace word end | Extend with preceding whitespaces and the non-whitespace word on the right of the end of each selection. | `Shift+Alt+E` (`dance.mode == 'normal'`) |
 | `dance.search.extend` | Search (extend) | Search for the given input string (extend). | `Shift+/` (`dance.mode == 'normal'`) |
 | `dance.search.backwards.extend` | Search backwards (extend) | Search for the given input string before the current selections (extend). | `Shift+Alt+/` (`dance.mode == 'normal'`) |
-|  | Extend to the whole object start | Extend to the whole object start. | `Shift+[` (`dance.mode == 'normal'`) |
-|  | Extend to the whole object end | Extend to the whole object end. | `Shift+]` (`dance.mode == 'normal'`) |
 | `dance.goto.extend` | Go to... (extend) | Shows prompt to jump somewhere | `Shift+G` (`dance.mode == 'normal'`) |
 | `dance.goto.lineStart.extend` | Go to line start (extend) | Go to line start (extend). |  |
 | `dance.goto.lineStart.nonBlank.extend` | Go to non-blank line start (extend) | Go to first non-whitespace character of the line |  |
@@ -182,10 +176,6 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.select.to.included.extend.backwards` | Extend to (backwards) | Extend to the next character pressed, including it. (backwards) | `Alt+Shift+F` (`dance.mode == 'normal'`) |
 | `dance.select.to.excluded.extend.backwards` | Extend until (backwards) | Extend with until the next character pressed, excluding it. (backwards) | `Alt+Shift+T` (`dance.mode == 'normal'`) |
 | `dance.select.enclosing.extend.backwards` | Extend with enclosing characters (backwards) | Extend with enclosing characters. (backwards) | `Alt+Shift+M` (`dance.mode == 'normal'`) |
-|  | Select to the inner object start | Select to the inner object start. | `Alt+[` (`dance.mode == 'normal'`) |
-|  | Select to the inner object end | Select to the inner object end. | `Alt+]` (`dance.mode == 'normal'`) |
-|  | Extend to the inner object start | Extend to the inner object start. | `Alt+Shift+[` (`dance.mode == 'normal'`) |
-|  | Extend to the inner object end | Extend to the inner object end. | `Alt+Shift+]` (`dance.mode == 'normal'`) |
 | `dance.count.0` | Count 0 | Adds 0 to the current counter for the next operation. | `0` (`dance.mode == 'normal'`) |
 | `dance.count.1` | Count 1 | Adds 1 to the current counter for the next operation. | `1` (`dance.mode == 'normal'`) |
 | `dance.count.2` | Count 2 | Adds 2 to the current counter for the next operation. | `2` (`dance.mode == 'normal'`) |
@@ -197,3 +187,22 @@ They are implemented in [`src/commands`](../src/commands).
 | `dance.count.8` | Count 8 | Adds 8 to the current counter for the next operation. | `8` (`dance.mode == 'normal'`) |
 | `dance.count.9` | Count 9 | Adds 9 to the current counter for the next operation. | `9` (`dance.mode == 'normal'`) |
 
+
+Additionally, the following keybindings are defined by Dance:
+
+| Key bindings | Command | Argument |
+| ------------ | ------- | -------- |
+| `Escape` (`dance.mode == 'insert'`) | `dance.modes.set` | `{ "input": "normal" }` |
+| `Ctrl+V` (`dance.mode == 'insert'`) | `dance.modes.set.temporarily` | `{ "input": "normal" }` |
+| `Ctrl+V` (`dance.mode == 'normal'`) | `dance.modes.set.temporarily` | `{ "input": "insert" }` |
+| `Alt+A` (`dance.mode == 'normal'`), `Alt+A` (`dance.mode == 'insert'`) | `dance.openMenu` | `{ "menu": "object", "action": "select" }` |
+| `Alt+I` (`dance.mode == 'normal'`), `Alt+I` (`dance.mode == 'insert'`) | `dance.openMenu` | `{ "menu": "object", "action": "select", "inner": true }` |
+| `[` (`dance.mode == 'normal'`) | `dance.openMenu` | `{ "menu": "object", "action": "selectToStart" }` |
+| `]` (`dance.mode == 'normal'`) | `dance.openMenu` | `{ "menu": "object", "action": "selectToEnd" }` |
+| `Shift+;` (`dance.mode == 'normal'`) | `workbench.action.showCommands` | `{}` |
+| `Shift+[` (`dance.mode == 'normal'`) | `dance.openMenu` | `{ "menu": "object", "action": "selectToStart", "extend": true }` |
+| `Shift+]` (`dance.mode == 'normal'`) | `dance.openMenu` | `{ "menu": "object", "action": "selectToEnd", "extend": true }` |
+| `Alt+[` (`dance.mode == 'normal'`) | `dance.openMenu` | `{ "menu": "object", "action": "selectToStart", "inner": true }` |
+| `Alt+]` (`dance.mode == 'normal'`) | `dance.openMenu` | `{ "menu": "object", "action": "selectToEnd", "inner": true }` |
+| `Alt+Shift+[` (`dance.mode == 'normal'`) | `dance.openMenu` | `{ "menu": "object", "action": "selectToStart", "extend": true, "inner": true }` |
+| `Alt+Shift+]` (`dance.mode == 'normal'`) | `dance.openMenu` | `{ "menu": "object", "action": "selectToEnd", "extend": true, "inner": true }` |

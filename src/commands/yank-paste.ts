@@ -1,14 +1,15 @@
 import * as vscode from "vscode";
 
-import { Command, CommandFlags, CommandState, InputKind, UndoStops, registerCommand } from ".";
+import { Command, CommandFlags, CommandState, InputKind, define } from ".";
 import { Extension } from "../state/extension";
-import { SelectionHelper } from "../utils/selectionHelper";
+import { noUndoStops } from "../utils/misc";
+import { SelectionHelper } from "../utils/selection-helper";
 
 function getRegister(state: CommandState<any>, ctx: Extension) {
-  return state.currentRegister || ctx.registers.dquote;
+  return state.currentRegister ?? ctx.registers.dquote;
 }
 
-function deleteSelections(editor: vscode.TextEditor, undoStops: UndoStops) {
+function deleteSelections(editor: vscode.TextEditor) {
   return editor.edit((builder) => {
     const selections = editor.selections,
           len = selections.length;
@@ -16,50 +17,50 @@ function deleteSelections(editor: vscode.TextEditor, undoStops: UndoStops) {
     for (let i = 0; i < len; i++) {
       builder.delete(selections[i]);
     }
-  }, undoStops);
+  }, noUndoStops);
 }
 
-registerCommand(
+define(
   Command.deleteYank,
   CommandFlags.Edit,
-  async ({ editor, extension }, state, undoStops) => {
+  async ({ editor, extension }, state) => {
     const reg = getRegister(state, extension);
 
     if (reg.canWrite()) {
       await reg.set(editor, editor.selections.map(editor.document.getText));
     }
 
-    await deleteSelections(editor, undoStops);
+    await deleteSelections(editor);
   },
 );
 
-registerCommand(
+define(
   Command.deleteInsertYank,
   CommandFlags.Edit | CommandFlags.SwitchToInsertBefore,
-  async ({ editor, extension }, state, undoStops) => {
+  async ({ editor, extension }, state) => {
     const reg = getRegister(state, extension);
 
     if (reg.canWrite()) {
       await reg.set(editor, editor.selections.map(editor.document.getText));
     }
 
-    await deleteSelections(editor, undoStops);
+    await deleteSelections(editor);
   },
 );
 
-registerCommand(Command.deleteNoYank, CommandFlags.Edit, ({ editor }, _, undoStops) => {
-  return deleteSelections(editor, undoStops).then(() => undefined);
+define(Command.deleteNoYank, CommandFlags.Edit, ({ editor }) => {
+  return deleteSelections(editor).then(() => undefined);
 });
 
-registerCommand(
+define(
   Command.deleteInsertNoYank,
   CommandFlags.Edit | CommandFlags.SwitchToInsertBefore,
-  ({ editor }, _, undoStops) => {
-    return deleteSelections(editor, undoStops).then(() => undefined);
+  ({ editor }) => {
+    return deleteSelections(editor).then(() => undefined);
   },
 );
 
-registerCommand(Command.yank, CommandFlags.None, ({ editor, extension }, state) => {
+define(Command.yank, CommandFlags.None, ({ editor, extension }, state) => {
   const reg = getRegister(state, extension);
 
   if (reg.canWrite()) {
@@ -97,7 +98,7 @@ async function getContentsToPaste(
   return results;
 }
 
-registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editorState, state, undoStops) => {
+define(Command.pasteAfter, CommandFlags.Edit, async (editorState, state) => {
   const { editor, extension } = editorState,
         selections = editor.selections,
         selectionHelper = SelectionHelper.for(editorState, state);
@@ -123,7 +124,7 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editorState, state
 
       selectionLengths.push(selectionHelper.selectionLength(selection));
     }
-  }, undoStops);
+  }, noUndoStops);
 
   // Restore selections that were extended automatically.
   for (let i = 0; i < contents.length; i++) {
@@ -133,10 +134,10 @@ registerCommand(Command.pasteAfter, CommandFlags.Edit, async (editorState, state
   editor.selections = selections;
 });
 
-registerCommand(
+define(
   Command.pasteBefore,
   CommandFlags.Edit,
-  async ({ editor, extension }, state, undoStops) => {
+  async ({ editor, extension }, state) => {
     const contents = await getContentsToPaste(editor, state, extension);
 
     if (contents === undefined) {
@@ -154,14 +155,14 @@ registerCommand(
           builder.insert(selection.start, content);
         }
       }
-    }, undoStops);
+    }, noUndoStops);
   },
 );
 
-registerCommand(
+define(
   Command.pasteSelectAfter,
   CommandFlags.ChangeSelections | CommandFlags.Edit,
-  async (editorState, state, undoStops) => {
+  async (editorState, state) => {
     const { editor, extension } = editorState,
           contents = await getContentsToPaste(editor, state, extension);
 
@@ -185,7 +186,7 @@ registerCommand(
 
         reverseSelection.push(selection.isEmpty);
       }
-    }, undoStops);
+    }, noUndoStops);
 
     // Reverse selections that were empty, since they are now extended in the
     // wrong way.
@@ -205,10 +206,10 @@ registerCommand(
   },
 );
 
-registerCommand(
+define(
   Command.pasteSelectBefore,
   CommandFlags.ChangeSelections | CommandFlags.Edit,
-  async ({ editor, extension }, state, undoStops) => {
+  async ({ editor, extension }, state) => {
     const contents = await getContentsToPaste(editor, state, extension);
 
     if (contents === undefined) {
@@ -226,14 +227,14 @@ registerCommand(
           builder.replace(selection.start, content);
         }
       }
-    }, undoStops);
+    }, noUndoStops);
   },
 );
 
-registerCommand(
+define(
   Command.pasteReplace,
   CommandFlags.Edit,
-  async ({ editor, extension }, state, undoStops) => {
+  async ({ editor, extension }, state) => {
     const contents = await getContentsToPaste(editor, state, extension);
     if (contents === undefined) {
       return;
@@ -251,14 +252,14 @@ registerCommand(
 
         builder.replace(selection, content);
       }
-    }, undoStops);
+    }, noUndoStops);
   },
 );
 
-registerCommand(
+define(
   Command.pasteReplaceEvery,
   CommandFlags.Edit,
-  async ({ editor, extension }, state, undoStops) => {
+  async ({ editor, extension }, state) => {
     const selections = editor.selections;
     const contents = await getRegister(state, extension).get(editor);
 
@@ -270,57 +271,6 @@ registerCommand(
       for (let i = 0; i < contents.length; i++) {
         builder.replace(selections[i], contents[i]);
       }
-    }, undoStops);
-  },
-);
-
-registerCommand(
-  Command.replaceCharacters,
-  CommandFlags.Edit,
-  InputKind.Key,
-  () => void 0,
-  ({ editor }, { repetitions, input: key }, undoStops) => {
-    const string = key.repeat(repetitions);
-
-    return editor
-      .edit((builder) => {
-        for (const selection of editor.selections) {
-          let i = selection.start.line;
-
-          if (selection.end.line === i) {
-            // A single line-selection; replace the selection directly
-            builder.replace(
-              selection,
-              string.repeat(selection.end.character - selection.start.character),
-            );
-
-            continue;
-          }
-
-          // Replace in first line
-          const firstLine = editor.document.lineAt(i).range.with(selection.start);
-
-          builder.replace(
-            firstLine,
-            string.repeat(firstLine.end.character - firstLine.start.character),
-          );
-
-          // Replace in intermediate lines
-          while (++i < selection.end.line) {
-            const line = editor.document.lineAt(i);
-
-            builder.replace(line.range, string.repeat(line.text.length));
-          }
-
-          // Replace in last line
-          const lastLine = editor.document.lineAt(i).range.with(undefined, selection.end);
-
-          builder.replace(
-            lastLine,
-            string.repeat(lastLine.end.character - lastLine.start.character),
-          );
-        }
-      }, undoStops)
-      .then(() => void 0);
+    }, noUndoStops);
   },
 );

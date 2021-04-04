@@ -1,30 +1,71 @@
 import * as vscode from "vscode";
+import { Context } from "../api";
+import { CancellationError } from "./errors";
 
-export function prompt(opts: vscode.InputBoxOptions, cancellationToken?: vscode.CancellationToken) {
-  return vscode.window.showInputBox(opts, cancellationToken);
+export function prompt(opts: vscode.InputBoxOptions, cancellationToken: vscode.CancellationToken) {
+  return Context.wrap(vscode.window.showInputBox(opts, cancellationToken)
+    .then((v) => {
+      if (v === undefined) {
+        const reason = cancellationToken?.isCancellationRequested
+          ? CancellationError.Reason.CancellationToken
+          : CancellationError.Reason.PressedEscape;
+
+        return Promise.reject(new CancellationError(reason));
+      }
+
+      return v;
+    }));
 }
 
-export function promptRegex(flags?: string, cancellationToken?: vscode.CancellationToken) {
-  return prompt(
-    {
-      prompt: "Selection RegExp",
+export namespace prompt {
+  export function numberOpts(opts: { range?: [number, number] } = {}): vscode.InputBoxOptions {
+    return {
+      validateInput(value) {
+        const n = +value;
+
+        if (isNaN(n)) {
+          return "Invalid number.";
+        }
+
+        if (opts.range && (n < opts.range[0] || n > opts.range[1])) {
+          return `Number out of range ${JSON.stringify(opts.range)}.`;
+        }
+
+        return;
+      },
+    };
+  }
+
+  export function number(
+    opts: Parameters<typeof numberOpts>[0],
+    cancellationToken: vscode.CancellationToken,
+  ) {
+    return prompt(numberOpts(opts), cancellationToken).then((x) => +x);
+  }
+
+  export function regexpOpts(flags: string): vscode.InputBoxOptions {
+    return {
+      prompt: "Regular expression",
       validateInput(input: string) {
         try {
-          new RegExp(input);
+          new RegExp(input, flags);
 
           return undefined;
         } catch {
           return "Invalid ECMA RegExp.";
         }
       },
-    },
-    cancellationToken,
-  ).then((x) => x === undefined ? undefined : new RegExp(x, flags));
+    };
+  }
+
+  export function regexp(flags: string, cancellationToken: vscode.CancellationToken) {
+    return prompt(regexpOpts(flags), cancellationToken).then((x) => new RegExp(x, flags));
+  }
 }
 
 export function keypress(
-  cancellationToken?: vscode.CancellationToken,
-): Thenable<string | undefined> {
+  cancellationToken: vscode.CancellationToken,
+): Thenable<string> {
   return new Promise((resolve, reject) => {
     try {
       let done = false;
@@ -42,7 +83,7 @@ export function keypress(
           subscription.dispose();
           done = true;
 
-          resolve(undefined);
+          reject(new CancellationError(CancellationError.Reason.PressedEscape));
         }
       });
     } catch {
@@ -54,21 +95,23 @@ export function keypress(
 
 export function promptInList(
   canPickMany: true,
-  items: [string, string][],
-  cancellationToken?: vscode.CancellationToken,
-): Thenable<undefined | number[]>;
+  items: readonly (readonly [string, string])[],
+  cancellationToken: vscode.CancellationToken,
+): Thenable<number[]>;
 export function promptInList(
   canPickMany: false,
-  items: [string, string][],
-  cancellationToken?: vscode.CancellationToken,
-): Thenable<undefined | number>;
+  items: readonly (readonly [string, string])[],
+  cancellationToken: vscode.CancellationToken,
+): Thenable<number>;
 
 export function promptInList(
   canPickMany: boolean,
-  items: [string, string][],
-  cancellationToken?: vscode.CancellationToken,
-): Thenable<undefined | number | number[]> {
-  return new Promise<undefined | number | number[]>((resolve) => {
+  items: readonly (readonly [string, string])[],
+  cancellationToken: vscode.CancellationToken,
+): Thenable<number | number[]> {
+  const itemsKeys = items.map(([k, _]) => k.includes(", ") ? k.split(", ") : [...k]);
+
+  return new Promise<number | number[]>((resolve, reject) => {
     const quickPick = vscode.window.createQuickPick(),
           quickPickItems = [] as vscode.QuickPickItem[];
 
@@ -81,7 +124,6 @@ export function promptInList(
       isCaseSignificant = isCaseSignificant || label.toLowerCase() !== label;
     }
 
-    quickPick.title = "Object";
     quickPick.items = quickPickItems;
     quickPick.placeholder = "Press one of the below keys.";
     quickPick.onDidChangeValue((key) => {
@@ -89,14 +131,18 @@ export function promptInList(
         key = key.toLowerCase();
       }
 
-      const index = items.findIndex((x) => x[0].split(", ").includes(key));
+      const index = itemsKeys.findIndex((x) => x.includes(key));
 
       quickPick.dispose();
 
+      if (index === -1) {
+        return reject(new CancellationError(CancellationError.Reason.PressedEscape));
+      }
+
       if (canPickMany) {
-        resolve(index === -1 ? undefined : [index]);
+        resolve([index]);
       } else {
-        resolve(index === -1 ? undefined : index);
+        resolve(index);
       }
     });
 
@@ -110,7 +156,7 @@ export function promptInList(
       quickPick.dispose();
 
       if (picked === undefined) {
-        resolve(undefined);
+        return reject(new CancellationError(CancellationError.Reason.PressedEscape));
       }
 
       if (canPickMany) {
@@ -123,7 +169,7 @@ export function promptInList(
     cancellationToken?.onCancellationRequested(() => {
       quickPick.dispose();
 
-      resolve(undefined);
+      reject(new CancellationError(CancellationError.Reason.CancellationToken));
     });
 
     quickPick.show();

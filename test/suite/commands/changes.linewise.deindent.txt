@@ -1,0 +1,18 @@
+|{0}foo
+ bar
+  baz
+   quu{0}x
+
+//== 0 > 1
+//= dance.deindent.further
+|{0}foo
+bar
+baz
+ quu{0}x
+
+//== 0 > 1.alt
+//= dance.deindent
+|{0}foo
+ bar
+baz
+ quu{0}x

@@ -1,100 +1,120 @@
 import * as vscode from "vscode";
+import { CommandContext } from "../command";
+import { Register } from "../register";
 
-import { Command, CommandDescriptor, CommandFlags, registerCommand } from ".";
+/**
+ * Undo.
+ *
+ * @keys `u` (normal)
+ */
+export function undo(context: CommandContext) {
+  context.ignoreInHistory();
 
-registerCommand(
-  Command.historyUndo,
-  CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory,
-  () => {
-    return vscode.commands.executeCommand("undo");
-  },
-);
+  return vscode.commands.executeCommand("undo");
+}
 
-registerCommand(
-  Command.historyRedo,
-  CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory,
-  () => {
-    return vscode.commands.executeCommand("redo");
-  },
-);
+/**
+ * Redo.
+ *
+ * @keys `s-u` (normal)
+ */
+export function redo(context: CommandContext) {
+  context.ignoreInHistory();
 
-registerCommand(
-  Command.historyRepeat,
-  CommandFlags.ChangeSelections | CommandFlags.Edit | CommandFlags.IgnoreInHistory,
-  (editorState) => {
-    const commands = editorState.recordedCommands;
+  return vscode.commands.executeCommand("redo");
+}
 
-    if (commands.length === 0) {
-      return;
-    }
+/**
+ * Move backward in history.
+ *
+ * @keys `a-u` (normal)
+ */
+export function backward(context: CommandContext) {
+  context.notImplemented();
+}
 
-    const lastCommandState = commands[commands.length - 1];
+/**
+ * Move forward in history.
+ *
+ * @keys `s-a-u` (normal)
+ */
+export function forward(context: CommandContext) {
+  context.notImplemented();
+}
 
-    return CommandDescriptor.execute(editorState, lastCommandState);
-  },
-);
+/**
+ * Repeat last change.
+ *
+ * | Title                        | Identifier               | Keybinding     | Commands                                                        |
+ * | ---------------------------- | ------------------------ | -------------- | --------------------------------------------------------------- |
+ * | Repeat last selection change | `repeat.selection`       |                | `[".history.repeat", { include: "dance.selections.+" }]`        |
+ * | Repeat last object selection | `repeat.objectSelection` | `a-.` (normal) | `[".history.repeat", { include: "dance.selections.object.+" }]` |
+ */
+export function repeat(
+  context: CommandContext,
+  repetitions: number,
+  argument?: { include?: string; exclude?: string },
+) {
+  for (let i = 0; i < repetitions; i++) {
+    context.notImplemented();
+  }
+}
 
-registerCommand(
-  Command.historyRepeatSelection,
-  CommandFlags.ChangeSelections | CommandFlags.IgnoreInHistory,
-  (editorState) => {
-    const commands = editorState.recordedCommands;
+/**
+ * Repeat last edit without a command.
+ *
+ * @keys `.` (normal)
+ */
+export function repeat_edit(context: CommandContext, repetitions: number) {
+  for (let i = 0; i < repetitions; i++) {
+    context.notImplemented();
+  }
+}
 
-    for (let i = commands.length - 1; i >= 0; i--) {
-      const commandState = commands[i];
+/**
+ * Play macro.
+ *
+ * @keys `q` (normal)
+ */
+export function recording_play(context: CommandContext, repetitions: number, register?: Register) {
+  const actualRegister = getRecordingRegister(context, register),
+        commands = actualRegister.getRecordedCommands();
 
-      if (
-        commandState.descriptor.flags & CommandFlags.ChangeSelections
-        && !(commandState.descriptor.flags & CommandFlags.Edit)
-      ) {
-        return CommandDescriptor.execute(editorState, commandState);
-      }
-    }
+  for (let i = 0; i < repetitions; i++) {
+    context.notImplemented();
+  }
+}
 
-    return;
-  },
-);
+/**
+ * Start recording macro.
+ *
+ * @keys `s-q` (normal)
+ */
+export function recording_start(context: CommandContext, register?: Register) {
+  const actualRegister = getRecordingRegister(context, register);
 
-registerCommand(
-  Command.historyRepeatEdit,
-  CommandFlags.Edit | CommandFlags.IgnoreInHistory,
-  (editorState) => {
-    const commands = editorState.recordedCommands;
+  context.notImplemented();
+}
 
-    for (let i = commands.length - 1; i >= 0; i--) {
-      const commandState = commands[i];
+/**
+ * Stop recording macro.
+ *
+ * @keys `escape` (normal)
+ */
+export function recording_stop(context: CommandContext, register?: Register) {
+  // Note: this command executes even if a macro recording is not in progess,
+  // so that <esc> will noop instead of defaulting to deselecting in VSCode.
+  const actualRegister = getRecordingRegister(context, register);
 
-      if (commandState.descriptor.flags & CommandFlags.Edit) {
-        return CommandDescriptor.execute(editorState, commandState);
-      }
-    }
+  context.notImplemented();
+}
 
-    return;
-  },
-);
-
-const ObjectOrSelectToCommands = new Set([
-  Command.objectsPerformSelection,
-  Command.selectToExcluded,
-  Command.selectToExcludedBackwards,
-  Command.selectToExcludedExtend,
-  Command.selectToExcludedExtendBackwards,
-  Command.selectToIncluded,
-  Command.selectToIncludedBackwards,
-  Command.selectToIncludedExtend,
-  Command.selectToIncludedExtendBackwards,
-]);
-
-registerCommand(Command.repeatObjectOrSelectTo, CommandFlags.ChangeSelections, (editorState) => {
-  const commands = editorState.recordedCommands;
-
-  for (let i = commands.length - 1; i >= 0; i--) {
-    const commandState = commands[i];
-
-    if (ObjectOrSelectToCommands.has(commandState.descriptor.command)) {
-      return CommandDescriptor.execute(editorState, commandState);
-    }
+function getRecordingRegister(context: CommandContext, chosen: Register | undefined) {
+  if (chosen === undefined) {
+    return context.extensionState.registers.arobase as Register.ReadableWriteableMacros;
   }
 
-  return undefined;
-});
+  chosen.assertFlags(Register.Flags.CanReadWriteMacros);
+
+  return chosen as unknown as Register.ReadableWriteableMacros;
+}

@@ -3,12 +3,10 @@
     "module": "commonjs",
     "target": "ES2018",
     "outDir": "out",
-    "lib": ["es6"],
+    "lib": ["ES2019"],
     "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "experimentalDecorators": true
   },
-  "exclude": ["node_modules", ".vscode-test", "package.ts"]
+  "exclude": ["node_modules", ".vscode-test"],
 }

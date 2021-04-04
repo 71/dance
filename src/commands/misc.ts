@@ -1,128 +1,139 @@
 import * as vscode from "vscode";
-import {
-  Command,
-  CommandDescriptor,
-  CommandFlags,
-  CommandState,
-  InputKind,
-  commandsByName,
-  registerCommand,
-} from ".";
+import * as api from "../api";
+import { Context } from "../api";
+import { CommandContext } from "../command";
+import { Extension } from "../state/extension";
+import { keypress, prompt } from "../utils/prompt";
 
-registerCommand(Command.cancel, CommandFlags.IgnoreInHistory, () => {
-  // Nop, because the caller cancels everything before calling us.
-});
+/**
+ * Miscellaneous commands that don't deserve their own category.
+ *
+ * By default, Dance also exports the following keybindings for existing
+ * commands:
+ *
+ * | Keybinding     | Command                             |
+ * | -------------- | ----------------------------------- |
+ * | `s-;` (normal) | `["workbench.action.showCommands"]` |
+ */
+declare module "./misc";
 
-type RunFunction = (vscodeObj: typeof vscode, danceObj: object, args: any) => Promise<any> | any;
-type RunFunctionConstructor =
-  (vscodeObj: "vscode", danceObj: "dance", args: "args", code: string) => RunFunction;
+/**
+ * Toggle default key bindings.
+ */
+export function toggle(extension: Extension) {
+  extension.setEnabled(!extension.enabled, false);
+}
 
-const AsyncFunction = async function () {}.constructor as RunFunctionConstructor;
+/**
+ * Cancel Dance operation.
+ */
+export function cancel(command: CommandContext) {
+  // Calling a new command resets pending operations, so we don't need to do
+  // anything special here.
+  command.ignoreInHistory();
+}
 
-registerCommand(Command.run, CommandFlags.IgnoreInHistory, async (editorState, state) => {
-  let code = state.argument?.code;
+/**
+ * Select register for next command.
+ *
+ * @keys `"` (normal)
+ */
+export async function selectRegister(
+  extension: Extension,
+  cancellationToken: vscode.CancellationToken,
+  input?: string,
+) {
+  if (input === undefined) {
+    input = await keypress(cancellationToken);
+  }
 
-  if (Array.isArray(code)) {
+  extension.currentRegister = extension.registers.get(input);
+}
+
+/**
+ * Update Dance count.
+ *
+ * Update the current counter used to repeat the next command.
+ *
+ * #### Additional keybindings
+ *
+ * | Title                          | Keybinding   | Command                                |
+ * | ------------------------------ | ------------ | -------------------------------------- |
+ * | Add the digit 0 to the counter | `0` (normal) | `[".updateCount", { "addDigits": 0 }]` |
+ * | Add the digit 1 to the counter | `1` (normal) | `[".updateCount", { "addDigits": 1 }]` |
+ * | Add the digit 2 to the counter | `2` (normal) | `[".updateCount", { "addDigits": 2 }]` |
+ * | Add the digit 3 to the counter | `3` (normal) | `[".updateCount", { "addDigits": 3 }]` |
+ * | Add the digit 4 to the counter | `4` (normal) | `[".updateCount", { "addDigits": 4 }]` |
+ * | Add the digit 5 to the counter | `5` (normal) | `[".updateCount", { "addDigits": 5 }]` |
+ * | Add the digit 6 to the counter | `6` (normal) | `[".updateCount", { "addDigits": 6 }]` |
+ * | Add the digit 7 to the counter | `7` (normal) | `[".updateCount", { "addDigits": 7 }]` |
+ * | Add the digit 8 to the counter | `8` (normal) | `[".updateCount", { "addDigits": 8 }]` |
+ * | Add the digit 9 to the counter | `9` (normal) | `[".updateCount", { "addDigits": 9 }]` |
+ */
+export async function updateCount(
+  extension: Extension,
+  cancellationToken: vscode.CancellationToken,
+  argument?: { addDigits?: number },
+  input?: number,
+) {
+  if (argument != null) {
+    if (typeof argument.addDigits === "number") {
+      let digits = argument.addDigits,
+          nextPowerOfTen = 1;
+
+      if (digits <= 0) {
+        digits = 0;
+        nextPowerOfTen = 10;
+      }
+
+      while (nextPowerOfTen <= digits) {
+        nextPowerOfTen *= 10;
+      }
+
+      extension.currentCount = extension.currentCount * nextPowerOfTen + digits;
+    }
+  }
+
+  if (input === undefined) {
+    input = +await prompt(prompt.numberOpts({ range: [0, 1_000_000] }), cancellationToken);
+  } else {
+    input = +input;
+
+    if (isNaN(input)) {
+      throw new Error("value is not a number");
+    }
+
+    if (input < 0) {
+      throw new Error("value is negative");
+    }
+  }
+
+  extension.currentCount = input | 0;
+}
+
+/**
+ * Run code.
+ */
+export async function run(
+  context: Context,
+  argument?: { commands?: api.command.Any[] },
+  input?: string | readonly string[],
+) {
+  const commands = argument?.commands;
+
+  if (Array.isArray(commands)) {
+    return api.commands(...commands);
+  }
+
+  let code = input;
+
+  if (code === undefined) {
+    code = await prompt({}, context.cancellationToken);
+  } else if (Array.isArray(code)) {
     code = code.join("\n");
   } else if (typeof code !== "string") {
-    throw new Error(`expected code to be a string or an array, but it was ${code}`);
+    return new Error(`expected code to be a string or an array, but it was ${code}`);
   }
 
-  let func: RunFunction;
-
-  try {
-    func = AsyncFunction("vscode", "dance", "args", code) as any;
-  } catch (e) {
-    throw new Error(`cannot parse function body: ${code}: ${e}`);
-  }
-
-  const danceInterface = Object.freeze({
-    async execute(...commands: any[]) {
-      const batches = [] as (readonly CommandState[] | [string, any])[],
-            currentBatch = [] as CommandState[],
-            extension = editorState.extension;
-
-      if (commands.length === 2 && typeof commands[0] === "string") {
-        commands = [commands];
-      }
-
-      // Build and validate commands.
-      for (let i = 0, len = commands.length; i < len; i++) {
-        let commandName: string,
-            commandArgument: any;
-
-        const command = commands[i];
-
-        if (typeof command === "string") {
-          commandName = command;
-          commandArgument = undefined;
-        } else if (Array.isArray(command) && command.length === 1) {
-          if (typeof command[0] !== "string") {
-            throw new Error("the first element of an execute tuple must be a command name");
-          }
-
-          commandName = command[0];
-          commandArgument = undefined;
-        } else if (Array.isArray(command) && command.length === 2) {
-          if (typeof command[0] !== "string") {
-            throw new Error("the first element of an execute tuple must be a command name");
-          }
-
-          commandName = command[0];
-          commandArgument = command[1];
-        } else {
-          throw new Error(
-            "execute arguments must be command names or [command name, argument] tuples",
-          );
-        }
-
-        if (commandName.startsWith(".")) {
-          commandName = `dance${commandName}`;
-        }
-
-        if (commandName in commandsByName) {
-          const descriptor = commandsByName[commandName as Command],
-                input = await descriptor.getInput(
-                  editorState,
-                  commandArgument,
-                  extension.cancellationTokenSource?.token);
-
-          if (descriptor.input !== InputKind.None && input === undefined) {
-            return;
-          }
-
-          currentBatch.push(new CommandState(descriptor, input, extension, commandArgument));
-        } else {
-          if (commandName.startsWith("dance.")) {
-            throw new Error(`Dance command ${JSON.stringify(commandName)} does not exist`);
-          }
-
-          if (currentBatch.length > 0) {
-            batches.push(currentBatch.splice(0));
-          }
-
-          batches.push([commandName, commandArgument]);
-        }
-      }
-
-      if (currentBatch.length > 0) {
-        batches.push(currentBatch);
-      }
-
-      // Execute all commands.
-      for (const batch of batches) {
-        if (typeof batch[0] === "string") {
-          await vscode.commands.executeCommand(batch[0], batch[1]);
-        } else {
-          await CommandDescriptor.executeMany(editorState, batch);
-        }
-      }
-    },
-  });
-
-  try {
-    await func(vscode, danceInterface, state.argument);
-  } catch (e) {
-    throw new Error(`code threw an exception: ${e}`);
-  }
-});
+  return context.run(() => api.run(code as string));
+}

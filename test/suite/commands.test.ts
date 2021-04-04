@@ -1,16 +1,13 @@
-// Enhance stack traces with the TypeScript source pos instead of compiled JS.
-// This is only included in tests to avoid introducing a production dependency.
-import "source-map-support/register";
-
 import * as assert from "assert";
-import * as fs from "fs";
-import * as path from "path";
+import * as fs     from "fs";
+import * as path   from "path";
 import * as vscode from "vscode";
 
 import { Command } from "../../commands";
 import { CommandDescriptor } from "../../src/commands";
 import { extensionState } from "../../src/extension";
 import { SelectionBehavior } from "../../src/state/extension";
+import { ExpectedDocument, execAll, longestStringLength } from "./utils";
 
 export namespace testCommands {
   export interface Mutation {
@@ -24,6 +21,19 @@ export namespace testCommands {
     readonly selectionBehavior: SelectionBehavior;
     readonly allowErrors: boolean;
   }
+}
+
+interface TestOperation {
+  command: string;
+  args: any[];
+}
+
+interface Test {
+  title: string;
+  comesAfter: string;
+  operations: TestOperation[];
+  flags: TestOperation[];
+  code: string;
 }
 
 /**
@@ -94,6 +104,75 @@ function stringifySelection(document: vscode.TextDocument, selection: vscode.Sel
       + endString
       + content.substring(endOffset)
     );
+  }
+}
+
+function parseMarkdownTests(contents: string) {
+  const header = /^# (.+)\n([\s\S]+?)^```\n([\s\S]+?)^```\n/m.exec(contents);
+
+  assert(header);
+
+  const [_, badHeaderTitle, headerFlagsString, initialCode] = header,
+        headerTitle = badHeaderTitle.replace(/\s/g, "-"),
+        headerFlags = execAll(/^> *(.+)$/gm, headerFlagsString).map(([_, flag]) => flag);
+
+  contents = contents.slice(header[0].length);
+
+  const re = /^# (.+)\n\[.+?\]\(#(.+?)\)\n([\s\S]+?)^```\n([\s\S]+?)^```\n/gm,
+        opre = /^([->]) *([\w.:]+)( +.+)?$/gm,
+        tests = [] as Test[];
+
+  for (const [_, badTitle, comesAfter, operationsText, after] of execAll(re, contents)) {
+    const title = badTitle.replace(/\s/g, "-"),
+          operations = [] as TestOperation[],
+          flags = [] as TestOperation[];
+
+    for (const [_, pre, command, argsString] of execAll(opre, operationsText)) {
+      const parsedArgs = argsString === undefined ? [] : JSON.parse(argsString),
+            args = Array.isArray(parsedArgs) ? parsedArgs : [parsedArgs];
+
+      if (pre === ">") {
+        flags.push({ command, args });
+      } else {
+        operations.push({ command, args });
+      }
+    }
+
+    tests.push({ title, comesAfter, code: after, operations, flags });
+  }
+
+  assert.strictEqual(execAll(/^# /gm, contents).length, tests.length);
+
+  return { headerTitle, headerFlags, initialCode, tests };
+}
+
+async function performOperations(test: Test) {
+  const operations = test.operations;
+
+  for (let i = 0; i < operations.length; i++) {
+    const operation = operations[i];
+    let command = operation.command;
+
+    if (command[0] === ".") {
+      command = `dance${command}`;
+    }
+
+    const promises = [vscode.commands.executeCommand(command, ...operation.args)];
+
+    while (i + 1 < operations.length && operations[i + 1].command.startsWith("type:")) {
+      const text = operations[++i].command[5];
+
+      promises.push(
+        new Promise((resolve) =>
+          setTimeout(
+            () => vscode.commands.executeCommand("type", { text }).then(resolve),
+            promises.length * 20,
+          ),
+        ),
+      );
+    }
+
+    await Promise.all(promises);
   }
 }
 
@@ -203,7 +282,7 @@ async function testCommands(
   }
 }
 
-suite("Running commands", function () {
+suite("Commands tests", function () {
   let document: vscode.TextDocument;
   let editor: vscode.TextEditor;
 
@@ -212,45 +291,114 @@ suite("Running commands", function () {
     editor = await vscode.window.showTextDocument(document);
   });
 
-  test("mutation tests work correctly", async function () {
-    await testCommands(editor, {
-      initialContent: `{0}f|{0}oo`,
-      mutations: [{ contentAfterMutation: `{0}fo|{0}o`, commands: [Command.rightExtend] }],
-      selectionBehavior: SelectionBehavior.Character,
-      allowErrors: false,
-    });
-  });
+  // Make sure that errors aren't caught and displayed as messages during tests.
+  extensionState.runSafely = (f) => f();
+  extensionState.runPromiseSafely = (f) => f();
 
-  test("mutation tests catch errors correctly", async function () {
-    try {
+  suite("misc", function () {
+    test("work correctly", async function () {
       await testCommands(editor, {
-        initialContent: `|{0}foo`,
-        mutations: [{ contentAfterMutation: `|{0}foo`, commands: [Command.rightExtend] }],
+        initialContent: `{0}f|{0}oo`,
+        mutations: [{ contentAfterMutation: `{0}fo|{0}o`, commands: [Command.rightExtend] }],
         selectionBehavior: SelectionBehavior.Character,
         allowErrors: false,
       });
-    } catch (err) {
-      if (
-        err instanceof Error
-        && err.message === `Expected Selection #0 to match ('>' is anchor, '|' is cursor).`
-      ) {
-        return;
+    });
+
+    test("catch errors correctly", async function () {
+      try {
+        await testCommands(editor, {
+          initialContent: `|{0}foo`,
+          mutations: [{ contentAfterMutation: `|{0}foo`, commands: [Command.rightExtend] }],
+          selectionBehavior: SelectionBehavior.Character,
+          allowErrors: false,
+        });
+      } catch (err) {
+        if (
+          err instanceof Error
+          && err.message === `Expected Selection #0 to match ('>' is anchor, '|' is cursor).`
+        ) {
+          return;
+        }
+
+        throw err;
       }
 
-      throw err;
-    }
-
-    assert.fail(`Expected error.`);
+      assert.fail(`Expected error.`);
+    });
   });
 
   const basedir = this.file!.replace("\\out\\", "\\").replace("/out/", "/").replace(".test.js", ""),
         fileNames = fs.readdirSync(basedir),
-        longestFileName = fileNames.reduce((longest, curr) =>
-          curr.length > longest.length ? curr : longest,
-        ),
-        fileNamePadding = longestFileName.length;
+        fileNamePadding = longestStringLength((x) => x, fileNames);
 
   for (const file of fileNames) {
+    if (file.endsWith(".md")) {
+      const fullPath = path.join(basedir, file),
+            contents = fs.readFileSync(fullPath, "utf-8"),
+            { headerTitle, initialCode, tests } = parseMarkdownTests(contents),
+            initialDocument = ExpectedDocument.parse(initialCode),
+            testNamePadding = longestStringLength((x) => x.title, tests),
+            comesAfterPadding = longestStringLength((x) => x.comesAfter, tests);
+
+      suite(file, function () {
+        // Use promises to:
+        // 1. Ensure that tests are executed in the right order.
+        // 2. Skip tests when their dependencies do not pass.
+        const testStatuses: Record<string, [Promise<boolean>, (success: boolean) => void]> = {
+          [headerTitle]: [Promise.resolve(true), undefined!],
+        };
+        const documents: Record<string, ExpectedDocument> = {
+          [headerTitle]: initialDocument,
+        };
+
+        for (const testInfo of tests) {
+          let setSuccess: (success: boolean) => void;
+          const successPromise = new Promise<boolean>((resolve) => setSuccess = resolve);
+
+          testStatuses[testInfo.title] = [successPromise, setSuccess!];
+          documents[testInfo.title] = ExpectedDocument.parse(testInfo.code);
+        }
+
+        // Define tests.
+        for (const testInfo of tests) {
+          const comesAfter = testInfo.comesAfter.padEnd(comesAfterPadding),
+                title = testInfo.title.padEnd(testNamePadding);
+
+          test(`transition ${comesAfter} > ${title}`, async function () {
+            // Wait for previous test to complete, and skip current test if it
+            // failed.
+            const notifyStatus = testStatuses[testInfo.title][1],
+                  dependencySucceeded = await testStatuses[testInfo.comesAfter][0];
+
+            if (!dependencySucceeded) {
+              notifyStatus(false);
+              this.skip();
+            }
+
+            const beforeDocument = documents[testInfo.comesAfter],
+                  afterDocument = documents[testInfo.title];
+
+            try {
+              // Ensure the document looks as expected after applying the
+              // specified operations.
+              await beforeDocument.apply(editor);
+              await performOperations(testInfo);
+
+              afterDocument.assertEquals(editor);
+              notifyStatus(true);
+            } catch (e) {
+              notifyStatus(false);
+
+              throw e;
+            }
+          });
+        }
+      });
+
+      continue;
+    }
+
     const fullPath = path.join(basedir, file.padEnd(fileNamePadding));
     const friendlyPath = fullPath.substr(/dance.test.suite/.exec(fullPath)!.index);
     const selectionBehavior = file.endsWith(".caret")

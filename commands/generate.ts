@@ -38,6 +38,13 @@ and [key bindings](https://code.visualstudio.com/docs/getstarted/keybindings).
 
 They are implemented in [\`src/commands\`](../src/commands).
 
+The following conventions are adopted for command names:
+- Commands that may perform changes to the document start with \`edit\`.
+- Commands that modify current selections start with:
+  * \`jump\` if the neither the start nor the end of current selections are preserved.
+  * \`select\` if the active positions of current selections become anchors.
+  * \`extend\` if the anchors remain in theirs positions and only active positions move.
+
 | ID | Title | Description | Key bindings |
 | -- | ----- | ----------- | ------------ |
 `);
@@ -46,13 +53,12 @@ They are implemented in [\`src/commands\`](../src/commands).
 // ===============================================================================================
 
 interface Entry {
-  title: string;
-  descr: string;
+  title?: string;
+  descr?: string;
   keys?: string;
   add?: string;
 
-  command?: string;
-  args?: any;
+  commands?: ({ command: string; args?: object } | string)[];
 }
 
 const yaml: Record<string, Entry> = load(readFileSync("./commands/commands.yaml", "utf8"), {
@@ -123,9 +129,10 @@ for (const id in yaml) {
 
 for (let i = 0; i < 10; i++) {
   yaml[`count.${i}`] = {
-    title: `Count ${i}`,
-    descr: `Adds ${i} to the current counter for the next operation.`,
     keys: `${i} (normal)`,
+    commands: [
+      { command: "updateCount", args: { addDigits: i } },
+    ],
   };
 }
 
@@ -166,7 +173,8 @@ const parseKeys = (key: string) =>
     when: parseWhen(x[2]),
   }));
 
-const additionalKeyBindings: string[] = [];
+const additionalKeyBindingsJson: string[] = [],
+      additionalKeyBindingsMd: string[] = [];
 
 for (const id in yaml) {
   const command = yaml[id];
@@ -182,30 +190,33 @@ for (const id in yaml) {
     ? ""
     : `\n *\n * Default key${keys.length === 1 ? "" : "s"}: ${docKeys}.`;
 
-  const docCommandName = command.command ? "" : `\`${prefix}.${id}\``;
-  doc.write(`| ${docCommandName} | ${command.title} | ${command.descr} | ${docKeys} |\n`);
-
   if (command.command) {
     // This is an additional keybinding to an existing command, instead of a
     // new command to be implemented.
     for (const key of keys) {
-      additionalKeyBindings.push(`  {`);
-      additionalKeyBindings.push(
+      additionalKeyBindingsJson.push(`  {`);
+      additionalKeyBindingsJson.push(
         `    key    : "${key.key.replace("\\", "\\\\").replace('"', '\\"')}",`,
       );
-      additionalKeyBindings.push(
+      additionalKeyBindingsJson.push(
         `    when   : "editorTextFocus && ${key.when.replace(/"/g, '\\"')}",`,
       );
-      additionalKeyBindings.push(`    command: ${JSON.stringify(command.command)},`);
+      additionalKeyBindingsJson.push(`    command: ${JSON.stringify(command.command)},`);
       if (command.args !== undefined) {
         const args = JSON.stringify(command.args, undefined, " ")
           .replace(/\n/g, "")
           .replace(/}$/, " }");
 
-        additionalKeyBindings.push(`    args   : ${args},`);
+        additionalKeyBindingsJson.push(`    args   : ${args},`);
       }
-      additionalKeyBindings.push(`  },`);
+      additionalKeyBindingsJson.push(`  },`);
     }
+
+    const argsStr = command.args === undefined
+      ? "{}"
+      : JSON.stringify(command.args, undefined, 1).replace(/\n/g, "").replace(/([}\]])$/, " $1");
+
+    additionalKeyBindingsMd.push(`| ${docKeys} | \`${command.command}\` | \`${argsStr}\` |`);
     continue;
   }
   commands.push(id);
@@ -233,6 +244,8 @@ for (const id in yaml) {
   }
 
   stream.write(`};\n\n`);
+
+  doc.write(`| \`${prefix}.${id}\` | ${command.title} | ${command.descr} | ${docKeys} |\n`);
 }
 
 // Write footers and close streams
@@ -259,11 +272,18 @@ ${commands
  * Additional key bindings.
  */
 export const additionalKeyBindings = [
-${additionalKeyBindings.join("\n")}
+${additionalKeyBindingsJson.join("\n")}
 ];
 `);
 
-doc.write("\n");
+doc.write(`
+
+Additionally, the following keybindings are defined by Dance:
+
+| Key bindings | Command | Argument |
+| ------------ | ------- | -------- |
+${additionalKeyBindingsMd.join("\n")}
+`);
 
 stream.end();
 doc.end();

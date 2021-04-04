@@ -2,7 +2,7 @@
 // https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#object-selection
 
 import * as vscode from "vscode";
-import { Command, CommandFlags, CommandState, registerCommand } from ".";
+import { Command, CommandFlags, CommandState, define } from ".";
 import {
   Backward,
   Coord,
@@ -17,7 +17,7 @@ import {
   SelectionMapper,
   moveActiveCoord,
   seekToRange,
-} from "../utils/selectionHelper";
+} from "../utils/selection-helper";
 import { CharSet, getCharSetFunction } from "../utils/charset";
 import { findMatching, skipWhile, skipWhileX } from "./select";
 import { SelectionBehavior } from "../state/extension";
@@ -863,7 +863,7 @@ const dispatch = {
   // TODO: custom
 };
 
-registerCommand(
+define(
   Command.objectsPerformSelection,
   CommandFlags.ChangeSelections,
   (editorState, state) => {

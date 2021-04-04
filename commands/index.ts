@@ -22,55 +22,23 @@ export const toggle: ICommand<"dance.toggle"> = {
 };
 
 /**
- * Set Dance mode to Normal.
- *
- * Default key: `Escape` (`dance.mode == 'insert'`).
+ * Set Dance mode.
  */
-export const setNormal: ICommand<"dance.set.normal"> = {
-  id         : "dance.set.normal",
-  title      : "Set mode to Normal",
-  description: "Set Dance mode to Normal.",
-  keybindings: [
-    { key: "escape", when: "editorTextFocus && dance.mode == 'insert'" },
-  ],
-};
-
-/**
- * Set Dance mode to Insert.
- */
-export const setInsert: ICommand<"dance.set.insert"> = {
-  id         : "dance.set.insert",
-  title      : "Set mode to Insert",
-  description: "Set Dance mode to Insert.",
+export const modesSet: ICommand<"dance.modes.set"> = {
+  id         : "dance.modes.set",
+  title      : "Set mode",
+  description: "Set Dance mode.",
   keybindings: [],
 };
 
 /**
- * Switches to normal mode temporarily.
- *
- * Default key: `Ctrl+V` (`dance.mode == 'insert'`).
+ * Set Dance mode for a limited number of commands and edits.
  */
-export const tmpNormal: ICommand<"dance.tmp.normal"> = {
-  id         : "dance.tmp.normal",
-  title      : "Temporary normal mode",
-  description: "Switches to normal mode temporarily.",
-  keybindings: [
-    { key: "Ctrl+v", when: "editorTextFocus && dance.mode == 'insert'" },
-  ],
-};
-
-/**
- * Switches to insert mode temporarily.
- *
- * Default key: `Ctrl+V` (`dance.mode == 'normal'`).
- */
-export const tmpInsert: ICommand<"dance.tmp.insert"> = {
-  id         : "dance.tmp.insert",
-  title      : "Temporary insert mode",
-  description: "Switches to insert mode temporarily.",
-  keybindings: [
-    { key: "Ctrl+v", when: "editorTextFocus && dance.mode == 'normal'" },
-  ],
+export const modesSetTemporarily: ICommand<"dance.modes.set.temporarily"> = {
+  id         : "dance.modes.set.temporarily",
+  title      : "Set mode temporarily",
+  description: "Set Dance mode for a limited number of commands and edits.",
+  keybindings: [],
 };
 
 /**
@@ -791,6 +759,26 @@ export const selectionsAlignCopy: ICommand<"dance.selections.align.copy"> = {
   keybindings: [
     { key: "Shift+Alt+7", when: "editorTextFocus && dance.mode == 'normal'" },
   ],
+};
+
+/**
+ * Track selections to restore them later.
+ */
+export const selectionsTrack: ICommand<"dance.selections.track"> = {
+  id         : "dance.selections.track",
+  title      : "Track selections",
+  description: "Track selections to restore them later.",
+  keybindings: [],
+};
+
+/**
+ * Restore tracked selections.
+ */
+export const selectionsRestore: ICommand<"dance.selections.restore"> = {
+  id         : "dance.selections.restore",
+  title      : "Restore tracked selections",
+  description: "Restore tracked selections.",
+  keybindings: [],
 };
 
 /**
@@ -1717,12 +1705,22 @@ export const cancel: ICommand<"dance.cancel"> = {
 };
 
 /**
- * Runs JavaScript code passed in a 'code' argument
+ * Runs JavaScript code given as input
  */
 export const run: ICommand<"dance.run"> = {
   id         : "dance.run",
   title      : "Run code",
-  description: "Runs JavaScript code passed in a 'code' argument",
+  description: "Runs JavaScript code given as input",
+  keybindings: [],
+};
+
+/**
+ * Runs selected JavaScript code
+ */
+export const runSelections: ICommand<"dance.run.selections"> = {
+  id         : "dance.run.selections",
+  title      : "Run selections as code",
+  description: "Runs selected JavaScript code",
   keybindings: [],
 };
 
@@ -2329,14 +2327,10 @@ export const count9: ICommand<"dance.count.9"> = {
 export const commands = {
   /** Toggles Dance key bindings. */
   toggle,
-  /** Set Dance mode to Normal. */
-  setNormal,
-  /** Set Dance mode to Insert. */
-  setInsert,
-  /** Switches to normal mode temporarily. */
-  tmpNormal,
-  /** Switches to insert mode temporarily. */
-  tmpInsert,
+  /** Set Dance mode. */
+  modesSet,
+  /** Set Dance mode for a limited number of commands and edits. */
+  modesSetTemporarily,
   /** Start insert before the current selections. */
   insertBefore,
   /** Start insert after the current selections. */
@@ -2439,6 +2433,10 @@ export const commands = {
   selectionsAlign,
   /** Copy the indentation of the main selection (or the count one if a count is given) to all other ones. */
   selectionsAlignCopy,
+  /** Track selections to restore them later. */
+  selectionsTrack,
+  /** Restore tracked selections. */
+  selectionsRestore,
   /** Yank and delete selections. */
   deleteYank,
   /** Yank, delete and enter insert mode. */
@@ -2581,8 +2579,10 @@ export const commands = {
   marksCombineSelectionsFromRegister,
   /** Cancels waiting for input from the user */
   cancel,
-  /** Runs JavaScript code passed in a 'code' argument */
+  /** Runs JavaScript code given as input */
   run,
+  /** Runs selected JavaScript code */
+  runSelections,
   /** Move left (extend). */
   leftExtend,
   /** Move right (extend). */
@@ -2681,14 +2681,10 @@ export const commands = {
 export const enum Command {
   /** Toggles Dance key bindings. */
   toggle = "dance.toggle",
-  /** Set Dance mode to Normal. */
-  setNormal = "dance.set.normal",
-  /** Set Dance mode to Insert. */
-  setInsert = "dance.set.insert",
-  /** Switches to normal mode temporarily. */
-  tmpNormal = "dance.tmp.normal",
-  /** Switches to insert mode temporarily. */
-  tmpInsert = "dance.tmp.insert",
+  /** Set Dance mode. */
+  modesSet = "dance.modes.set",
+  /** Set Dance mode for a limited number of commands and edits. */
+  modesSetTemporarily = "dance.modes.set.temporarily",
   /** Start insert before the current selections. */
   insertBefore = "dance.insert.before",
   /** Start insert after the current selections. */
@@ -2791,6 +2787,10 @@ export const enum Command {
   selectionsAlign = "dance.selections.align",
   /** Copy the indentation of the main selection (or the count one if a count is given) to all other ones. */
   selectionsAlignCopy = "dance.selections.align.copy",
+  /** Track selections to restore them later. */
+  selectionsTrack = "dance.selections.track",
+  /** Restore tracked selections. */
+  selectionsRestore = "dance.selections.restore",
   /** Yank and delete selections. */
   deleteYank = "dance.delete.yank",
   /** Yank, delete and enter insert mode. */
@@ -2933,8 +2933,10 @@ export const enum Command {
   marksCombineSelectionsFromRegister = "dance.marks.combineSelections.fromRegister",
   /** Cancels waiting for input from the user */
   cancel = "dance.cancel",
-  /** Runs JavaScript code passed in a 'code' argument */
+  /** Runs JavaScript code given as input */
   run = "dance.run",
+  /** Runs selected JavaScript code */
+  runSelections = "dance.run.selections",
   /** Move left (extend). */
   leftExtend = "dance.left.extend",
   /** Move right (extend). */
@@ -3031,6 +3033,24 @@ export const enum Command {
  * Additional key bindings.
  */
 export const additionalKeyBindings = [
+  {
+    key    : "escape",
+    when   : "editorTextFocus && dance.mode == 'insert'",
+    command: "dance.modes.set",
+    args   : { "input": "normal" },
+  },
+  {
+    key    : "Ctrl+v",
+    when   : "editorTextFocus && dance.mode == 'insert'",
+    command: "dance.modes.set.temporarily",
+    args   : { "input": "normal" },
+  },
+  {
+    key    : "Ctrl+v",
+    when   : "editorTextFocus && dance.mode == 'normal'",
+    command: "dance.modes.set.temporarily",
+    args   : { "input": "insert" },
+  },
   {
     key    : "Alt+a",
     when   : "editorTextFocus && dance.mode == 'normal'",
