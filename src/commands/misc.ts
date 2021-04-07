@@ -1,9 +1,8 @@
-import * as vscode from "vscode";
 import * as api from "../api";
-import { Context } from "../api";
-import { CommandContext } from "../command";
+
+import { Argument, InputOr } from ".";
+import { Context, InputError, keypress, prompt } from "../api";
 import { Extension } from "../state/extension";
-import { keypress, prompt } from "../utils/prompt";
 
 /**
  * Miscellaneous commands that don't deserve their own category.
@@ -27,27 +26,75 @@ export function toggle(extension: Extension) {
 /**
  * Cancel Dance operation.
  */
-export function cancel(command: CommandContext) {
+export function cancel() {
   // Calling a new command resets pending operations, so we don't need to do
   // anything special here.
-  command.ignoreInHistory();
+}
+
+let lastRunCode: string | undefined;
+
+/**
+ * Run code.
+ */
+export async function run(
+  context: Context,
+  inputOr: InputOr<string | readonly string[]>,
+
+  commands?: Argument<api.command.Any[]>,
+) {
+  if (Array.isArray(commands)) {
+    return api.commands(...commands);
+  }
+
+  let code = await inputOr(() => prompt({
+    prompt: "Code to run",
+    validateInput(value) {
+      try {
+        api.run.compileFunction(value);
+
+        return;
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          return `invalid syntax: ${e.message}`;
+        }
+
+        return e?.message ?? `${e}`;
+      }
+    },
+    value: lastRunCode,
+    valueSelection: lastRunCode === undefined ? undefined : [0, lastRunCode.length],
+  }, context));
+
+  if (Array.isArray(code)) {
+    code = code.join("\n");
+  } else if (typeof code !== "string") {
+    return new InputError(`expected code to be a string or an array, but it was ${code}`);
+  }
+
+  return context.run(() => api.run(code as string));
 }
 
 /**
  * Select register for next command.
  *
+ * When selecting a register, the next key press is used to determine what
+ * register is selected. If this key is a `space` character, then a new key
+ * press is awaited again and the returned register will be specific to the
+ * current document.
+ *
  * @keys `"` (normal)
  */
-export async function selectRegister(
-  extension: Extension,
-  cancellationToken: vscode.CancellationToken,
-  input?: string,
-) {
+export async function selectRegister(_: Context, input?: string) {
   if (input === undefined) {
-    input = await keypress(cancellationToken);
-  }
+    _.extensionState.currentRegister = await keypress.forRegister(_);
+  } else {
+    const extension = _.extensionState,
+          registers = extension.registers;
 
-  extension.currentRegister = extension.registers.get(input);
+    extension.currentRegister = input.startsWith(" ")
+      ? registers.forDocument(_.document).get(input.slice(1))
+      : registers.get(input);
+  }
 }
 
 /**
@@ -71,69 +118,33 @@ export async function selectRegister(
  * | Add the digit 9 to the counter | `9` (normal) | `[".updateCount", { "addDigits": 9 }]` |
  */
 export async function updateCount(
+  _: Context,
   extension: Extension,
-  cancellationToken: vscode.CancellationToken,
-  argument?: { addDigits?: number },
-  input?: number,
+  inputOr: InputOr<number>,
+
+  addDigits?: Argument<number>,
 ) {
-  if (argument != null) {
-    if (typeof argument.addDigits === "number") {
-      let digits = argument.addDigits,
-          nextPowerOfTen = 1;
+  if (typeof addDigits === "number") {
+    let nextPowerOfTen = 1;
 
-      if (digits <= 0) {
-        digits = 0;
-        nextPowerOfTen = 10;
-      }
-
-      while (nextPowerOfTen <= digits) {
-        nextPowerOfTen *= 10;
-      }
-
-      extension.currentCount = extension.currentCount * nextPowerOfTen + digits;
-    }
-  }
-
-  if (input === undefined) {
-    input = +await prompt(prompt.numberOpts({ range: [0, 1_000_000] }), cancellationToken);
-  } else {
-    input = +input;
-
-    if (isNaN(input)) {
-      throw new Error("value is not a number");
+    if (addDigits <= 0) {
+      addDigits = 0;
+      nextPowerOfTen = 10;
     }
 
-    if (input < 0) {
-      throw new Error("value is negative");
+    while (nextPowerOfTen <= addDigits) {
+      nextPowerOfTen *= 10;
     }
+
+    extension.currentCount = extension.currentCount * nextPowerOfTen + addDigits;
+
+    return;
   }
 
-  extension.currentCount = input | 0;
-}
+  const input = +await inputOr(() => prompt.number({ integer: true, range: [0, 1_000_000] }, _));
 
-/**
- * Run code.
- */
-export async function run(
-  context: Context,
-  argument?: { commands?: api.command.Any[] },
-  input?: string | readonly string[],
-) {
-  const commands = argument?.commands;
+  InputError.validateInput(!isNaN(input), "value is not a number");
+  InputError.validateInput(input >= 0, "value is negative");
 
-  if (Array.isArray(commands)) {
-    return api.commands(...commands);
-  }
-
-  let code = input;
-
-  if (code === undefined) {
-    code = await prompt({}, context.cancellationToken);
-  } else if (Array.isArray(code)) {
-    code = code.join("\n");
-  } else if (typeof code !== "string") {
-    return new Error(`expected code to be a string or an array, but it was ${code}`);
-  }
-
-  return context.run(() => api.run(code as string));
+  extension.currentCount = input;
 }

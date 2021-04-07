@@ -2,13 +2,14 @@ import * as vscode from "vscode";
 
 import { DocumentState } from "./document";
 import { EditorState } from "./editor";
-import { commands } from "../commands";
 import { extensionName } from "../extension";
 import { Register, Registers } from "../register";
-import { Menu, validateMenu } from "../api/menu";
+import { assert, CancellationError, Menu, validateMenu } from "../api";
 import { Modes } from "../mode";
 import { SettingsValidator } from "../utils/settings-validator";
-import { CancellationError } from "../utils/errors";
+import { loadCommands } from "../commands/load-all";
+import { Recorder } from "../api/record";
+import { Commands } from "../commands";
 
 // =============================================================================================
 // ==  MODE-SPECIFIC CONFIGURATION  ============================================================
@@ -40,6 +41,15 @@ export class Extension implements vscode.Disposable {
     return this._gotoMenus as ReadonlyMap<string, Menu>;
   }
 
+  // Commands.
+  private _commands?: Commands;
+
+  public get commands() {
+    assert(this._commands !== undefined);
+
+    return this._commands;
+  }
+
   // General state.
   public readonly statusBarItem: vscode.StatusBarItem;
 
@@ -49,7 +59,7 @@ export class Extension implements vscode.Disposable {
    * The `CancellationTokenSource` for cancellable operations running in this
    * editor.
    */
-  public cancellationTokenSource?: vscode.CancellationTokenSource;
+  public cancellationTokenSource = new vscode.CancellationTokenSource();
 
   /**
    * `Registers` for this instance of the extension.
@@ -61,6 +71,11 @@ export class Extension implements vscode.Disposable {
    */
   public readonly modes = new Modes();
 
+  /**
+   * `Recorder` for this instance of the extension.
+   */
+  public readonly recorder = new Recorder();
+
   // Ephemeral state needed by commands.
   public currentCount: number = 0;
   public currentRegister: Register | undefined = undefined;
@@ -68,6 +83,7 @@ export class Extension implements vscode.Disposable {
   public constructor() {
     this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100);
     this.statusBarItem.tooltip = "Current mode";
+
     // Configuration: modes.
     this.modes.observePreferences(this);
 
@@ -178,6 +194,9 @@ export class Extension implements vscode.Disposable {
       }
 
       this._documentStates = new Map();
+      this._commands = undefined;
+
+      vscode.commands.executeCommand("setContext", extensionName + ".enabled", false);
 
       if (changeConfiguration) {
         vscode.workspace.getConfiguration(extensionName).update("enabled", false);
@@ -219,15 +238,25 @@ export class Extension implements vscode.Disposable {
         }),
       );
 
-      for (let i = 0; i < commands.length; i++) {
-        this.subscriptions.push(commands[i].register(this));
-      }
+      loadCommands().then((commands) => {
+        if (!this.enabled) {
+          return;
+        }
+
+        this._commands = commands;
+
+        for (const descriptor of Object.values(commands)) {
+          this.subscriptions.push(descriptor.register(this));
+        }
+      });
 
       const activeEditor = vscode.window.activeTextEditor;
 
       if (activeEditor !== undefined) {
         this.getEditorState(activeEditor).onDidBecomeActive();
       }
+
+      vscode.commands.executeCommand("setContext", extensionName + ".enabled", true);
 
       if (changeConfiguration) {
         vscode.workspace.getConfiguration(extensionName).update("enabled", true);
@@ -243,6 +272,14 @@ export class Extension implements vscode.Disposable {
 
   private _documentStates = new WeakMap<vscode.TextDocument, DocumentState>();
   private _activeEditorState?: EditorState;
+
+  /**
+   * Returns the `EditorState` for the active `vscode.TextEditor`, or
+   * `undefined` if `vscode.window.activeTextEditor === undefined`.
+   */
+  public get activeEditorState() {
+    return this._activeEditorState;
+  }
 
   /**
    * Returns the `DocumentState` for the given `vscode.TextDocument`.
@@ -317,17 +354,19 @@ export class Extension implements vscode.Disposable {
    * Runs the given async function, displaying an error message and returning
    * the specified value if it throws an exception during its execution.
    */
-  public runPromiseSafely<T>(
+  public async runPromiseSafely<T>(
     f: () => Thenable<T>,
     errorValue: () => T,
     errorMessage: (error: any) => string,
   ) {
-    return f().then(undefined, (e) => {
+    try {
+      return await f();
+    } catch (e) {
       if (!(e instanceof CancellationError)) {
         vscode.window.showErrorMessage(errorMessage(e));
       }
 
       return errorValue();
-    });
+    }
   }
 }

@@ -1,7 +1,8 @@
+import { Argument } from ".";
 import { Context, rotate } from "../api";
 
 /**
- * Selection rotations.
+ * Rotate selection indices and contents.
  */
 declare module "./selections.rotate";
 
@@ -16,8 +17,8 @@ declare module "./selections.rotate";
  * | ----------------------------------- | -------------- | ------------ | --------------------------------------------- |
  * | Rotate selections counter-clockwise | `both.reverse` | `)` (normal) | `[".selections.rotate", { "reverse": true }]` |
  */
-export function both(_: Context, repetitions: number, argument?: { reverse?: boolean }) {
-  if (argument?.reverse) {
+export function both(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
+  if (reverse) {
     repetitions = -repetitions;
   }
 
@@ -33,8 +34,8 @@ export function both(_: Context, repetitions: number, argument?: { reverse?: boo
  * | --------------------------------------------------- | ------------------ | ------------------------------------------------------ |
  * | Rotate selections counter-clockwise (contents only) | `contents.reverse` | `[".selections.rotate.contents", { "reverse": true }]` |
  */
-export function contents(_: Context, repetitions: number, argument?: { reverse?: boolean }) {
-  if (argument?.reverse) {
+export function contents(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
+  if (reverse) {
     repetitions = -repetitions;
   }
 
@@ -52,8 +53,8 @@ export function contents(_: Context, repetitions: number, argument?: { reverse?:
  * | ----------------------------------------------------- | -------------------- | -------------- | -------------------------------------------------------- |
  * | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `a-)` (normal) | `[".selections.rotate.selections", { "reverse": true }]` |
  */
-export function selections(_: Context, repetitions: number, argument?: { reverse?: boolean }) {
-  if (argument?.reverse) {
+export function selections(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
+  if (reverse) {
     repetitions = -repetitions;
   }
 

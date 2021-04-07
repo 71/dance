@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { Direction } from "../../utils/selection-helper";
-import { Context } from "../context";
+
+import { Context, Direction } from "..";
 
 /**
  * Moves the given position towards the given direction as long as the given
@@ -28,6 +28,12 @@ export namespace moveWith {
   }
 
   /**
+   * Whether the last call to `moveWith` (and variants) reached the edge of the
+   * document.
+   */
+  export declare const reachedDocumentEdge: boolean;
+
+  /**
    * Moves the given position backward as long as the given predicate is true.
    *
    * ### Example
@@ -45,7 +51,9 @@ export namespace moveWith {
    * 1234578
    * ```
    */
-  export function backward<T>(reduce: moveWith.Reduce<T>, startState: T, origin: vscode.Position) {
+  export function backward<T>(reduce: Reduce<T>, startState: T, origin: vscode.Position) {
+    didReachDocumentEdge = false;
+
     const document = Context.current.document,
           currentLineText = document.lineAt(origin).text;
     let state: T | undefined = startState;
@@ -72,6 +80,7 @@ export namespace moveWith {
       }
     }
 
+    didReachDocumentEdge = true;
     return new vscode.Position(0, 0);
   }
 
@@ -93,7 +102,9 @@ export namespace moveWith {
    * 1234578
    * ```
    */
-  export function forward<T>(reduce: moveWith.Reduce<T>, startState: T, origin: vscode.Position) {
+  export function forward<T>(reduce: Reduce<T>, startState: T, origin: vscode.Position) {
+    didReachDocumentEdge = false;
+
     const document = Context.current.document,
           currentLineText = document.lineAt(origin).text;
     let state: T | undefined = startState;
@@ -122,7 +133,111 @@ export namespace moveWith {
       }
     }
 
+    didReachDocumentEdge = true;
     return document.lineAt(document.lineCount - 1).range.end;
+  }
+
+  /**
+   * Same as `moveWith`, but using raw char codes.
+   *
+   * @see moveWith,byCharCode.backward,byCharCode.forward
+   */
+  export function byCharCode<T>(
+    direction: Direction,
+    reduce: byCharCode.Reduce<T>,
+    startState: T,
+    origin: vscode.Position,
+  ): vscode.Position {
+    return direction === Direction.Backward
+      ? byCharCode.backward(reduce, startState, origin)
+      : byCharCode.forward(reduce, startState, origin);
+  }
+
+  export namespace byCharCode {
+    /**
+     * A reduce function passed to `moveWith.byCharCode`.
+     */
+    export interface Reduce<T> {
+      (charCode: number, state: T): T | undefined;
+    }
+
+    /**
+     * Same as `moveWith.backward`, but using raw char codes.
+     *
+     * @see moveWith.backward
+     */
+    export function backward<T>(reduce: Reduce<T>, startState: T, origin: vscode.Position) {
+      didReachDocumentEdge = false;
+
+      const document = Context.current.document,
+            currentLineText = document.lineAt(origin).text;
+      let state: T | undefined = startState;
+
+      for (let i = origin.character - 1; i >= 0; i--) {
+        if ((state = reduce(currentLineText.charCodeAt(i), state)) === undefined) {
+          return new vscode.Position(origin.line, i + 1);
+        }
+      }
+
+      for (let line = origin.line - 1; line >= 0; line--) {
+        const lineText = document.lineAt(line).text;
+
+        if ((state = reduce(10 /* \n */, state)) === undefined) {
+          return new vscode.Position(line, 0);
+        }
+
+        for (let i = lineText.length - 1; i >= 0; i--) {
+          if ((state = reduce(lineText.charCodeAt(i), state)) === undefined) {
+            return i === lineText.length - 1
+              ? new vscode.Position(line + 1, 0)
+              : new vscode.Position(line, i + 1);
+          }
+        }
+      }
+
+      didReachDocumentEdge = true;
+      return new vscode.Position(0, 0);
+    }
+
+    /**
+     * Same as `moveWith.forward`, but using raw char codes.
+     *
+     * @see moveWith.forward
+     */
+    export function forward<T>(reduce: Reduce<T>, startState: T, origin: vscode.Position) {
+      didReachDocumentEdge = false;
+
+      const document = Context.current.document,
+            currentLineText = document.lineAt(origin).text;
+      let state: T | undefined = startState;
+
+      for (let i = origin.character; i < currentLineText.length; i++) {
+        if ((state = reduce(currentLineText.charCodeAt(i), state)) === undefined) {
+          return new vscode.Position(origin.line, i);
+        }
+      }
+
+      if ((state = reduce(10 /* \n */, state)) === undefined) {
+        return new vscode.Position(origin.line, currentLineText.length);
+      }
+
+      for (let line = origin.line + 1; line < document.lineCount; line++) {
+        const lineText = document.lineAt(line).text;
+
+        for (let i = 0; i < lineText.length; i++) {
+          if ((state = reduce(lineText.charCodeAt(i), state)) === undefined) {
+            return new vscode.Position(line, i);
+          }
+        }
+
+        if ((state = reduce(10 /* \n */, state)) === undefined) {
+          return new vscode.Position(line, lineText.length);
+        }
+      }
+
+      didReachDocumentEdge = true;
+      return document.lineAt(document.lineCount - 1).range.end;
+    }
   }
 }
 
@@ -149,6 +264,12 @@ export namespace moveWhile {
   export interface Predicate {
     (character: string): boolean;
   }
+
+  /**
+   * Whether the last call to `moveWhile` (and variants) reached the edge of the
+   * document.
+   */
+  export declare const reachedDocumentEdge: boolean;
 
   /**
    * Moves the given position backward as long as the given predicate is true.
@@ -211,4 +332,57 @@ export namespace moveWhile {
   export function forward(predicate: Predicate, origin: vscode.Position): vscode.Position {
     return moveWith.forward((ch) => predicate(ch) ? null : undefined, null, origin);
   }
+
+  /**
+   * Same as `moveWith`, but using raw char codes.
+   *
+   * @see moveWith,byCharCode.backward,byCharCode.forward
+   */
+  export function byCharCode(
+    direction: Direction,
+    predicate: byCharCode.Predicate,
+    origin: vscode.Position,
+  ): vscode.Position {
+    return direction === Direction.Backward
+      ? byCharCode.backward(predicate, origin)
+      : byCharCode.forward(predicate, origin);
+  }
+
+  export namespace byCharCode {
+    /**
+     * A predicate passed to `moveWhile.byCharCode`.
+     */
+    export interface Predicate {
+      (charCode: number): boolean;
+    }
+
+    /**
+     * Same as `moveWhile.backward`, but using raw char codes.
+     *
+     * @see moveWhile.backward
+     */
+    export function backward(predicate: Predicate, origin: vscode.Position): vscode.Position {
+      return moveWith.byCharCode.backward((ch) => predicate(ch) ? null : undefined, null, origin);
+    }
+
+    /**
+     * Same as `moveWhile.forward`, but using raw char codes.
+     *
+     * @see moveWhile.forward
+     */
+    export function forward(predicate: Predicate, origin: vscode.Position): vscode.Position {
+      return moveWith.byCharCode.forward((ch) => predicate(ch) ? null : undefined, null, origin);
+    }
+  }
+}
+
+let didReachDocumentEdge = false;
+const getReachedDocumentEdge = {
+  get() {
+    return didReachDocumentEdge;
+  },
+};
+
+for (const obj of [moveWith, moveWhile, moveWith.byCharCode, moveWhile.byCharCode]) {
+  Object.defineProperty(obj, "reachedDocumentEdge", getReachedDocumentEdge);
 }

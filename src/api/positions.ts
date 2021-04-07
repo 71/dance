@@ -87,6 +87,27 @@ export namespace Positions {
                offset = offsetPosition;
 
   /**
+   * Returns the position at the start of the given line.
+   */
+  export function lineStart(line: number) {
+    return new vscode.Position(line, 0);
+  }
+
+  /**
+   * Returns the position at the end of the given line.
+   */
+  export function lineEnd(line: number, document = Context.current.document) {
+    return new vscode.Position(line, document.lineAt(line).text.length);
+  }
+
+  /**
+   * Returns the last position of the given document.
+   */
+  export function last(document = Context.current.document) {
+    return document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end;
+  }
+
+  /**
    * The (0, 0) position.
    */
   export const zero = new vscode.Position(0, 0);

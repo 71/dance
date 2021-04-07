@@ -63,10 +63,7 @@ module.exports = {
         memberSyntaxSortOrder: ["none", "all", "single", "multiple"],
       },
     ],
-    "space-before-function-paren": [
-      "error",
-      { anonymous: "always", named: "never", asyncArrow: "always" },
-    ],
+    "space-before-function-paren": "off",
     "space-before-blocks": "error",
     "space-infix-ops": "error",
     "unicode-bom": "error",
@@ -75,5 +72,9 @@ module.exports = {
     "no-case-declarations": "off",
     "no-cond-assign": "off",
     "@typescript-eslint/explicit-member-accessibility": ["error"],
+    "@typescript-eslint/space-before-function-paren": [
+      "error",
+      { anonymous: "always", named: "never", asyncArrow: "always" },
+    ],
   },
 };

@@ -29,19 +29,6 @@ export function activate() {
   if (extensionPackageJSON?.[`${extensionName}.disableArbitraryCommandExecution`]) {
     api.execute.disable();
   }
-
-  if (process.env.VERBOSE_LOGGING === "true") {
-    // Log all commands we need to implement
-    Promise.all([vscode.commands.getCommands(true), import("../commands/index")]).then(
-      ([registeredCommands, { commands }]) => {
-        for (const command of Object.values(commands)) {
-          if (registeredCommands.indexOf(command.id) === -1) {
-            console.warn("Command", command.id, "is defined but not implemented.");
-          }
-        }
-      },
-    );
-  }
 }
 
 /**

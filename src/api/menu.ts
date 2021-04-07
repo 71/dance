@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
-import { promptInList } from "../utils/prompt";
-import { Context } from "./context";
+import { Context, promptInList } from ".";
 
 export interface Menu {
   readonly items: Menu.Items;
@@ -81,7 +80,7 @@ export function validateMenu(menu: Menu) {
 export async function showMenu(
   menu: Menu,
   additionalArgs: readonly any[] = [],
-  cancellationToken?: vscode.CancellationToken,
+  cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
 ) {
   const entries = Object.entries(menu.items);
   const items = entries.map((x) => [x[0], x[1].text] as const);
@@ -107,7 +106,9 @@ export async function showMenu(
         i < args.length ? Object.assign({}, arg, args[i]) : arg);
   }
 
-  return await vscode.commands.executeCommand(pickedItem.command, ...args);
+  return Context.WithoutActiveEditor.wrap(
+    vscode.commands.executeCommand(pickedItem.command, ...args),
+  );
 }
 
 export namespace showMenu {
@@ -117,9 +118,9 @@ export namespace showMenu {
   export function byName(
     menuName: string,
     additionalArgs: readonly any[] = [],
-    cancellationToken = Context.current.extensionState.cancellationTokenSource?.token,
+    cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
   ) {
-    const menu = Context.current.extensionState.menus.get(menuName);
+    const menu = Context.WithoutActiveEditor.current.extensionState.menus.get(menuName);
 
     if (menu === undefined) {
       return Promise.reject(new Error(`menu ${JSON.stringify(menuName)} does not exist`));

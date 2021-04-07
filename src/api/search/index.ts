@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import * as regexp from "../../utils/regexp";
-import { Direction } from "../../utils/selection-helper";
-import { Context } from "../context";
+import { Context, Direction } from "..";
 
 /**
  * Searches backward or forward for a pattern starting at the given position.

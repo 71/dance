@@ -1,12 +1,8 @@
 import * as vscode from "vscode";
 
 import { DocumentState } from "./document";
-import { Command, CommandState, InputKind } from "../commands";
 import { extensionName } from "../extension";
-import { assert } from "../utils/errors";
-import { TrackedSelection } from "../utils/tracked-selection";
-import { MacroRegister } from "../register";
-import { commands, selectionsLines } from "../api";
+import { assert, commands, selectionsLines } from "../api";
 import { Mode } from "../mode";
 
 /**
@@ -27,24 +23,10 @@ export class EditorState {
   /** The last matching editor. */
   private _editor: vscode.TextEditor;
 
-  /** Selections that we had before entering insert mode. */
-  private _insertModeSelections?: readonly TrackedSelection[];
-
-  /**
-   * Whether a selection change event should be expected while in insert mode.
-   */
-  private _expectSelectionChangeEvent = false;
-
-  /** Whether the next selection change event should be ignored. */
-  private _ignoreSelectionChangeEvent = false;
-
   /**
    * Whether the editor is currently executing functions to change modes.
    */
   private _isChangingMode = false;
-
-  /** The ongoing recording of a macro in this editor. */
-  private _macroRecording?: MacroRecording;
 
   private _mode!: Mode;
   private _previousMode?: Mode;
@@ -107,7 +89,6 @@ export class EditorState {
     options.lineNumbers = vscodeMode.lineNumbers;
 
     this.clearDecorations(this.mode);
-    this._macroRecording?.dispose();
   }
 
   /**
@@ -172,39 +153,6 @@ export class EditorState {
   }
 
   /**
-   * Starts recording a macro, setting up relevant handlers and UI elements.
-   */
-  public startMacroRecording(register: MacroRegister & { readonly name: string }) {
-    if (this._macroRecording !== undefined) {
-      return undefined;
-    }
-
-    const statusBarItem = vscode.window.createStatusBarItem();
-
-    statusBarItem.command = Command.macrosRecordStop;
-    statusBarItem.text = `Macro recording in ${register.name}`;
-
-    this._macroRecording = new MacroRecording(register, this._commands.length, statusBarItem);
-
-    return this._macroRecording.show().then(() => this._macroRecording);
-  }
-
-  /**
-   * Stops recording a macro, disposing of its resources.
-   */
-  public stopMacroRecording() {
-    const recording = this._macroRecording;
-
-    if (recording === undefined) {
-      return undefined;
-    }
-
-    this._macroRecording = undefined;
-
-    return recording.dispose().then(() => recording);
-  }
-
-  /**
    * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with
    * this editor.
    */
@@ -212,8 +160,6 @@ export class EditorState {
     const { editor, mode } = this;
 
     this.extension.statusBarItem.text = "$(chevron-right) " + mode.name;
-
-    this._macroRecording?.show();
 
     editor.options.lineNumbers = mode.lineNumbers;
     editor.options.cursorStyle = mode.cursorStyle;
@@ -226,8 +172,6 @@ export class EditorState {
    * another editor.
    */
   public onDidBecomeInactive() {
-    this._macroRecording?.hide();
-
     if (this._previousMode !== undefined) {
       return this.setMode(this._previousMode);
     }
@@ -308,72 +252,8 @@ export class EditorState {
     editor.options.cursorStyle = mode.cursorStyle;
     editor.options.lineNumbers = mode.lineNumbers;
   }
-
-  // =============================================================================================
-  // ==  HISTORY  ================================================================================
-  // =============================================================================================
-
-  private readonly _commands = [] as CommandState<any>[];
-
-  /**
-   * The commands that were last used in this editor, from the earliest to the
-   * latest.
-   */
-  public get recordedCommands() {
-    return this._commands as readonly CommandState<any>[];
-  }
-
-  /**
-   * Records invocation of a command.
-   */
-  public recordCommand<I extends InputKind>(state: CommandState<I>) {
-    this.documentState.recordCommand(state);
-    this._commands.push(state);
-
-    if (this._macroRecording) {
-      if (this._commands.length === 50) {
-        vscode.window.showWarningMessage(
-          "You're recording a lot of commands. This may increase memory usage.",
-        );
-      }
-    } else {
-      // If not recording, limit history to 20 items to avoid eating RAM.
-      while (this._commands.length > 20) {
-        this._commands.shift();
-      }
-    }
-  }
 }
 
 function getEditorId(editor: vscode.TextEditor) {
   return ((editor as unknown) as { readonly id: string }).id;
-}
-
-/**
- * An ongoing recording of a macro.
- */
-export class MacroRecording {
-  public constructor(
-    public readonly register: MacroRegister,
-    public lastHistoryEntry: number,
-    public readonly statusBarItem: vscode.StatusBarItem,
-  ) {}
-
-  public show() {
-    this.statusBarItem.show();
-
-    return vscode.commands.executeCommand("setContext", extensionName + ".recordingMacro", true);
-  }
-
-  public hide() {
-    this.statusBarItem.hide();
-
-    return vscode.commands.executeCommand("setContext", extensionName + ".recordingMacro", false);
-  }
-
-  public dispose() {
-    this.statusBarItem.dispose();
-
-    return vscode.commands.executeCommand("setContext", extensionName + ".recordingMacro", false);
-  }
 }

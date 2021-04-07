@@ -60,9 +60,9 @@ import { blankCharacters } from "../../utils/charset";
  * ```
  */
 export function indentLines(lines: Iterable<number>, times = 1, indentEmpty = false) {
-  const editor = Context.current.editor,
-        indent = editor.options.insertSpaces
-          ? " ".repeat(editor.options.tabSize as number * times)
+  const options = Context.current.editor.options,
+        indent = options.insertSpaces
+          ? " ".repeat(options.tabSize as number * times)
           : "\t".repeat(times);
 
   if (indentEmpty) {
@@ -81,13 +81,13 @@ export function indentLines(lines: Iterable<number>, times = 1, indentEmpty = fa
       }
     });
   } else {
-    return edit((editBuilder) => {
+    return edit((editBuilder, _, document) => {
       const seen = new Set<number>();
 
       for (const line of lines) {
         const cnt = seen.size;
 
-        if (seen.add(line).size === cnt || editor.document.lineAt(line).isEmptyOrWhitespace) {
+        if (seen.add(line).size === cnt || document.lineAt(line).isEmptyOrWhitespace) {
           // Avoid indenting empty lines or the same line more than once.
           continue;
         }
@@ -144,11 +144,8 @@ export function indentLines(lines: Iterable<number>, times = 1, indentEmpty = fa
  * ```
  */
 export function deindentLines(lines: Iterable<number>, times = 1, deindentIncomplete = true) {
-  const editor = Context.current.editor;
-
-  return edit((editBuilder) => {
-    const doc = editor.document,
-          tabSize = editor.options.tabSize as number,
+  return edit((editBuilder, _, document) => {
+    const tabSize = Context.current.editor.options.tabSize as number,
           needed = times * tabSize,
           seen = new Set<number>();
 
@@ -160,7 +157,7 @@ export function deindentLines(lines: Iterable<number>, times = 1, deindentIncomp
         continue;
       }
 
-      const textLine = doc.lineAt(line),
+      const textLine = document.lineAt(line),
             text = textLine.text;
 
       let column = 0,  // Column, accounting for tab size.
@@ -296,9 +293,7 @@ export function joinLines(lines: Iterable<number>, separator: string = " ") {
     }
   }
 
-  const document = Context.current.editor.document;
-
-  return edit((editBuilder) => {
+  return edit((editBuilder, _, document) => {
     let diff = 0;
     const selections = [] as vscode.Selection[];
 

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { CommandDescriptor } from "../commands";
 import { parseRegExpWithReplacement } from "../utils/regexp";
 import { Context } from "./context";
 
@@ -28,7 +29,9 @@ export function run(strings: string | readonly string[], context: object = {}) {
   const parameterValues = run.parameterValues();
 
   if (isSingleStringArgument) {
-    return functions[0](...parameterValues, ...Object.values(context));
+    return Context.WithoutActiveEditor.wrap(
+      functions[0](...parameterValues, ...Object.values(context)),
+    );
   }
 
   const promises: Thenable<unknown>[] = [],
@@ -38,7 +41,7 @@ export function run(strings: string | readonly string[], context: object = {}) {
     promises.push(func(...parameterValues, ...contextValues));
   }
 
-  return Promise.all(promises);
+  return Context.WithoutActiveEditor.wrap(Promise.all(promises));
 }
 
 const cachedParameterNames = [] as string[],
@@ -180,6 +183,7 @@ export function command(commandName: string, ...args: readonly any[]): Thenable<
   if (commandName.startsWith(".")) {
     commandName = `dance${commandName}`;
   }
+
   return vscode.commands.executeCommand(commandName, ...args);
 }
 
@@ -187,10 +191,9 @@ export function command(commandName: string, ...args: readonly any[]): Thenable<
  * Runs the VS Code commands with the given identifiers and optional arguments.
  */
 export async function commands(...commands: readonly command.Any[]): Promise<any[]> {
-  const editorState = Context.current.editorState,
-        extension = editorState.extension,
-        batches = [] as (readonly CommandState[] | [string, any])[],
-        currentBatch = [] as CommandState[];
+  const extension = Context.WithoutActiveEditor.current.extensionState,
+        batches = [] as ([CommandDescriptor, any][] | [string, any])[],
+        currentBatch = [] as [CommandDescriptor, any][];
 
   // Build and validate commands.
   for (let i = 0, len = commands.length; i < len; i++) {
@@ -226,23 +229,17 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
       commandName = `dance${commandName}`;
     }
 
-    if (commandName in commandsByName) {
-      const descriptor = commandsByName[commandName as Command],
-            input = await descriptor.getInput(
-              editorState,
-              commandArguments,
-              extension.cancellationTokenSource?.token);
+    if (commandName.startsWith("dance.")) {
+      const descriptor = extension.commands[commandName];
 
-      if (descriptor.input !== InputKind.None && input === undefined) {
-        break;
+      if (descriptor === undefined) {
+        throw new Error(`command ${JSON.stringify(commandName)} does not exist`);
       }
 
-      currentBatch.push(new CommandState(descriptor, input, extension, commandArguments));
+      const argument = Array.isArray(commandArguments) ? commandArguments[0] : commandArguments;
+
+      currentBatch.push([descriptor, argument]);
     } else {
-      if (commandName.startsWith("dance.")) {
-        throw new Error(`Dance command ${JSON.stringify(commandName)} does not exist`);
-      }
-
       if (currentBatch.length > 0) {
         batches.push(currentBatch.splice(0));
       }
@@ -262,10 +259,10 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
     if (typeof batch[0] === "string") {
       results.push(await vscode.commands.executeCommand(batch[0], batch[1]));
     } else {
-      await CommandDescriptor.executeMany(editorState, batch);
+      const context = Context.WithoutActiveEditor.current;
 
-      for (let i = 0; i < batch.length; i++) {
-        results.push(undefined);
+      for (const [descriptor, argument] of batch as [CommandDescriptor, any][]) {
+        results.push(await descriptor.handler(context, Object.assign({}, argument)));
       }
     }
   }
@@ -295,49 +292,51 @@ let canExecuteArbitraryCommands = true;
 /**
  * Executes a shell command.
  */
-export async function execute(
+export function execute(
   command: string,
   input?: string,
-  cancellationToken: vscode.CancellationToken = Context.current.cancellationToken,
+  cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
 ) {
   if (!canExecuteArbitraryCommands) {
-    throw new Error("execution of arbitrary commands is disabled");
+    return Context.WithoutActiveEditor.wrap(
+      Promise.reject(new Error("execution of arbitrary commands is disabled")),
+    );
   }
 
-  const cp = await import("child_process");
+  return Context.WithoutActiveEditor.wrap(import("child_process").then((cp) =>
+    new Promise<{ readonly val: string } | { readonly err: string }>((resolve) => {
+      const shell = getShell() ?? true,
+            child = cp.spawn(command, { shell, stdio: "pipe" });
 
-  return new Promise<{ readonly val: string } | { readonly err: string }>((resolve) => {
-    const shell = getShell() ?? true,
-          child = cp.spawn(command, { shell, stdio: "pipe" });
+      let stdout = "",
+          stderr = "";
 
-    let stdout = "",
-        stderr = "";
+      const disposable = cancellationToken.onCancellationRequested(() => {
+        child.kill("SIGINT");
+      });
 
-    const disposable = cancellationToken.onCancellationRequested(() => {
-      child.kill("SIGINT");
-    });
+      child.stdout.on("data", (chunk: Buffer) => (stdout += chunk.toString("utf-8")));
+      child.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString("utf-8")));
+      child.stdin.end(input, "utf-8");
 
-    child.stdout.on("data", (chunk: Buffer) => (stdout += chunk.toString("utf-8")));
-    child.stderr.on("data", (chunk: Buffer) => (stderr += chunk.toString("utf-8")));
-    child.stdin.end(input, "utf-8");
+      child.once("error", (err) => {
+        disposable.dispose();
 
-    child.once("error", (err) => {
-      disposable.dispose();
+        resolve({ err: err.message });
+      });
+      child.once("exit", (code) => {
+        disposable.dispose();
 
-      resolve({ err: err.message });
-    });
-    child.once("exit", (code) => {
-      disposable.dispose();
-
-      code === 0
-        ? resolve({ val: stdout.trimRight() })
-        : resolve({
-          err: `Command exited with error ${code}: ${
-            stderr.length > 0 ? stderr.trimRight() : "<No error output>"
-          }`,
-        });
-    });
-  });
+        code === 0
+          ? resolve({ val: stdout.trimRight() })
+          : resolve({
+            err: `Command exited with error ${code}: ${
+              stderr.length > 0 ? stderr.trimRight() : "<No error output>"
+            }`,
+          });
+      });
+    })),
+  );
 }
 
 export namespace execute {
@@ -385,7 +384,7 @@ function getShell() {
 export function switchRun(string: string, context?: object) {
   if (string.length === 0) {
     // An empty expression is just `undefined`.
-    return Promise.resolve();
+    return Context.WithoutActiveEditor.wrap(Promise.resolve());
   }
 
   if (string.startsWith("#")) {
@@ -398,10 +397,10 @@ export function switchRun(string: string, context?: object) {
     const [regexp, replacement] = parseRegExpWithReplacement(string);
 
     if (replacement === undefined) {
-      return Promise.resolve(regexp.exec(string));
+      return Context.WithoutActiveEditor.wrap(Promise.resolve(regexp.exec(string)));
     }
 
-    return Promise.resolve(string.replace(regexp, replacement));
+    return Context.WithoutActiveEditor.wrap(Promise.resolve(string.replace(regexp, replacement)));
   }
 
   // JavaScript expression.

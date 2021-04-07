@@ -19,7 +19,7 @@ import {
   seekToRange,
 } from "../utils/selection-helper";
 import { CharSet, getCharSetFunction } from "../utils/charset";
-import { findMatching, skipWhile, skipWhileX } from "./select";
+import { findMatching, skipWhile, skipWhileX } from "./old-select";
 import { SelectionBehavior } from "../state/extension";
 
 // Selecting is a bit harder than it sounds like:

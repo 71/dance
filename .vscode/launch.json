@@ -11,6 +11,12 @@
       "preLaunchTask": "npm: watch"
     },
     {
+      "name": "Debug TypeScript",
+      "type": "node",
+      "request": "launch",
+      "args": ["node_modules/typescript/bin/tsc", "-p", "."],
+    },
+    {
       "name": "Run all tests",
       "type": "extensionHost",
       "request": "launch",

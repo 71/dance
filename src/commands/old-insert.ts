@@ -62,42 +62,6 @@ define(
   },
 );
 
-function normalizeSelectionsForLineInsertion(editor: vscode.TextEditor) {
-  editor.selections = editor.selections.map((selection) => {
-    let { active } = selection;
-
-    if (active.character === 0 && !selection.isReversed && active.line > 0) {
-      active = active.translate(-1);
-    }
-
-    return new vscode.Selection(active, active);
-  });
-}
-
-define(
-  Command.insertNewLineAbove,
-  CommandFlags.Edit | CommandFlags.SwitchToInsertBefore,
-  ({ editor }, { selectionBehavior }) => {
-    if (selectionBehavior === SelectionBehavior.Character) {
-      normalizeSelectionsForLineInsertion(editor);
-    }
-
-    return vscode.commands.executeCommand("editor.action.insertLineBefore");
-  },
-);
-
-define(
-  Command.insertNewLineBelow,
-  CommandFlags.Edit | CommandFlags.SwitchToInsertBefore,
-  ({ editor }, { selectionBehavior }) => {
-    if (selectionBehavior === SelectionBehavior.Character) {
-      normalizeSelectionsForLineInsertion(editor);
-    }
-
-    return vscode.commands.executeCommand("editor.action.insertLineAfter");
-  },
-);
-
 define(Command.repeatInsert, CommandFlags.Edit, async ({ editor }, state) => {
   const editorState = state.extension.getEditorState(editor);
 

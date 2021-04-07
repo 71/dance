@@ -2,9 +2,8 @@ import * as vscode from "vscode";
 
 import { EditorState } from "./editor";
 import { Extension } from "./extension";
-import { CommandState, InputKind } from "../commands";
-import { assert } from "../utils/errors";
-import { TrackedSelection, TrackedSelectionSet } from "../utils/tracked-selection";
+import { TrackedSelection } from "../utils/tracked-selection";
+import { assert } from "../api";
 
 /**
  * Document-specific state.
@@ -12,12 +11,10 @@ import { TrackedSelection, TrackedSelectionSet } from "../utils/tracked-selectio
 export class DocumentState {
   private readonly _editorStates: EditorState[] = [];
   private readonly _history = new History(this.document);
-  private readonly _trackedSelections: TrackedSelectionSet[] = [];
+  private readonly _trackedSelections: TrackedSelection.Set[] = [];
 
   private readonly _recordedChanges: RecordedChange[] = [];
-  private readonly _recordedSelectionSet = new TrackedSelectionSet([]);
-
-  private _lastCommand?: CommandState<any>;
+  private readonly _recordedSelectionSet = new TrackedSelection.Set([]);
 
   public constructor(
     /** The extension for which state is being kept. */
@@ -49,8 +46,6 @@ export class DocumentState {
     }
 
     trackedSelectionSets.length = 0;
-
-    this._lastCommand = undefined;
 
     this._history.clear();
     this._recordedChanges.length = 0;
@@ -105,7 +100,6 @@ export class DocumentState {
       editorStates[i].onDidChangeTextDocument(e);
     }
 
-    this.recordChanges(e.contentChanges);
     this._history.recordChanges(e.contentChanges);
   }
 
@@ -117,7 +111,7 @@ export class DocumentState {
    * Saves the given selection set, tracking changes to the given document and
    * updating its selections correspondingly over time.
    */
-  public trackSelectionSet(selectionSet: TrackedSelectionSet) {
+  public trackSelectionSet(selectionSet: TrackedSelection.Set) {
     this._trackedSelections.push(selectionSet);
   }
 
@@ -127,7 +121,7 @@ export class DocumentState {
    */
   public trackSelections(selections: readonly vscode.Selection[]) {
     const trackedSelections = TrackedSelection.fromArray(selections, this.document),
-          trackedSelectionSet = new TrackedSelectionSet(trackedSelections);
+          trackedSelectionSet = new TrackedSelection.Set(trackedSelections);
 
     this.trackSelectionSet(trackedSelectionSet);
 
@@ -137,7 +131,7 @@ export class DocumentState {
   /**
    * Forgets the given saved selections.
    */
-  public forgetSelections(trackedSelectionSet: TrackedSelectionSet) {
+  public forgetSelections(trackedSelectionSet: TrackedSelection.Set) {
     const index = this._trackedSelections.indexOf(trackedSelectionSet);
 
     if (index !== -1) {
@@ -145,49 +139,6 @@ export class DocumentState {
     }
 
     trackedSelectionSet.dispose();
-  }
-
-  // =============================================================================================
-  // ==  HISTORY  ================================================================================
-  // =============================================================================================
-
-  /**
-   * The changes that were last made in this editor.
-   */
-  public get recordedChanges() {
-    return this._recordedChanges as readonly RecordedChange[];
-  }
-
-  /**
-   * Adds the given changes to the history of the document following the last
-   * command.
-   */
-  private recordChanges(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
-    this._lastCommand?.recordFollowingChanges(changes);
-
-    const recordedChanges = this._recordedChanges;
-
-    if (recordedChanges.length + changes.length > 100) {
-      recordedChanges.splice(0, recordedChanges.length + changes.length - 100);
-    }
-
-    for (let i = 0, len = changes.length; i < len; i++) {
-      const change = changes[i],
-            savedSelection = new TrackedSelection(
-              change.rangeOffset,
-              change.rangeOffset + change.rangeLength,
-            );
-
-      this._recordedSelectionSet.addTrackedSelection(savedSelection);
-      recordedChanges.push(new RecordedChange(savedSelection, change.text));
-    }
-  }
-
-  /**
-   * Records invocation of a command.
-   */
-  public recordCommand<I extends InputKind>(state: CommandState<I>) {
-    this._lastCommand = state;
   }
 }
 

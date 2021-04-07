@@ -1,27 +1,27 @@
 import * as vscode from "vscode";
 import { EditorState } from "../state/editor";
-import { SelectionBehavior } from "../state/extension";
+import { Extension, SelectionBehavior } from "../state/extension";
 import { noUndoStops } from "../utils/misc";
-import { EditNotAppliedError } from "./edit";
-import { normalizeSelections, Selections } from "./selections";
+import { EditNotAppliedError, Selections } from ".";
+import { EditorRequiredError } from "./errors";
+import { CommandDescriptor } from "../commands";
 
-const contextStack = [] as Context[],
-      normalizedSelections = new WeakMap<vscode.Selection[], readonly vscode.Selection[]>();
+let currentContext: ContextWithoutActiveEditor | undefined;
 
 /**
- * The context of execution of a script.
+ * @see Context.WithoutActiveEditor
  */
-export class Context {
+class ContextWithoutActiveEditor {
   /**
    * Returns the current execution context, or throws an error if called outside
    * of an execution context.
    */
   public static get current() {
-    if (contextStack.length === 0) {
+    if (currentContext === undefined) {
       throw new Error("attempted to access context object outside of execution context");
     }
 
-    return contextStack[contextStack.length - 1];
+    return currentContext;
   }
 
   /**
@@ -29,11 +29,7 @@ export class Context {
    * an execution context.
    */
   public static get currentOrUndefined() {
-    if (contextStack.length === 0) {
-      return undefined;
-    }
-
-    return contextStack[contextStack.length - 1];
+    return currentContext;
   }
 
   /**
@@ -41,11 +37,11 @@ export class Context {
    * context, it returns the `thenable` directly.
    */
   public static wrap<T>(thenable: Thenable<T>) {
-    return Context.currentOrUndefined?.wrap(thenable) ?? thenable;
+    return this.currentOrUndefined?.wrap(thenable) ?? thenable;
   }
 
   /**
-   * Equivalent to calling `then` on `Context.current`. If there is no current
+   * Equivalent to calling `then` on the current context. If there is no current
    * context, it returns the `thenable.then` directly.
    */
   public static then<T, R>(
@@ -53,98 +49,33 @@ export class Context {
     onFulfilled?: (value: T) => R,
     onRejected?: (reason: any) => R,
   ) {
-    return Context.currentOrUndefined?.then(thenable, onFulfilled, onRejected)
+    return this.currentOrUndefined?.then(thenable, onFulfilled, onRejected)
         ?? thenable.then(onFulfilled, onRejected);
   }
 
   /**
-   * Equivalent to calling `setup` on a context built using the given arguments.
-   * Pass no arguments to use the current context.
+   * Equivalent to calling `setup` on the current context.
    */
-  public static setup(...args: ConstructorParameters<typeof Context> | []) {
-    if (args.length === 0) {
-      return Context.current.setup();
-    }
-
-    return new Context(...args).setup();
-  }
-
-  /**
-   * Equivalent to calling `run` on a context built using the given arguments.
-   */
-  public static run<T>(...args: [...ConstructorParameters<typeof Context>, () => T]) {
-    const f = args.pop() as () => T;
-
-    return new Context(...args as unknown as ConstructorParameters<typeof Context>).run(f);
-  }
-
-  /**
-   * The document state for the current editor.
-   */
-  public readonly documentState = this.editorState.documentState;
-
-  /**
-   * The global extension state.
-   */
-  public readonly extensionState = this.editorState.extension;
-
-  /**
-   * The current `vscode.TextEditor`.
-   */
-  public readonly editor = this.editorState.editor;
-
-  /**
-   * The current `vscode.TextDocument`.
-   */
-  public readonly document = this.editor.document;
-
-  /**
-   * The current selections.
-   *
-   * Selections returned by this property **may be different** from the ones
-   * returned by `editor.selections`. If the current selection behavior is
-   * `Character`, strictly forward-facing (i.e. `active > anchor`) selections
-   * will be made longer by one character.
-   */
-  public get selections() {
-    const editor = this.editor;
-
-    if (this.editorState.mode.selectionBehavior === SelectionBehavior.Character) {
-      return Selections.fromCharacterMode(editor.selections, editor.document);
-    }
-
-    return editor.selections;
-  }
-
-  /**
-   * Sets the current selections.
-   *
-   * If the current selection behavior is `Character`, strictly forward-facing
-   * (i.e. `active > anchor`) selections will be made shorter by one character.
-   */
-  public set selections(selections: vscode.Selection[]) {
-    const editor = this.editor;
-
-    if (this.editorState.mode.selectionBehavior === SelectionBehavior.Character) {
-      selections = Selections.toCharacterMode(selections, editor.document);
-    }
-
-    editor.selections = selections;
+  public static setup() {
+    return this.current.setup();
   }
 
   public constructor(
     /**
-     * The editor state for the current editor.
+     * The global extension state.
      */
-    public readonly editorState: EditorState,
+    public readonly extensionState: Extension,
 
     /**
      * The token used to cancel an operation running in the current context.
      */
     public readonly cancellationToken: vscode.CancellationToken,
-  ) {
-    Object.freeze(this);
-  }
+
+    /**
+     * The descriptor of the command that led to the creation of this context.
+     */
+    public readonly commandDescriptor?: CommandDescriptor,
+  ) {}
 
   /**
    * Creates a new promise that executes within the current context.
@@ -153,32 +84,27 @@ export class Context {
     executor: (resolve: (value: T) => void, reject: (error: any) => void) => void,
   ) {
     return new Promise<T>((resolve, reject) => {
-      let popOffStack = true;
+      const previousContext = currentContext;
 
-      contextStack.push(this);
+      currentContext = this;
 
       try {
         executor(
           (value) => {
-            if (popOffStack) {
-              contextStack.pop();
-              popOffStack = false;
-            }
+            currentContext = previousContext;
+
             resolve(value);
           },
           (error) => {
-            if (popOffStack) {
-              contextStack.pop();
-              popOffStack = false;
-            }
+            currentContext = previousContext;
+
             reject(error);
           },
         );
       } catch (e) {
-        if (popOffStack) {
-          contextStack.pop();
-          popOffStack = false;
-        }
+        currentContext = previousContext;
+
+        reject(e);
       }
     });
   }
@@ -186,13 +112,15 @@ export class Context {
   /**
    * Runs the given function within the current context.
    */
-  public run<T>(f: (context: Context) => T) {
-    contextStack.push(this);
+  public run<T>(f: (context: this) => T) {
+    const previousContext = currentContext;
+
+    currentContext = this;
 
     try {
       return f(this);
     } finally {
-      contextStack.pop();
+      currentContext = previousContext;
     }
   }
 
@@ -241,6 +169,132 @@ export class Context {
     }
 
     return this.wrap(thenable.then(onFulfilled, onRejected));
+  }
+}
+
+/**
+ * The context of execution of a script.
+ */
+export class Context extends ContextWithoutActiveEditor {
+  public static get current() {
+    if (!(currentContext instanceof Context)) {
+      throw new Error("current context does not have an active text editor");
+    }
+
+    return currentContext;
+  }
+
+  public static get currentOrUndefined() {
+    if (currentContext === undefined) {
+      return undefined;
+    }
+
+    if (!(currentContext instanceof Context)) {
+      throw new Error("current context does not have an active text editor");
+    }
+
+    return currentContext;
+  }
+
+  /**
+   * The document state for the current editor.
+   */
+  public readonly documentState = this.editorState.documentState;
+
+  /**
+   * The current `vscode.TextEditor`.
+   *
+   * Avoid accessing `editor.selections` -- selections may need to be
+   * transformed before being returned or updated, which is why
+   * `context.selections` should be preferred.
+   */
+  public readonly editor = this.editorState.editor as Omit<vscode.TextEditor, "selections">;
+
+  /**
+   * The current `vscode.TextDocument`.
+   */
+  public readonly document = this.editor.document;
+
+  /**
+   * The current selections.
+   *
+   * Selections returned by this property **may be different** from the ones
+   * returned by `editor.selections`. If the current selection behavior is
+   * `Character`, strictly forward-facing (i.e. `active > anchor`) selections
+   * will be made longer by one character.
+   */
+  public get selections() {
+    const editor = this.editor as vscode.TextEditor;
+
+    if (this.editorState.mode.selectionBehavior === SelectionBehavior.Character) {
+      return Selections.fromCharacterMode(editor.selections, editor.document);
+    }
+
+    return editor.selections;
+  }
+
+  /**
+   * Sets the current selections.
+   *
+   * If the current selection behavior is `Character`, strictly forward-facing
+   * (i.e. `active > anchor`) selections will be made shorter by one character.
+   */
+  public set selections(selections: vscode.Selection[]) {
+    const editor = this.editor as vscode.TextEditor;
+
+    if (this.editorState.mode.selectionBehavior === SelectionBehavior.Character) {
+      selections = Selections.toCharacterMode(selections, editor.document);
+    }
+
+    editor.selections = selections;
+  }
+
+  public constructor(
+    /**
+     * The editor state for the current editor.
+     */
+    public readonly editorState: EditorState,
+
+    cancellationToken: vscode.CancellationToken,
+
+    commandDescriptor?: CommandDescriptor,
+  ) {
+    super(editorState.extension, cancellationToken, commandDescriptor);
+  }
+}
+
+export namespace Context {
+  /**
+   * The base `Context` class, which does not require an active
+   * `vscode.TextEditor`.
+   */
+  export const WithoutActiveEditor = ContextWithoutActiveEditor;
+
+  export type WithoutActiveEditor = ContextWithoutActiveEditor;
+
+  /**
+   * Returns a `Context` or `Context.WithoutActiveEditor` depending on whether
+   * there is an active text editor.
+   */
+  export function create(extension: Extension, command: CommandDescriptor) {
+    const activeEditorState = extension.activeEditorState,
+          cancellationToken = extension.cancellationTokenSource.token;
+
+    return activeEditorState === undefined
+      ? new Context.WithoutActiveEditor(extension, cancellationToken, command)
+      : new Context(activeEditorState, cancellationToken, command);
+  }
+
+  /**
+   * Returns a `Context` or throws an exception if there is no active text
+   * editor.
+   */
+  export function createWithActiveTextEditor(extension: Extension, command: CommandDescriptor) {
+    const activeEditorState = extension.activeEditorState;
+
+    EditorRequiredError.throwUnlessAvailable(activeEditorState);
+
+    return new Context(activeEditorState, extension.cancellationTokenSource.token, command);
   }
 }
 
@@ -324,15 +378,15 @@ export function text(ranges: vscode.Range | readonly vscode.Range[]) {
  * ```
  */
 export function edit<T>(
-  f: (editBuilder: vscode.TextEditorEdit, editor: vscode.TextEditor,
-      selections: readonly vscode.Selection[]) => T,
+  f: (editBuilder: vscode.TextEditorEdit, selections: readonly vscode.Selection[],
+      document: vscode.TextDocument) => T,
   editor?: vscode.TextEditor,
 ) {
   let value: T;
 
   if (editor !== undefined) {
     return editor.edit(
-      (editBuilder) => value = f(editBuilder, editor!, editor!.selections),
+      (editBuilder) => value = f(editBuilder, editor!.selections, editor!.document),
       noUndoStops,
     ).then((succeeded) => {
       EditNotAppliedError.throwIfNotApplied(succeeded);
@@ -342,12 +396,12 @@ export function edit<T>(
   }
 
   const context = Context.current,
-        selections = f.length >= 3 ? context.selections : [];
-  editor = context.editor;
+        document = context.document,
+        selections = f.length >= 2 ? context.selections : [];
 
   return context.wrap(
-    editor.edit(
-      (editBuilder) => value = f(editBuilder, editor!, selections),
+    context.editor.edit(
+      (editBuilder) => value = f(editBuilder, selections, document),
       noUndoStops,
     ).then((succeeded) => {
       EditNotAppliedError.throwIfNotApplied(succeeded);

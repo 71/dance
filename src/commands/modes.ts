@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { Context, toMode } from "../api";
-import { prompt } from "../utils/prompt";
+import { InputOr } from ".";
+import { Context, prompt, toMode } from "../api";
 
 /**
- * Dance editing modes.
+ * Set modes.
  */
 declare module "./modes";
 
@@ -18,12 +18,8 @@ declare module "./modes";
  * | Set mode to Normal | `set.normal` | `escape` (insert) | `[".modes.set", { "input": "normal" }]` |
  * | Set mode to Insert | `set.insert` |                   | `[".modes.set", { "input": "insert" }]` |
  */
-export async function set(_: Context, cancellationToken: vscode.CancellationToken, input: string) {
-  if (input === undefined) {
-    input = await prompt(validateModeName(_), cancellationToken);
-  }
-
-  return toMode(input);
+export async function set(_: Context, inputOr: InputOr<string>) {
+  return toMode(await inputOr(() => prompt(validateModeName(_), _)));
 }
 
 /**
@@ -38,15 +34,10 @@ export async function set(_: Context, cancellationToken: vscode.CancellationToke
  */
 export async function set_temporarily(
   _: Context,
-  cancellationToken: vscode.CancellationToken,
-  input: string,
+  inputOr: InputOr<string>,
   repetitions: number,
 ) {
-  if (input === undefined) {
-    input = await prompt(validateModeName(_), cancellationToken);
-  }
-
-  return toMode(input, repetitions);
+  return toMode(await inputOr(() => prompt(validateModeName(_), _)), repetitions);
 }
 
 function validateModeName(ctx: Context) {
@@ -58,7 +49,7 @@ function validateModeName(ctx: Context) {
         return undefined;
       }
 
-      return `Mode "${value}" does not exist`;
+      return `mode ${JSON.stringify(value)} does not exist`;
     },
   } as vscode.InputBoxOptions;
 }

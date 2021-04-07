@@ -600,8 +600,9 @@ export class Modes {
           }
         }
 
-        this.insertModeSelectionStyle?.dispose();
-        this.insertModeSelectionStyle = vscode.window.createTextEditorDecorationType(value);
+        // TODO
+        // this.insertModeSelectionStyle?.dispose();
+        // this.insertModeSelectionStyle = vscode.window.createTextEditorDecorationType(value);
       },
       true,
     );

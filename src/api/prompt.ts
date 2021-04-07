@@ -2,11 +2,17 @@ import * as vscode from "vscode";
 import { Context } from "../api";
 import { CancellationError } from "./errors";
 
-export function prompt(opts: vscode.InputBoxOptions, cancellationToken: vscode.CancellationToken) {
-  return Context.wrap(vscode.window.showInputBox(opts, cancellationToken)
+/**
+ * Displays a prompt to the user.
+ */
+export function prompt(
+  opts: vscode.InputBoxOptions,
+  context = Context.WithoutActiveEditor.current,
+) {
+  return context.wrap(vscode.window.showInputBox(opts, context.cancellationToken)
     .then((v) => {
       if (v === undefined) {
-        const reason = cancellationToken?.isCancellationRequested
+        const reason = context.cancellationToken?.isCancellationRequested
           ? CancellationError.Reason.CancellationToken
           : CancellationError.Reason.PressedEscape;
 
@@ -18,10 +24,22 @@ export function prompt(opts: vscode.InputBoxOptions, cancellationToken: vscode.C
 }
 
 export namespace prompt {
-  export function numberOpts(opts: { range?: [number, number] } = {}): vscode.InputBoxOptions {
+  type RegExpFlag = "m" | "u" | "s" | "y" | "i" | "g";
+  type RegExpFlags = RegExpFlag
+                   | `${RegExpFlag}${RegExpFlag}`
+                   | `${RegExpFlag}${RegExpFlag}${RegExpFlag}`
+                   | `${RegExpFlag}${RegExpFlag}${RegExpFlag}${RegExpFlag}`;
+
+  /**
+   * Returns `vscode.InputBoxOptions` that only validate if a number in a given
+   * range is entered.
+   */
+  export function numberOpts(
+    opts: { integer?: boolean; range?: [number, number] } = {},
+  ): vscode.InputBoxOptions {
     return {
-      validateInput(value) {
-        const n = +value;
+      validateInput(input) {
+        const n = +input;
 
         if (isNaN(n)) {
           return "Invalid number.";
@@ -31,22 +49,33 @@ export namespace prompt {
           return `Number out of range ${JSON.stringify(opts.range)}.`;
         }
 
+        if (opts.integer && (n | 0) !== n) {
+          return `Number must be an integer.`;
+        }
+
         return;
       },
     };
   }
 
+  /**
+   * Equivalent to `+await prompt(numberOpts(), context)`.
+   */
   export function number(
     opts: Parameters<typeof numberOpts>[0],
-    cancellationToken: vscode.CancellationToken,
+    context = Context.WithoutActiveEditor.current,
   ) {
-    return prompt(numberOpts(opts), cancellationToken).then((x) => +x);
+    return prompt(numberOpts(opts), context).then((x) => +x);
   }
 
-  export function regexpOpts(flags: string): vscode.InputBoxOptions {
+  /**
+   * Returns `vscode.InputBoxOptions` that only validate if a valid ECMAScript
+   * regular expression is entered.
+   */
+  export function regexpOpts(flags: RegExpFlags): vscode.InputBoxOptions {
     return {
       prompt: "Regular expression",
-      validateInput(input: string) {
+      validateInput(input) {
         try {
           new RegExp(input, flags);
 
@@ -58,15 +87,22 @@ export namespace prompt {
     };
   }
 
-  export function regexp(flags: string, cancellationToken: vscode.CancellationToken) {
-    return prompt(regexpOpts(flags), cancellationToken).then((x) => new RegExp(x, flags));
+  /**
+   * Equivalent to `new RegExp(await prompt(regexpOpts(flags), context), flags)`.
+   */
+  export function regexp(
+    flags: RegExpFlags,
+    context = Context.WithoutActiveEditor.current,
+  ) {
+    return prompt(regexpOpts(flags), context).then((x) => new RegExp(x, flags));
   }
 }
 
-export function keypress(
-  cancellationToken: vscode.CancellationToken,
-): Thenable<string> {
-  return new Promise((resolve, reject) => {
+/**
+ * Awaits a keypress from the user and returns the entered key.
+ */
+export function keypress(cancellationToken: vscode.CancellationToken): Thenable<string> {
+  return new Promise<string>((resolve, reject) => {
     try {
       let done = false;
       const subscription = vscode.commands.registerCommand("type", ({ text }: { text: string }) => {
@@ -91,6 +127,23 @@ export function keypress(
                       + 'overriding the "type" command (e.g VSCodeVim)?'));
     }
   });
+}
+
+export namespace keypress {
+  /**
+   * Awaits a keypress describing a register and returns the specified register.
+   */
+  export async function forRegister(context = Context.current) {
+    const firstKey = await keypress(context.cancellationToken);
+
+    if (firstKey !== " ") {
+      return context.extensionState.registers.get(firstKey);
+    }
+
+    const secondKey = await keypress(context.cancellationToken);
+
+    return context.extensionState.registers.forDocument(context.document).get(secondKey);
+  }
 }
 
 export function promptInList(

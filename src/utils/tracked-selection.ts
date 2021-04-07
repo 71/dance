@@ -97,75 +97,104 @@ export class TrackedSelection {
   /**
    * Updates the underlying selection to reflect a change in its document.
    */
-  public updateAfterDocumentChanged(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
+  public updateAfterDocumentChanged(
+    changes: readonly vscode.TextDocumentContentChangeEvent[],
+    flags: TrackedSelection.Flags,
+  ) {
+    let activeOffset = this._activeOffset,
+        anchorOffset = this._anchorOffset;
+
+    const activeIsStart = activeOffset <= anchorOffset,
+          anchorIsStart = activeOffset >= anchorOffset,
+          inclusiveStart = (flags & TrackedSelection.Flags.StrictStart) === 0,
+          inclusiveEnd = (flags & TrackedSelection.Flags.StrictEnd) === 0,
+          inclusiveActive = activeIsStart ? inclusiveStart : inclusiveEnd,
+          inclusiveAnchor = anchorIsStart ? inclusiveStart : inclusiveEnd;
+
     for (let i = 0, len = changes.length; i < len; i++) {
       const change = changes[i],
             diff = change.text.length - change.rangeLength,
             offset = change.rangeOffset + change.rangeLength;
 
-      if (offset <= this._activeOffset) {
-        this._activeOffset += diff;
+      if (offset < activeOffset || (inclusiveActive && offset === activeOffset)) {
+        activeOffset += diff;
       }
 
-      if (offset <= this._anchorOffset) {
-        this._anchorOffset += diff;
+      if (offset < anchorOffset || (inclusiveAnchor && offset === anchorOffset)) {
+        anchorOffset += diff;
       }
     }
+
+    this._activeOffset = activeOffset;
+    this._anchorOffset = anchorOffset;
   }
 }
 
-/**
- * A set of `TrackedSelection`s.
- */
-export class TrackedSelectionSet implements vscode.Disposable {
-  private readonly _selections: TrackedSelection[];
-
-  public get selections(): readonly TrackedSelection[] {
-    return this._selections;
-  }
-
-  public constructor(selections: TrackedSelection[]) {
-    this._selections = selections;
-  }
-
-  public addTrackedSelection(selection: TrackedSelection) {
-    this._selections.push(selection);
-  }
-
+export namespace TrackedSelection {
   /**
-   * Updates the tracked selections to reflect a change in their document.
+   * Flags passed to `TrackedSelection.updateAfterDocumentChanged`.
    */
-  public updateAfterDocumentChanged(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
-    const trackedSelections = this.selections;
+  export const enum Flags {
+    Inclusive = 0,
 
-    for (let i = 0, len = trackedSelections.length; i < len; i++) {
-      trackedSelections[i].updateAfterDocumentChanged(changes);
-    }
+    StrictStart = 0b01,
+    StrictEnd   = 0b10,
+
+    Strict = 0b11,
   }
 
-  public restore(document: vscode.TextDocument) {
-    const trackedSelections = this.selections,
-          trackedSelectionsLen = trackedSelections.length,
-          selections = new Array<vscode.Selection>(trackedSelectionsLen);
-
-    for (let i = 0; i < trackedSelectionsLen; i++) {
-      selections[i] = trackedSelections[i].restore(document);
-    }
-
-    return selections;
-  }
-
-  public dispose() {
-    this._selections.length = 0;
-  }
-}
-
-export namespace TrackedSelectionSet {
   /**
-   * A `TrackedSelectionSet` that displays active selections using some given
+   * A set of `TrackedSelection`s.
+   */
+  export class Set implements vscode.Disposable {
+    private readonly _selections: TrackedSelection[];
+
+    public get selections(): readonly TrackedSelection[] {
+      return this._selections;
+    }
+
+    public constructor(selections: TrackedSelection[], public readonly flags = Flags.Inclusive) {
+      this._selections = selections;
+    }
+
+    public addTrackedSelection(selection: TrackedSelection) {
+      this._selections.push(selection);
+    }
+
+    /**
+     * Updates the tracked selections to reflect a change in their document.
+     */
+    public updateAfterDocumentChanged(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
+      const trackedSelections = this._selections,
+            flags = this.flags;
+
+      for (let i = 0, len = trackedSelections.length; i < len; i++) {
+        trackedSelections[i].updateAfterDocumentChanged(changes, flags);
+      }
+    }
+
+    public restore(document: vscode.TextDocument) {
+      const trackedSelections = this.selections,
+            trackedSelectionsLen = trackedSelections.length,
+            selections = new Array<vscode.Selection>(trackedSelectionsLen);
+
+      for (let i = 0; i < trackedSelectionsLen; i++) {
+        selections[i] = trackedSelections[i].restore(document);
+      }
+
+      return selections;
+    }
+
+    public dispose() {
+      this._selections.length = 0;
+    }
+  }
+
+  /**
+   * A `TrackedSelection.Set` that displays active selections using some given
    * style.
    */
-  export class Styled extends TrackedSelectionSet {
+  export class StyledSet extends Set {
     private readonly _decorationType: vscode.TextEditorDecorationType;
 
     public constructor(

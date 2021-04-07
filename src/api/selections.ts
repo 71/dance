@@ -1,69 +1,9 @@
 import * as vscode from "vscode";
-import { Direction } from "../utils/selection-helper";
+import { SelectionBehavior } from "../state/extension";
+import { Direction, Shift } from ".";
 import { Context } from "./context";
-
-/**
- * An error thrown when no selections remain.
- */
-export class EmptySelectionsError extends Error {
-  public constructor(message = "no selections remain") {
-    super(message);
-  }
-
-  /**
-   * Throws if the given selections are empty.
-   */
-  public static throwIfEmpty(selections: readonly vscode.Selection[]) {
-    if (selections.length === 0) {
-      throw new EmptySelectionsError();
-    }
-  }
-
-  /**
-   * Throws if the selections of the given register are empty.
-   */
-  public static throwIfRegisterIsEmpty(
-    selections: readonly vscode.Selection[] | undefined,
-    registerName: string,
-  ): asserts selections is readonly vscode.Selection[] {
-    if (selections === undefined || selections.length === 0) {
-      throw new EmptySelectionsError(`no selections are saved in register "${registerName}"`);
-    }
-  }
-}
-
-/**
- * An error thrown when a function that is expected to return a selection
- * returns something else.
- */
-export class NotASelectionError extends Error {
-  public constructor(public readonly value: unknown) {
-    super("value is not a selection");
-  }
-
-  /**
-   * Throws if the given value is not a `vscode.Selection`.
-   */
-  public static throwIfNotASelection(value: unknown): asserts value is vscode.Selection {
-    if (!(value instanceof vscode.Selection)) {
-      throw new NotASelectionError(value);
-    }
-  }
-
-  /**
-   * Throws if the given list contains a value that is not a `vscode.Selection`,
-   * or if the list is empty.
-   */
-  public static throwIfNotASelectionArray(value: unknown): asserts value is vscode.Selection[] {
-    if (!Array.isArray(value) || value.length === 0) {
-      throw new EmptySelectionsError();
-    }
-
-    for (let i = 0, len = value.length; i < len; i++) {
-      NotASelectionError.throwIfNotASelection(value[i]);
-    }
-  }
-}
+import { NotASelectionError } from "./errors";
+import { Positions } from "./positions";
 
 /**
  * Sets the selections of the given editor.
@@ -98,14 +38,10 @@ export class NotASelectionError extends Error {
  * assert.throws(() => setSelections([1]), NotASelectionError);
  * ```
  */
-export function setSelections(selections: vscode.Selection[], editor?: vscode.TextEditor) {
+export function setSelections(selections: vscode.Selection[]) {
   NotASelectionError.throwIfNotASelectionArray(selections);
 
-  if (editor === undefined) {
-    Context.current.selections = selections;
-  } else {
-    editor.selections = selections;
-  }
+  Context.current.selections = selections;
 }
 
 /**
@@ -171,7 +107,7 @@ export function filterSelections(
   selections?: readonly vscode.Selection[],
 ) {
   return filterSelections.byIndex(
-    (i, selection, editor) => predicate(editor.document.getText(selection), selection, i) as any,
+    (i, selection, document) => predicate(document.getText(selection), selection, i) as any,
     selections,
   ) as any;
 }
@@ -188,7 +124,7 @@ export namespace filterSelections {
    * A predicate passed to `filterSelections.byIndex`.
    */
   export interface ByIndexPredicate<T extends boolean | Thenable<boolean>> {
-    (index: number, selection: vscode.Selection, editor: vscode.TextEditor): T;
+    (index: number, selection: vscode.Selection, document: vscode.TextDocument): T;
   }
 
   /**
@@ -218,14 +154,14 @@ export namespace filterSelections {
     selections?: readonly vscode.Selection[],
   ) {
     const context = Context.current,
-          editor = context.editor;
+          document = context.document;
 
     if (selections === undefined) {
-      selections = editor.selections;
+      selections = context.selections;
     }
 
     const firstSelection = selections[0],
-          firstResult = predicate(0, firstSelection, editor);
+          firstResult = predicate(0, firstSelection, document);
 
     if (typeof firstResult === "boolean") {
       if (selections.length === 1) {
@@ -237,7 +173,7 @@ export namespace filterSelections {
       for (let i = 1; i < selections.length; i++) {
         const selection = selections[i];
 
-        if (predicate(i, selection, editor) as boolean) {
+        if (predicate(i, selection, document) as boolean) {
           resultingSelections.push(selection);
         }
       }
@@ -253,7 +189,7 @@ export namespace filterSelections {
       for (let i = 1; i < selections.length; i++) {
         const selection = selections[i];
 
-        promises.push(predicate(i, selection, editor) as Thenable<boolean>);
+        promises.push(predicate(i, selection, document) as Thenable<boolean>);
       }
 
       const savedSelections = selections.slice();  // In case the original
@@ -335,7 +271,7 @@ export function mapSelections<T>(
   selections?: readonly vscode.Selection[],
 ) {
   return mapSelections.byIndex(
-    (i, selection, editor) => f(editor.document.getText(selection), selection, i),
+    (i, selection, document) => f(document.getText(selection), selection, i),
     selections,
   ) as any;
 }
@@ -352,7 +288,7 @@ export namespace mapSelections {
    * A mapper function passed to `mapSelections.byIndex`.
    */
   export interface ByIndexMapper<T> {
-    (index: number, selection: vscode.Selection, editor: vscode.TextEditor): T | undefined;
+    (index: number, selection: vscode.Selection, document: vscode.TextDocument): T | undefined;
   }
 
   /**
@@ -384,21 +320,21 @@ export namespace mapSelections {
     selections?: readonly vscode.Selection[],
   ) {
     const context = Context.current,
-          editor = context.editor;
+          document = context.document;
 
     if (selections === undefined) {
-      selections = editor.selections;
+      selections = context.selections;
     }
 
     const firstSelection = selections[0],
-          firstResult = f(0, firstSelection, editor);
+          firstResult = f(0, firstSelection, document);
 
     if (firstResult === undefined || typeof (firstResult as Thenable<T>)?.then !== "function") {
       const results = firstResult !== undefined ? [firstResult as T] : [];
 
       for (let i = 1; i < selections.length; i++) {
         const selection = selections[i],
-              value = f(i, selection, editor) as T | undefined;
+              value = f(i, selection, document) as T | undefined;
 
         if (value !== undefined) {
           results.push(value);
@@ -417,7 +353,7 @@ export namespace mapSelections {
 
       for (let i = 1; i < selections.length; i++) {
         const selection = selections[i],
-              promise = f(i, selection, editor) as Thenable<T | undefined>;
+              promise = f(i, selection, document) as Thenable<T | undefined>;
 
         promises.push(promise);
       }
@@ -600,7 +536,7 @@ export namespace updateSelections {
  */
 export function rotateSelections(
   by: Direction | number,
-  selections: readonly vscode.Selection[] = Context.current.editor.selections,
+  selections: readonly vscode.Selection[] = Context.current.selections,
 ) {
   const len = selections.length;
 
@@ -651,7 +587,7 @@ export function rotateSelections(
  * ```
  */
 export function selectionsLines(
-  selections: readonly vscode.Selection[] = Context.current.editor.selections,
+  selections: readonly vscode.Selection[] = Context.current.selections,
 ) {
   const lines: number[] = [];
 
@@ -837,6 +773,21 @@ export namespace Selections {
                set = setSelections,
                update = updateSelections;
 
+  export declare const current: readonly vscode.Selection[];
+
+  Object.defineProperty(Selections, "current", {
+    get() {
+      return Context.current.selections;
+    },
+  });
+
+  /**
+   * Returns a selection spanning the entire buffer.
+   */
+  export function wholeBuffer(document = Context.current.document) {
+    return new vscode.Selection(Positions.zero, Positions.last(document));
+  }
+
   /**
    * Returns the active position (or cursor) of a selection.
    */
@@ -899,7 +850,7 @@ export namespace Selections {
    * at the first character of a line and is not empty, this is equal to
    * `end.line - 1`. Otherwise, this is `end.line`.
    */
-  export function endLine(selection: vscode.Range) {
+  export function endLine(selection: vscode.Selection | vscode.Range) {
     const startLine = selection.start.line,
           end = selection.end,
           endLine = end.line,
@@ -928,6 +879,146 @@ export namespace Selections {
     }
 
     return endLine(selection);
+  }
+
+  /**
+   * Returns whether the given selection has length `1`.
+   */
+  export function isSingleCharacter(
+    selection: vscode.Selection | vscode.Range,
+    document = Context.current.document,
+  ) {
+    const start = selection.start,
+          end = selection.end;
+
+    if (start.line === end.line) {
+      return start.character === end.character - 1;
+    }
+
+    if (start.line === end.line - 1) {
+      return end.character === 0 && document.lineAt(start.line).text.length === start.character;
+    }
+
+    return false;
+  }
+
+  /**
+   * Returns whether the given selection has length `1` and corresponds to an
+   * empty selection extended by one character by `fromCharacterMode`.
+   */
+  export function isNonDirectional(selection: vscode.Selection, context = Context.current) {
+    return context.editorState.mode.selectionBehavior === SelectionBehavior.Character
+        && !selection.isReversed
+        && isSingleCharacter(selection, context.document);
+  }
+
+  /**
+   * The position from which a seek operation should start. This is equivalent
+   * to `selection.active` except when the selection is non-directional, in
+   * which case this is whatever position is **furthest** from the given
+   * direction.
+   */
+  export function seekFrom(selection: vscode.Selection, direction: Direction) {
+    if (isNonDirectional(selection)) {
+      return direction === Direction.Forward ? selection.start : selection.end;
+    }
+
+    return selection.active;
+  }
+
+  /**
+   * Shifts the given selection to the given position using the specified
+   * `Shift` behavior:
+   * - If `Shift.Jump`, `result.active == result.anchor == position`.
+   * - If `Shift.Select`, `result.active == position`, `result.anchor == selection.active`.
+   * - If `Shift.Extend`, `result.active == position`, `result.anchor == selection.anchor`.
+   */
+  export function shift(selection: vscode.Selection, position: vscode.Position, shift: Shift) {
+    switch (shift) {
+    case Shift.Jump:
+      return new vscode.Selection(position, position);
+
+    case Shift.Select:
+      return new vscode.Selection(selection.active, position);
+
+    case Shift.Extend:
+      return new vscode.Selection(selection.anchor, position);
+    }
+  }
+
+  /**
+   * Returns whether the given selection spans an entire line.
+   */
+  export function isEntireLine(selection: vscode.Selection | vscode.Range) {
+    const start = selection.start,
+          end = selection.end;
+
+    return start.character === 0 && end.character === 0 && start.line === end.line - 1;
+  }
+
+  /**
+   * Returns whether the given selection spans one or more entire lines.
+   */
+  export function isEntireLines(selection: vscode.Selection | vscode.Range) {
+    const start = selection.start,
+          end = selection.end;
+
+    return start.character === 0 && end.character === 0 && start.line !== end.line;
+  }
+
+  /**
+   * Returns the length of the given selection.
+   */
+  export function length(
+    selection: vscode.Selection | vscode.Range,
+    document = Context.current.document,
+  ) {
+    const start = selection.start,
+          end = selection.end;
+
+    if (start.line === end.line) {
+      return end.character - start.character;
+    }
+
+    return document.offsetAt(end) - document.offsetAt(start);
+  }
+
+  /**
+   * Returns a selection starting at the given position or offset and with the
+   * specified length.
+   */
+  export function fromLength(
+    start: number | vscode.Position,
+    length: number,
+    reversed = false,
+    document = Context.current.document,
+  ) {
+    let startOffset: number,
+        startPosition: vscode.Position;
+
+    if (length === 0) {
+      if (typeof start === "number") {
+        startPosition = document.positionAt(start);
+      } else {
+        startPosition = start;
+      }
+
+      return new vscode.Selection(startPosition, startPosition);
+    }
+
+    if (typeof start === "number") {
+      startOffset = start;
+      startPosition = document.positionAt(start);
+    } else {
+      startOffset = document.offsetAt(start);
+      startPosition = start;
+    }
+
+    const endPosition = document.positionAt(startOffset + length);
+
+    return reversed
+      ? new vscode.Selection(endPosition, startPosition)
+      : new vscode.Selection(startPosition, endPosition);
   }
 
   /**
@@ -1033,6 +1124,7 @@ export namespace Selections {
   export function fromCharacterMode(
     selections: readonly vscode.Selection[],
     document?: vscode.TextDocument,
+    direction: Direction = Direction.Forward,
   ) {
     const caretModeSelections = new Array<vscode.Selection>(selections.length);
 
@@ -1070,12 +1162,23 @@ export namespace Selections {
           }
         } else {
           // Character is not at the end of the line: we can extend the selection.
-          active = new vscode.Position(selectionActiveLine, selectionActiveCharacter);
+          active = new vscode.Position(selectionActiveLine, selectionActiveCharacter + 1);
           changed = true;
         }
       }
 
-      caretModeSelections[i] = changed ? new vscode.Selection(selectionAnchor, active) : selection;
+      if (!changed) {
+        caretModeSelections[i] = selection;
+        continue;
+      }
+
+      const reverse = direction === Direction.Backward
+        && selectionActiveLine === selectionAnchorLine
+        && selectionActiveCharacter === selectionAnchorCharacter;
+
+      caretModeSelections[i] = reverse
+        ? new vscode.Selection(active, selectionAnchor)
+        : new vscode.Selection(selectionAnchor, active);
     }
 
     return caretModeSelections;

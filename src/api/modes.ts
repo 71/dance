@@ -1,4 +1,5 @@
 import { Context } from "./context";
+import { todo } from "./errors";
 
 /**
  * Switches to the mode with the given name.
@@ -18,10 +19,12 @@ export function toMode(modeName: string, count?: number) {
     throw new Error(`mode ${JSON.stringify(modeName)} does not exist`);
   }
 
-  if (count === undefined) {
+  if (!count) {
     return context.editorState.setMode(mode);
   }
 
-  context.editorState.setMode(mode, true);
+  return context.editorState.setMode(mode, true).then(() => {
+    todo();
+  });
   // TODO: watch document changes and command executions
 }

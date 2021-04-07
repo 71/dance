@@ -1,33 +1,130 @@
 import * as vscode from "vscode";
+import * as api from "../api";
+
 import {
   Context,
   deindentLines,
   edit,
   indentLines,
   joinLines,
+  keypress,
+  LengthMismatchError,
   replace,
   Selections,
   selectionsLines,
   setSelections,
-  toMode,
 } from "../api";
 import { Register } from "../register";
-import { keypress, prompt } from "../utils/prompt";
+import { Argument, InputOr, RegisterOr } from ".";
 
 /**
- * Commands that perform changes on the text content of the document.
+ * Perform changes on the text content of the document.
  *
  * See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes.
  */
 declare module "./edit";
 
 /**
+ * Insert contents of register.
+ *
+ * A `where` argument may be specified to state where the text should be
+ * inserted relative to each selection. If unspecified, each selection will be
+ * replaced by the text.
+ *
+ * @keys `s-a-r` (normal)
+ *
+ * #### Additional commands
+ *
+ * | Title                              | Identifier              | Keybinding                     | Commands                                                                                                 |
+ * | ---------------------------------- | ----------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------- |
+ * | Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert) | `[".selectRegister"], [".edit.insert"]`                                                                  |
+ * | Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { "where": "before" }]`                                                                |
+ * | Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { "where": "after" }]`                                                                 |
+ * | Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { "where": "before", "select": true }]`                                                |
+ * | Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { "where": "after", "select": true }]`                                                 |
+ * | Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { "register": "_" }]`                                                                  |
+ * | Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".edit.insert", { "register": "_" }], [".modes.set", { "input": "insert" }]`                           |
+ * | Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText"], [".edit.insert", { "register": "_" }]`                                        |
+ * | Copy and replace                   | `yank-replace`          | `s-r` (normal)                 | `[".selections.saveText"], [".edit.insert"]`                                                             |
+ * | Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal)                   | `[".selections.saveText"], [".edit.insert", { "register": "_" }], [".modes.set", { "input": "insert" }]` |
+ */
+export async function insert(
+  _: Context,
+  selections: vscode.Selection[],
+  register: RegisterOr<"dquote", Register.Flags.CanRead>,
+
+  adjust: Argument<boolean> = false,
+  handleNewLine: Argument<boolean> = false,
+  select: Argument<boolean> = false,
+  where: Argument<"active" | "anchor" | "start" | "end" | undefined> = undefined,
+) {
+  let contents = await register.get();
+
+  if (contents === undefined) {
+    throw new Error(`register "${register.name}" does not contain any saved text`);
+  }
+
+  if (adjust) {
+    contents = extendArrayToLength(contents, selections.length);
+  } else {
+    LengthMismatchError.throwIfLengthMismatch(selections, contents);
+  }
+
+  if (where === undefined) {
+    return replace.byIndex((i) => contents![i], selections);
+  }
+
+  if (!["active", "anchor", "start", "end"].includes(where)) {
+    throw new Error(`"where" must be one of "active", "anchor", "start", "end", or undefined`);
+  }
+
+  if (!handleNewLine) {
+    return api.insert.byIndex(
+      where,
+      select ? api.insert.SelectionMapping.Inserted : api.insert.SelectionMapping.Keep,
+      (i) => contents![i],
+      selections,
+    );
+  }
+
+  return edit((editBuilder, _, document) => {
+    const trackedSelections = select
+      ? Context.current.documentState.trackSelections(selections)
+      : undefined;
+
+    for (let i = 0; i < selections.length; i++) {
+      // TODO: handle select parameter better.
+      const selection = selections[i],
+            position = selection[where],
+            content = contents![i];
+
+      if (content.endsWith("\n")) {
+        const insertionLine = position === selection.start
+          ? position.line
+          : Selections.endLine(selection) + 1;
+
+        editBuilder.insert(new vscode.Position(insertionLine, 0), content);
+      } else {
+        editBuilder.insert(position, content);
+      }
+    }
+
+    if (trackedSelections === undefined) {
+      return;
+    }
+
+    Context.current.documentState.forgetSelections(trackedSelections);
+    Selections.set(trackedSelections.restore(document));
+  });
+}
+
+/**
  * Join lines.
  *
  * @keys `a-j` (normal)
  */
-export function join(_: Context, argument?: { separator?: string }) {
-  return joinLines(selectionsLines(), argument?.separator);
+export function join(_: Context, separator?: Argument<string>) {
+  return joinLines(selectionsLines(), separator);
 }
 
 /**
@@ -35,8 +132,8 @@ export function join(_: Context, argument?: { separator?: string }) {
  *
  * @keys `s-a-j` (normal)
  */
-export function join_select(_: Context, argument?: { separator?: string }) {
-  return joinLines(selectionsLines(), argument?.separator).then(setSelections);
+export function join_select(_: Context, separator?: Argument<string>) {
+  return joinLines(selectionsLines(), separator).then(setSelections);
 }
 
 /**
@@ -121,15 +218,11 @@ export function case_swap(_: Context) {
 export async function replaceCharacters(
   _: Context,
   repetitions: number,
-  input?: string,
+  inputOr: InputOr<string>,
 ) {
-  if (input === undefined) {
-    input = await keypress(_.cancellationToken);
-  }
+  const input = (await inputOr(() => keypress(_.cancellationToken))).repeat(repetitions);
 
-  input = input.repeat(repetitions);
-
-  return _.run(() => edit((editBuilder, editor, selections) => {
+  return _.run(() => edit((editBuilder, selections, document) => {
     for (const selection of selections) {
       let i = selection.start.line;
 
@@ -144,7 +237,7 @@ export async function replaceCharacters(
       }
 
       // Replace in first line
-      const firstLine = editor.document.lineAt(i).range.with(selection.start);
+      const firstLine = document.lineAt(i).range.with(selection.start);
 
       editBuilder.replace(
         firstLine,
@@ -153,13 +246,13 @@ export async function replaceCharacters(
 
       // Replace in intermediate lines
       while (++i < selection.end.line) {
-        const line = editor.document.lineAt(i);
+        const line = document.lineAt(i);
 
         editBuilder.replace(line.range, input!.repeat(line.text.length));
       }
 
       // Replace in last line
-      const lastLine = editor.document.lineAt(i).range.with(undefined, selection.end);
+      const lastLine = document.lineAt(i).range.with(undefined, selection.end);
 
       editBuilder.replace(
         lastLine,
@@ -183,11 +276,8 @@ export function align(_: Context, selections: readonly vscode.Selection[]) {
     0,
   );
 
-  return edit((builder, editor) => {
-    const selections = editor.selections,
-          len = selections.length;
-
-    for (let i = 0; i < len; i++) {
+  return edit((builder, selections) => {
+    for (let i = 0, len = selections.length; i < len; i++) {
       const selection = selections[i];
 
       builder.insert(selection.start, " ".repeat(startChar - selection.start.character));
@@ -203,22 +293,24 @@ export function align(_: Context, selections: readonly vscode.Selection[]) {
  *
  * @keys `a-&` (normal)
  */
-export function copyIndentation(_: Context, editor: vscode.TextEditor, count: number) {
-  const sourceSelection = editor.selections[count] ?? editor.selection,
-        sourceIndent = editor.document
+export function copyIndentation(
+  _: Context,
+  document: vscode.TextDocument,
+  selections: readonly vscode.Selection[],
+  count: number,
+) {
+  const sourceSelection = selections[count] ?? selections[0],
+        sourceIndent = document
           .lineAt(sourceSelection.start)
           .firstNonWhitespaceCharacterIndex;
 
-  return edit((builder, editor) => {
-    const selections = editor.selections,
-          len = selections.length;
-
-    for (let i = 0; i < len; i++) {
+  return edit((builder, selections, document) => {
+    for (let i = 0, len = selections.length; i < len; i++) {
       if (i === sourceSelection.start.line) {
         continue;
       }
 
-      const line = editor.document.lineAt(selections[i].start),
+      const line = document.lineAt(selections[i].start),
             indent = line.firstNonWhitespaceCharacterIndex;
 
       if (indent > sourceIndent) {
@@ -236,105 +328,30 @@ export function copyIndentation(_: Context, editor: vscode.TextEditor, count: nu
 }
 
 /**
- * Insert contents of register.
- *
- * A `where` argument may be specified to state where the text should be
- * inserted relative to each selection. If unspecified, each selection will be
- * replaced by the text.
- *
- * @keys `c-r` (normal), `c-r` (insert)
- *
- * #### Additional commands
- *
- * TODO
- *
- * | Title                   | Identifier     | Keybinding     | Commands                                                                                                                                        |
- * | ----------------------- | -------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
- * | Paste before            | `pipe.filter`  | `$` (normal)   | `` |
- * | Paste after             | `pipe.replace` | `|` (normal)   | ``                                                                                              |
- * | Paste before and select | `pipe.append`  | `!` (normal)   | ``                                                                              |
- * | Paste after and select  | `pipe.prepend` | `a-!` (normal) | ``                                                                            |
- */
-export async function insert(
-  _: Context,
-  cancellationToken: vscode.CancellationToken,
-  argument?: { where?: "active" | "anchor" | "start" | "end" },
-  register?: Register,
-) {
-  if (register === undefined) {
-    register = _.extensionState.registers.get(await keypress(cancellationToken));
-  }
-
-  Register.assertFlags(register, Register.Flags.CanRead);
-
-  const editor = _.editor,
-        contents = await register.get();
-
-  if (contents === undefined) {
-    throw new Error(`register ${register.name} does not contain any saved text`);
-  }
-
-  const selectionsLen = editor.selections.length;
-
-  if (contents.length !== selectionsLen) {
-    throw new Error(
-      `register ${register.name} has ${contents.length} strings, but there are `
-      + `${selectionsLen} selections`,
-    );
-  }
-
-  // TODO: hard-code case where selection ends with \n.
-  const where = argument?.where;
-
-  if (where === undefined) {
-    return replace.byIndex((i) => contents[i], editor);
-  }
-
-  if (!["active", "anchor", "start", "end"].includes(where)) {
-    throw new Error(`where must be one of "active", "anchor", "start", "end", or undefined`);
-  }
-
-  return edit((editBuilder, editor) => {
-    const selections = editor.selections;
-
-    for (let i = 0; i < selections.length; i++) {
-      editBuilder.insert(selections[i][where], contents[i]);
-    }
-  });
-}
-
-/**
  * Insert new line above each selection.
  *
  * @keys `s-a-o` (normal)
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding     | Commands                                           |
- * | ------------------------------------------ | ---------------------- | -------------- | -------------------------------------------------- |
- * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".newLine.above", { "switchToMode": "insert" }]` |
+ * | Title                                      | Identifier             | Keybinding     | Commands                                                                        |
+ * | ------------------------------------------ | ---------------------- | -------------- | ------------------------------------------------------------------------------- |
+ * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".newLine.above", { "select": true }], [".modes.set", { "input": "insert" }]` |
  */
-export function newLine_above(_: Context, argument?: { switchToMode?: string }) {
-  const switchToMode = argument?.switchToMode;
+export function newLine_above(_: Context, select: Argument<boolean> = false) {
+  if (select) {
+    Selections.update.byIndex(prepareSelectionForLineInsertion);
 
-  if (switchToMode !== undefined) {
-    const editor = _.editor;
-
-    editor.selections = normalizeSelectionsForLineInsertion(editor.selections);
-
-    return vscode.commands
-      .executeCommand("editor.action.insertLineBefore")
-      .then(() => _.run(() => toMode(switchToMode)));
+    // Use built-in `insertLineBefore` command. It gives us less control, but at
+    // least it handles indentation well.
+    return vscode.commands.executeCommand("editor.action.insertLineBefore");
   }
 
-  return edit((builder, editor) => {
-    const newLine = editor.document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n",
+  return edit((builder, selections, document) => {
+    const newLine = document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n",
           processedLines = new Set<number>();
 
-    const selections = editor.selections,
-          len = selections.length;
-
-    for (let i = 0; i < len; i++) {
+    for (let i = 0, len = selections.length; i < len; i++) {
       const selection = selections[i],
             activeLine = Selections.activeLine(selection);
 
@@ -352,31 +369,24 @@ export function newLine_above(_: Context, argument?: { switchToMode?: string }) 
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding   | Commands                                           |
- * | ------------------------------------------ | ---------------------- | ------------ | -------------------------------------------------- |
- * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".newLine.below", { "switchToMode": "insert" }]` |
+ * | Title                                      | Identifier             | Keybinding   | Commands                                                                        |
+ * | ------------------------------------------ | ---------------------- | ------------ | ------------------------------------------------------------------------------- |
+ * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".newLine.below", { "select": true }], [".modes.set", { "input": "insert" }]` |
  */
-export function newLine_below(_: Context, argument?: { switchToMode?: string }) {
-  const switchToMode = argument?.switchToMode;
+export function newLine_below(_: Context, select: Argument<boolean> = false) {
+  if (select) {
+    Selections.update.byIndex(prepareSelectionForLineInsertion);
 
-  if (switchToMode !== undefined) {
-    const editor = _.editor;
-
-    editor.selections = normalizeSelectionsForLineInsertion(editor.selections);
-
-    return vscode.commands
-      .executeCommand("editor.action.insertLineAfter")
-      .then(() => _.run(() => toMode(switchToMode)));
+    // Use built-in `insertLineAfter` command. It gives us less control, but at
+    // least it handles indentation well.
+    return vscode.commands.executeCommand("editor.action.insertLineAfter");
   }
 
-  return edit((builder, editor) => {
-    const newLine = editor.document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n",
+  return edit((builder, selections, document) => {
+    const newLine = document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n",
           processedLines = new Set<number>();
 
-    const selections = editor.selections,
-          len = selections.length;
-
-    for (let i = 0; i < len; i++) {
+    for (let i = 0, len = selections.length; i < len; i++) {
       const selection = selections[i],
             activeLine = Selections.activeLine(selection);
 
@@ -387,20 +397,34 @@ export function newLine_below(_: Context, argument?: { switchToMode?: string }) 
   });
 }
 
-function normalizeSelectionsForLineInsertion(selections: readonly vscode.Selection[]) {
-  const len = selections.length,
-        normalized = new Array<vscode.Selection>(len);
+function prepareSelectionForLineInsertion(_: number, selection: vscode.Selection) {
+  const activeLine = Selections.activeLine(selection);
 
-  for (let i = 0; i < len; i++) {
-    let selection = selections[i];
-    const activeLine = Selections.activeLine(selection);
-
-    if (selection.active.line !== activeLine) {
-      selection = new vscode.Selection(selection.anchor, selection.active.with(activeLine));
-    }
-
-    normalized[i] = selection;
+  if (selection.active.line !== activeLine) {
+    return new vscode.Selection(selection.anchor, selection.active.with(activeLine));
   }
 
-  return normalized;
+  return selection;
+}
+
+function extendArrayToLength<T>(array: readonly T[], length: number) {
+  const arrayLen = array.length;
+
+  if (length > arrayLen) {
+    const newArray = [] as T[];
+
+    for (let i = 0; i < arrayLen; i++) {
+      newArray.push(array[i]);
+    }
+
+    const last = array[arrayLen - 1];
+
+    for (let i = arrayLen; i < length; i++) {
+      newArray.push(last);
+    }
+
+    return newArray;
+  } else {
+    return array.slice(0, length);
+  }
 }

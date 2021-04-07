@@ -1,6 +1,6 @@
 import { writeFile } from "fs/promises";
 
-import { getCommandModules, parseDocComments } from "./src/build";
+import { getCommandModules, parseDocComments } from "./src/meta";
 
 // Shared values
 // ============================================================================
@@ -59,7 +59,7 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
   scripts: {
     "check": "eslint .",
     "format": "eslint . --fix",
-    "generate": "ts-node ./src/build.ts && ts-node ./package.ts",
+    "generate": "ts-node ./src/meta.ts && ts-node ./package.ts",
     "vscode:prepublish": "yarn run generate && yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
@@ -70,7 +70,6 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
 
   devDependencies: {
     "@types/glob": "^7.1.1",
-    "@types/js-yaml": "^3.12.3",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.6.0",
     "@types/vscode": "^1.44.0",
@@ -78,11 +77,10 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
     "@typescript-eslint/parser": "^4.18.0",
     "eslint": "^7.22.0",
     "glob": "^7.1.6",
-    "js-yaml": "^3.13.0",
     "mocha": "^8.1.1",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.3",
+    "typescript": "^4.2.4",
     "unexpected": "^12.0.0",
     "vsce": "^1.87.0",
     "vscode-test": "^1.3.0",

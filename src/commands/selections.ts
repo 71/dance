@@ -1,12 +1,11 @@
 import * as vscode from "vscode";
-import { Context, EmptySelectionsError, moveWhile, Positions, Selections, switchRun } from "../api";
+import { Argument, InputOr, RegisterOr } from ".";
+import { Context, EmptySelectionsError, moveWhile, Positions, prompt, promptInList, Selections, switchRun, todo } from "../api";
 import { Mode } from "../mode";
 import { Register } from "../register";
-import { Extension } from "../state/extension";
-import { CharSet, getCharacters, getCharSetFunction } from "../utils/charset";
-import { prompt, promptInList } from "../utils/prompt";
+import { CharSet, getCharacters } from "../utils/charset";
 import { SettingsValidator } from "../utils/settings-validator";
-import { TrackedSelection, TrackedSelectionSet } from "../utils/tracked-selection";
+import { TrackedSelection } from "../utils/tracked-selection";
 
 /**
  * Interacting with selections.
@@ -14,44 +13,56 @@ import { TrackedSelection, TrackedSelectionSet } from "../utils/tracked-selectio
 declare module "./selections";
 
 /**
+ * Copy selections text.
+ *
+ * @keys `y` (normal)
+ */
+export function saveText(
+  document: vscode.TextDocument,
+  selections: readonly vscode.Selection[],
+  register: RegisterOr<"dquote", Register.Flags.CanWrite>,
+) {
+  register.set(selections.map(document.getText.bind(document)));
+}
+
+/**
  * Save selections.
  *
  * @keys `s-z` (normal)
  */
 export function save(
-  editor: vscode.TextEditor,
-  extension: Extension,
-  register?: Register.WithFlags<Register.Flags.CanReadSelections>,
+  document: vscode.TextDocument,
+  selections: readonly vscode.Selection[],
+  register: RegisterOr<"caret", Register.Flags.CanReadSelections>,
+
+  style?: Argument<object>,
 ) {
   // TODO dispose of selection set automatically
-  if (register === undefined) {
-    register = extension.registers.caret;
-  }
+  todo();
 
-  const existingMarks = register.getSelectionSet(editor.document);
+  // const existingMarks = register.getSelectionSet();
 
-  if (existingMarks !== undefined) {
-    documentState.forgetSelections(existingMarks);
-  }
+  // if (existingMarks !== undefined) {
+  //   documentState.forgetSelections(existingMarks);
+  // }
 
-  const style = argument.style,
-        trackedSelections = TrackedSelection.fromArray(editor.selections, editor.document);
-  let trackedSelectionSet: TrackedSelectionSet;
+  // const trackedSelections = TrackedSelection.fromArray(selections, document);
+  // let trackedSelectionSet: TrackedSelection.Set;
 
-  if (typeof style === "object") {
-    const validator = new SettingsValidator(),
-          renderOptions = Mode.decorationObjectToDecorationRenderOptions(style, validator);
+  // if (typeof style === "object") {
+  //   const validator = new SettingsValidator(),
+  //         renderOptions = Mode.decorationObjectToDecorationRenderOptions(style, validator);
 
-    validator.throwErrorIfNeeded();
+  //   validator.throwErrorIfNeeded();
 
-    trackedSelectionSet
-      = new TrackedSelectionSet.Styled(editor, trackedSelections, renderOptions);
-  } else {
-    trackedSelectionSet = new TrackedSelectionSet(trackedSelections);
-  }
+  //   trackedSelectionSet
+  //     = new TrackedSelection.StyledSet(editor, trackedSelections, renderOptions);
+  // } else {
+  //   trackedSelectionSet = new TrackedSelection.Set(trackedSelections);
+  // }
 
-  documentState.trackSelectionSet(trackedSelectionSet);
-  register.setSelectionSet(editor.document, trackedSelectionSet);
+  // documentState.trackSelectionSet(trackedSelectionSet);
+  // register.setSelectionSet(document, trackedSelectionSet);
 }
 
 /**
@@ -60,15 +71,10 @@ export function save(
  * @keys `z` (normal)
  */
 export function restore(
-  editor: vscode.TextEditor,
-  extension: Extension,
-  register?: Register.WithFlags<Register.Flags.CanReadSelections>,
+  _: Context,
+  register: RegisterOr<"caret", Register.Flags.CanReadSelections>,
 ) {
-  register ??= extension.registers.caret;
-
-  const marks = throwIfRegisterHasNoSelections(register, editor.document);
-
-  editor.selections = marks;
+  _.selections = throwIfRegisterHasNoSelections(register);
 }
 
 /**
@@ -85,22 +91,19 @@ export function restore(
  * See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
  */
 export async function restore_withCurrent(
-  editor: vscode.TextEditor,
-  extension: Extension,
+  _: Context,
+  document: vscode.TextDocument,
   cancellationToken: vscode.CancellationToken,
-  register?: Register.WithFlags<Register.Flags.CanReadSelections>,
-  argument?: { reverse?: boolean },
+  register: RegisterOr<"caret", Register.Flags.CanReadSelections>,
+
+  reverse: Argument<boolean> = false,
 ) {
-  if (register === undefined) {
-    register = extension.registers.caret;
-  }
-
-  const marks = throwIfRegisterHasNoSelections(register, editor.document);
+  const marks = throwIfRegisterHasNoSelections(register);
   let from = marks,
-      add = editor.selections;
+      add = _.selections;
 
-  if (argument?.reverse) {
-    from = editor.selections;
+  if (reverse) {
+    from = _.selections;
     add = marks;
   }
 
@@ -115,7 +118,7 @@ export async function restore_withCurrent(
   ], cancellationToken);
 
   if (type === 0) {
-    editor.selections = from.concat(add);
+    _.selections = from.concat(add);
 
     return;
   }
@@ -164,8 +167,8 @@ export async function restore_withCurrent(
       break;
 
     case 5: {
-      const aLength = editor.document.offsetAt(a.end) - editor.document.offsetAt(a.start),
-            bLength = editor.document.offsetAt(b.end) - editor.document.offsetAt(b.start);
+      const aLength = document.offsetAt(a.end) - document.offsetAt(a.start),
+            bLength = document.offsetAt(b.end) - document.offsetAt(b.start);
 
       if (aLength > bLength) {
         selections.push(a);
@@ -176,8 +179,8 @@ export async function restore_withCurrent(
     }
 
     case 6: {
-      const aLength = editor.document.offsetAt(a.end) - editor.document.offsetAt(a.start),
-            bLength = editor.document.offsetAt(b.end) - editor.document.offsetAt(b.start);
+      const aLength = document.offsetAt(a.end) - document.offsetAt(a.start),
+            bLength = document.offsetAt(b.end) - document.offsetAt(b.start);
 
       if (aLength < bLength) {
         selections.push(a);
@@ -189,7 +192,7 @@ export async function restore_withCurrent(
     }
   }
 
-  editor.selections = selections;
+  _.selections = selections;
 }
 
 /**
@@ -212,27 +215,19 @@ export async function restore_withCurrent(
  */
 export async function pipe(
   _: Context,
-  extension: Extension,
-  cancellationToken: vscode.CancellationToken,
-  register?: Register.WithFlags<Register.Flags.CanWrite>,
-  input?: string,
+  register: RegisterOr<"pipe", Register.Flags.CanWrite>,
+  inputOr: InputOr<string>,
 ) {
-  if (input === undefined) {
-    input = await prompt({
-      validateInput(value) {
-        try {
-          switchRun.validate(value);
-        } catch (e) {
-          return e?.message ?? `${e}`;
-        }
-      },
-      prompt: "Enter an expression",
-    }, cancellationToken);
-  }
-
-  if (register === undefined) {
-    register = extension.registers.pipe;
-  }
+  const input = await inputOr(() => prompt({
+    validateInput(value) {
+      try {
+        switchRun.validate(value);
+      } catch (e) {
+        return e?.message ?? `${e}`;
+      }
+    },
+    prompt: "Enter an expression",
+  }, _));
 
   const selections = _.selections,
         document = _.document,
@@ -273,7 +268,7 @@ export async function pipe(
  * @keys `a-x` (normal)
  */
 export function extendToLines(_: Context) {
-  return Selections.update.byIndex((_, selection, editor) => {
+  return Selections.update.byIndex((_, selection, document) => {
     const start = selection.start,
           end = selection.end;
 
@@ -285,12 +280,12 @@ export function extendToLines(_: Context) {
       // End is next line start, which means the selection already includes the
       // line break of last line.
       newEnd = end;
-    } else if (end.line + 1 < editor.document.lineCount) {
+    } else if (end.line + 1 < document.lineCount) {
       // Move end to the next line start to include the line break.
       newEnd = new vscode.Position(end.line + 1, 0);
     } else {
       // End is at the last line, so try to include all text.
-      const textLen = editor.document.lineAt(end.line).text.length;
+      const textLen = document.lineAt(end.line).text.length;
       newEnd = end.with(undefined, textLen);
     }
 
@@ -342,9 +337,7 @@ export function trimWhitespace(_: Context) {
   const blank = getCharacters(CharSet.Blank, _.document),
         isBlank = (character: string) => blank.includes(character);
 
-  return Selections.update.byIndex((_, selection, editor) => {
-    const document = editor.document;
-
+  return Selections.update.byIndex((_, selection, document) => {
     const firstCharacter = selection.start,
           lastCharacter = Positions.previous(selection.end, document);
 
@@ -363,6 +356,8 @@ export function trimWhitespace(_: Context) {
   });
 }
 
+let lastFilterInput: string | undefined;
+
 /**
  * Filter selections.
  *
@@ -376,25 +371,25 @@ export function trimWhitespace(_: Context) {
  */
 export async function filter(
   _: Context,
-  cancellationToken: vscode.CancellationToken,
-  argument?: { defaultInput?: string },
-  input?: string,
-) {
-  const defaultInput = argument?.defaultInput;
+  inputOr: InputOr<string>,
 
-  if (input === undefined) {
-    input = await prompt({
-      value: defaultInput,
-      validateInput(value) {
-        try {
-          switchRun.validate(value);
-        } catch (e) {
-          return e?.message ?? `${e}`;
-        }
-      },
-      prompt: "Enter an expression",
-    }, cancellationToken);
-  }
+  defaultInput?: Argument<string>,
+) {
+  defaultInput ??= lastFilterInput;
+
+  const input = await inputOr(() => prompt({
+    prompt: "Enter an expression",
+    validateInput(value) {
+      try {
+        switchRun.validate(value);
+        lastFilterInput = value;
+      } catch (e) {
+        return e?.message ?? `${e}`;
+      }
+    },
+    value: defaultInput,
+    valueSelection: defaultInput === undefined ? undefined : [0, defaultInput.length],
+  }, _));
 
   const document = _.document,
         selections = _.selections,
@@ -403,7 +398,7 @@ export async function filter(
   return _.run(() =>
     Selections.filter.byIndex(async (i) => {
       try {
-        return !!await switchRun(strings[i], { $: strings[i], $$: strings, i });
+        return !!await switchRun(input, { $: strings[i], $$: strings, i });
       } catch {
         return false;
       }
@@ -411,11 +406,29 @@ export async function filter(
   );
 }
 
+/**
+ * Split selections.
+ *
+ * @keys `s-s` (normal)
+ */
+export async function split(
+  _: Context,
+) {
+}
+
+/**
+ * Split selections at line boundaries.
+ *
+ * @keys `a-s` (normal)
+ */
+export function splitLines(_: Context) {
+
+}
+
 function throwIfRegisterHasNoSelections(
   register: Register & Register.ReadableSelections,
-  document: vscode.TextDocument,
 ) {
-  const selections = register.getSelections(document);
+  const selections = register.getSelections();
 
   EmptySelectionsError.throwIfRegisterIsEmpty(selections, register.name);
 

@@ -1,7 +1,11 @@
 import * as vscode from "vscode";
 
-import { EditorState } from "./state/editor";
-import { TrackedSelectionSet } from "./utils/tracked-selection";
+import { assert, EditorRequiredError } from "./api";
+import { TrackedSelection } from "./utils/tracked-selection";
+
+interface RegisterBase {
+  ensureFlags<F extends Register.Flags>(flags: F): asserts this is Register.WithFlags<F>;
+}
 
 /**
  * The base class for all registers.
@@ -67,15 +71,57 @@ export abstract class Register {
   }
 
   /**
+   * @deprecated Use `Register.ensureFlags` instead. This intermediate method is
+   *   necessary to avoid infinite recursion in TypeScript when defining
+   *   `asserts` functions, but is less strongly typed than
+   *   `Register.ensureFlags`.
+   */
+  public checkFlags(flags: Register.Flags) {
+    const f = this.flags;
+
+    if ((flags & Register.Flags.CanRead) && !(f & Register.Flags.CanRead)) {
+      throw new Error(`register "${this.name}" cannot be used to read text`);
+    }
+    if ((flags & Register.Flags.CanReadSelections) && !(f & Register.Flags.CanReadSelections)) {
+      throw new Error(`register "${this.name}" cannot be used to read selections`);
+    }
+    if ((flags & Register.Flags.CanReadWriteMacros) && !(f & Register.Flags.CanReadWriteMacros)) {
+      throw new Error(`register "${this.name}" cannot be used to play or create recordings`);
+    }
+    if ((flags & Register.Flags.CanWrite) && !(f & Register.Flags.CanWrite)) {
+      throw new Error(`register "${this.name}" cannot be used to save text`);
+    }
+    if ((flags & Register.Flags.CanWriteSelections) && !(f & Register.Flags.CanWriteSelections)) {
+      throw new Error(`register "${this.name}" cannot be used to save selections`);
+    }
+  }
+
+  /**
+   * Throws an exception if the specified register does not have the specified
+   * flags.
+   *
+   * Due to limitations in TypeScript, calling this function may require `this`
+   * to be explicitly annotated with the type `Register`. If that is
+   * undesirable, please use `Register.ensureFlags` (the static method) instead.
+   */
+  public ensureFlags<F extends Register.Flags>(
+    this: Register,
+    flags: F,
+  ): asserts this is Register.WithFlags<F> {
+    this.checkFlags(flags);
+  }
+
+  /**
    * Returns the current register if it has the given flags, or throws an
    * exception otherwise.
    */
   public withFlags<F extends Register.Flags>(
     flags: F,
   ): this extends Register.WithFlags<F> ? this : never {
-    Register.assertFlags(this, flags);
+    // Note: using `ensureFlags` below throws an exception.
+    this.checkFlags(flags);
 
-    return this;
+    return this as any;
   }
 }
 
@@ -84,6 +130,9 @@ export namespace Register {
    * Flags describing the capabilities of a `Register`.
    */
   export const enum Flags {
+    /** Register does not have any capability. */
+    None = 0,
+
     /** Strings can be read from the register. */
     CanRead = 1,
     /** Strings can be written to the register. */
@@ -116,57 +165,38 @@ export namespace Register {
   export type WithFlags<F extends Flags> = Register & InterfaceFromFlags<F>;
 
   export interface Readable {
-    get(document?: vscode.TextDocument): Thenable<readonly string[] | undefined>;
+    get(): Thenable<readonly string[] | undefined>;
   }
 
   export interface Writeable {
-    set(values: readonly string[], document?: vscode.TextDocument): Thenable<void>;
+    set(values: readonly string[]): Thenable<void>;
   }
 
   export interface ReadableSelections {
-    getSelections(document?: vscode.TextDocument): vscode.Selection[] | undefined;
-    getSelectionSet(document?: vscode.TextDocument): TrackedSelectionSet | undefined;
-
-    getSharedSelectionsEditor(): EditorState | undefined;
+    getSelections(): vscode.Selection[] | undefined;
+    getSelectionSet(): TrackedSelection.Set | undefined;
   }
 
   export interface WriteableSelections {
-    setSelectionSet(selections: TrackedSelectionSet, document: vscode.TextDocument): void;
-    setSelectionSet(selections: TrackedSelectionSet, editor: EditorState): void;
+    setSelectionSet(selections: TrackedSelection.Set): void;
   }
 
   export interface ReadableWriteableMacros {
-    getRecordedCommands(document?: vscode.TextDocument): readonly RecordedCommand[] | undefined;
-    setRecordedCommands(commands: readonly RecordedCommand[], document?: vscode.TextDocument): void;
+    getRecordedCommands(): any | undefined;
+    setRecordedCommands(commands: any): void;
   }
 
   /**
-   * Throws an error if the given register does not satisfy the specified
+   * Throws an exception if the specified register does not have the specified
    * flags.
    */
-  export function assertFlags<F extends Register.Flags>(
-    register: Register,
+  export function ensureFlags<F extends Register.Flags>(
+    register: any,
     flags: F,
   ): asserts register is Register.WithFlags<F> {
-    // Note: we cannot make this a member of `Register` because of
-    //       https://github.com/microsoft/TypeScript/issues/34596.
-    const f = (register as Register).flags;
+    assert(register instanceof Register);
 
-    if ((flags & Register.Flags.CanRead) && !(f & Register.Flags.CanRead)) {
-      throw new Error(`register "${register.name}" cannot be used to read text`);
-    }
-    if ((flags & Register.Flags.CanReadSelections) && !(f & Register.Flags.CanReadSelections)) {
-      throw new Error(`register "${register.name}" cannot be used to read selections`);
-    }
-    if ((flags & Register.Flags.CanReadWriteMacros) && !(f & Register.Flags.CanReadWriteMacros)) {
-      throw new Error(`register "${register.name}" cannot be used to play or create recordings`);
-    }
-    if ((flags & Register.Flags.CanWrite) && !(f & Register.Flags.CanWrite)) {
-      throw new Error(`register "${register.name}" cannot be used to save text`);
-    }
-    if ((flags & Register.Flags.CanWriteSelections) && !(f & Register.Flags.CanWriteSelections)) {
-      throw new Error(`register "${register.name}" cannot be used to save selections`);
-    }
+    register.checkFlags(flags);
   }
 }
 
@@ -178,12 +208,11 @@ class GeneralPurposeRegister extends Register implements Register.Readable,
                                                          Register.ReadableSelections,
                                                          Register.WriteableSelections,
                                                          Register.ReadableWriteableMacros {
-  private readonly _selectionsPerDocument = new WeakMap<vscode.TextDocument, TrackedSelectionSet>();
+  private readonly _selectionsPerDocument = new WeakMap<vscode.TextDocument, TrackedSelection.Set>();
 
   public readonly flags: Register.Flags;
 
   public values: readonly string[] | undefined;
-  public macroCommands: CommandState<any>[] | undefined;
 
   public constructor(
     public readonly name: string,
@@ -197,29 +226,21 @@ class GeneralPurposeRegister extends Register implements Register.Readable,
                | Register.Flags.CanWriteSelections;
   }
 
-  public set(_: vscode.TextEditor, values: readonly string[]) {
+  public set(values: readonly string[], document?: vscode.TextDocument) {
     this.values = values;
 
     return Promise.resolve();
   }
 
-  public get() {
+  public get(document?: vscode.TextDocument) {
     return Promise.resolve(this.values);
   }
 
   public getRecordedCommands(document?: vscode.TextDocument) {
+    return undefined;
   }
 
-  public setRecordedCommands(commands: readonly RecordedCommand[], document?: vscode.TextDocument) {
-
-  }
-
-  public getMacro() {
-    return this.macroCommands;
-  }
-
-  public setMacro(data: CommandState<any>[]) {
-    this.macroCommands = data;
+  public setRecordedCommands(commands: RecordedCommand.Slice, document?: vscode.TextDocument) {
   }
 
   public getSelections(document: vscode.TextDocument) {
@@ -236,7 +257,7 @@ class GeneralPurposeRegister extends Register implements Register.Readable,
     return this._selectionsPerDocument.get(document);
   }
 
-  public setSelectionSet(document: vscode.TextDocument, trackedSelections: TrackedSelectionSet) {
+  public setSelectionSet(document: vscode.TextDocument, trackedSelections: TrackedSelection.Set) {
     this._selectionsPerDocument.set(document, trackedSelections);
   }
 }
@@ -252,23 +273,22 @@ class SpecialRegister extends Register implements Register.Readable,
 
   public constructor(
     public readonly name: string,
-    public readonly getter: (editor: vscode.TextEditor) => Thenable<readonly string[]>,
-    public readonly setter?: (editor: vscode.TextEditor,
-                              values: readonly string[]) => Thenable<void>,
+    public readonly getter: () => Thenable<readonly string[]>,
+    public readonly setter?: (values: readonly string[]) => Thenable<void>,
   ) {
     super();
   }
 
-  public get(editor: vscode.TextEditor) {
-    return this.getter(editor);
+  public get() {
+    return this.getter();
   }
 
-  public set(editor: vscode.TextEditor, values: readonly string[]) {
+  public set(values: readonly string[]) {
     if (this.setter === undefined) {
-      throw new Error("Cannot set read-only register.");
+      throw new Error("cannot set read-only register");
     }
 
-    return this.setter(editor, values);
+    return this.setter(values);
   }
 }
 
@@ -289,18 +309,26 @@ class ClipboardRegister extends Register implements Register.Readable,
     return this.lastText === text ? this.lastSelections : [text];
   }
 
-  public set(editor: vscode.TextEditor, values: readonly string[]) {
+  public set(values: readonly string[], document?: vscode.TextDocument) {
     this.lastSelections = values;
-    this.lastText = values.join(editor.document.eol === 1 ? "\n" : "\r\n");
+    this.lastText = values.join(document?.eol === vscode.EndOfLine.CRLF ? "\r\n" : "\n");
 
     return vscode.env.clipboard.writeText(this.lastText);
   }
 }
 
+function activeEditor() {
+  const activeEditor = vscode.window.activeTextEditor;
+
+  EditorRequiredError.throwUnlessAvailable(activeEditor);
+
+  return activeEditor;
+}
+
 /**
- * The set of all registers.
+ * A set of registers.
  */
-export class Registers {
+export abstract class RegisterSet {
   private readonly _named = new Map<string, Register>();
   private readonly _letters = Array.from(
     { length: 26 },
@@ -313,23 +341,80 @@ export class Registers {
 
   private _lastMatches: readonly (readonly string[])[] = [];
 
+  /**
+   * The '"' (`dquote`) register, mapped to the system clipboard and default
+   * register for edit operations.
+   */
   public readonly dquote = new ClipboardRegister();
+
+  /**
+   * The "/" (`slash`) register, default register for search / regex operations.
+   */
   public readonly slash = new GeneralPurposeRegister("/");
+
+  /**
+   * The "@" (`arobase`) register, default register for recordings (aka macros).
+   */
   public readonly arobase = new GeneralPurposeRegister("@");
+
+  /**
+   * The "^" (`caret`) register, default register for saving selections.
+   */
   public readonly caret = new GeneralPurposeRegister("^");
+
+  /**
+   * The "|" (`pipe`) register, default register for outputs of external
+   * commands.
+   */
   public readonly pipe = new GeneralPurposeRegister("|");
 
-  public readonly percent = new SpecialRegister("%", (editor) =>
-    Promise.resolve([editor.document.fileName]),
+  /**
+   * The read-only "%" (`percent`) register, mapped to the name of the current
+   * document.
+   */
+  public readonly percent = new SpecialRegister("%", () =>
+    Promise.resolve([activeEditor().document.fileName]),
   );
-  public readonly dot = new SpecialRegister(".", (editor) =>
-    Promise.resolve(editor.selections.map(editor.document.getText)),
+
+  // TODO: "." and "#" could probably be made read-write.
+
+  /**
+   * The read-only "." (`dot`) register, mapped to the contents of the current
+   * selections.
+   */
+  public readonly dot = new SpecialRegister(".", () => {
+    const editor = activeEditor();
+
+    return Promise.resolve(editor.selections.map((x) => editor.document.getText(x)));
+  });
+
+  /**
+   * The read-only "#" (`hash`) register, mapped to the indices of the current
+   * selections.
+   */
+  public readonly hash = new SpecialRegister("#", () =>
+    Promise.resolve(activeEditor().selections.map((_, i) => i.toString())),
   );
-  public readonly hash = new SpecialRegister("#", (editor) =>
-    Promise.resolve(editor.selections.map((_, i) => i.toString())),
-  );
-  public readonly underscore = new SpecialRegister("_", (_) => Promise.resolve([""]));
+
+  /**
+   * The read-only "_" (`underscore`) register, mapped to an empty string.
+   */
+  public readonly underscore = new SpecialRegister("_", () => Promise.resolve([""]));
+
+  /**
+   * The read-only ":" (`colon`) register, mapped to the last entered command.
+   */
   public readonly colon = new GeneralPurposeRegister(":");
+
+  /**
+   * The `null` register, which forgets selections written to it and always
+   * returns no strings.
+   */
+  public readonly null = new SpecialRegister(
+    "null",
+    () => Promise.resolve([]),
+    () => Promise.resolve(),
+  );
 
   public constructor() {
     for (const [longName, register] of [
@@ -347,9 +432,16 @@ export class Registers {
       this._letters[longName.charCodeAt(0) - 97 /* a */] = register;
       this._named.set(longName, register);
     }
+
+    this._named.set("", this.null);
+    this._named.set("null", this.null);
   }
 
-  public get(key: string) {
+  /**
+   * Returns the register with the given name or identified by the given key if
+   * the input is one-character long.
+   */
+  public get(key: string): Register {
     if (key.length === 1) {
       const charCode = key.charCodeAt(0);
 
@@ -401,8 +493,42 @@ export class Registers {
 
     return register;
   }
+}
+
+/**
+ * The set of all registers linked to a specific document.
+ */
+export class DocumentRegisters extends RegisterSet {
+  public constructor(
+    /**
+     * The document to which the registers are linked.
+     */
+    public readonly document: vscode.TextDocument,
+  ) {
+    super();
+  }
+}
+
+/**
+ * The set of all registers.
+ */
+export class Registers extends RegisterSet {
+  private readonly _perDocument = new WeakMap<vscode.TextDocument, DocumentRegisters>();
+
+  /**
+   * Returns the registers linked to the given document.
+   */
+  public forDocument(document: vscode.TextDocument) {
+    let registers = this._perDocument.get(document);
+
+    if (registers === undefined) {
+      this._perDocument.set(document, registers = new DocumentRegisters(document));
+    }
+
+    return registers;
+  }
 
   public updateRegExpMatches(matches: RegExpExecArray[]) {
-    this._lastMatches = matches.map((m) => m.slice(1));
+    // TODO.
   }
 }

@@ -1,5 +1,8 @@
+import assert = require("assert");
 import * as fs from "fs/promises";
 import * as G from "glob";
+
+const verbose = process.argv.includes("--verbose");
 
 const moduleCommentRe
   = new RegExp(String.raw`\/\*\*\n`                   //     start of doc comment
@@ -118,6 +121,10 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
     return undefined;
   }
 
+  if (verbose) {
+    console.log("Parsing doc comments in module", moduleName);
+  }
+
   const modulePrefix = moduleName === "misc" ? "" : moduleName + ".";
 
   const functions: parseDocComments.ParsedFunction<T>[] = [],
@@ -146,10 +153,28 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
           namespace = namespaces.length === 0 ? undefined : namespaces.join("."),
           returnType = returnTypeString.trim(),
           parameters = parametersString
-            .split(/,(?![^:]+?})/g)
+            .split(/,(?![^:]+?[}>])/g)
             .map((p) => p.trim())
             .filter((p) => p.length > 0)
-            .map((p) => /^(\w+\??|.+[}\]]): *(.+)$/.exec(p)!.slice(1) as [string, string]),
+            .map((p) => {
+              let match: RegExpExecArray | null;
+
+              if (match = /^(\w+\??|.+[}\]]): *(.+)$/.exec(p)) {
+                return match.slice(1) as [string, string];
+              }
+              if (match = /^(\w+) *= *(\d+|true|false)$/.exec(p)) {
+                const type = match[2] === "true" || match[2] === "false"
+                  ? "Argument<boolean>"
+                  : "number";
+
+                return [match[1], `${type} = ${match[2]}`] as [string, string];
+              }
+              if (match = /^(\w+) *= *(\w+)\.([\w.]+)$/.exec(p)) {
+                return [match[1], `${match[2]} = ${match[2]}.${match[3]}`] as [string, string];
+              }
+
+              throw new Error(`unrecognized parameter pattern ${p}`);
+            }),
           docComment = docCommentString
             .split("\n")
             .map((line) => line.slice(indentation).replace(/^ \* ?/g, ""))
@@ -162,8 +187,16 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
 
     for (const parameter of parameters) {
       if (parameter[0].endsWith("?")) {
+        // Optional parameters.
         parameter[0] = parameter[0].slice(0, parameter[0].length - 1);
         parameter[1] += " | undefined";
+      } else {
+        const match = /^(.+?)\s+=\s+(.+)$/.exec(parameter[1]);
+
+        if (match !== null) {
+          // Optional parameters with default values.
+          parameter[1] = match[1] + " | undefined";
+        }
       }
     }
 
@@ -179,12 +212,21 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
           examples = examplesStrings.map(parseExample),
           nameWithDot = functionName.replace(/_/g, ".");
 
+    let qualifiedName = modulePrefix;
+
+    if (namespace !== undefined) {
+      qualifiedName += namespace + ".";
+    }
+
+    if (nameWithDot !== moduleName) {
+      qualifiedName += nameWithDot;
+    }
+
     functions.push({
       namespace,
       name: functionName,
       nameWithDot,
-      qualifiedName: modulePrefix
-        + (namespace === undefined ? nameWithDot : `${namespace}.${nameWithDot}`),
+      qualifiedName,
 
       startLine,
       endLine,
@@ -285,9 +327,12 @@ export namespace parseDocComments {
 export const specialCharacterMapping = {
   "<": "s-,",
   ">": "s-.",
+  "?": "s-/",
   "!": "s-1",
   "$": "s-4",
+  "%": "s-5",
   "&": "s-7",
+  "*": "s-8",
   "(": "s-9",
   ")": "s-0",
   "_": "s--",
@@ -302,9 +347,9 @@ export const specialCharacterRegExp = /[<>!$&()_|]/g;
 /**
  * Async wrapper around the `glob` package.
  */
-export function glob(pattern: string) {
+export function glob(pattern: string, ignore?: string) {
   return new Promise<string[]>((resolve, reject) => {
-    G(pattern, (err, matches) => err ? reject(err) : resolve(matches));
+    G(pattern, { ignore }, (err, matches) => err ? reject(err) : resolve(matches));
   });
 }
 
@@ -312,7 +357,7 @@ export function glob(pattern: string) {
  * Returns all modules for command files.
  */
 export async function getCommandModules() {
-  const commandFiles = await glob(`${__dirname}/commands/**/*.ts`),
+  const commandFiles = await glob(`${__dirname}/commands/**/*.ts`, /* ignore= */ "**/*.build.ts"),
         commandModules = await Promise.all(
           commandFiles.map((path) =>
             fs.readFile(path, "utf-8")
@@ -323,7 +368,11 @@ export async function getCommandModules() {
     .sort((a, b) => a.name!.localeCompare(b.name!));
 }
 
-function parseKeys(keys: string) {
+/**
+ * Parses the short "`s-a-b` (mode)"-like syntax for defining keybindings into
+ * a format compatible with VS Code keybindings.
+ */
+export function parseKeys(keys: string) {
   if (keys.length === 0) {
     return [];
   }
@@ -396,239 +445,22 @@ function getKeybindings(module: Omit<parseDocComments.ParsedModule<any>, "keybin
   ].sort((a, b) => a.command.localeCompare(b.command));
 }
 
-function unindent(by: number, string: string) {
-  return string.replace(new RegExp(`^ {${by}}`, "gm"), "").replace(/^ +$/gm, "");
-}
-
-function capitalize(text: string) {
-  return text[0].toUpperCase() + text.slice(1);
-}
-
-function determineFunctionExpression(f: parseDocComments.ParsedFunction<any>) {
-  const givenParameters: string[] = [];
-  let takeCommandContext = false,
-      takeContext = false,
-      inContext = false;
-
-  for (const [name, type] of f.parameters) {
-    if (type === "CommandContext") {
-      takeCommandContext = true;
-      givenParameters.push("_");
-    } else if (type === "Context") {
-      takeContext = true;
-
-      if (name === "_") {
-        inContext = true;
-      }
-
-      givenParameters.push("ctx");
-    } else if (["count", "repetitions"].includes(name)) {
-      takeCommandContext = true;
-      givenParameters.push("_." + name);
-    } else if (name === "argument") {
-      takeCommandContext = true;
-      givenParameters.push("_.argument as any");
-    } else if (type.startsWith("Register.WithFlags<")) {
-      let flags = type.slice(19, type.length - 1);
-
-      if (flags.endsWith("> | undefine")) {
-        flags = flags.slice(0, flags.length - 12);
-      }
-
-      takeCommandContext = true;
-      givenParameters.push("_.register?.withFlags(" + flags + ")");
-    } else if (name === "register") {
-      takeCommandContext = true;
-      givenParameters.push("_.register");
-    } else if (type === "Extension") {
-      takeCommandContext = true;
-      givenParameters.push("_.extensionState");
-    } else if (type === "vscode.CancellationToken") {
-      takeCommandContext = true;
-      givenParameters.push("_.cancellationToken");
-    } else if (["document", "editor", "editorState", "selections"].includes(name)) {
-      takeContext = true;
-      givenParameters.push("ctx." + name);
-    } else if (name === "input") {
-      takeCommandContext = true;
-      givenParameters.push("(_.argument as any)?.input");
-    } else {
-      throw new Error(`unknown parameter ${JSON.stringify([name, type])}`);
-    }
-  }
-
-  const inputParameters: string[] = [
-    ...(takeCommandContext ? ["_: CommandContext"] : []),
-    ...(takeContext ? ["ctx: Context"] : []),
-  ];
-
-  let call = `${f.name}(${givenParameters.join(", ")})`;
-
-  if (inContext) {
-    call = `ctx.run((ctx) => ${call})`;
-  }
-
-  return `(${inputParameters.join(", ")}) => ${call}`;
-}
-
-function determineSupportedInputs(f: parseDocComments.ParsedFunction<any>) {
-  const supported: string[] = [];
-  let requiresActiveEditor = false;
-
-  for (const [name, type] of f.parameters) {
-    if (name === "count" || name === "repetitions") {
-      supported.push("may be repeated with a given number of repetitions");
-    } else if (name === "register") {
-      supported.push("may be given a specific register");
-    } else if (name === "argument") {
-      if (type.endsWith(" | undefined")) {
-        supported.push(`takes an optional argument of type \`${type.slice(0, type.length - 12)}\``);
-      } else {
-        supported.push(`takes an argument of type \`${type}\``);
-      }
-    } else if (name === "input") {
-      if (type.endsWith(" | undefined")) {
-        supported.push(`takes an optional input of type \`${type.slice(0, type.length - 12)}\``);
-      } else {
-        supported.push(`takes an input of type \`${type}\``);
-      }
-    } else if (/^(Context|vscode.Text(Editor|Document))$/.test(type)) {
-      requiresActiveEditor = true;
-    }
-  }
-
-  if (!requiresActiveEditor) {
-    supported.push("does not require an active text editor");
-  }
-
-  return supported.sort();
-}
-
-function toTable(modules: readonly parseDocComments.ParsedModule<any>[]) {
-  const rows: string[][] = modules.flatMap((module) => {
-    const modulePrefix = module.name === "misc" ? "" : module.name + ".";
-
-    return [...module.functions]
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((f, i, { length }) => [
-        i === 0
-          ? `<td rowspan=${length}><a href="#${module.name}"><code>${module.name}</code></a></td>`
-          : "",
-        `<td><a href="#${(modulePrefix + f.nameWithDot).replace(/\./g, "")}"><code>${
-          modulePrefix + f.nameWithDot}</code></a></td>`,
-        `<td>${f.summary}</td>`,
-        `<td>${
-          parseKeys(f.properties.keys ?? "")
-            .map(({ key, when }) => `<code>${key}</code> (<code>${when}</code>)`).join("")
-        }</td>`,
-      ]);
-  });
-
-  return `
-    <table>
-      <thead>
-        <tr>
-          ${["Category", "Identifier", "Title", "Keybindings"].map((h) => `<th>${h}</th>`).join("")}
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map((row) => `<tr>${row.join("")}</tr>`).join("\n        ")}
-      </tbody>
-    </table>
-  `;
-}
-
 /**
- * Builds the various dynamic files of Dance.
+ * Given a multiline string, returns the same string with all lines starting
+ * with an indentation `>= by` reduced by `by` spaces.
  */
-async function build() {
-  const autogeneratedNotice = "Auto-generated by src/build.ts. Do not edit manually.";
-
-  const commandModules = await getCommandModules();
-
-  await fs.writeFile(`${__dirname}/commands/README.md`, unindent(4, `# Dance commands
-
-    <!-- ${autogeneratedNotice} -->
-
-    <details>
-    <summary><b>Quick reference</b></summary>
-    ${toTable(commandModules)}
-    </details>
-
-    ${commandModules.map((module) => unindent(8, `
-        ## [\`${module.name}\`](./${module.name}.ts)
-
-        ${module.doc!.trim()}
-
-        ${module.functions.map((f) => unindent(12, `
-            ### [\`${module.name === "misc" ? "" : module.name + "."}${f.nameWithDot}\`](./${
-              module.name}.ts#L${f.startLine + 1}-${f.endLine + 1})
-
-            ${f.doc}
-            ${(() => {
-              const supportedInputs = determineSupportedInputs(f);
-
-              return supportedInputs.length === 0
-                ? ""
-                : "This command:" + supportedInputs.map((x) => `\n- ${x}.`).join("");
-            })()}
-        `).trim()).join("\n\n")}
-    `).trim()).join("\n\n")}
-  `), "utf-8");
-
-  await fs.writeFile(`${__dirname}/commands/index.ts`, unindent(4, `// ${autogeneratedNotice}
-    /* eslint-disable max-len */
-
-    import { commands, Context } from "../api";
-    import { CommandContext } from "../command";
-
-    ${commandModules.map((module) => unindent(8, `
-        /**
-         * Loads the "${module.name}" module and returns its defined functions.
-         */
-        async function load${capitalize(module.name!)}Module() {
-          const {${
-            module.functionNames
-              .map((name) => "\n" + " ".repeat(16) + name + ",")
-              .join("")}
-          } = await import("./${module.name}");
-
-          return [${
-            module.functions
-              .map((f) => `\n${" ".repeat(16)}["${module.name === "misc" ? "" : module.name + "."}${
-                f.nameWithDot}", ${determineFunctionExpression(f)}] as const,`)
-              .join("")}${
-            module.additional.concat(...module.functions.map((f) => f.additional))
-              .filter((x) => x.identifier !== undefined && x.commands !== undefined)
-              .map((x) => `\n${" ".repeat(16)}["${module.name === "misc" ? "" : module.name + "."}${
-                x.identifier}", (ctx: Context) => ctx.run(() => commands(${
-                x.commands}))] as const,`)
-              .join("")}
-          ];
-        }
-    `).trim()).join("\n\n")}
-
-    /**
-     * Loads all defined commands and returns an array of \`[functionName,
-     * functionImplementation]\` pairs.
-     */
-    export async function loadCommands() {
-      const perModuleFunctions = await Promise.all([${
-        commandModules
-          .map((module) => `\n${" ".repeat(8)}load${capitalize(module.name!)}Module(),`)
-          .join("")}
-      ]);
-
-      return perModuleFunctions.flat(1);
-    }
-  `), "utf-8");
+export function unindent(by: number, string: string) {
+  return string.replace(new RegExp(`^ {${by}}`, "gm"), "").replace(/^ +$/gm, "");
 }
 
 /**
  * The main entry point of the script.
  */
 async function main() {
+  let success = true;
+
   const ensureUpToDate = process.argv.includes("--ensure-up-to-date"),
+        check = process.argv.includes("--check"),
         contentsBefore: string[] = [],
         fileNames = [`${__dirname}/commands/README.md`, `${__dirname}/commands/index.ts`];
 
@@ -636,22 +468,43 @@ async function main() {
     contentsBefore.push(...await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8"))));
   }
 
-  await build();
+  const commandModules = await getCommandModules();
+
+  await import("./commands/README.build").then((_) => _.build(commandModules));
+  await import("./commands/load-all.build").then((_) => _.build(commandModules));
 
   if (ensureUpToDate) {
-    const assert = await import("assert") as any,
-          contentsAfter = await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8")));
+    const contentsAfter = await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8")));
 
     for (let i = 0; i < fileNames.length; i++) {
-      console.log("Checking file", fileNames[i], "for diffs...");
+      if (verbose) {
+        console.log("Checking file", fileNames[i], "for diffs...");
+      }
 
       // The built-in "assert" module displays a multiline diff if the strings
       // are different, so we use it instead of comparing manually.
       assert.strictEqual(contentsBefore[i], contentsAfter[i]);
     }
   }
+
+  if (check) {
+    const filesToCheck = await glob(`${__dirname}/commands/**/*.ts`, /* ignore= */ "**/*.build.ts"),
+          contentsToCheck = await Promise.all(filesToCheck.map((f) => fs.readFile(f, "utf-8")));
+
+    for (let i = 0; i < filesToCheck.length; i++) {
+      const fileToCheck = filesToCheck[i],
+            contentToCheck = contentsToCheck[i];
+
+      if (contentToCheck.includes("editor.selections")) {
+        console.error("File", fileToCheck, "includes forbidden access to editor.selections.");
+        success = false;
+      }
+    }
+  }
+
+  return success;
 }
 
 if (require.main === module) {
-  main();
+  main().then((success) => process.exit(success ? 0 : 1));
 }
