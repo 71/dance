@@ -51,7 +51,7 @@ module.exports = {
     "no-unexpected-multiline": "error",
     "no-unneeded-ternary": "error",
     "object-curly-spacing": ["error", "always"],
-    "operator-linebreak": ["error", "before"],
+    "operator-linebreak": ["error", "before", { overrides: { "=": "after" } }],
     "object-shorthand": "error",
     "quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
     "semi": ["error", "always"],

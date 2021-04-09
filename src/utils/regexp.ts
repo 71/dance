@@ -364,7 +364,7 @@ export function execLast(re: RegExp, text: string) {
  * Parses a RegExp string with a possible replacement.
  */
 export function parseRegExpWithReplacement(regexp: string) {
-  if (regexp.length < 3 || regexp[0] !== "/") {
+  if (regexp.length < 2 || regexp[0] !== "/") {
     throw new Error("invalid RegExp");
   }
 
@@ -409,6 +409,11 @@ export function parseRegExpWithReplacement(regexp: string) {
         pattern += ch;
       }
     }
+  }
+
+  if ((flags === undefined || flags === "") && /^[miguys]+$/.test(replacement ?? "")) {
+    flags = replacement;
+    replacement = undefined;
   }
 
   try {

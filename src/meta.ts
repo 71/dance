@@ -4,25 +4,25 @@ import * as G from "glob";
 
 const verbose = process.argv.includes("--verbose");
 
-const moduleCommentRe
-  = new RegExp(String.raw`\/\*\*\n`                   //     start of doc comment
-             + String.raw`((?: \*(?:\n| .+\n))+?)`    // #1: doc comment
-             + String.raw` \*\/\n`                    //     end of doc comment
-             + String.raw`declare module \"(.+?)\"`,  // #2: module name
-               "m");
+const moduleCommentRe =
+  new RegExp(String.raw`\/\*\*\n`                   //     start of doc comment
+           + String.raw`((?: \*(?:\n| .+\n))+?)`    // #1: doc comment
+           + String.raw` \*\/\n`                    //     end of doc comment
+           + String.raw`declare module \"(.+?)\"`,  // #2: module name
+             "m");
 
-const docCommentRe
-  = new RegExp(String.raw`^( *)`                               // #1: indentation
-             + String.raw`\/\*\*\n`                            //     start of doc comment
-             + String.raw`((?:\1 \*(?:\n| .+\n))+?)`           // #2: doc comment
-             + String.raw`\1 \*\/\n`                           //     end of doc comment
-             + String.raw`\1export (?:async )?function (\w+)`  // #3: function name
-             + String.raw`\((.+|\n[\s\S]+?^\1)\)`              // #4: parameters
-             + String.raw`(?:: )?(.+)[;{]$`                    // #5: return type (optional)
-             + "|"                                             //     or
-             + String.raw`^ *export namespace (\w+) {\n`       // #6: namespace (alternative)
-             + String.raw`^( +)`,                              // #7: namespace indentation
-               "gm");
+const docCommentRe =
+  new RegExp(String.raw`^( *)`                               // #1: indentation
+           + String.raw`\/\*\*\n`                            //     start of doc comment
+           + String.raw`((?:\1 \*(?:\n| .+\n))+?)`           // #2: doc comment
+           + String.raw`\1 \*\/\n`                           //     end of doc comment
+           + String.raw`\1export (?:async )?function (\w+)`  // #3: function name
+           + String.raw`\((.*|\n[\s\S]+?^\1)\)`              // #4: parameters
+           + String.raw`(?:: )?(.+)[;{]$`                    // #5: return type (optional)
+           + "|"                                             //     or
+           + String.raw`^ *export namespace (\w+) {\n`       // #6: namespace (alternative)
+           + String.raw`^( +)`,                              // #7: namespace indentation
+             "gm");
 
 function countNewLines(text: string) {
   let count = 0;

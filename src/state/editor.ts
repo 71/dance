@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import { DocumentState } from "./document";
 import { extensionName } from "../extension";
-import { assert, commands, selectionsLines } from "../api";
+import { assert, command, commands, Context, selectionsLines } from "../api";
 import { Mode } from "../mode";
 
 /**
@@ -121,28 +121,28 @@ export class EditorState {
       return;
     }
 
-    this.clearDecorations(this._mode);
     this._isChangingMode = true;
 
-    await this.extension.runPromiseSafely(
-      () => commands(...this._mode.onLeaveMode),
-      () => undefined,
-      (e) => `error trying to execute onLeaveMode commands for mode ${
-        JSON.stringify(this._mode.name)}: ${e}`,
-    );
+    const previousMode = this._mode;
 
-    if (temporary && this._previousMode === undefined) {
-      this._previousMode = this._mode;
+    if (previousMode !== undefined) {
+      this.clearDecorations(previousMode);
+
+      await this.runCommands(previousMode.onLeaveMode, (e) =>
+        `error trying to execute onLeaveMode commands for mode ${
+          JSON.stringify(previousMode.name)}: ${e}`,
+      );
+
+      if (temporary && this._previousMode === undefined) {
+        this._previousMode = previousMode;
+      }
     }
-    this._mode = mode;
 
+    this._mode = mode;
     this.updateDecorations(mode);
 
-    await this.extension.runPromiseSafely(
-      () => commands(...mode.onEnterMode),
-      () => undefined,
-      (e) => `error trying to execute onEnterMode commands for mode ${
-        JSON.stringify(mode.name)}: ${e}`,
+    await this.runCommands(mode.onEnterMode, (e) =>
+      `error trying to execute onEnterMode commands for mode ${JSON.stringify(mode.name)}: ${e}`,
     );
 
     if (this.isActive) {
@@ -150,6 +150,19 @@ export class EditorState {
     }
 
     this._isChangingMode = false;
+  }
+
+  private runCommands(
+    commandsToRun: readonly command.Any[],
+    error: (e: any) => string,
+  ) {
+    const context = new Context(this, this.extension.cancellationTokenSource.token);
+
+    return this.extension.runPromiseSafely(
+      () => context.run(() => commands(...commandsToRun)),
+      () => undefined,
+      error,
+    );
   }
 
   /**

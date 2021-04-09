@@ -27,13 +27,18 @@
     <tr><td><a href="#editnewLineabove"><code>edit.newLine.above</code></a></td><td>Insert new line above each selection</td><td><code>Shift+Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editnewLinebelow"><code>edit.newLine.below</code></a></td><td>Insert new line below each selection</td><td><code>Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editreplaceCharacters"><code>edit.replaceCharacters</code></a></td><td>Replace characters</td><td><code>R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=5><a href="#history"><code>history</code></a></td><td><a href="#historyrecordingplay"><code>history.recording.play</code></a></td><td>Play macro</td><td><code>Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=9><a href="#history"><code>history</code></a></td><td><a href="#historybackward"><code>history.backward</code></a></td><td>Move backward in history</td><td><code>Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#historyforward"><code>history.forward</code></a></td><td>Move forward in history</td><td><code>Shift+Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#historyrecordingplay"><code>history.recording.play</code></a></td><td>Play macro</td><td><code>Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyrecordingstart"><code>history.recording.start</code></a></td><td>Start recording macro</td><td><code>Shift+Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyrecordingstop"><code>history.recording.stop</code></a></td><td>Stop recording macro</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#historyredo"><code>history.redo</code></a></td><td>Redo</td><td><code>Shift+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyrepeat"><code>history.repeat</code></a></td><td>Repeat last change</td><td></td></tr>
     <tr><td><a href="#historyrepeatedit"><code>history.repeat.edit</code></a></td><td>Repeat last edit without a command</td><td><code>.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=1><a href="#menus"><code>menus</code></a></td><td><a href="#menusopen"><code>menus.open</code></a></td><td>Open menu</td><td></td></tr>
-    <tr><td rowspan=4><a href="#misc"><code>misc</code></a></td><td><a href="#run"><code>run</code></a></td><td>Run code</td><td></td></tr>
+    <tr><td><a href="#historyundo"><code>history.undo</code></a></td><td>Undo</td><td><code>U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=6><a href="#misc"><code>misc</code></a></td><td><a href="#cancel"><code>cancel</code></a></td><td>Cancel Dance operation</td><td></td></tr>
+    <tr><td><a href="#openMenu"><code>openMenu</code></a></td><td>Open menu</td><td></td></tr>
+    <tr><td><a href="#run"><code>run</code></a></td><td>Run code</td><td></td></tr>
     <tr><td><a href="#selectRegister"><code>selectRegister</code></a></td><td>Select register for next command</td><td><code>"</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#toggle"><code>toggle</code></a></td><td>Toggle default key bindings</td><td></td></tr>
     <tr><td><a href="#updateCount"><code>updateCount</code></a></td><td>Update Dance count</td><td></td></tr>
@@ -215,6 +220,34 @@ This command:
 
 Interact with history.
 
+### [`history.undo`](./history.ts#L12-17)
+
+Undo.
+
+This command:
+- does not require an active text editor.
+
+### [`history.redo`](./history.ts#L21-26)
+
+Redo.
+
+This command:
+- does not require an active text editor.
+
+### [`history.backward`](./history.ts#L30-35)
+
+Move backward in history.
+
+This command:
+- does not require an active text editor.
+
+### [`history.forward`](./history.ts#L38-43)
+
+Move forward in history.
+
+This command:
+- does not require an active text editor.
+
 ### [`history.repeat`](./history.ts#L46-59)
 
 Repeat last change.
@@ -263,20 +296,6 @@ This command:
 - accepts a register (by default, it uses `arobase`).
 - does not require an active text editor.
 
-## [`menus`](./menus.ts)
-
-Open menus.
-
-### [`menus.open`](./menus.ts#L13-22)
-
-Open menu.
-
-This command:
-- does not require an active text editor.
-- takes an argument `additionalArgs` of type `any[]`.
-- takes an argument `menu` of type `Menu`.
-- takes an input of type `string`.
-
 ## [`misc`](./misc.ts)
 
 Miscellaneous commands that don't deserve their own category.
@@ -291,6 +310,13 @@ commands:
 ### [`toggle`](./misc.ts#L19-22)
 
 Toggle default key bindings.
+
+This command:
+- does not require an active text editor.
+
+### [`cancel`](./misc.ts#L26-29)
+
+Cancel Dance operation.
 
 This command:
 - does not require an active text editor.
@@ -338,6 +364,16 @@ Update the current counter used to repeat the next command.
 This command:
 - takes an argument `addDigits` of type `number`.
 - takes an input of type `number`.
+
+### [`openMenu`](./misc.ts#L154-163)
+
+Open menu.
+
+This command:
+- does not require an active text editor.
+- takes an argument `additionalArgs` of type `any[]`.
+- takes an argument `menu` of type `Menu`.
+- takes an input of type `string`.
 
 ## [`modes`](./modes.ts)
 
@@ -545,29 +581,30 @@ This command:
 
 Interacting with selections.
 
-### [`selections.saveText`](./selections.ts#L15-24)
+### [`selections.saveText`](./selections.ts#L16-25)
 
 Copy selections text.
 
 This command:
 - accepts a register (by default, it uses `dquote`).
 
-### [`selections.save`](./selections.ts#L28-39)
+### [`selections.save`](./selections.ts#L29-42)
 
 Save selections.
 
 This command:
 - accepts a register (by default, it uses `caret`).
 - takes an argument `style` of type `object`.
+- takes an argument `until` of type `AutoDisposable.Event[]`.
 
-### [`selections.restore`](./selections.ts#L68-76)
+### [`selections.restore`](./selections.ts#L69-77)
 
 Restore selections.
 
 This command:
 - accepts a register (by default, it uses `caret`).
 
-### [`selections.restore.withCurrent`](./selections.ts#L80-100)
+### [`selections.restore.withCurrent`](./selections.ts#L88-108)
 
 Combine register selections with current ones.
 
@@ -583,7 +620,7 @@ This command:
 - accepts a register (by default, it uses `caret`).
 - takes an argument `reverse` of type `boolean`.
 
-### [`selections.pipe`](./selections.ts#L198-220)
+### [`selections.pipe`](./selections.ts#L209-231)
 
 Pipe selections.
 
@@ -604,25 +641,25 @@ This command:
 - accepts a register (by default, it uses `pipe`).
 - takes an input of type `string`.
 
-### [`selections.extendToLines`](./selections.ts#L263-270)
+### [`selections.extendToLines`](./selections.ts#L274-281)
 
 Extend to lines.
 
 Extend selections to contain full lines (including end-of-line characters).
 
-### [`selections.trimLines`](./selections.ts#L297-304)
+### [`selections.trimLines`](./selections.ts#L308-315)
 
 Trim lines.
 
 Trim selections to only contain full lines (from start to line break).
 
-### [`selections.trimWhitespace`](./selections.ts#L329-336)
+### [`selections.trimWhitespace`](./selections.ts#L340-347)
 
 Trim whitespace.
 
 Trim whitespace at beginning and end of selections.
 
-### [`selections.filter`](./selections.ts#L361-377)
+### [`selections.filter`](./selections.ts#L372-388)
 
 Filter selections.
 
@@ -636,11 +673,11 @@ This command:
 - takes an argument `defaultInput` of type `string`.
 - takes an input of type `string`.
 
-### [`selections.split`](./selections.ts#L409-416)
+### [`selections.split`](./selections.ts#L420-427)
 
 Split selections.
 
-### [`selections.splitLines`](./selections.ts#L419-424)
+### [`selections.splitLines`](./selections.ts#L430-435)
 
 Split selections at line boundaries.
 

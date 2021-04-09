@@ -133,6 +133,14 @@ expect.addAssertion<vscode.Position>(
 );
 
 expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to be empty at coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to start at", new vscode.Position(line, character))
+      .and("[not] to be empty");
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
   "<selection> [not] to be empty",
   (expect, subject) => {
     expect(subject, "[not] to satisfy", { isEmpty: true });
@@ -174,6 +182,62 @@ expect.addAssertion<vscode.Selection>(
   },
 );
 
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to (have anchor|be anchored) at coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to be anchored at", new vscode.Position(line, character));
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to (have cursor|be active) at coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to be active at", new vscode.Position(line, character));
+  },
+);
+
+function selectionBuilder() {
+  return {
+    empty(line: number | vscode.Position, character?: number) {
+      if (typeof line === "number") {
+        line = new vscode.Position(line, character!);
+      }
+
+      return new vscode.Selection(line, line);
+    },
+    anchor(line: number | vscode.Position, character?: number) {
+      const anchorPosition = typeof line === "number"
+        ? new vscode.Position(line, character!)
+        : line;
+
+      return {
+        active(line: number | vscode.Position, character?: number) {
+          const activePosition = typeof line === "number"
+            ? new vscode.Position(line, character!)
+            : line;
+
+          return new vscode.Selection(anchorPosition, activePosition);
+        },
+      };
+    },
+    active(line: number | vscode.Position, character?: number) {
+      const activePosition = typeof line === "number"
+        ? new vscode.Position(line, character!)
+        : line;
+
+      return {
+        anchor(line: number | vscode.Position, character?: number) {
+          const anchorPosition = typeof line === "number"
+            ? new vscode.Position(line, character!)
+            : line;
+
+          return new vscode.Selection(anchorPosition, activePosition);
+        },
+      };
+    },
+  };
+}
+
 const AsyncFunction = async function () {}.constructor as FunctionConstructor;
 
 suite("API tests", function () {
@@ -196,8 +260,8 @@ suite("API tests", function () {
     await context.run(() => code(...argValues));
   });
 
-  const argNames = [...Object.keys(api), "vscode", "assert", "expect"],
-        argValues = [...Object.values(api), vscode, assert, expect];
+  const argNames = [...Object.keys(api), "vscode", "assert", "expect", "selection"],
+        argValues = [...Object.values(api), vscode, assert, expect, selectionBuilder];
 
   // Discover all tests.
   const basedir = path.join(this.file!, "../../../../src/api"),

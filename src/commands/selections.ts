@@ -4,6 +4,7 @@ import { Context, EmptySelectionsError, moveWhile, Positions, prompt, promptInLi
 import { Mode } from "../mode";
 import { Register } from "../register";
 import { CharSet, getCharacters } from "../utils/charset";
+import { AutoDisposable } from "../utils/disposables";
 import { SettingsValidator } from "../utils/settings-validator";
 import { TrackedSelection } from "../utils/tracked-selection";
 
@@ -31,38 +32,38 @@ export function saveText(
  * @keys `s-z` (normal)
  */
 export function save(
+  _: Context,
   document: vscode.TextDocument,
   selections: readonly vscode.Selection[],
-  register: RegisterOr<"caret", Register.Flags.CanReadSelections>,
+  register: RegisterOr<"caret", Register.Flags.CanWriteSelections>,
 
   style?: Argument<object>,
+  until?: Argument<AutoDisposable.Event[]>,
 ) {
-  // TODO dispose of selection set automatically
-  todo();
+  const trackedSelections = TrackedSelection.fromArray(selections, document);
+  let trackedSelectionSet: TrackedSelection.Set;
 
-  // const existingMarks = register.getSelectionSet();
+  if (typeof style === "object") {
+    const validator = new SettingsValidator(),
+          renderOptions = Mode.decorationObjectToDecorationRenderOptions(style, validator);
 
-  // if (existingMarks !== undefined) {
-  //   documentState.forgetSelections(existingMarks);
-  // }
+    validator.throwErrorIfNeeded();
 
-  // const trackedSelections = TrackedSelection.fromArray(selections, document);
-  // let trackedSelectionSet: TrackedSelection.Set;
+    trackedSelectionSet =
+      new TrackedSelection.StyledSet(trackedSelections, _.editor, renderOptions);
+  } else {
+    trackedSelectionSet = new TrackedSelection.Set(trackedSelections, document);
+  }
 
-  // if (typeof style === "object") {
-  //   const validator = new SettingsValidator(),
-  //         renderOptions = Mode.decorationObjectToDecorationRenderOptions(style, validator);
+  const disposable = _.extensionState
+    .createAutoDisposable()
+    .addNotifyingDisposable(trackedSelectionSet);
 
-  //   validator.throwErrorIfNeeded();
+  if (Array.isArray(until)) {
+    until.forEach((until) => disposable.disposeOnUserEvent(until, _.editorState));
+  }
 
-  //   trackedSelectionSet
-  //     = new TrackedSelection.StyledSet(editor, trackedSelections, renderOptions);
-  // } else {
-  //   trackedSelectionSet = new TrackedSelection.Set(trackedSelections);
-  // }
-
-  // documentState.trackSelectionSet(trackedSelectionSet);
-  // register.setSelectionSet(document, trackedSelectionSet);
+  register.replaceSelectionSet(trackedSelectionSet)?.dispose();
 }
 
 /**
@@ -74,7 +75,14 @@ export function restore(
   _: Context,
   register: RegisterOr<"caret", Register.Flags.CanReadSelections>,
 ) {
-  _.selections = throwIfRegisterHasNoSelections(register);
+  const selectionSet = register.getSelectionSet();
+
+  if (selectionSet === undefined || selectionSet.selections.length === 0) {
+    throw new EmptySelectionsError(`no selections are saved in register "${register.name}"`);
+  }
+
+  return _.switchToDocument(selectionSet.document, /* alsoFocusEditor= */ true)
+    .then(() => _.selections = selectionSet.restore());
 }
 
 /**
@@ -98,13 +106,16 @@ export async function restore_withCurrent(
 
   reverse: Argument<boolean> = false,
 ) {
-  const marks = throwIfRegisterHasNoSelections(register);
-  let from = marks,
+  const savedSelections = register.getSelections();
+
+  EmptySelectionsError.throwIfRegisterIsEmpty(savedSelections, register.name);
+
+  let from = savedSelections,
       add = _.selections;
 
   if (reverse) {
     from = _.selections;
-    add = marks;
+    add = savedSelections;
   }
 
   const type = await promptInList(false, [
@@ -423,14 +434,4 @@ export async function split(
  */
 export function splitLines(_: Context) {
 
-}
-
-function throwIfRegisterHasNoSelections(
-  register: Register & Register.ReadableSelections,
-) {
-  const selections = register.getSelections();
-
-  EmptySelectionsError.throwIfRegisterIsEmpty(selections, register.name);
-
-  return selections;
 }

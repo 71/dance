@@ -8,13 +8,7 @@
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch"
-    },
-    {
-      "name": "Debug TypeScript",
-      "type": "node",
-      "request": "launch",
-      "args": ["node_modules/typescript/bin/tsc", "-p", "."],
+      "preLaunchTask": "npm: watch",
     },
     {
       "name": "Run all tests",

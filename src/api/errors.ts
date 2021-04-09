@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { Register } from "../register";
 import { EditorState } from "../state/editor";
 import { Context } from "./context";
 
@@ -53,10 +54,10 @@ export class EmptySelectionsError extends Error {
   /**
    * Throws if the selections of the given register are empty.
    */
-  public static throwIfRegisterIsEmpty(
-    selections: readonly vscode.Selection[] | undefined,
+  public static throwIfRegisterIsEmpty<T>(
+    selections: readonly T[] | undefined,
     registerName: string,
-  ): asserts selections is readonly vscode.Selection[] {
+  ): asserts selections is readonly T[] {
     if (selections === undefined || selections.length === 0) {
       throw new EmptySelectionsError(`no selections are saved in register "${registerName}"`);
     }

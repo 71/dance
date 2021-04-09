@@ -948,6 +948,36 @@ export namespace Selections {
 
   /**
    * Returns whether the given selection spans an entire line.
+   *
+   * ### Example
+   *
+   * ```js
+   * expect(Selections.isEntireLine(Selections.current[0]), "to be true");
+   * expect(Selections.isEntireLine(Selections.current[1]), "to be false");
+   * ```
+   *
+   * With:
+   * ```
+   * abc
+   * ^^^^ 0
+   * def
+   * ^^^ 1
+   * ```
+   *
+   * ### Example
+   * Use `isEntireLines` for multi-line selections.
+   *
+   * ```js
+   * expect(Selections.isEntireLine(Selections.current[0]), "to be false");
+   * ```
+   *
+   * With:
+   * ```
+   * abc
+   * ^^^^ 0
+   * def
+   * ^^^^ 0
+   * ```
    */
   export function isEntireLine(selection: vscode.Selection | vscode.Range) {
     const start = selection.start,
@@ -958,6 +988,28 @@ export namespace Selections {
 
   /**
    * Returns whether the given selection spans one or more entire lines.
+   *
+   * ### Example
+   *
+   * ```js
+   * expect(Selections.isEntireLines(Selections.current[0]), "to be true");
+   * expect(Selections.isEntireLines(Selections.current[1]), "to be true");
+   * expect(Selections.isEntireLines(Selections.current[2]), "to be false");
+   * ```
+   *
+   * With:
+   * ```
+   * abc
+   * ^^^^ 0
+   * def
+   * ^^^^ 0
+   * ghi
+   * ^^^^ 1
+   * jkl
+   * ^^^^ 2
+   * mno
+   * ^^^ 2
+   * ```
    */
   export function isEntireLines(selection: vscode.Selection | vscode.Range) {
     const start = selection.start,
@@ -968,6 +1020,25 @@ export namespace Selections {
 
   /**
    * Returns the length of the given selection.
+   *
+   * ### Example
+   *
+   * ```js
+   * expect(Selections.length(Selections.current[0]), "to be", 7);
+   * expect(Selections.length(Selections.current[1]), "to be", 1);
+   * expect(Selections.length(Selections.current[2]), "to be", 0);
+   * ```
+   *
+   * With:
+   * ```
+   * abc
+   * ^^^^ 0
+   * def
+   * ^^^ 0
+   * ghi
+   * ^ 1
+   *   | 2
+   * ```
    */
   export function length(
     selection: vscode.Selection | vscode.Range,
@@ -1058,6 +1129,45 @@ export namespace Selections {
    * Transforms a list of caret-mode selections (that is, regular selections as
    * manipulated internally) into a list of character-mode selections (that is,
    * selections modified to include a block character in them).
+   *
+   * This function should be used before setting the selections of a
+   * `vscode.TextEditor` if the selection behavior is `Character`.
+   *
+   * ### Example
+   * Forward-facing, non-empty selections are reduced by one character.
+   *
+   * ```js
+   * expect(Selections.toCharacterMode([selection().anchor(0, 0).active(0, 1)]), "to satisfy", [
+   *   expect.it("to be empty at coords", 0, 0),
+   * ]);
+   *
+   * expect(Selections.toCharacterMode([selection().anchor(0, 1).active(1, 0)]), "to satisfy", [
+   *   expect.it("to be empty at coords", 0, 1),
+   * ]);
+   *
+   * expect(Selections.toCharacterMode([selection().anchor(0, 0).active(1, 1)]), "to satisfy", [
+   *   expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 1, 0),
+   * ]);
+   *
+   * // Same lines as above, but with anchor and active reversed: nothing changes.
+   * expect(Selections.toCharacterMode([selection().active(0, 0).anchor(0, 1)]), "to satisfy", [
+   *   selection().active(0, 0).anchor(0, 1),
+   * ]);
+   *
+   * expect(Selections.toCharacterMode([selection().active(0, 1).anchor(1, 0)]), "to satisfy", [
+   *   selection().active(0, 1).anchor(1, 0),
+   * ]);
+   *
+   * expect(Selections.toCharacterMode([selection().active(0, 0).anchor(1, 1)]), "to satisfy", [
+   *   selection().active(0, 0).anchor(1, 1),
+   * ]);
+   * ```
+   *
+   * With:
+   * ```
+   * a
+   * b
+   * ```
    */
   export function toCharacterMode(
     selections: readonly vscode.Selection[],
@@ -1120,6 +1230,47 @@ export namespace Selections {
   /**
    * Reverses the changes made by `toCharacterMode` by increasing by one the
    * length of every empty or forward-facing selection.
+   *
+   * This function should be used on the selections of a `vscode.TextEditor` if
+   * the selection behavior is `Character`.
+   *
+   * ### Example
+   * Selections remain empty in empty documents.
+   *
+   * ```js
+   * expect(Selections.fromCharacterMode([selection().empty(0, 0)]), "to satisfy", [
+   *   expect.it("to be empty at coords", 0, 0),
+   * ]);
+   * ```
+   *
+   * With:
+   * ```
+   * ```
+   *
+   * ### Example
+   * Empty selections automatically become 1-character selections.
+   *
+   * ```js
+   * expect(Selections.fromCharacterMode([selection().empty(0, 0)]), "to satisfy", [
+   *   expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 0, 1),
+   * ]);
+   *
+   * // At the end of the line, it selects the line ending:
+   * expect(Selections.fromCharacterMode([selection().empty(0, 1)]), "to satisfy", [
+   *   expect.it("to have anchor at coords", 0, 1).and("to have cursor at coords", 1, 0),
+   * ]);
+   *
+   * // But it does nothing at the end of the document:
+   * expect(Selections.fromCharacterMode([selection().empty(2, 0)]), "to satisfy", [
+   *   expect.it("to be empty at coords", 2, 0),
+   * ]);
+   * ```
+   *
+   * With:
+   * ```
+   * a
+   * b
+   * ```
    */
   export function fromCharacterMode(
     selections: readonly vscode.Selection[],

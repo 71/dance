@@ -1,9 +1,15 @@
 import * as vscode from "vscode";
+import { EditorState } from "../state/editor";
+import { Extension } from "../state/extension";
 
 declare class WeakRef<T extends object> {
   public constructor(value: T);
 
   public deref(): T | undefined;
+}
+
+export interface NotifyingDisposable extends vscode.Disposable {
+  readonly onDisposed: vscode.Event<this>;
 }
 
 /**
@@ -19,6 +25,24 @@ export class AutoDisposable implements vscode.Disposable {
     this._disposables = disposables;
   }
 
+  /**
+   * Disposes of all the wrapped disposables.
+   */
+  public dispose() {
+    this._boundDispose = undefined;
+
+    const disposables = this._disposables;
+
+    for (let i = 0, len = disposables.length; i < len; i++) {
+      disposables[i].dispose();
+    }
+
+    disposables.length = 0;
+  }
+
+  /**
+   * Whether the `AutoDisposable` has been disposed of.
+   */
   public get isDisposed() {
     return this._boundDispose === undefined;
   }
@@ -33,10 +57,16 @@ export class AutoDisposable implements vscode.Disposable {
   public addDisposable(disposable: vscode.Disposable) {
     if (this._boundDispose === undefined) {
       disposable.dispose();
-      return;
+      return this;
     }
 
     this._disposables.push(disposable);
+
+    return this;
+  }
+
+  public addNotifyingDisposable(disposable: NotifyingDisposable) {
+    return this.addDisposable(disposable).disposeOnEvent(disposable.onDisposed);
   }
 
   /**
@@ -109,18 +139,58 @@ export class AutoDisposable implements vscode.Disposable {
     return this;
   }
 
-  /**
-   * Disposes of all the wrapped disposables.
-   */
-  public dispose() {
-    this._boundDispose = undefined;
+  public disposeOnUserEvent(event: AutoDisposable.Event, editorState: EditorState) {
+    let eventName: AutoDisposable.EventType,
+        eventOpts: object;
 
-    const disposables = this._disposables;
+    if (Array.isArray(event)) {
+      if (event.length === 0) {
+        throw new Error();
+      }
 
-    for (let i = 0, len = disposables.length; i < len; i++) {
-      disposables[i].dispose();
+      if (typeof event[0] === "string") {
+        eventName = event[0] as AutoDisposable.EventType;
+      } else {
+        throw new Error();
+      }
+
+      if (event.length === 2) {
+        eventOpts = event[1];
+
+        if (typeof eventOpts !== "object" || eventOpts === null) {
+          throw new Error();
+        }
+      } else if (event.length === 1) {
+        eventOpts = {};
+      } else {
+        throw new Error();
+      }
+    } else if (typeof event === "string") {
+      eventName = event;
+      eventOpts = {};
+    } else {
+      throw new Error();
     }
 
-    disposables.length = 0;
+    switch (eventName) {
+    case "mode-did-change":
+      editorState.extension.onModeDidChange((e) => {
+        if (e === editorState) {
+          this.dispose();
+        }
+      }, undefined, this._disposables);
+      break;
+
+    default:
+      throw new Error();
+    }
   }
+}
+
+export namespace AutoDisposable {
+  export const enum EventType {
+    OnModeDidChange = "mode-did-change",
+  }
+
+  export type Event = EventType | readonly [EventType, object];
 }

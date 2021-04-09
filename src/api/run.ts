@@ -180,11 +180,7 @@ export namespace run {
  * Runs the VS Code command with the given identifier and optional arguments.
  */
 export function command(commandName: string, ...args: readonly any[]): Thenable<any> {
-  if (commandName.startsWith(".")) {
-    commandName = `dance${commandName}`;
-  }
-
-  return vscode.commands.executeCommand(commandName, ...args);
+  return commands([commandName, ...args]).then((x) => x[0]);
 }
 
 /**
@@ -355,15 +351,21 @@ export namespace execute {
 function getShell() {
   let os: string;
 
-  if (process.platform === "cygwin") {
+  switch (process.platform) {
+  case "cygwin":
+  case "linux":
     os = "linux";
-  } else if (process.platform === "linux") {
-    os = "linux";
-  } else if (process.platform === "darwin") {
+    break;
+
+  case "darwin":
     os = "osx";
-  } else if (process.platform === "win32") {
+    break;
+
+  case "win32":
     os = "windows";
-  } else {
+    break;
+
+  default:
     return undefined;
   }
 
@@ -387,12 +389,7 @@ export function switchRun(string: string, context?: object) {
     return Context.WithoutActiveEditor.wrap(Promise.resolve());
   }
 
-  if (string.startsWith("#")) {
-    // Shell command.
-    return execute(string.slice(1), (context as Record<string, any>)?.$);
-  }
-
-  if (string.startsWith("/") && /\/[miguys]{0,6}$/.test(string)) {
+  if (string[0] === "/") {
     // RegExp replace or match.
     const [regexp, replacement] = parseRegExpWithReplacement(string);
 
@@ -401,6 +398,11 @@ export function switchRun(string: string, context?: object) {
     }
 
     return Context.WithoutActiveEditor.wrap(Promise.resolve(string.replace(regexp, replacement)));
+  }
+
+  if (string[0] === "#") {
+    // Shell command.
+    return execute(string.slice(1), (context as Record<string, any>)?.$);
   }
 
   // JavaScript expression.

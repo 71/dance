@@ -199,13 +199,8 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
               lineHighlight: null,
               lineNumbers: "inherit",
               selectionStyle: null,
-            },
-            normal: {
-              cursorStyle: "inherit",
-              lineHighlight: "editor.hoverHighlightBackground",
-              lineNumbers: "relative",
               onEnterMode: [
-                { command: ".trackSelections",
+                { command: ".selections.save",
                   args: {
                     style: {
                       borderColor: "$editor.selectionBackground",
@@ -217,10 +212,15 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
                 },
               ],
               onLeaveMode: [
-                { command: ".restoreSelections",
+                { command: ".selections.restore",
                   args: {},
                 },
               ],
+            },
+            normal: {
+              cursorStyle: "inherit",
+              lineHighlight: "editor.hoverHighlightBackground",
+              lineNumbers: "relative",
               selectionStyle: null,
             },
           },

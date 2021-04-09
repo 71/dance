@@ -10,6 +10,7 @@ import { SettingsValidator } from "../utils/settings-validator";
 import { loadCommands } from "../commands/load-all";
 import { Recorder } from "../api/record";
 import { Commands } from "../commands";
+import { AutoDisposable } from "../utils/disposables";
 
 // =============================================================================================
 // ==  MODE-SPECIFIC CONFIGURATION  ============================================================
@@ -29,6 +30,11 @@ export const enum SelectionBehavior {
  */
 export class Extension implements vscode.Disposable {
   // Events.
+  private readonly _onModeDidChange = new vscode.EventEmitter<EditorState>();
+
+  public readonly onModeDidChange = this._onModeDidChange.event;
+
+  // Misc.
   private readonly configurationChangeHandlers = new Map<string, () => void>();
   private readonly subscriptions: vscode.Disposable[] = [];
 
@@ -179,7 +185,7 @@ export class Extension implements vscode.Disposable {
     }
   }
 
-  public setEnabled(enabled: boolean, changeConfiguration: boolean) {
+  public async setEnabled(enabled: boolean, changeConfiguration: boolean) {
     if (enabled === this.enabled) {
       return;
     }
@@ -195,6 +201,9 @@ export class Extension implements vscode.Disposable {
 
       this._documentStates = new Map();
       this._commands = undefined;
+      this._autoDisposables.forEach((disposable) => disposable.dispose());
+
+      assert(this._autoDisposables.size === 0);
 
       vscode.commands.executeCommand("setContext", extensionName + ".enabled", false);
 
@@ -238,22 +247,19 @@ export class Extension implements vscode.Disposable {
         }),
       );
 
-      loadCommands().then((commands) => {
-        if (!this.enabled) {
-          return;
-        }
+      this._commands = await loadCommands();
 
-        this._commands = commands;
-
-        for (const descriptor of Object.values(commands)) {
-          this.subscriptions.push(descriptor.register(this));
-        }
-      });
+      for (const descriptor of Object.values(this._commands!)) {
+        this.subscriptions.push(descriptor.register(this));
+      }
 
       const activeEditor = vscode.window.activeTextEditor;
 
       if (activeEditor !== undefined) {
-        this.getEditorState(activeEditor).onDidBecomeActive();
+        const activeEditorState = this.getEditorState(activeEditor);
+
+        this._activeEditorState = activeEditorState;
+        activeEditorState.onDidBecomeActive();
       }
 
       vscode.commands.executeCommand("setContext", extensionName + ".enabled", true);
@@ -324,6 +330,28 @@ export class Extension implements vscode.Disposable {
     for (const documentState of this.documentStates()) {
       yield* documentState.editorStates();
     }
+  }
+
+  // =============================================================================================
+  // ==  DISPOSABLES  ============================================================================
+  // =============================================================================================
+
+  private readonly _autoDisposables = new Set<AutoDisposable>();
+
+  /**
+   * Returns an `AutoDisposable` bound to this extension. It is ensured that any
+   * disposable added to it will be disposed of when the extension is unloaded.
+   */
+  public createAutoDisposable() {
+    const disposable = new AutoDisposable();
+
+    disposable.addDisposable({
+      dispose: () => this._autoDisposables.delete(disposable),
+    });
+
+    this._autoDisposables.add(disposable);
+
+    return disposable;
   }
 
   // =============================================================================================

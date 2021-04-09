@@ -3,5 +3,17 @@
     "out": true
   },
   "editor.rulers": [80, 100],
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "typescript.tsdk": "node_modules/typescript/lib",
+
+  // Disable italic on doc comments since they contain a lot of Markdown:
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "comment.block.documentation",
+        "settings": {
+          "fontStyle": "",
+        },
+      },
+    ],
+  },
 }

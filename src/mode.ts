@@ -79,7 +79,9 @@ export class Mode {
     this._inheritsFrom = modes.vscodeMode;
     this._raw = rawConfiguration;
 
-    this.apply(rawConfiguration, new SettingsValidator());
+    if (rawConfiguration != null) {
+      this.apply(rawConfiguration, new SettingsValidator());
+    }
   }
 
   public dispose() {
@@ -128,7 +130,7 @@ export class Mode {
               return top[name];
             }
 
-            return convert(value as any, validator);
+            return validator.forProperty(rawName, (validator) => convert(value as any, validator));
           };
 
     // Cursor style.
@@ -217,8 +219,8 @@ export class Mode {
       if (changed) {
         this._selectionDecorationOptions = selectionDecorationOptions;
         this._selectionDecorationType?.dispose();
-        this._selectionDecorationType
-          = vscode.window.createTextEditorDecorationType(selectionDecorationOptions);
+        this._selectionDecorationType =
+          vscode.window.createTextEditorDecorationType(selectionDecorationOptions);
         changedProperties.push("selectionDecorationType", "selectionDecorationOptions");
       }
     } else if (this._selectionDecorationOptions !== undefined) {
@@ -309,7 +311,9 @@ export class Mode {
       const value = object[name];
 
       if (value) {
-        options[name] = value[0] === "#" ? value : new vscode.ThemeColor(value);
+        validator.enter(name);
+        options[name] = this.stringToColor(value, validator);
+        validator.leave();
       }
     }
 
@@ -317,7 +321,7 @@ export class Mode {
       const value = object[name];
 
       if (value) {
-        options[name] = name;
+        options[name] = value;
       }
     }
 
@@ -325,11 +329,49 @@ export class Mode {
       const value = object[name];
 
       if (value) {
-        options[name] = name;
+        options[name] = value;
       }
     }
 
     return options;
+  }
+
+  public static stringToColor(value: unknown, validator: SettingsValidator) {
+    if (typeof value !== "string" || value.length === 0) {
+      validator.reportInvalidSetting("color must be a non-empty string");
+
+      return "#000";
+    }
+
+    if (value[0] === "$") {
+      if (/^\$[\w]+(\.\w+)*$/.test(value)) {
+        return new vscode.ThemeColor(value.slice(1));
+      }
+
+      validator.reportInvalidSetting("invalid color reference " + value);
+      return "#000";
+    }
+
+    if (value[0] === "#") {
+      if (/^#([a-fA-F0-9]{3}|[a-fA-F0-9]{6}|[a-fA-F0-9]{8})$/.test(value)) {
+        return value;
+      }
+
+      validator.reportInvalidSetting("invalid color " + value);
+      return "#000";
+    }
+
+    if (value.startsWith("rgb")) {
+      if (/^rgb\( *\d+ *, *\d+ *, *\d+ *\)$|^rgba\( *\d+ *, *\d+ *, *\d+ *, *\d+ *\)$/.test(value)) {
+        return value;
+      }
+
+      validator.reportInvalidSetting("invalid color " + value);
+      return "#000";
+    }
+
+    validator.reportInvalidSetting("unknown color format " + value);
+    return "#000";
   }
 }
 
@@ -391,21 +433,22 @@ export class Modes {
    * The "VS Code" mode, which represents the settings assigned to the editor
    * without taking Dance settings into account.
    */
-  private readonly _vscodeMode = new Mode(this, "", {
-    cursorStyle: "line",
-    inheritFrom: null,
-    lineHighlight: null,
-    lineNumbers: "on",
-    selectionBehavior: "caret",
-    selectionStyle: {},
-  });
+  private readonly _vscodeMode = new Mode(this, "", undefined!);
   private readonly _modes = new Map<string, Mode>([]);
 
-  private _defaultMode: Mode = new Mode(this, "default", {});
-  private _expectedDefaultModeName: string = "default";
+  private _defaultMode = new Mode(this, "default", {});
+  private _expectedDefaultModeName = "default";
 
   public constructor() {
     this._modes.set("default", this._defaultMode);
+    this._vscodeMode.apply({
+      cursorStyle: "line",
+      inheritFrom: null,
+      lineHighlight: null,
+      lineNumbers: "on",
+      selectionBehavior: "caret",
+      selectionStyle: {},
+    }, new SettingsValidator());
   }
 
   public get defaultMode() {

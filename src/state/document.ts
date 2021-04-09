@@ -11,10 +11,8 @@ import { assert } from "../api";
 export class DocumentState {
   private readonly _editorStates: EditorState[] = [];
   private readonly _history = new History(this.document);
-  private readonly _trackedSelections: TrackedSelection.Set[] = [];
 
   private readonly _recordedChanges: RecordedChange[] = [];
-  private readonly _recordedSelectionSet = new TrackedSelection.Set([]);
 
   public constructor(
     /** The extension for which state is being kept. */
@@ -22,9 +20,7 @@ export class DocumentState {
 
     /** The editor for which state is being kept. */
     public readonly document: vscode.TextDocument,
-  ) {
-    this._trackedSelections.push(this._recordedSelectionSet);
-  }
+  ) {}
 
   /**
    * Disposes of the resources owned by and of the subscriptions of this
@@ -38,14 +34,6 @@ export class DocumentState {
     }
 
     editorStates.length = 0;
-
-    const trackedSelectionSets = this._trackedSelections;
-
-    for (let i = 0, len = trackedSelectionSets.length; i < len; i++) {
-      trackedSelectionSets[i].dispose();
-    }
-
-    trackedSelectionSets.length = 0;
 
     this._history.clear();
     this._recordedChanges.length = 0;
@@ -88,12 +76,6 @@ export class DocumentState {
    * Called when `vscode.workspace.onDidChangeTextDocument` is triggered.
    */
   public onDidChangeTextDocument(e: vscode.TextDocumentChangeEvent) {
-    const trackedSelectionSets = this._trackedSelections;
-
-    for (let i = 0; i < trackedSelectionSets.length; i++) {
-      trackedSelectionSets[i].updateAfterDocumentChanged(e.contentChanges);
-    }
-
     const editorStates = this._editorStates;
 
     for (let i = 0; i < editorStates.length; i++) {
@@ -101,44 +83,6 @@ export class DocumentState {
     }
 
     this._history.recordChanges(e.contentChanges);
-  }
-
-  // =============================================================================================
-  // ==  SAVED SELECTIONS  =======================================================================
-  // =============================================================================================
-
-  /**
-   * Saves the given selection set, tracking changes to the given document and
-   * updating its selections correspondingly over time.
-   */
-  public trackSelectionSet(selectionSet: TrackedSelection.Set) {
-    this._trackedSelections.push(selectionSet);
-  }
-
-  /**
-   * Saves the given selections, tracking changes to the given document and
-   * updating the selections correspondingly over time.
-   */
-  public trackSelections(selections: readonly vscode.Selection[]) {
-    const trackedSelections = TrackedSelection.fromArray(selections, this.document),
-          trackedSelectionSet = new TrackedSelection.Set(trackedSelections);
-
-    this.trackSelectionSet(trackedSelectionSet);
-
-    return trackedSelectionSet;
-  }
-
-  /**
-   * Forgets the given saved selections.
-   */
-  public forgetSelections(trackedSelectionSet: TrackedSelection.Set) {
-    const index = this._trackedSelections.indexOf(trackedSelectionSet);
-
-    if (index !== -1) {
-      this._trackedSelections.splice(index, 1);
-    }
-
-    trackedSelectionSet.dispose();
   }
 }
 

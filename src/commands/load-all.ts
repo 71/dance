@@ -11,7 +11,7 @@ function getRegister<F extends Register.Flags>(
   defaultRegisterName: string,
   requiredFlags: F,
 ): Register.WithFlags<F> {
-  let register: Register = argument.register;
+  let register = argument.register;
   const extension = _.extensionState;
 
   if (typeof register === "string") {
@@ -20,9 +20,9 @@ function getRegister<F extends Register.Flags>(
     register = extension.currentRegister ?? extension.registers.get(defaultRegisterName);
   }
 
-  register.ensureFlags(requiredFlags);
+  register.checkFlags(requiredFlags);
 
-  return (argument.register = register);
+  return (argument.register = register as any);
 }
 
 function getInput(_: Context.WithoutActiveEditor, argument: { input?: any }): any {
@@ -281,14 +281,28 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
  */
 async function loadHistoryModule(): Promise<CommandDescriptor[]> {
   const {
+    backward,
+    forward,
     recording_play,
     recording_start,
     recording_stop,
+    redo,
     repeat,
     repeat_edit,
+    undo,
   } = await import("./history");
 
   return [
+    new CommandDescriptor(
+      "dance.history.backward",
+      (_) => backward(),
+      false,
+    ),
+    new CommandDescriptor(
+      "dance.history.forward",
+      (_) => forward(),
+      false,
+    ),
     new CommandDescriptor(
       "dance.history.recording.play",
       (_, argument) => recording_play(getRepetitions(_, argument), getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros)),
@@ -305,6 +319,11 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
       false,
     ),
     new CommandDescriptor(
+      "dance.history.redo",
+      (_) => redo(),
+      false,
+    ),
+    new CommandDescriptor(
       "dance.history.repeat",
       (_, argument) => repeat(getRepetitions(_, argument), argument.include, argument.exclude),
       false,
@@ -312,6 +331,11 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.history.repeat.edit",
       (_, argument) => repeat_edit(getRepetitions(_, argument)),
+      false,
+    ),
+    new CommandDescriptor(
+      "dance.history.undo",
+      (_) => undo(),
       false,
     ),
     new CommandDescriptor(
@@ -328,27 +352,12 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
 }
 
 /**
- * Loads the "menus" module and returns its defined commands.
- */
-async function loadMenusModule(): Promise<CommandDescriptor[]> {
-  const {
-    open,
-  } = await import("./menus");
-
-  return [
-    new CommandDescriptor(
-      "dance.menus.open",
-      (_, argument) => open(_, getInput(_, argument), argument.menu, argument.additionalArgs),
-      false,
-    ),
-  ];
-}
-
-/**
  * Loads the "misc" module and returns its defined commands.
  */
 async function loadMiscModule(): Promise<CommandDescriptor[]> {
   const {
+    cancel,
+    openMenu,
     run,
     selectRegister,
     toggle,
@@ -356,6 +365,16 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
   } = await import("./misc");
 
   return [
+    new CommandDescriptor(
+      "dance.cancel",
+      (_) => cancel(),
+      false,
+    ),
+    new CommandDescriptor(
+      "dance.openMenu",
+      (_, argument) => openMenu(_, getInput(_, argument), argument.menu, argument.additionalArgs),
+      false,
+    ),
     new CommandDescriptor(
       "dance.run",
       (_, argument) => run(_, getInput(_, argument), argument.commands),
@@ -703,7 +722,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.save",
-      (_, argument) => save(_.document, _.selections, getRegister(_, argument, "caret", Register.Flags.CanReadSelections), argument.style),
+      (_, argument) => _.run((_) => save(_, _.document, _.selections, getRegister(_, argument, "caret", Register.Flags.CanWriteSelections), argument.style, argument.until)),
       true,
     ),
     new CommandDescriptor(
@@ -805,7 +824,6 @@ export async function loadCommands(): Promise<Commands> {
   const allModules = await Promise.all([
     loadEditModule(),
     loadHistoryModule(),
-    loadMenusModule(),
     loadMiscModule(),
     loadModesModule(),
     loadSearchModule(),

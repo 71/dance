@@ -17,7 +17,7 @@ export function register(name: string): Thenable<readonly string[] | undefined>;
 export function register(name: string, i?: number) {
   const register: Register = Context.current.extensionState.registers.get(name);
 
-  register.ensureFlags(Register.Flags.CanRead);
+  register.ensureCanRead();
 
   if (i === undefined) {
     return register.get();
@@ -42,7 +42,7 @@ export namespace register {
   export function selection(name: string, i?: number): any {
     const register: Register = Context.current.extensionState.registers.get(name);
 
-    register.ensureFlags(Register.Flags.CanReadSelections);
+    register.ensureCanReadSelections();
 
     if (i === undefined) {
       return Promise.resolve(register.getSelections());

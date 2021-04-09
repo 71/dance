@@ -17,7 +17,7 @@ export async function build(commandModules: parseDocComments.ParsedModule<void>[
       defaultRegisterName: string,
       requiredFlags: F,
     ): Register.WithFlags<F> {
-      let register: Register = argument.register;
+      let register = argument.register;
       const extension = _.extensionState;
 
       if (typeof register === "string") {
@@ -26,9 +26,9 @@ export async function build(commandModules: parseDocComments.ParsedModule<void>[
         register = extension.currentRegister ?? extension.registers.get(defaultRegisterName);
       }
 
-      register.ensureFlags(requiredFlags);
+      register.checkFlags(requiredFlags);
 
-      return (argument.register = register);
+      return (argument.register = register as any);
     }
 
     function getInput(_: Context.WithoutActiveEditor, argument: { input?: any }): any {

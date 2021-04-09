@@ -147,34 +147,70 @@ export namespace TrackedSelection {
    * A set of `TrackedSelection`s.
    */
   export class Set implements vscode.Disposable {
+    private readonly _onDisposed = new vscode.EventEmitter<this>();
     private readonly _selections: TrackedSelection[];
+    private readonly _subscription: vscode.Disposable;
 
-    public get selections(): readonly TrackedSelection[] {
-      return this._selections;
+    public get onDisposed() {
+      return this._onDisposed.event;
     }
 
-    public constructor(selections: TrackedSelection[], public readonly flags = Flags.Inclusive) {
+    public get selections() {
+      return this._selections as readonly TrackedSelection[];
+    }
+
+    public constructor(
+      selections: TrackedSelection[],
+      public readonly document: vscode.TextDocument,
+      public readonly flags = Flags.Inclusive,
+    ) {
       this._selections = selections;
+      this._subscription =
+        vscode.workspace.onDidChangeTextDocument(this.updateAfterDocumentChanged, this);
+    }
+
+    public addTrackedSelections(selections: readonly TrackedSelection[]) {
+      this._selections.push(...selections);
+
+      return this;
+    }
+
+    public addSelections(selections: readonly vscode.Selection[]) {
+      return this.addTrackedSelections(TrackedSelection.fromArray(selections, this.document));
     }
 
     public addTrackedSelection(selection: TrackedSelection) {
-      this._selections.push(selection);
+      return this.addTrackedSelections([selection]);
+    }
+
+    public addSelection(selection: vscode.Selection) {
+      return this.addTrackedSelection(TrackedSelection.from(selection, this.document));
     }
 
     /**
      * Updates the tracked selections to reflect a change in their document.
+     *
+     * @returns whether the change was applied.
      */
-    public updateAfterDocumentChanged(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
+    protected updateAfterDocumentChanged(e: vscode.TextDocumentChangeEvent) {
+      if (e.document !== this.document || e.contentChanges.length === 0) {
+        return false;
+      }
+
       const trackedSelections = this._selections,
-            flags = this.flags;
+            flags = this.flags,
+            changes = e.contentChanges;
 
       for (let i = 0, len = trackedSelections.length; i < len; i++) {
         trackedSelections[i].updateAfterDocumentChanged(changes, flags);
       }
+
+      return true;
     }
 
-    public restore(document: vscode.TextDocument) {
-      const trackedSelections = this.selections,
+    public restore() {
+      const document = this.document,
+            trackedSelections = this.selections,
             trackedSelectionsLen = trackedSelections.length,
             selections = new Array<vscode.Selection>(trackedSelectionsLen);
 
@@ -187,6 +223,7 @@ export namespace TrackedSelection {
 
     public dispose() {
       this._selections.length = 0;
+      this._subscription.dispose();
     }
   }
 
@@ -198,25 +235,32 @@ export namespace TrackedSelection {
     private readonly _decorationType: vscode.TextEditorDecorationType;
 
     public constructor(
-      public readonly editor: vscode.TextEditor,
       selections: TrackedSelection[],
+      public readonly editor: Pick<vscode.TextEditor, "setDecorations" | "document">,
       renderOptions: vscode.DecorationRenderOptions,
     ) {
-      super(selections);
+      super(selections, editor.document);
 
       this._decorationType = vscode.window.createTextEditorDecorationType(renderOptions);
+      this.editor.setDecorations(this._decorationType, this.restore());
     }
 
-    public addTrackedSelection(selection: TrackedSelection) {
-      super.addTrackedSelection(selection);
+    public addTrackedSelections(selections: readonly TrackedSelection[]) {
+      super.addTrackedSelections(selections);
 
-      this.editor.setDecorations(this._decorationType, this.restore(this.editor.document));
+      this.editor.setDecorations(this._decorationType, this.restore());
+
+      return this;
     }
 
-    public updateAfterDocumentChanged(changes: readonly vscode.TextDocumentContentChangeEvent[]) {
-      super.updateAfterDocumentChanged(changes);
+    protected updateAfterDocumentChanged(e: vscode.TextDocumentChangeEvent) {
+      if (!super.updateAfterDocumentChanged(e)) {
+        return false;
+      }
 
-      this.editor.setDecorations(this._decorationType, this.restore(this.editor.document));
+      this.editor.setDecorations(this._decorationType, this.restore());
+
+      return true;
     }
 
     public dispose() {

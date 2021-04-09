@@ -209,15 +209,10 @@
               "cursorStyle": "inherit",
               "lineHighlight": null,
               "lineNumbers": "inherit",
-              "selectionStyle": null
-            },
-            "normal": {
-              "cursorStyle": "inherit",
-              "lineHighlight": "editor.hoverHighlightBackground",
-              "lineNumbers": "relative",
+              "selectionStyle": null,
               "onEnterMode": [
                 {
-                  "command": ".trackSelections",
+                  "command": ".selections.save",
                   "args": {
                     "style": {
                       "borderColor": "$editor.selectionBackground",
@@ -230,10 +225,15 @@
               ],
               "onLeaveMode": [
                 {
-                  "command": ".restoreSelections",
+                  "command": ".selections.restore",
                   "args": {}
                 }
-              ],
+              ]
+            },
+            "normal": {
+              "cursorStyle": "inherit",
+              "lineHighlight": "editor.hoverHighlightBackground",
+              "lineNumbers": "relative",
               "selectionStyle": null
             }
           },
@@ -779,6 +779,16 @@
         "category": "Dance"
       },
       {
+        "command": "dance.history.backward",
+        "title": "Move backward in history",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.forward",
+        "title": "Move forward in history",
+        "category": "Dance"
+      },
+      {
         "command": "dance.history.recording.play",
         "title": "Play macro",
         "category": "Dance"
@@ -794,6 +804,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.history.redo",
+        "title": "Redo",
+        "category": "Dance"
+      },
+      {
         "command": "dance.history.repeat",
         "title": "Repeat last change",
         "category": "Dance"
@@ -801,6 +816,11 @@
       {
         "command": "dance.history.repeat.edit",
         "title": "Repeat last edit without a command",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.undo",
+        "title": "Undo",
         "category": "Dance"
       },
       {
@@ -814,7 +834,12 @@
         "category": "Dance"
       },
       {
-        "command": "dance.menus.open",
+        "command": "dance.cancel",
+        "title": "Cancel Dance operation",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.openMenu",
         "title": "Open menu",
         "category": "Dance"
       },
@@ -1496,6 +1521,18 @@
         }
       },
       {
+        "key": "Alt+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Move backward in history",
+        "command": "dance.history.backward"
+      },
+      {
+        "key": "Shift+Alt+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Move forward in history",
+        "command": "dance.history.forward"
+      },
+      {
         "key": "Q",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Play macro",
@@ -1514,10 +1551,22 @@
         "command": "dance.history.recording.stop"
       },
       {
+        "key": "Shift+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Redo",
+        "command": "dance.history.redo"
+      },
+      {
         "key": ".",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Repeat last edit without a command",
         "command": "dance.history.repeat.edit"
+      },
+      {
+        "key": "U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Undo",
+        "command": "dance.history.undo"
       },
       {
         "key": "Alt+.",

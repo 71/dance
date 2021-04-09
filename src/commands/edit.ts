@@ -16,6 +16,7 @@ import {
 } from "../api";
 import { Register } from "../register";
 import { Argument, InputOr, RegisterOr } from ".";
+import { TrackedSelection } from "../utils/tracked-selection";
 
 /**
  * Perform changes on the text content of the document.
@@ -50,13 +51,13 @@ declare module "./edit";
  */
 export async function insert(
   _: Context,
-  selections: vscode.Selection[],
+  selections: readonly vscode.Selection[],
   register: RegisterOr<"dquote", Register.Flags.CanRead>,
 
   adjust: Argument<boolean> = false,
   handleNewLine: Argument<boolean> = false,
   select: Argument<boolean> = false,
-  where: Argument<"active" | "anchor" | "start" | "end" | undefined> = undefined,
+  where?: Argument<"active" | "anchor" | "start" | "end" | undefined>,
 ) {
   let contents = await register.get();
 
@@ -87,9 +88,9 @@ export async function insert(
     );
   }
 
-  return edit((editBuilder, _, document) => {
+  return edit((editBuilder) => {
     const trackedSelections = select
-      ? Context.current.documentState.trackSelections(selections)
+      ? new TrackedSelection.Set(TrackedSelection.fromArray(selections, _.document), _.document)
       : undefined;
 
     for (let i = 0; i < selections.length; i++) {
@@ -113,8 +114,8 @@ export async function insert(
       return;
     }
 
-    Context.current.documentState.forgetSelections(trackedSelections);
-    Selections.set(trackedSelections.restore(document));
+    Selections.set(trackedSelections.restore());
+    trackedSelections.dispose();
   });
 }
 

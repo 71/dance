@@ -19,6 +19,16 @@ export class SettingsValidator {
     this.path.pop();
   }
 
+  public forProperty<T>(property: string, f: (validator: this) => T) {
+    this.enter(property);
+
+    try {
+      return f(this);
+    } finally {
+      this.leave();
+    }
+  }
+
   public reportInvalidSetting(message: string, name?: string) {
     const suffix = name === undefined ? "" : "." + name;
 
@@ -32,7 +42,7 @@ export class SettingsValidator {
       return;
     }
 
-    return vscode.window.showInformationMessage("Invalid settings: " + errors.join(" — "));
+    return vscode.window.showErrorMessage("Invalid settings: " + errors.join(" — "));
   }
 
   public throwErrorIfNeeded() {
