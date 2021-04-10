@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Argument, InputOr, RegisterOr } from ".";
-import { Context, EmptySelectionsError, moveWhile, Positions, prompt, promptInList, Selections, switchRun, todo } from "../api";
+import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, promptInList, Selections, switchRun, todo } from "../api";
 import { Mode } from "../mode";
 import { Register } from "../register";
 import { CharSet, getCharacters } from "../utils/charset";
@@ -271,6 +271,75 @@ export async function pipe(
   await register.set(strings);
 }
 
+let lastFilterInput: string | undefined;
+
+/**
+ * Filter selections.
+ *
+ * @keys `$` (normal)
+ *
+ * #### Additional commands
+ *
+ * | Title               | Identifier      | Keybinding     | Commands                                          |
+ * | ------------------- | --------------- | -------------- | ------------------------------------------------- |
+ * | Filter with RegExp  | `filter.regexp` | `s` (normal)   | `[".selections.filter", { "defaultInput": "/" }]` |
+ */
+export async function filter(
+  _: Context,
+  inputOr: InputOr<string>,
+
+  defaultInput?: Argument<string>,
+) {
+  defaultInput ??= lastFilterInput;
+
+  const input = await inputOr(() => prompt({
+    prompt: "Enter an expression",
+    validateInput(value) {
+      try {
+        switchRun.validate(value);
+        lastFilterInput = value;
+      } catch (e) {
+        return e?.message ?? `${e}`;
+      }
+    },
+    value: defaultInput,
+    valueSelection: defaultInput === undefined ? undefined : [0, defaultInput.length],
+  }, _));
+
+  const document = _.document,
+        selections = _.selections,
+        strings = selections.map((selection) => document.getText(selection));
+
+  return _.run(() =>
+    Selections.filter.byIndex(async (i) => {
+      try {
+        return !!await switchRun(input, { $: strings[i], $$: strings, i });
+      } catch {
+        return false;
+      }
+    }).then(Selections.set),
+  );
+}
+
+/**
+ * Split selections.
+ *
+ * @keys `s-s` (normal)
+ */
+export async function split(
+  _: Context,
+) {
+}
+
+/**
+ * Split selections at line boundaries.
+ *
+ * @keys `a-s` (normal)
+ */
+export function splitLines(_: Context) {
+
+}
+
 /**
  * Extend to lines.
  *
@@ -367,71 +436,66 @@ export function trimWhitespace(_: Context) {
   });
 }
 
-let lastFilterInput: string | undefined;
-
 /**
- * Filter selections.
+ * Reduce selections to their cursor.
  *
- * @keys `$` (normal)
+ * @param where Which edge each selection should be reduced to; defaults to
+ *   "active".
  *
- * #### Additional commands
- *
- * | Title               | Identifier      | Keybinding     | Commands                                          |
- * | ------------------- | --------------- | -------------- | ------------------------------------------------- |
- * | Filter with RegExp  | `filter.regexp` | `s` (normal)   | `[".selections.filter", { "defaultInput": "/" }]` |
+ * @keys `;` (normal)
  */
-export async function filter(
+export function reduce(
   _: Context,
-  inputOr: InputOr<string>,
 
-  defaultInput?: Argument<string>,
+  where: Argument<"active" | "anchor" | "start" | "end"> = "active",
 ) {
-  defaultInput ??= lastFilterInput;
-
-  const input = await inputOr(() => prompt({
-    prompt: "Enter an expression",
-    validateInput(value) {
-      try {
-        switchRun.validate(value);
-        lastFilterInput = value;
-      } catch (e) {
-        return e?.message ?? `${e}`;
-      }
-    },
-    value: defaultInput,
-    valueSelection: defaultInput === undefined ? undefined : [0, defaultInput.length],
-  }, _));
-
-  const document = _.document,
-        selections = _.selections,
-        strings = selections.map((selection) => document.getText(selection));
-
-  return _.run(() =>
-    Selections.filter.byIndex(async (i) => {
-      try {
-        return !!await switchRun(input, { $: strings[i], $$: strings, i });
-      } catch {
-        return false;
-      }
-    }).then(Selections.set),
+  ArgumentError.validate(
+    "where",
+    ["active", "anchor", "start", "end"].includes(where),
+    `"where" must be "active", "anchor", "start", "end", or undefined`,
   );
+
+  Selections.update.byIndex((_, selection) => Selections.empty(selection[where]));
 }
 
 /**
- * Split selections.
+ * Change direction of selections.
  *
- * @keys `s-s` (normal)
+ * @param direction If unspecified, flips each direction. Otherwise, ensures
+ *   that all selections face the given direction.
+ *
+ * @keys `a-;` (normal)
+ *
+ * #### Variants
+ *
+ * | Title               | Identifier     | Keybinding     | Command                                                |
+ * | ------------------- | -------------- | -------------- | ------------------------------------------------------ |
+ * | Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { "direction": 1 }]`  |
+ * | Backward selections | `faceBackward` |                | `[".selections.changeDirection", { "direction": -1 }]` |
  */
-export async function split(
-  _: Context,
-) {
+export function changeDirection(_: Context, direction?: Direction) {
+  switch (direction) {
+  case Direction.Backward:
+    Selections.update.byIndex((_, selection) =>
+      selection.isReversed || selection.isEmpty
+        ? selection
+        : new vscode.Selection(selection.end, selection.start));
+    break;
+
+  case Direction.Forward:
+    Selections.update.byIndex((_, selection) =>
+      selection.isReversed
+        ? new vscode.Selection(selection.start, selection.end)
+        : selection);
+    break;
+
+  default:
+    Selections.update.byIndex((_, selection) =>
+      selection.isEmpty
+        ? selection
+        : new vscode.Selection(selection.active, selection.anchor));
+    break;
+  }
 }
 
-/**
- * Split selections at line boundaries.
- *
- * @keys `a-s` (normal)
- */
-export function splitLines(_: Context) {
 
-}

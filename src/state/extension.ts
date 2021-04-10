@@ -332,6 +332,10 @@ export class Extension implements vscode.Disposable {
     }
   }
 
+  public notifyModeDidChange(editorState: EditorState) {
+    this._onModeDidChange.fire(editorState);
+  }
+
   // =============================================================================================
   // ==  DISPOSABLES  ============================================================================
   // =============================================================================================

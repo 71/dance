@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Argument, InputOr } from ".";
-import { Context, Direction, keypress, moveTo, Positions, Selections, Shift, todo, updateSelections } from "../api";
+import { Context, Direction, keypress, moveTo, Positions, Selections, Shift, todo } from "../api";
 
 /**
  * Update selections based on the text surrounding them.
@@ -36,7 +36,7 @@ export async function character(
 ) {
   const input = await inputOr(() => keypress(_.cancellationToken));
 
-  updateSelections.byIndex((_, selection, document) => {
+  Selections.update.byIndex((_, selection, document) => {
     let position: vscode.Position | undefined = Selections.seekFrom(selection, direction);
 
     for (let i = 0; i < repetitions; i++) {

@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 
-import { Argument } from ".";
-import { Context, Direction, Selections, showMenu, todo } from "../api";
+import { Context, Positions, Selections, Shift, showMenu } from "../api";
 
 /**
  * Update selections based on their position in the document.
@@ -25,38 +24,124 @@ export function buffer(_: Context) {
 export function toLine(
   _: Context,
   count: number,
+  shift = Shift.Jump,
 ) {
   if (count === 0) {
     return showMenu.byName("goto");
   }
 
-  todo();
+  return lineStart(_, count, shift);
 }
 
 /**
- * Select line.
+ * Select line below.
+ *
+ * @keys `x` (normal)
  */
-export function line(
-  count: number,
-
-  direction = Direction.Forward,
-) {
+export function line_below(_: Context, count: number) {
   if (count === 0 || count === 1) {
-    todo();
-  }
+    Selections.update.byIndex((_, selection) => {
+      let line = Selections.activeLine(selection);
 
-  todo();
+      if (Selections.isEntireLines(selection)) {
+        line++;
+      }
+
+      return new vscode.Selection(line, 0, line + 1, 0);
+    });
+  } else {
+    Selections.update.byIndex((_, selection, document) => {
+      const line = Math.min(Selections.activeLine(selection) + count - 1, document.lineCount - 1);
+
+      return new vscode.Selection(line, 0, line + 1, 0);
+    });
+  }
 }
 
 /**
- * Extend line.
+ * Extend to line below.
+ *
+ * @keys `s-x` (normal)
  */
-export function line_extend(
-  count: number,
+export function line_below_extend(_: Context, count: number) {
+  if (count === 0 || count === 1) {
+    Selections.update.byIndex((_, selection) => {
+      const isFullLine = Selections.isEntireLine(selection),
+            isFullLineDiff = isFullLine ? 1 : 0,
+            isSameLine = isFullLine || Selections.isSingleLine(selection);
 
-  direction = Direction.Forward,
-) {
-  todo();
+      const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor,
+            active = selection.active.character === 0 && !selection.isReversed && !isSameLine
+              ? selection.active.translate(1 + isFullLineDiff)
+              : new vscode.Position(Selections.activeLine(selection) + 1 + isFullLineDiff, 0);
+
+      return new vscode.Selection(anchor, active);
+    });
+  } else {
+    Selections.update.byIndex((_, selection, document) => {
+      const line = Math.min(Selections.activeLine(selection) + count - 1, document.lineCount - 1),
+            isSameLine = Selections.isSingleLine(selection);
+
+      const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor,
+            active = new vscode.Position(line + 1, 0);
+
+      return new vscode.Selection(anchor, active);
+    });
+  }
+}
+
+/**
+ * Select line above.
+ */
+export function line_above(_: Context, count: number) {
+  if (count === 0 || count === 1) {
+    Selections.update.byIndex((_, selection) => {
+      let line = Selections.activeLine(selection);
+
+      if (!Selections.isEntireLines(selection)) {
+        line++;
+      }
+
+      return new vscode.Selection(line, 0, line - 1, 0);
+    });
+  } else {
+    Selections.update.byIndex((_, selection) => {
+      const line = Math.max(Selections.activeLine(selection) - count + 1, 0);
+
+      return new vscode.Selection(line, 0, line - 1, 0);
+    });
+  }
+}
+
+/**
+ * Extend to line above.
+ */
+export function line_above_extend(_: Context, count: number) {
+  // TODO: fix this logic
+  if (count === 0 || count === 1) {
+    Selections.update.byIndex((_, selection) => {
+      const isFullLine = Selections.isEntireLine(selection),
+            isFullLineDiff = isFullLine ? -1 : 0,
+            isSameLine = isFullLine || Selections.isSingleLine(selection);
+
+      const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor,
+            active = selection.active.character === 0 && !selection.isReversed && !isSameLine
+              ? selection.active.translate(-1 + isFullLineDiff)
+              : new vscode.Position(Selections.activeLine(selection) - 1 + isFullLineDiff, 0);
+
+      return new vscode.Selection(anchor, active);
+    });
+  } else {
+    Selections.update.byIndex((_, selection) => {
+      const line = Math.max(Selections.activeLine(selection) - count + 1, 0),
+            isSameLine = Selections.isSingleLine(selection);
+
+      const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor,
+            active = new vscode.Position(line - 1, 0);
+
+      return new vscode.Selection(anchor, active);
+    });
+  }
 }
 
 /**
@@ -66,21 +151,27 @@ export function line_extend(
  *
  * #### Variants
  *
- * | Title                | Identifier           | Keybinding                          | Command                                       |
- * | -------------------- | -------------------- | ----------------------------------- | --------------------------------------------- |
- * | Extend to line start | `toLineStart.extend` | `s-a-h` (normal), `s-home` (normal) | `[".select.toLineStart", { "extend": true }]` |
+ * | Title                | Identifier         | Keybinding                          | Command                                        |
+ * | -------------------- | ------------------ | ----------------------------------- | ---------------------------------------------- |
+ * | Extend to line start | `lineStart.extend` | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", { "shift": "extend" }]` |
  */
-export function toLineStart(
-  document: vscode.TextDocument,
+export function lineStart(
+  _: Context,
 
   count: number,
-  extend: Argument<boolean> = false,
+  shift = Shift.Select,
 ) {
   if (count > 0) {
-    return todo();
+    const selection = _.selections[0],
+          newLine = Math.min(_.document.lineCount - 1, count),
+          newSelection = Selections.shift(selection, Positions.lineStart(newLine), shift);
+
+    return Selections.set([newSelection]);
   }
 
-  todo();
+  Selections.update.byIndex((_, selection) =>
+    Selections.shift(selection, Positions.lineStart(Selections.activeLine(selection)), shift),
+  );
 }
 
 /**
@@ -90,19 +181,25 @@ export function toLineStart(
  *
  * #### Variants
  *
- * | Title              | Identifier         | Keybinding                         | Command                                     |
- * | ------------------ | ------------------ | ---------------------------------- | ------------------------------------------- |
- * | Extend to line end | `toLineEnd.extend` | `s-a-l` (normal), `s-end` (normal) | `[".select.toLineEnd", { "extend": true }]` |
+ * | Title              | Identifier       | Keybinding                         | Command                                      |
+ * | ------------------ | ---------------- | ---------------------------------- | -------------------------------------------- |
+ * | Extend to line end | `lineEnd.extend` | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", { "shift": "extend" }]` |
  */
-export function toLineEnd(
-  document: vscode.TextDocument,
+export function lineEnd(
+  _: Context,
 
   count: number,
-  extend: Argument<boolean> = false,
+  shift = Shift.Select,
 ) {
   if (count > 0) {
-    return todo();
+    const selection = _.selections[0],
+          newLine = Math.min(_.document.lineCount - 1, count),
+          newSelection = Selections.shift(selection, Positions.lineEnd(newLine), shift);
+
+    return Selections.set([newSelection]);
   }
 
-  todo();
+  Selections.update.byIndex((_, selection, doc) =>
+    Selections.shift(selection, Positions.lineEnd(Selections.activeLine(selection), doc), shift),
+  );
 }

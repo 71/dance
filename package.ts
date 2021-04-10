@@ -208,6 +208,9 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
                       borderWidth: "2px",
                       borderRadius: "1px",
                     },
+                    until: [
+                      ["mode-did-change", { except: "insert" }],
+                    ],
                   },
                 },
               ],
@@ -507,7 +510,7 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
     }))),
     keybindings: (() => {
       const keybindings = modules.flatMap((module) => module.keybindings),
-            alphanum = [..."abcdefghijklmnopqrstuvwxyz0123456789"],
+            alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
             keysToAssign = new Set([...alphanum, ...alphanum.map((x) => `Shift+${x}`), ...",'"]);
 
       for (const keybinding of keybindings) {
@@ -516,7 +519,7 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
 
       for (const keyToAssign of keysToAssign) {
         keybindings.push({
-          command: "dance.cancel",
+          command: "dance.ignore",
           key: keyToAssign,
           when: "editorTextFocus && dance.mode == 'normal'",
         });

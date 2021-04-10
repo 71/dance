@@ -150,6 +150,7 @@ export class EditorState {
     }
 
     this._isChangingMode = false;
+    this.extension.notifyModeDidChange(this);
   }
 
   private runCommands(

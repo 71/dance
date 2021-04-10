@@ -36,29 +36,34 @@
     <tr><td><a href="#historyrepeat"><code>history.repeat</code></a></td><td>Repeat last change</td><td></td></tr>
     <tr><td><a href="#historyrepeatedit"><code>history.repeat.edit</code></a></td><td>Repeat last edit without a command</td><td><code>.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyundo"><code>history.undo</code></a></td><td>Undo</td><td><code>U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=6><a href="#misc"><code>misc</code></a></td><td><a href="#cancel"><code>cancel</code></a></td><td>Cancel Dance operation</td><td></td></tr>
+    <tr><td rowspan=7><a href="#misc"><code>misc</code></a></td><td><a href="#cancel"><code>cancel</code></a></td><td>Cancel Dance operation</td><td></td></tr>
+    <tr><td><a href="#ignore"><code>ignore</code></a></td><td>Ignore key</td><td></td></tr>
     <tr><td><a href="#openMenu"><code>openMenu</code></a></td><td>Open menu</td><td></td></tr>
     <tr><td><a href="#run"><code>run</code></a></td><td>Run code</td><td></td></tr>
-    <tr><td><a href="#selectRegister"><code>selectRegister</code></a></td><td>Select register for next command</td><td><code>"</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectRegister"><code>selectRegister</code></a></td><td>Select register for next command</td><td><code>Shift+'</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#toggle"><code>toggle</code></a></td><td>Toggle default key bindings</td><td></td></tr>
     <tr><td><a href="#updateCount"><code>updateCount</code></a></td><td>Update Dance count</td><td></td></tr>
     <tr><td rowspan=2><a href="#modes"><code>modes</code></a></td><td><a href="#modesset"><code>modes.set</code></a></td><td>Set Dance mode</td><td></td></tr>
     <tr><td><a href="#modessettemporarily"><code>modes.set.temporarily</code></a></td><td>Set Dance mode temporarily</td><td></td></tr>
     <tr><td rowspan=3><a href="#search"><code>search</code></a></td><td><a href="#searchnext"><code>search.next</code></a></td><td>Select next match</td><td><code>N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#searchsearch"><code>search.search</code></a></td><td>Search</td><td><code>/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#searchselection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Alt+*</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#searchselection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Shift+Alt+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=3><a href="#seek"><code>seek</code></a></td><td><a href="#seekcharacter"><code>seek.character</code></a></td><td>Select to character (excluded)</td><td><code>T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#seekwordEnd"><code>seek.wordEnd</code></a></td><td>Select to next word end</td><td><code>E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#seekwordStart"><code>seek.wordStart</code></a></td><td>Select to next word start</td><td><code>W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=6><a href="#select"><code>select</code></a></td><td><a href="#selectbuffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>%</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#selectline"><code>select.line</code></a></td><td>Select line</td><td></td></tr>
-    <tr><td><a href="#selectlineextend"><code>select.line.extend</code></a></td><td>Extend line</td><td></td></tr>
+    <tr><td rowspan=8><a href="#select"><code>select</code></a></td><td><a href="#selectbuffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectlineabove"><code>select.line.above</code></a></td><td>Select line above</td><td></td></tr>
+    <tr><td><a href="#selectlineaboveextend"><code>select.line.above.extend</code></a></td><td>Extend to line above</td><td></td></tr>
+    <tr><td><a href="#selectlinebelow"><code>select.line.below</code></a></td><td>Select line below</td><td><code>X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectlinebelowextend"><code>select.line.below.extend</code></a></td><td>Extend to line below</td><td><code>Shift+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectlineEnd"><code>select.lineEnd</code></a></td><td>Select to line end</td><td><code>Alt+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>End</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectlineStart"><code>select.lineStart</code></a></td><td>Select to line start</td><td><code>Alt+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Home</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selecttoLine"><code>select.toLine</code></a></td><td>Select to line</td><td><code>G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#selecttoLineEnd"><code>select.toLineEnd</code></a></td><td>Select to line end</td><td><code>Alt+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>End</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#selecttoLineStart"><code>select.toLineStart</code></a></td><td>Select to line start</td><td><code>Alt+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Home</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=11><a href="#selections"><code>selections</code></a></td><td><a href="#selectionsextendToLines"><code>selections.extendToLines</code></a></td><td>Extend to lines</td><td><code>Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=13><a href="#selections"><code>selections</code></a></td><td><a href="#selectionschangeDirection"><code>selections.changeDirection</code></a></td><td>Change direction of selections</td><td><code>Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectionsextendToLines"><code>selections.extendToLines</code></a></td><td>Extend to lines</td><td><code>Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionsfilter"><code>selections.filter</code></a></td><td>Filter selections</td><td><code>Shift+4</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionspipe"><code>selections.pipe</code></a></td><td>Pipe selections</td><td><code>Shift+Alt+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectionsreduce"><code>selections.reduce</code></a></td><td>Reduce selections to their cursor</td><td><code>;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionsrestore"><code>selections.restore</code></a></td><td>Restore selections</td><td><code>Z</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionsrestorewithCurrent"><code>selections.restore.withCurrent</code></a></td><td>Combine register selections with current ones</td><td><code>Alt+Z</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionssave"><code>selections.save</code></a></td><td>Save selections</td><td><code>Shift+Z</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -81,7 +86,7 @@ Perform changes on the text content of the document.
 
 See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes.
 
-### [`edit.insert`](./edit.ts#L27-60)
+### [`edit.insert`](./edit.ts#L28-61)
 
 Insert contents of register.
 
@@ -111,61 +116,61 @@ This command:
 - takes an argument `select` of type `boolean`.
 - takes an argument `where` of type `"active" | "anchor" | "start" | "end" | undefined`.
 
-### [`edit.join`](./edit.ts#L121-126)
+### [`edit.join`](./edit.ts#L122-127)
 
 Join lines.
 
 This command:
 - takes an argument `separator` of type `string`.
 
-### [`edit.join.select`](./edit.ts#L130-135)
+### [`edit.join.select`](./edit.ts#L131-136)
 
 Join lines and select inserted separators.
 
 This command:
 - takes an argument `separator` of type `string`.
 
-### [`edit.indent`](./edit.ts#L139-144)
+### [`edit.indent`](./edit.ts#L140-145)
 
 Indent selected lines.
 
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.indent.withEmpty`](./edit.ts#L148-153)
+### [`edit.indent.withEmpty`](./edit.ts#L149-154)
 
 Indent selected lines (including empty lines).
 
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.deindent`](./edit.ts#L157-162)
+### [`edit.deindent`](./edit.ts#L158-163)
 
 Deindent selected lines.
 
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.deindent.withIncomplete`](./edit.ts#L166-171)
+### [`edit.deindent.withIncomplete`](./edit.ts#L167-172)
 
 Deindent selected lines (including incomplete indent).
 
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.case.toLower`](./edit.ts#L175-180)
+### [`edit.case.toLower`](./edit.ts#L176-181)
 
 Transform to lower case.
 
-### [`edit.case.toUpper`](./edit.ts#L184-189)
+### [`edit.case.toUpper`](./edit.ts#L185-190)
 
 Transform to upper case.
 
-### [`edit.case.swap`](./edit.ts#L193-198)
+### [`edit.case.swap`](./edit.ts#L194-199)
 
 Swap case.
 
-### [`edit.replaceCharacters`](./edit.ts#L213-222)
+### [`edit.replaceCharacters`](./edit.ts#L214-223)
 
 Replace characters.
 
@@ -173,14 +178,14 @@ This command:
 - may be repeated with a given number of repetitions.
 - takes an input of type `string`.
 
-### [`edit.align`](./edit.ts#L265-273)
+### [`edit.align`](./edit.ts#L266-274)
 
 Align selections.
 
 Align selections, aligning the cursor of each selection by inserting spaces
 before the first character of each selection.
 
-### [`edit.copyIndentation`](./edit.ts#L288-301)
+### [`edit.copyIndentation`](./edit.ts#L289-302)
 
 Copy indentation.
 
@@ -190,7 +195,7 @@ given) to all other ones.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.newLine.above`](./edit.ts#L330-341)
+### [`edit.newLine.above`](./edit.ts#L331-342)
 
 Insert new line above each selection.
 
@@ -203,7 +208,7 @@ Insert new line above each selection.
 This command:
 - takes an argument `select` of type `boolean`.
 
-### [`edit.newLine.below`](./edit.ts#L365-376)
+### [`edit.newLine.below`](./edit.ts#L366-377)
 
 Insert new line below each selection.
 
@@ -321,14 +326,21 @@ Cancel Dance operation.
 This command:
 - does not require an active text editor.
 
-### [`run`](./misc.ts#L36-44)
+### [`ignore`](./misc.ts#L34-37)
+
+Ignore key.
+
+This command:
+- does not require an active text editor.
+
+### [`run`](./misc.ts#L43-51)
 
 Run code.
 
 This command:
 - takes an argument `commands` of type `api.command.Any[]`.
 
-### [`selectRegister`](./misc.ts#L77-87)
+### [`selectRegister`](./misc.ts#L84-95)
 
 Select register for next command.
 
@@ -336,11 +348,12 @@ When selecting a register, the next key press is used to determine what
 register is selected. If this key is a `space` character, then a new key
 press is awaited again and the returned register will be specific to the
 current document.
+@noreset
 
 This command:
 - takes an input of type `string | undefined`.
 
-### [`updateCount`](./misc.ts#L100-126)
+### [`updateCount`](./misc.ts#L108-135)
 
 Update Dance count.
 
@@ -362,10 +375,11 @@ Update the current counter used to repeat the next command.
 | Add the digit 9 to the counter | `9` (normal) | `[".updateCount", { "addDigits": 9 }]` |
 
 This command:
+- may be repeated with a given number of repetitions.
 - takes an argument `addDigits` of type `number`.
 - takes an input of type `number`.
 
-### [`openMenu`](./misc.ts#L154-163)
+### [`openMenu`](./misc.ts#L163-172)
 
 Open menu.
 
@@ -379,25 +393,34 @@ This command:
 
 Set modes.
 
-### [`modes.set`](./modes.ts#L11-21)
+### [`modes.set`](./modes.ts#L11-30)
 
 Set Dance mode.
 
-#### Additional commands
+#### Variants
 
-| Title              | Identifier   | Keybindings       | Commands                                |
+| Title              | Identifier   | Keybinding        | Command                                 |
 | ------------------ | ------------ | ----------------- | --------------------------------------- |
 | Set mode to Normal | `set.normal` | `escape` (insert) | `[".modes.set", { "input": "normal" }]` |
 | Set mode to Insert | `set.insert` |                   | `[".modes.set", { "input": "insert" }]` |
 
+Other variants are provided to switch to insert mode:
+
+| Title                | Identifier         | Keybinding     | Commands                                                                                      |
+| -------------------- | ------------------ | -------------- | --------------------------------------------------------------------------------------------- |
+| Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce"]` |
+| Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce"]` |
+| Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { "shift": "jump" }], [".modes.set", { "input": "insert" }]`           |
+| Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { "shift": "jump" }], [".modes.set", { "input": "insert" }]`           |
+
 This command:
 - takes an input of type `string`.
 
-### [`modes.set.temporarily`](./modes.ts#L25-39)
+### [`modes.set.temporarily`](./modes.ts#L34-48)
 
 Set Dance mode temporarily.
 
-#### Additional commands
+#### Variants
 
 | Title                 | Identifier               | Keybindings    | Commands                                            |
 | --------------------- | ------------------------ | -------------- | --------------------------------------------------- |
@@ -522,60 +545,70 @@ This command:
 
 Update selections based on their position in the document.
 
-### [`select.buffer`](./select.ts#L11-16)
+### [`select.buffer`](./select.ts#L10-15)
 
 Select whole buffer.
 
-### [`select.toLine`](./select.ts#L20-28)
+### [`select.toLine`](./select.ts#L19-28)
 
 Select to line.
 
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`select.line`](./select.ts#L36-43)
+### [`select.line.below`](./select.ts#L36-41)
 
-Select line.
-
-This command:
-- does not require an active text editor.
-- may be repeated with a given number of repetitions.
-
-### [`select.line.extend`](./select.ts#L51-58)
-
-Extend line.
+Select line below.
 
 This command:
-- does not require an active text editor.
 - may be repeated with a given number of repetitions.
 
-### [`select.toLineStart`](./select.ts#L62-78)
+### [`select.line.below.extend`](./select.ts#L61-66)
+
+Extend to line below.
+
+This command:
+- may be repeated with a given number of repetitions.
+
+### [`select.line.above`](./select.ts#L93-96)
+
+Select line above.
+
+This command:
+- may be repeated with a given number of repetitions.
+
+### [`select.line.above.extend`](./select.ts#L116-119)
+
+Extend to line above.
+
+This command:
+- may be repeated with a given number of repetitions.
+
+### [`select.lineStart`](./select.ts#L147-163)
 
 Select to line start.
 
 #### Variants
 
-| Title                | Identifier           | Keybinding                          | Command                                       |
-| -------------------- | -------------------- | ----------------------------------- | --------------------------------------------- |
-| Extend to line start | `toLineStart.extend` | `s-a-h` (normal), `s-home` (normal) | `[".select.toLineStart", { "extend": true }]` |
+| Title                | Identifier         | Keybinding                          | Command                                        |
+| -------------------- | ------------------ | ----------------------------------- | ---------------------------------------------- |
+| Extend to line start | `lineStart.extend` | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", { "shift": "extend" }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
-- takes an argument `extend` of type `boolean`.
 
-### [`select.toLineEnd`](./select.ts#L86-102)
+### [`select.lineEnd`](./select.ts#L177-193)
 
 Select to line end.
 
 #### Variants
 
-| Title              | Identifier         | Keybinding                         | Command                                     |
-| ------------------ | ------------------ | ---------------------------------- | ------------------------------------------- |
-| Extend to line end | `toLineEnd.extend` | `s-a-l` (normal), `s-end` (normal) | `[".select.toLineEnd", { "extend": true }]` |
+| Title              | Identifier       | Keybinding                         | Command                                      |
+| ------------------ | ---------------- | ---------------------------------- | -------------------------------------------- |
+| Extend to line end | `lineEnd.extend` | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", { "shift": "extend" }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
-- takes an argument `extend` of type `boolean`.
 
 ## [`selections`](./selections.ts)
 
@@ -641,25 +674,7 @@ This command:
 - accepts a register (by default, it uses `pipe`).
 - takes an input of type `string`.
 
-### [`selections.extendToLines`](./selections.ts#L274-281)
-
-Extend to lines.
-
-Extend selections to contain full lines (including end-of-line characters).
-
-### [`selections.trimLines`](./selections.ts#L308-315)
-
-Trim lines.
-
-Trim selections to only contain full lines (from start to line break).
-
-### [`selections.trimWhitespace`](./selections.ts#L340-347)
-
-Trim whitespace.
-
-Trim whitespace at beginning and end of selections.
-
-### [`selections.filter`](./selections.ts#L372-388)
+### [`selections.filter`](./selections.ts#L276-292)
 
 Filter selections.
 
@@ -673,13 +688,49 @@ This command:
 - takes an argument `defaultInput` of type `string`.
 - takes an input of type `string`.
 
-### [`selections.split`](./selections.ts#L420-427)
+### [`selections.split`](./selections.ts#L324-331)
 
 Split selections.
 
-### [`selections.splitLines`](./selections.ts#L430-435)
+### [`selections.splitLines`](./selections.ts#L334-339)
 
 Split selections at line boundaries.
+
+### [`selections.extendToLines`](./selections.ts#L343-350)
+
+Extend to lines.
+
+Extend selections to contain full lines (including end-of-line characters).
+
+### [`selections.trimLines`](./selections.ts#L377-384)
+
+Trim lines.
+
+Trim selections to only contain full lines (from start to line break).
+
+### [`selections.trimWhitespace`](./selections.ts#L409-416)
+
+Trim whitespace.
+
+Trim whitespace at beginning and end of selections.
+
+### [`selections.reduce`](./selections.ts#L439-451)
+
+Reduce selections to their cursor.
+
+This command:
+- takes an argument `where` of type `"active" | "anchor" | "start" | "end"`.
+
+### [`selections.changeDirection`](./selections.ts#L461-476)
+
+Change direction of selections.
+
+#### Variants
+
+| Title               | Identifier     | Keybinding     | Command                                                |
+| ------------------- | -------------- | -------------- | ------------------------------------------------------ |
+| Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { "direction": 1 }]`  |
+| Backward selections | `faceBackward` |                | `[".selections.changeDirection", { "direction": -1 }]` |
 
 ## [`selections.rotate`](./selections.rotate.ts)
 

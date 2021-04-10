@@ -11,21 +11,30 @@ declare module "./modes";
 /**
  * Set Dance mode.
  *
- * #### Additional commands
+ * #### Variants
  *
- * | Title              | Identifier   | Keybindings       | Commands                                |
+ * | Title              | Identifier   | Keybinding        | Command                                 |
  * | ------------------ | ------------ | ----------------- | --------------------------------------- |
  * | Set mode to Normal | `set.normal` | `escape` (insert) | `[".modes.set", { "input": "normal" }]` |
  * | Set mode to Insert | `set.insert` |                   | `[".modes.set", { "input": "insert" }]` |
+ *
+ * Other variants are provided to switch to insert mode:
+ *
+ * | Title                | Identifier         | Keybinding     | Commands                                                                                      |
+ * | -------------------- | ------------------ | -------------- | --------------------------------------------------------------------------------------------- |
+ * | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce"]` |
+ * | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce"]` |
+ * | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { "shift": "jump" }], [".modes.set", { "input": "insert" }]`           |
+ * | Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { "shift": "jump" }], [".modes.set", { "input": "insert" }]`           |
  */
 export async function set(_: Context, inputOr: InputOr<string>) {
-  return toMode(await inputOr(() => prompt(validateModeName(_), _)));
+  await toMode(await inputOr(() => prompt(validateModeName())));
 }
 
 /**
  * Set Dance mode temporarily.
  *
- * #### Additional commands
+ * #### Variants
  *
  * | Title                 | Identifier               | Keybindings    | Commands                                            |
  * | --------------------- | ------------------------ | -------------- | --------------------------------------------------- |
@@ -37,10 +46,10 @@ export async function set_temporarily(
   inputOr: InputOr<string>,
   repetitions: number,
 ) {
-  return toMode(await inputOr(() => prompt(validateModeName(_), _)), repetitions);
+  await toMode(await inputOr(() => prompt(validateModeName())), repetitions);
 }
 
-function validateModeName(ctx: Context) {
+function validateModeName(ctx = Context.WithoutActiveEditor.current) {
   const modes = ctx.extensionState.modes;
 
   return {

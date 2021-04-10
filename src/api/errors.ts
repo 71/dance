@@ -75,9 +75,13 @@ export class ArgumentError extends Error {
   public static validate(
     argumentName: string,
     condition: boolean,
-    message: string,
+    message: string | (() => string),
   ): asserts condition {
     if (!condition) {
+      if (typeof message === "function") {
+        message = message();
+      }
+
       throw new ArgumentError(message, argumentName);
     }
   }

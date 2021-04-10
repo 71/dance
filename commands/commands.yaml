@@ -5,29 +5,6 @@
 # Specify a title if the command is to appear in the command palette.
 # Specify a list of commands or a single command with arguments to assign a keyboard shortcut.
 
-# Insert (insert.ts)
-# ================================================================================================
-
-insert.before:
-  title: Insert before
-  descr: Start insert before the current selections.
-  keys: i (normal)
-
-insert.after:
-  title: Insert after
-  descr: Start insert after the current selections.
-  keys: a (normal)
-
-insert.lineStart:
-  title: Insert at line start
-  descr: Start insert at line start of each selection.
-  keys: s-i (normal)
-
-insert.lineEnd:
-  title: Insert at line end
-  descr: Start insert at line end of each selection.
-  keys: s-a (normal)
-
 # Move around (move.ts)
 # ================================================================================================
 
@@ -137,25 +114,6 @@ select.copy.backwards:
 
 # Switch current selections and modify selections (select.ts)
 # ================================================================================================
-
-selections.reduce:
-  title: Reduce selections
-  descr: Reduce selections to their cursor.
-  keys: ; (normal)
-
-selections.flip:
-  title: Flip selections
-  descr: Flip the direction of each selection.
-  keys: a-; (normal)
-
-selections.forward:
-  title: Forward selections
-  descr: Ensure selections are in forward direction (the active cursor is after the anchor).
-  keys: s-a-; (normal)
-
-selections.backward:
-  title: Backward selections
-  descr: Ensure selections are in backward direction (the active cursor is before the anchor).
 
 selections.clear:
   title: Clear selections

@@ -37,14 +37,18 @@ export type ContextType<RequiresActiveEditor extends boolean = boolean>
  * The type of the handler of a `CommandDescriptor`.
  */
 export interface Handler<RequiresActiveEditor extends boolean = boolean> {
-  (_: ContextType<RequiresActiveEditor>,
+  (context: ContextType<RequiresActiveEditor>,
    argument: Record<string, any>): unknown | Thenable<unknown>;
 }
 
 /**
  * The descriptor of a command.
  */
-export class CommandDescriptor<RequiresActiveEditor extends boolean = boolean> {
+export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDescriptor.Flags> {
+  public get requiresActiveEditor() {
+    return (this.flags & CommandDescriptor.Flags.RequiresActiveEditor) !== 0;
+  }
+
   public constructor(
     /**
      * The unique identifier of the command.
@@ -54,12 +58,13 @@ export class CommandDescriptor<RequiresActiveEditor extends boolean = boolean> {
     /**
      * The handler of the command.
      */
-    public readonly handler: Handler<RequiresActiveEditor>,
+    public readonly handler: Handler<Flags extends CommandDescriptor.Flags.RequiresActiveEditor
+                                     ? true : false>,
 
     /**
-     * Whether the command requires an active `vscode.TextEditor` to run.
+     * The flags of the command.
      */
-    public readonly requiresActiveEditor: RequiresActiveEditor,
+    public readonly flags: Flags,
   ) {
     Object.freeze(this);
   }
@@ -67,7 +72,8 @@ export class CommandDescriptor<RequiresActiveEditor extends boolean = boolean> {
   /**
    * Executes the command with the given argument.
    */
-  public replay(context: ContextType<RequiresActiveEditor>, argument: Record<string, any>) {
+  public replay(context: ContextType<Flags extends CommandDescriptor.Flags.RequiresActiveEditor
+                                     ? true : false>, argument: Record<string, any>) {
     return this.handler(context, argument);
   }
 
@@ -83,13 +89,25 @@ export class CommandDescriptor<RequiresActiveEditor extends boolean = boolean> {
           throw new EditorRequiredError();
         }
 
-        return await this.handler(context as any, Object.assign({}, argument));
+        const ownedArgument = Object.assign({}, argument) as Record<string, unknown>;
+
+        if (ownedArgument.count === undefined) {
+          ownedArgument.count = extension.currentCount;
+        }
+        if (ownedArgument.register === undefined) {
+          ownedArgument.register = extension.currentRegister;
+        }
+
+        extension.currentCount = 0;
+        extension.currentRegister = undefined;
+
+        return await this.handler(context as any, ownedArgument);
       },
       () => undefined,
       (e) => `error executing command "${this.identifier}": ${e.message}`,
     );
 
-    // TODO: reset current count and register; record history; restore preferred columns.
+    // TODO: record history; restore preferred columns.
 
     return result;
   }
@@ -102,6 +120,19 @@ export class CommandDescriptor<RequiresActiveEditor extends boolean = boolean> {
       this.identifier,
       (argument) => this.invokeSafely(extension, argument),
     );
+  }
+}
+
+export namespace CommandDescriptor {
+  /**
+   * Flags describing the behavior of some commands.
+   */
+  export const enum Flags {
+    /** No specific behavior. */
+    None = 0,
+
+    /** An active editor must be available. */
+    RequiresActiveEditor = 1,
   }
 }
 

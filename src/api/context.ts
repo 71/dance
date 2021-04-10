@@ -84,30 +84,7 @@ class ContextWithoutActiveEditor {
   public createPromise<T>(
     executor: (resolve: (value: T) => void, reject: (error: any) => void) => void,
   ) {
-    return new Promise<T>((resolve, reject) => {
-      const previousContext = currentContext;
-
-      currentContext = this;
-
-      try {
-        executor(
-          (value) => {
-            currentContext = previousContext;
-
-            resolve(value);
-          },
-          (error) => {
-            currentContext = previousContext;
-
-            reject(error);
-          },
-        );
-      } catch (e) {
-        currentContext = previousContext;
-
-        reject(e);
-      }
-    });
+    return this.wrap(new Promise<T>(executor));
   }
 
   /**
@@ -128,13 +105,13 @@ class ContextWithoutActiveEditor {
   /**
    * Runs the given async function within the current context.
    */
-  public async runAsync<T>(f: (context: this) => Thenable<T>) {
+  public async runAsync<T>(f: (context: this) => T): Promise<T extends Thenable<infer R> ? R : T> {
     const previousContext = currentContext;
 
     currentContext = this;
 
     try {
-      return await f(this);
+      return await f(this) as any;
     } finally {
       currentContext = previousContext;
     }

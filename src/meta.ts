@@ -66,40 +66,38 @@ const valueConverter: Record<keyof parseDocComments.AdditionalCommand, (x: strin
 };
 
 function parseAdditional(qualificationPrefix: string, text: string) {
-  const tableMatch = /(\n(?:\|.+?)+\|)+/.exec(text),
+  const re = /(\n(?:\|.+?)+\|)+/g,
         additional: parseDocComments.AdditionalCommand[] = [];
 
-  if (tableMatch === null) {
-    return additional;
-  }
+  for (let match = re.exec(text); match !== null; match = re.exec(text)) {
+    const lines = match[0].slice(1).split("\n"),
+          header = lines.shift()!,
+          keys = header
+            .slice(2, header.length - 2)        // Remove start and end |.
+            .split(" | ")                       // Split into keys.
+            .map((k) => keyMapping[k.trim()]);  // Normalize keys.
 
-  const lines = tableMatch[0].slice(1).split("\n"),
-        header = lines.shift()!,
-        keys = header
-          .slice(2, header.length - 2)        // Remove start and end |.
-          .split(" | ")                       // Split into keys.
-          .map((k) => keyMapping[k.trim()]);  // Normalize keys.
-
-  if (/^\|[-| ]+\|$/.test(lines[0])) {
-    lines.shift();
-  }
-
-  for (const line of lines) {
-    const obj: parseDocComments.AdditionalCommand = {},
-          values = line.slice(2, line.length - 2).split(" | ");
-
-    for (let i = 0; i < values.length; i++) {
-      const key = keys[i],
-            value = valueConverter[key](values[i].trim());
-
-      obj[key] = value;
+    if (/^\|[-| ]+\|$/.test(lines[0])) {
+      lines.shift();
     }
 
-    if ("identifier" in obj) {
-      obj.qualifiedIdentifier = qualificationPrefix + obj.identifier;
-    }
+    for (const line of lines) {
+      const obj: parseDocComments.AdditionalCommand = {},
+            values = line.slice(2, line.length - 2).split(" | ");
 
-    additional.push(obj);
+      for (let i = 0; i < values.length; i++) {
+        const key = keys[i],
+              value = valueConverter[key](values[i].trim());
+
+        obj[key] = value;
+      }
+
+      if ("identifier" in obj) {
+        obj.qualifiedIdentifier = qualificationPrefix + obj.identifier;
+      }
+
+      additional.push(obj);
+    }
   }
 
   return additional;
@@ -325,24 +323,33 @@ export namespace parseDocComments {
  * Mapping from character to corresponding VS Code keybinding.
  */
 export const specialCharacterMapping = {
-  "<": "s-,",
-  ">": "s-.",
-  "?": "s-/",
+  "~": "s-`",
   "!": "s-1",
+  "@": "s-2",
+  "#": "s-3",
   "$": "s-4",
   "%": "s-5",
+  "^": "s-6",
   "&": "s-7",
   "*": "s-8",
   "(": "s-9",
   ")": "s-0",
   "_": "s--",
+  "+": "s-=",
+  "{": "s-[",
+  "}": "s-]",
   "|": "s-\\",
+  ":": "s-;",
+  '"': "s-'",
+  "<": "s-,",
+  ">": "s-.",
+  "?": "s-/",
 };
 
 /**
  * RegExp for keys of `specialCharacterMapping`.
  */
-export const specialCharacterRegExp = /[<>!$&()_|]/g;
+export const specialCharacterRegExp = /[~!@#$%^&*()_+{}|:"<>?]/g;
 
 /**
  * Async wrapper around the `glob` package.
@@ -417,7 +424,7 @@ function getCommands(module: Omit<parseDocComments.ParsedModule<any>, "commands"
     ...module.additional
       .concat(...module.functions.flatMap((f) => f.additional))
       .filter((a) => a.identifier !== undefined && a.title !== undefined)
-      .map((a) => ({ id: a.qualifiedIdentifier!, title: a.title! })),
+      .map((a) => ({ id: `dance.${a.qualifiedIdentifier}`, title: a.title! })),
   ].sort((a, b) => a.id.localeCompare(b.id));
 }
 
@@ -434,14 +441,43 @@ function getKeybindings(module: Omit<parseDocComments.ParsedModule<any>, "keybin
 
     ...module.additional
       .concat(...module.functions.flatMap((f) => f.additional))
-      .flatMap(({ title, keys, commands }) => parseKeys(keys ?? "").map((key) => ({
-        ...key,
-        title,
-        command: "dance.run",
-        args: {
-          commands: JSON.parse("[" + commands! + "]"),
-        },
-      }))),
+      .flatMap(({ title, keys, commands, qualifiedIdentifier }) => {
+        const parsedKeys = parseKeys(keys ?? "");
+
+        if (qualifiedIdentifier !== undefined) {
+          return parsedKeys.map((key) => ({
+            ...key,
+            title,
+            command: `dance.${qualifiedIdentifier}`,
+          }));
+        }
+
+        const parsedCommands = JSON.parse("[" + commands! + "]") as any[];
+
+        if (parsedCommands.length === 1) {
+          let [command]: [string] = parsedCommands[0];
+
+          if (command[0] === ".") {
+            command = "dance" + command;
+          }
+
+          return parsedKeys.map((key) => ({
+            ...key,
+            title,
+            command,
+            args: parsedCommands[0][1],
+          }));
+        }
+
+        return parsedKeys.map((key) => ({
+          ...key,
+          title,
+          command: "dance.run",
+          args: {
+            commands: parsedCommands,
+          },
+        }));
+      }),
   ].sort((a, b) => a.command.localeCompare(b.command));
 }
 

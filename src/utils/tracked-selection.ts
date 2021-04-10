@@ -221,6 +221,23 @@ export namespace TrackedSelection {
       return selections;
     }
 
+    public restoreNonEmpty() {
+      const document = this.document,
+            trackedSelections = this.selections,
+            trackedSelectionsLen = trackedSelections.length,
+            selections = [] as vscode.Selection[];
+
+      for (let i = 0; i < trackedSelectionsLen; i++) {
+        const trackedSelection = trackedSelections[i];
+
+        if (trackedSelection.length > 0) {
+          selections.push(trackedSelection.restore(document));
+        }
+      }
+
+      return selections;
+    }
+
     public dispose() {
       this._selections.length = 0;
       this._subscription.dispose();
@@ -242,13 +259,15 @@ export namespace TrackedSelection {
       super(selections, editor.document);
 
       this._decorationType = vscode.window.createTextEditorDecorationType(renderOptions);
-      this.editor.setDecorations(this._decorationType, this.restore());
+      this.updateDecorations();
     }
 
     public addTrackedSelections(selections: readonly TrackedSelection[]) {
       super.addTrackedSelections(selections);
 
-      this.editor.setDecorations(this._decorationType, this.restore());
+      if (selections.some((selection) => selection.length > 0)) {
+        this.updateDecorations();
+      }
 
       return this;
     }
@@ -258,7 +277,7 @@ export namespace TrackedSelection {
         return false;
       }
 
-      this.editor.setDecorations(this._decorationType, this.restore());
+      this.updateDecorations();
 
       return true;
     }
@@ -267,6 +286,10 @@ export namespace TrackedSelection {
       super.dispose();
 
       this._decorationType.dispose();
+    }
+
+    private updateDecorations() {
+      this.editor.setDecorations(this._decorationType, this.restoreNonEmpty());
     }
   }
 }

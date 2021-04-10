@@ -882,6 +882,16 @@ export namespace Selections {
   }
 
   /**
+   * Returns whether the selection spans a single line. This differs from
+   * `selection.isSingleLine` because it also handles cases where the selection
+   * wraps an entire line (its end position is on the first character of the
+   * next line).
+   */
+  export function isSingleLine(selection: vscode.Selection) {
+    return selection.start.line === endLine(selection);
+  }
+
+  /**
    * Returns whether the given selection has length `1`.
    */
   export function isSingleCharacter(

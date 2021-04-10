@@ -31,13 +31,20 @@ export function cancel() {
   // anything special here.
 }
 
+/**
+ * Ignore key.
+ */
+export function ignore() {
+  // Used to intercept and ignore key presses in a given mode.
+}
+
 let lastRunCode: string | undefined;
 
 /**
  * Run code.
  */
 export async function run(
-  context: Context,
+  _: Context,
   inputOr: InputOr<string | readonly string[]>,
 
   commands?: Argument<api.command.Any[]>,
@@ -63,7 +70,7 @@ export async function run(
     },
     value: lastRunCode,
     valueSelection: lastRunCode === undefined ? undefined : [0, lastRunCode.length],
-  }, context));
+  }, _));
 
   if (Array.isArray(code)) {
     code = code.join("\n");
@@ -71,7 +78,7 @@ export async function run(
     return new InputError(`expected code to be a string or an array, but it was ${code}`);
   }
 
-  return context.run(() => api.run(code as string));
+  return _.run(() => api.run(code as string));
 }
 
 /**
@@ -83,6 +90,7 @@ export async function run(
  * current document.
  *
  * @keys `"` (normal)
+ * @noreset
  */
 export async function selectRegister(_: Context, input?: string) {
   if (input === undefined) {
@@ -119,6 +127,7 @@ export async function selectRegister(_: Context, input?: string) {
  */
 export async function updateCount(
   _: Context,
+  count: number,
   extension: Extension,
   inputOr: InputOr<number>,
 
@@ -136,7 +145,7 @@ export async function updateCount(
       nextPowerOfTen *= 10;
     }
 
-    extension.currentCount = extension.currentCount * nextPowerOfTen + addDigits;
+    extension.currentCount = count * nextPowerOfTen + addDigits;
 
     return;
   }
@@ -155,7 +164,7 @@ let lastPickedMenu: string | undefined;
  * Open menu.
  */
 export async function openMenu(
-  context: Context.WithoutActiveEditor,
+  _: Context.WithoutActiveEditor,
   inputOr: InputOr<string>,
 
   menu?: Argument<Menu>,
@@ -168,10 +177,10 @@ export async function openMenu(
       throw new Error(`invalid menu: ${errors.join(", ")}`);
     }
 
-    return showMenu(menu, [], context.cancellationToken);
+    return showMenu(menu, [], _.cancellationToken);
   }
 
-  const menus = context.extensionState.menus;
+  const menus = _.extensionState.menus;
   const input = await inputOr(() => prompt({
     prompt: "Menu name",
     validateInput(value) {
@@ -185,7 +194,7 @@ export async function openMenu(
     placeHolder: [...menus.keys()].join(", ") || "no menu defined",
     value: lastPickedMenu,
     valueSelection: lastPickedMenu === undefined ? undefined : [0, lastPickedMenu.length],
-  }, context));
+  }, _));
 
-  return showMenu.byName(input, additionalArgs, context.cancellationToken);
+  return showMenu.byName(input, additionalArgs, _.cancellationToken);
 }

@@ -141,7 +141,7 @@ export class AutoDisposable implements vscode.Disposable {
 
   public disposeOnUserEvent(event: AutoDisposable.Event, editorState: EditorState) {
     let eventName: AutoDisposable.EventType,
-        eventOpts: object;
+        eventOpts: Record<string, unknown>;
 
     if (Array.isArray(event)) {
       if (event.length === 0) {
@@ -174,8 +174,16 @@ export class AutoDisposable implements vscode.Disposable {
 
     switch (eventName) {
     case "mode-did-change":
+      const except = [] as string[];
+
+      if (Array.isArray(eventOpts.except)) {
+        except.push(...eventOpts.except);
+      } else if (typeof eventOpts.except === "string") {
+        except.push(eventOpts.except);
+      }
+
       editorState.extension.onModeDidChange((e) => {
-        if (e === editorState) {
+        if (e === editorState && !except.includes(e.mode.name)) {
           this.dispose();
         }
       }, undefined, this._disposables);
@@ -192,5 +200,6 @@ export namespace AutoDisposable {
     OnModeDidChange = "mode-did-change",
   }
 
-  export type Event = EventType | readonly [EventType, object];
+  export type Event = EventType
+    | readonly [EventType.OnModeDidChange, { except?: string | string[] }];
 }
