@@ -255,7 +255,7 @@ export class Context extends ContextWithoutActiveEditor {
   public get selections() {
     const editor = this.editor as vscode.TextEditor;
 
-    if (this._selectionBehavior === SelectionBehavior.Character) {
+    if (this.selectionBehavior === SelectionBehavior.Character) {
       return Selections.fromCharacterMode(editor.selections, editor.document);
     }
 
@@ -271,7 +271,7 @@ export class Context extends ContextWithoutActiveEditor {
   public set selections(selections: readonly vscode.Selection[]) {
     const editor = this.editor as vscode.TextEditor;
 
-    if (this._selectionBehavior === SelectionBehavior.Character) {
+    if (this.selectionBehavior === SelectionBehavior.Character) {
       selections = Selections.toCharacterMode(selections, editor.document);
     }
 

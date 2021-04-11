@@ -666,7 +666,7 @@ const builtinKeybindings = [
     "command": "dance.selections.filter"
   },
   {
-    "key": "S",
+    "key": "Alt+K",
     "when": "editorTextFocus && dance.mode == 'normal'",
     "title": "Filter with RegExp",
     "command": "dance.selections.filter.regexp"
@@ -732,6 +732,12 @@ const builtinKeybindings = [
     "when": "editorTextFocus && dance.mode == 'normal'",
     "title": "Copy selections text",
     "command": "dance.selections.saveText"
+  },
+  {
+    "key": "S",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Select within selections",
+    "command": "dance.selections.select"
   },
   {
     "key": "Shift+S",

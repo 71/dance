@@ -471,7 +471,7 @@ export namespace Mode {
 /**
  * The set of all modes.
  */
-export class Modes {
+export class Modes implements Iterable<Mode> {
   private readonly _modes = new Map<string, Mode>();
 
   private readonly _vscodeMode = new Mode(this, "", undefined!);
@@ -535,6 +535,18 @@ export class Modes {
     }
 
     return mode;
+  }
+
+  public [Symbol.iterator]() {
+    return this._modes.values();
+  }
+
+  public *userModes() {
+    for (const mode of this._modes.values()) {
+      if (mode.name !== "input" && !mode.isPendingDeletion) {
+        yield mode;
+      }
+    }
   }
 
   /**

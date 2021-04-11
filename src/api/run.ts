@@ -122,7 +122,8 @@ export namespace run {
       throw new Error("execution of arbitrary code is disabled");
     }
 
-    const cached = functionCache.get(code);
+    const cacheId = additionalParameterNames.join(";") + code,
+          cached = functionCache.get(cacheId);
 
     if (cached !== undefined) {
       cached[1] = Date.now();
@@ -139,7 +140,7 @@ export namespace run {
       throw new Error(`cannot parse function body: ${code}: ${e}`);
     }
 
-    functionCache.set(code, [func, Date.now()]);
+    functionCache.set(cacheId, [func, Date.now()]);
 
     return func;
   }
@@ -418,7 +419,7 @@ export function switchRun(string: string, context?: object) {
   }
 
   // JavaScript expression.
-  return run(string, context);
+  return run("return " + string, context);
 }
 
 export namespace switchRun {
@@ -443,6 +444,6 @@ export namespace switchRun {
       return;
     }
 
-    run.compileFunction("return " + string, ["$", "i", "$$"]);
+    run.compileFunction("return " + string);
   }
 }

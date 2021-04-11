@@ -319,11 +319,12 @@
               ]
             }
           },
-          "markdownDescription": "Controls the different modes available in Dance."
+          "description": "Controls the different modes available in Dance."
         },
         "dance.menus": {
           "type": "object",
           "scope": "language-overridable",
+          "description": "Controls the different menus available in Dance.",
           "additionalProperties": {
             "type": "object",
             "properties": {
@@ -1289,6 +1290,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.selections.select",
+        "title": "Select within selections",
+        "category": "Dance"
+      },
+      {
         "command": "dance.selections.split",
         "title": "Split selections",
         "category": "Dance"
@@ -1994,7 +2000,7 @@
         "command": "dance.selections.filter"
       },
       {
-        "key": "S",
+        "key": "Alt+K",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Filter with RegExp",
         "command": "dance.selections.filter.regexp"
@@ -2060,6 +2066,12 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Copy selections text",
         "command": "dance.selections.saveText"
+      },
+      {
+        "key": "S",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select within selections",
+        "command": "dance.selections.select"
       },
       {
         "key": "Shift+S",

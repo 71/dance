@@ -4,6 +4,7 @@ import { Direction, Shift } from ".";
 import { Context } from "./context";
 import { NotASelectionError } from "./errors";
 import { Positions } from "./positions";
+import { execRange, splitRange } from "../utils/regexp";
 
 /**
  * Sets the selections of the given editor.
@@ -616,6 +617,42 @@ export function selectionsLines(
 }
 
 /**
+ * Returns the selections obtained by splitting the contents of all the given
+ * selections using the given RegExp.
+ */
+export function splitSelections(re: RegExp, selections = Context.current.selections) {
+  const document = Context.current.document;
+
+  return Selections.map((text, selection) => {
+    const offset = document.offsetAt(selection.start);
+
+    return splitRange(text, re).map(([start, end]) =>
+      Selections.fromStartEnd(offset + start, offset + end, selection.isReversed),
+    );
+  }, selections).flat();
+}
+
+/**
+ * Returns the selections obtained by finding all the matches within the given
+ * selections using the given RegExp.
+ */
+export function selectWithinSelections(re: RegExp, selections = Context.current.selections) {
+  if (!re.global) {
+    re = new RegExp(re.source, re.flags + "g");
+  }
+
+  const document = Context.current.document;
+
+  return Selections.map((text, selection) => {
+    const offset = document.offsetAt(selection.start);
+
+    return execRange(text, re).map(([start, end]) =>
+      Selections.fromStartEnd(offset + start, offset + end, selection.isReversed),
+    );
+  }, selections).flat();
+}
+
+/**
  * Reveals selections in the current editor.
  */
 export function revealSelections(selection?: vscode.Selection) {
@@ -633,7 +670,9 @@ export namespace Selections {
                map = mapSelections,
                reveal = revealSelections,
                rotate = rotateSelections,
+               selectWithin = selectWithinSelections,
                set = setSelections,
+               split = splitSelections,
                update = updateSelections;
 
   export declare const current: readonly vscode.Selection[];
@@ -1025,7 +1064,28 @@ export namespace Selections {
    * });
    * ```
    */
-  export function fromStartEnd(start: vscode.Position, end: vscode.Position, reversed: boolean) {
+  export function fromStartEnd(
+    start: vscode.Position | number,
+    end: vscode.Position | number,
+    reversed: boolean,
+    document?: vscode.TextDocument,
+  ) {
+    if (typeof start === "number") {
+      if (document === undefined) {
+        document = Context.current.document;
+      }
+
+      start = document.positionAt(start);
+    }
+
+    if (typeof end === "number") {
+      if (document === undefined) {
+        document = Context.current.document;
+      }
+
+      end = document.positionAt(end);
+    }
+
     return reversed ? new vscode.Selection(end, start) : new vscode.Selection(start, end);
   }
 

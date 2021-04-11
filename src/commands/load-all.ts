@@ -453,12 +453,12 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.modes.insert.after",
-      (_) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"   }])),
+      (_) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"  , "handleCharacterBehavior": false }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.insert.before",
-      (_) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }])),
+      (_) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start", "handleCharacterBehavior": false }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -755,6 +755,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     restore_withCurrent,
     save,
     saveText,
+    select,
     split,
     splitLines,
     trimLines,
@@ -784,7 +785,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.reduce",
-      (_, argument) => _.runAsync((_) => reduce(_, argument.where)),
+      (_, argument) => _.runAsync((_) => reduce(_, argument.handleCharacterBehavior, argument.where)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -808,8 +809,13 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
+      "dance.selections.select",
+      (_, argument) => _.runAsync((_) => select(_, getInput(_, argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
       "dance.selections.split",
-      (_) => _.runAsync((_) => split(_)),
+      (_, argument) => _.runAsync((_) => split(_, getInput(_, argument), argument.excludeEmpty)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

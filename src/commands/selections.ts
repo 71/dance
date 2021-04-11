@@ -3,6 +3,7 @@ import { Argument, InputOr, RegisterOr } from ".";
 import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun, todo } from "../api";
 import { Mode } from "../mode";
 import { Register } from "../register";
+import { SelectionBehavior } from "../state/extension";
 import { CharSet, getCharacters } from "../utils/charset";
 import { AutoDisposable } from "../utils/disposables";
 import { SettingsValidator } from "../utils/settings-validator";
@@ -205,6 +206,8 @@ export async function restore_withCurrent(
   _.selections = selections;
 }
 
+let lastPipeInput: string | undefined;
+
 /**
  * Pipe selections.
  *
@@ -229,14 +232,16 @@ export async function pipe(
   inputOr: InputOr<string>,
 ) {
   const input = await inputOr(() => prompt({
+    prompt: "Expression",
     validateInput(value) {
       try {
         switchRun.validate(value);
+        lastPipeInput = value;
       } catch (e) {
         return e?.message ?? `${e}`;
       }
     },
-    prompt: "Enter an expression",
+    value: lastPipeInput,
   }, _));
 
   const selections = _.selections,
@@ -244,7 +249,7 @@ export async function pipe(
         selectionsStrings = selections.map((selection) => document.getText(selection));
 
   const results = await Promise.all(_.run((_) => selectionsStrings.map((string, i, strings) =>
-    switchRun(input!, { $: string, $$: strings, i }),
+    switchRun(input!, { $: string, $$: strings, i, n: strings.length }),
   )));
 
   const strings = results.map((result) => {
@@ -281,7 +286,7 @@ let lastFilterInput: string | undefined;
  *
  * | Title               | Identifier      | Keybinding     | Commands                                          |
  * | ------------------- | --------------- | -------------- | ------------------------------------------------- |
- * | Filter with RegExp  | `filter.regexp` | `s` (normal)   | `[".selections.filter", { "defaultInput": "/" }]` |
+ * | Filter with RegExp  | `filter.regexp` | `a-k` (normal) | `[".selections.filter", { "defaultInput": "/" }]` |
  */
 export async function filter(
   _: Context,
@@ -292,7 +297,7 @@ export async function filter(
   defaultInput ??= lastFilterInput;
 
   const input = await inputOr(() => prompt({
-    prompt: "Enter an expression",
+    prompt: "Expression",
     validateInput(value) {
       try {
         switchRun.validate(value);
@@ -302,7 +307,9 @@ export async function filter(
       }
     },
     value: defaultInput,
-    valueSelection: defaultInput === undefined ? undefined : [0, defaultInput.length],
+    valueSelection: defaultInput === undefined
+      ? undefined
+      : [defaultInput.length, defaultInput.length],
   }, _));
 
   const document = _.document,
@@ -312,7 +319,7 @@ export async function filter(
   return _.run(() =>
     Selections.filter.byIndex(async (i) => {
       try {
-        return !!await switchRun(input, { $: strings[i], $$: strings, i });
+        return !!await switchRun(input, { $: strings[i], $$: strings, i, n: strings.length });
       } catch {
         return false;
       }
@@ -320,15 +327,59 @@ export async function filter(
   );
 }
 
+let lastSelectInput: string | undefined;
+
+/**
+ * Select within selections.
+ *
+ * @keys `s` (normal)
+ */
+export async function select(_: Context, inputOr: InputOr<string | RegExp>) {
+  let input = await inputOr(() => prompt({
+    ...prompt.regexpOpts("mu"),
+    value: lastSelectInput,
+  }).then((v) => new RegExp(v, "mu")));
+
+  if (typeof input === "string") {
+    input = new RegExp(input, "mu");
+  }
+
+  lastSelectInput = input.source;
+
+  Selections.set(Selections.selectWithin(input));
+}
+
+let lastSplitInput: string | undefined;
+
 /**
  * Split selections.
  *
  * @keys `s-s` (normal)
  */
-export function split(
+export async function split(
   _: Context,
+
+  inputOr: InputOr<string | RegExp>,
+  excludeEmpty = false,
 ) {
-  todo();
+  let input = await inputOr(() => prompt({
+    ...prompt.regexpOpts("u"),
+    value: lastSplitInput,
+  }).then((v) => new RegExp(v, "u")));
+
+  if (typeof input === "string") {
+    input = new RegExp(input, "u");
+  }
+
+  lastSplitInput = input.source;
+
+  let split = Selections.split(input);
+
+  if (excludeEmpty) {
+    split = split.filter((s) => !s.isEmpty);
+  }
+
+  Selections.set(split);
 }
 
 /**
@@ -337,7 +388,7 @@ export function split(
  * @keys `a-s` (normal)
  */
 export function splitLines(_: Context) {
-  todo();
+  Selections.set(Selections.split(_.document.eol === vscode.EndOfLine.CRLF ? /\r\n/g : /\n/g));
 }
 
 /**
@@ -447,6 +498,7 @@ export function trimWhitespace(_: Context) {
 export function reduce(
   _: Context,
 
+  handleCharacterBehavior = true,
   where: Argument<"active" | "anchor" | "start" | "end"> = "active",
 ) {
   ArgumentError.validate(
@@ -455,7 +507,19 @@ export function reduce(
     `"where" must be "active", "anchor", "start", "end", or undefined`,
   );
 
-  Selections.update.byIndex((_, selection) => Selections.empty(selection[where]));
+  if (_.selectionBehavior === SelectionBehavior.Caret || !handleCharacterBehavior) {
+    Selections.update.byIndex((_, selection) => Selections.empty(selection[where]));
+  } else {
+    Selections.update.byIndex((_, selection) => {
+      const result = selection[where];
+
+      if (result === selection.end && !result.isEqual(selection.start)) {
+        return Selections.empty(Positions.previous(result)!);
+      }
+
+      return Selections.empty(result);
+    });
+  }
 }
 
 /**

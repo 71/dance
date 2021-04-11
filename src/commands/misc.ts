@@ -193,7 +193,7 @@ export async function openMenu(
 
       return `menu ${JSON.stringify(value)} does not exist`;
     },
-    placeHolder: [...menus.keys()].join(", ") || "no menu defined",
+    placeHolder: [...menus.keys()].sort().join(", ") || "no menu defined",
     value: lastPickedMenu,
     valueSelection: lastPickedMenu === undefined ? undefined : [0, lastPickedMenu.length],
   }, _));

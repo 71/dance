@@ -422,3 +422,62 @@ export function parseRegExpWithReplacement(regexp: string) {
     throw new Error("invalid RegExp");
   }
 }
+
+/**
+ * Returns a valid RegExp source allowing a `RegExp` to match the given string.
+ */
+export function escapeForRegExp(text: string) {
+  // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Like `String.prototype.split(RegExp)`, but returns the `[start, end]`
+ * indices corresponding to each string of the split.
+ */
+export function splitRange(text: string, re: RegExp) {
+  const sections: [start: number, end: number][] = [];
+
+  for (let start = 0;;) {
+    const match = re.exec(text);
+
+    if (match === null) {
+      sections.push([start, start + text.length]);
+
+      return sections;
+    }
+
+    sections.push([start, start + match.index]);
+
+    if (match[0].length === 0) {
+      text = text.slice(1);
+      start++;
+    } else {
+      text = text.slice(match.index + match[0].length);
+      start += match.index + match[0].length;
+    }
+
+    re.lastIndex = 0;
+  }
+}
+
+/**
+ * Like `RegExp.prototype.exec()`, but returns the `[start, end]`
+ * indices corresponding to each matched result.
+ */
+export function execRange(text: string, re: RegExp) {
+  const sections: [start: number, end: number][] = [];
+
+  for (let match = re.exec(text); match !== null; match = re.exec(text)) {
+    const start = match.index,
+          end = start + match[0].length;
+
+    sections.push([start, end]);
+
+    if (start === end) {
+      re.lastIndex++;
+    }
+  }
+
+  return sections;
+}

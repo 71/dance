@@ -272,13 +272,13 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
               ],
             },
           },
-          markdownDescription:
-            "Controls the different modes available in Dance.",
+          description: "Controls the different modes available in Dance.",
         },
 
         "dance.menus": {
           type: "object",
           scope: "language-overridable",
+          description: "Controls the different menus available in Dance.",
           additionalProperties: {
             type: "object",
             properties: {

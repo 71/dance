@@ -20,12 +20,12 @@ declare module "./modes";
  *
  * Other variants are provided to switch to insert mode:
  *
- * | Title                | Identifier         | Keybinding     | Commands                                                                                                            |
- * | -------------------- | ------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------- |
- * | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }]` |
- * | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"   }]` |
- * | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { "shift": "jump" }], [".modes.set", { "input": "insert" }]`                                 |
- * | Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { "shift": "jump" }], [".modes.set", { "input": "insert" }]`                                 |
+ * | Title                | Identifier         | Keybinding     | Commands                                                                                                                                              |
+ * | -------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+ * | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start", "handleCharacterBehavior": false }]` |
+ * | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"  , "handleCharacterBehavior": false }]` |
+ * | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { "shift": "jump" }], [".modes.set", { "input": "insert" }]`                                                                   |
+ * | Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { "shift": "jump" }], [".modes.set", { "input": "insert" }]`                                                                   |
  */
 export async function set(_: Context, inputOr: InputOr<string>) {
   await toMode(await inputOr(() => prompt(validateModeName())));
@@ -49,12 +49,14 @@ function validateModeName(ctx = Context.WithoutActiveEditor.current) {
   const modes = ctx.extensionState.modes;
 
   return {
+    prompt: "Mode name",
     validateInput(value) {
       if (modes.get(value) !== undefined) {
-        return undefined;
+        return;
       }
 
       return `mode ${JSON.stringify(value)} does not exist`;
     },
+    placeHolder: [...modes.userModes()].map((m) => m.name).sort().join(", "),
   } as vscode.InputBoxOptions;
 }
