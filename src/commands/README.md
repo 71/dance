@@ -99,10 +99,10 @@ replaced by the text.
 | Title                              | Identifier              | Keybinding                     | Commands                                                                                                 |
 | ---------------------------------- | ----------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------- |
 | Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert) | `[".selectRegister"], [".edit.insert"]`                                                                  |
-| Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { "where": "before" }]`                                                                |
-| Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { "where": "after" }]`                                                                 |
-| Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { "where": "before", "select": true }]`                                                |
-| Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { "where": "after", "select": true }]`                                                 |
+| Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { "handleNewLine": true, "where": "start" }]`                                          |
+| Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { "handleNewLine": true, "where": "end" }]`                                            |
+| Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { "handleNewLine": true, "where": "start", "select": true }]`                          |
+| Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { "handleNewLine": true, "where": "end", "select": true }]`                            |
 | Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { "register": "_" }]`                                                                  |
 | Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".edit.insert", { "register": "_" }], [".modes.set", { "input": "insert" }]`                           |
 | Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText"], [".edit.insert", { "register": "_" }]`                                        |
