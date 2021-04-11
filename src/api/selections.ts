@@ -616,149 +616,12 @@ export function selectionsLines(
 }
 
 /**
- * Returns the given selections normalized for processing in the `Character`
- * selection behavior of Dance.
- *
- * Normalization replaces empty selections by 1-character selections and ensures
- * that 1-character selections are reversed (`active` is before `anchor`).
- *
- * @param document The document to use to query for line and character
- *   information, or `undefined` to use the document of the current text editor.
- *
- * ### Example
- * Selections remain empty in empty documents.
- *
- * ```js
- * const sel = (anchorLine, anchorCol, activeLine, activeCol) =>
- *   new vscode.Selection(new vscode.Position(anchorLine, anchorCol),
- *                        new vscode.Position(activeLine, activeCol));
- *
- * assert.deepStrictEqual(
- *   normalizeSelections([sel(0, 0, 0, 0)]),
- *   [sel(0, 0, 0, 0)],
- * );
- * ```
- *
- * With:
- * ```
- * ```
- *
- * ### Example
- * 1-character selections are always reversed.
- *
- * ```js
- * const sel = (anchorLine, anchorCol, activeLine, activeCol) =>
- *   new vscode.Selection(new vscode.Position(anchorLine, anchorCol),
- *                        new vscode.Position(activeLine, activeCol));
- *
- * assert.deepStrictEqual(
- *   normalizeSelections([sel(0, 0, 0, 1), sel(0, 1, 0, 0)]),
- *   [sel(0, 1, 0, 0), sel(0, 1, 0, 0)],
- * );
- *
- * // Also when selecting the line ending:
- * assert.deepStrictEqual(
- *   normalizeSelections([sel(0, 3, 1, 0), sel(1, 0, 0, 3)]),
- *   [sel(1, 0, 0, 3), sel(1, 0, 0, 3)],
- * );
- * ```
- *
- * With:
- * ```
- * foo
- * ```
- *
- * ### Example
- * Empty selections automatically become 1-character selections.
- *
- * ```js
- * const sel = (anchorLine, anchorCol, activeLine, activeCol) =>
- *   new vscode.Selection(new vscode.Position(anchorLine, anchorCol),
- *                        new vscode.Position(activeLine, activeCol));
- *
- * assert.deepStrictEqual(
- *   normalizeSelections([sel(0, 0, 0, 0)]),
- *   [sel(0, 1, 0, 0)],
- * );
- *
- * // At the end of the line, it selects the line ending:
- * assert.deepStrictEqual(
- *   normalizeSelections([sel(0, 1, 0, 1)]),
- *   [sel(1, 0, 0, 1)],
- * );
- *
- * // But it does nothing at the end of the document:
- * assert.deepStrictEqual(
- *   normalizeSelections([sel(2, 0, 2, 0)]),
- *   [sel(2, 0, 2, 0)],
- * );
- * ```
- *
- * With:
- * ```
- * a
- * b
- * ```
+ * Reveals selections in the current editor.
  */
-export function normalizeSelections(
-  selections: vscode.Selection[],
-  document?: vscode.TextDocument,
-) {
-  // This function is potentially called very often (ie every time the selection
-  // changes), so allocations are avoided as much as possible.
-  let newSelections = undefined as undefined | vscode.Selection[];
+export function revealSelections(selection?: vscode.Selection) {
+  const editor = Context.current.editor;
 
-  for (let i = 0, len = selections.length; i < len; i++) {
-    const selection = selections[i];
-    let anchor = selection.anchor,
-        active = selection.active;
-
-    if (selection.isEmpty) {
-      if (document === undefined) {
-        document = Context.current.document;
-      }
-      if (document.lineAt(anchor).text.length > anchor.character) {
-        anchor = anchor.translate(0, 1);
-      } else {
-        // Selection is at the end of the line, so we try to extend it to the
-        // start of the next line.
-        if (document.lineCount > anchor.line + 1) {
-          anchor = new vscode.Position(anchor.line + 1, 0);
-        }
-      }
-    } else if (anchor.line === active.line && anchor.character === active.character - 1) {
-      // Anchor is before active: swap.
-      const tmp = anchor;
-      anchor = active;
-      active = tmp;
-    } else if (active.character === 0 && active.line === anchor.line + 1) {
-      // Active is on the first character of the line after the anchor: swap if
-      // the anchor is at the end of its line.
-      if (document === undefined) {
-        document = Context.current.document;
-      }
-      if (document.lineAt(anchor.line).text.length === anchor.character) {
-        const tmp = anchor;
-        anchor = active;
-        active = tmp;
-      }
-    }
-
-    if (selection.anchor === anchor && selection.active === active) {
-      if (newSelections !== undefined) {
-        newSelections.push(selection);
-      }
-      continue;
-    }
-
-    if (newSelections === undefined) {
-      newSelections = selections.slice(0, i);
-    }
-
-    newSelections.push(new vscode.Selection(anchor, active));
-  }
-
-  return newSelections ?? selections;
+  editor.revealRange(selection ?? (editor as vscode.TextEditor).selection);
 }
 
 /**
@@ -768,7 +631,7 @@ export namespace Selections {
   export const filter = filterSelections,
                lines = selectionsLines,
                map = mapSelections,
-               normalize = normalizeSelections,
+               reveal = revealSelections,
                rotate = rotateSelections,
                set = setSelections,
                update = updateSelections;

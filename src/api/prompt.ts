@@ -96,34 +96,67 @@ export namespace prompt {
   ) {
     return prompt(regexpOpts(flags), context).then((x) => new RegExp(x, flags));
   }
+
+  /**
+   * Prompts the user to choose one item among a list of items, and returns the
+   * index of the item that was picked.
+   */
+  export function one(
+    items: readonly (readonly [string, string])[],
+    init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
+    context = Context.WithoutActiveEditor.current,
+  ) {
+    return promptInList(false, items, init ?? (() => {}), context.cancellationToken);
+  }
+
+  /**
+   * Prompts the user to choose many items among a list of items, and returns a
+   * list of indices of picked items.
+   */
+  export function many(
+    items: readonly (readonly [string, string])[],
+    init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
+    context = Context.WithoutActiveEditor.current,
+  ) {
+    return promptInList(true, items, init ?? (() => {}), context.cancellationToken);
+  }
 }
 
 /**
  * Awaits a keypress from the user and returns the entered key.
  */
-export function keypress(cancellationToken: vscode.CancellationToken): Thenable<string> {
+export function keypress(context = Context.current): Thenable<string> {
+  if (context.cancellationToken.isCancellationRequested) {
+    return Promise.reject(new CancellationError(CancellationError.Reason.CancellationToken));
+  }
+
+  const previousMode = context.editorState.mode;
+
+  context.editorState.setMode(context.extensionState.modes.inputMode);
+
   return new Promise<string>((resolve, reject) => {
     try {
-      let done = false;
-      const subscription = vscode.commands.registerCommand("type", ({ text }: { text: string }) => {
-        if (!done) {
-          subscription.dispose();
-          done = true;
+      const subscriptions = [
+        vscode.commands.registerCommand("type", ({ text }: { text: string }) => {
+          if (subscriptions.length > 0) {
+            subscriptions.splice(0).forEach((s) => s.dispose());
+            context.editorState.setMode(previousMode);
 
-          resolve(text);
-        }
-      });
+            resolve(text);
+          }
+        }),
 
-      cancellationToken?.onCancellationRequested(() => {
-        if (!done) {
-          subscription.dispose();
-          done = true;
+        context.cancellationToken.onCancellationRequested(() => {
+          if (subscriptions.length > 0) {
+            subscriptions.splice(0).forEach((s) => s.dispose());
+            context.editorState.setMode(previousMode);
 
-          reject(new CancellationError(CancellationError.Reason.PressedEscape));
-        }
-      });
+            reject(new CancellationError(CancellationError.Reason.PressedEscape));
+          }
+        }),
+      ];
     } catch {
-      reject(new Error("Unable to listen to keyboard events; is an extension "
+      reject(new Error("unable to listen to keyboard events; is an extension "
                       + 'overriding the "type" command (e.g VSCodeVim)?'));
     }
   });
@@ -134,32 +167,35 @@ export namespace keypress {
    * Awaits a keypress describing a register and returns the specified register.
    */
   export async function forRegister(context = Context.current) {
-    const firstKey = await keypress(context.cancellationToken);
+    const firstKey = await keypress(context);
 
     if (firstKey !== " ") {
       return context.extensionState.registers.get(firstKey);
     }
 
-    const secondKey = await keypress(context.cancellationToken);
+    const secondKey = await keypress(context);
 
     return context.extensionState.registers.forDocument(context.document).get(secondKey);
   }
 }
 
-export function promptInList(
+function promptInList(
   canPickMany: true,
   items: readonly (readonly [string, string])[],
+  init: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
   cancellationToken: vscode.CancellationToken,
 ): Thenable<number[]>;
-export function promptInList(
+function promptInList(
   canPickMany: false,
   items: readonly (readonly [string, string])[],
+  init: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
   cancellationToken: vscode.CancellationToken,
 ): Thenable<number>;
 
-export function promptInList(
+function promptInList(
   canPickMany: boolean,
   items: readonly (readonly [string, string])[],
+  init: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
   cancellationToken: vscode.CancellationToken,
 ): Thenable<number | number[]> {
   const itemsKeys = items.map(([k, _]) => k.includes(", ") ? k.split(", ") : [...k]);
@@ -179,51 +215,70 @@ export function promptInList(
 
     quickPick.items = quickPickItems;
     quickPick.placeholder = "Press one of the below keys.";
-    quickPick.onDidChangeValue((key) => {
-      if (!isCaseSignificant) {
-        key = key.toLowerCase();
-      }
 
-      const index = itemsKeys.findIndex((x) => x.includes(key));
+    const subscriptions = [
+      quickPick.onDidChangeValue((key) => {
+        if (subscriptions.length === 0) {
+          return;
+        }
 
-      quickPick.dispose();
+        if (!isCaseSignificant) {
+          key = key.toLowerCase();
+        }
 
-      if (index === -1) {
-        return reject(new CancellationError(CancellationError.Reason.PressedEscape));
-      }
+        const index = itemsKeys.findIndex((x) => x.includes(key));
 
-      if (canPickMany) {
-        resolve([index]);
-      } else {
-        resolve(index);
-      }
-    });
+        subscriptions.splice(0).forEach((s) => s.dispose());
 
-    quickPick.onDidAccept(() => {
-      let picked = quickPick.selectedItems;
+        if (index === -1) {
+          return reject(new CancellationError(CancellationError.Reason.PressedEscape));
+        }
 
-      if (picked !== undefined && picked.length === 0) {
-        picked = quickPick.activeItems;
-      }
+        if (canPickMany) {
+          resolve([index]);
+        } else {
+          resolve(index);
+        }
+      }),
 
-      quickPick.dispose();
+      quickPick.onDidAccept(() => {
+        if (subscriptions.length === 0) {
+          return;
+        }
 
-      if (picked === undefined) {
-        return reject(new CancellationError(CancellationError.Reason.PressedEscape));
-      }
+        let picked = quickPick.selectedItems;
 
-      if (canPickMany) {
-        resolve(picked.map((x) => items.findIndex((item) => item[1] === x.description)));
-      } else {
-        resolve(items.findIndex((x) => x[1] === picked[0].description));
-      }
-    });
+        if (picked !== undefined && picked.length === 0) {
+          picked = quickPick.activeItems;
+        }
 
-    cancellationToken?.onCancellationRequested(() => {
-      quickPick.dispose();
+        subscriptions.splice(0).forEach((s) => s.dispose());
 
-      reject(new CancellationError(CancellationError.Reason.CancellationToken));
-    });
+        if (picked === undefined) {
+          return reject(new CancellationError(CancellationError.Reason.PressedEscape));
+        }
+
+        if (canPickMany) {
+          resolve(picked.map((x) => items.findIndex((item) => item[1] === x.description)));
+        } else {
+          resolve(items.findIndex((x) => x[1] === picked[0].description));
+        }
+      }),
+
+      cancellationToken?.onCancellationRequested(() => {
+        if (subscriptions.length === 0) {
+          return;
+        }
+
+        subscriptions.splice(0).forEach((s) => s.dispose());
+
+        reject(new CancellationError(CancellationError.Reason.CancellationToken));
+      }),
+
+      quickPick,
+    ];
+
+    init(quickPick);
 
     quickPick.show();
   });

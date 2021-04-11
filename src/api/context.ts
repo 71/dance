@@ -308,7 +308,7 @@ export namespace Context {
    */
   export function create(extension: Extension, command: CommandDescriptor) {
     const activeEditorState = extension.activeEditorState,
-          cancellationToken = extension.cancellationTokenSource.token;
+          cancellationToken = extension.cancellationToken;
 
     return activeEditorState === undefined
       ? new Context.WithoutActiveEditor(extension, cancellationToken, command)
@@ -324,7 +324,7 @@ export namespace Context {
 
     EditorRequiredError.throwUnlessAvailable(activeEditorState);
 
-    return new Context(activeEditorState, extension.cancellationTokenSource.token, command);
+    return new Context(activeEditorState, extension.cancellationToken, command);
   }
 }
 

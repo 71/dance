@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { Argument, InputOr, RegisterOr } from ".";
-import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, promptInList, Selections, switchRun, todo } from "../api";
+import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun, todo } from "../api";
 import { Mode } from "../mode";
 import { Register } from "../register";
 import { CharSet, getCharacters } from "../utils/charset";
@@ -101,7 +101,6 @@ export function restore(
 export async function restore_withCurrent(
   _: Context,
   document: vscode.TextDocument,
-  cancellationToken: vscode.CancellationToken,
   register: RegisterOr<"caret", Register.Flags.CanReadSelections>,
 
   reverse: Argument<boolean> = false,
@@ -118,7 +117,7 @@ export async function restore_withCurrent(
     add = savedSelections;
   }
 
-  const type = await promptInList(false, [
+  const type = await prompt.one([
     ["a", "Append lists"],
     ["u", "Union"],
     ["i", "Intersection"],
@@ -126,7 +125,7 @@ export async function restore_withCurrent(
     [">", "Select rightmost cursor"],
     ["+", "Select longest"],
     ["-", "Select shortest"],
-  ], cancellationToken);
+  ]);
 
   if (type === 0) {
     _.selections = from.concat(add);
@@ -326,9 +325,10 @@ export async function filter(
  *
  * @keys `s-s` (normal)
  */
-export async function split(
+export function split(
   _: Context,
 ) {
+  todo();
 }
 
 /**
@@ -337,7 +337,7 @@ export async function split(
  * @keys `a-s` (normal)
  */
 export function splitLines(_: Context) {
-
+  todo();
 }
 
 /**
@@ -497,5 +497,3 @@ export function changeDirection(_: Context, direction?: Direction) {
     break;
   }
 }
-
-

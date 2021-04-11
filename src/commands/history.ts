@@ -103,7 +103,7 @@ export function recording_start(
 /**
  * Stop recording macro.
  *
- * @keys `escape` (normal)
+ * @keys `escape` (normal, recording)
  */
 export function recording_stop(
   register: RegisterOr<"arobase", Register.Flags.CanReadWriteMacros>,

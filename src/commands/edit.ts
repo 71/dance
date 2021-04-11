@@ -221,7 +221,7 @@ export async function replaceCharacters(
   repetitions: number,
   inputOr: InputOr<string>,
 ) {
-  const input = (await inputOr(() => keypress(_.cancellationToken))).repeat(repetitions);
+  const input = (await inputOr(() => keypress(_))).repeat(repetitions);
 
   return _.run(() => edit((editBuilder, selections, document) => {
     for (const selection of selections) {
@@ -335,9 +335,9 @@ export function copyIndentation(
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding     | Commands                                                                        |
- * | ------------------------------------------ | ---------------------- | -------------- | ------------------------------------------------------------------------------- |
- * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".newLine.above", { "select": true }], [".modes.set", { "input": "insert" }]` |
+ * | Title                                      | Identifier             | Keybinding     | Commands                                                                             |
+ * | ------------------------------------------ | ---------------------- | -------------- | ------------------------------------------------------------------------------------ |
+ * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { "select": true }], [".modes.set", { "input": "insert" }]` |
  */
 export function newLine_above(_: Context, select: Argument<boolean> = false) {
   if (select) {
@@ -370,9 +370,9 @@ export function newLine_above(_: Context, select: Argument<boolean> = false) {
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding   | Commands                                                                        |
- * | ------------------------------------------ | ---------------------- | ------------ | ------------------------------------------------------------------------------- |
- * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".newLine.below", { "select": true }], [".modes.set", { "input": "insert" }]` |
+ * | Title                                      | Identifier             | Keybinding   | Commands                                                                             |
+ * | ------------------------------------------ | ---------------------- | ------------ | ------------------------------------------------------------------------------------ |
+ * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { "select": true }], [".modes.set", { "input": "insert" }]` |
  */
 export function newLine_below(_: Context, select: Argument<boolean> = false) {
   if (select) {

@@ -34,7 +34,7 @@ export async function character(
   shift = Shift.Select,
   include: Argument<boolean> = false,
 ) {
-  const input = await inputOr(() => keypress(_.cancellationToken));
+  const input = await inputOr(() => keypress(_));
 
   Selections.update.byIndex((_, selection, document) => {
     let position: vscode.Position | undefined = Selections.seekFrom(selection, direction);

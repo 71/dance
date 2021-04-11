@@ -4,7 +4,7 @@ import * as vscode from "vscode";
  * A class used to validate settings.
  */
 export class SettingsValidator {
-  public readonly path: string[] = ["dance"];
+  public readonly path: string[] = [];
   public readonly errors: string[] = [];
 
   public constructor(...path: string[]) {
@@ -53,5 +53,19 @@ export class SettingsValidator {
     }
 
     throw new Error("Invalid settings: " + errors.join(" — "));
+  }
+
+  public static displayErrorIfNeeded<T>(path: string, f: (validator: SettingsValidator) => T) {
+    const validator = new SettingsValidator(path),
+          result = f(validator);
+    validator.displayErrorIfNeeded();
+    return result;
+  }
+
+  public static throwErrorIfNeeded<T>(path: string, f: (validator: SettingsValidator) => T) {
+    const validator = new SettingsValidator(path),
+          result = f(validator);
+    validator.throwErrorIfNeeded();
+    return result;
   }
 }

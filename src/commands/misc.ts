@@ -3,6 +3,7 @@ import * as api from "../api";
 import { Argument, InputOr } from ".";
 import { Context, InputError, keypress, Menu, prompt, showMenu, validateMenu } from "../api";
 import { Extension } from "../state/extension";
+import { Register } from "../register";
 
 /**
  * Miscellaneous commands that don't deserve their own category.
@@ -17,18 +18,14 @@ import { Extension } from "../state/extension";
 declare module "./misc";
 
 /**
- * Toggle default key bindings.
- */
-export function toggle(extension: Extension) {
-  extension.setEnabled(!extension.enabled, false);
-}
-
-/**
  * Cancel Dance operation.
+ *
+ * @keys `escape` (normal), `escape` (input)
  */
-export function cancel() {
+export function cancel(extension: Extension) {
   // Calling a new command resets pending operations, so we don't need to do
   // anything special here.
+  extension.cancelLastOperation();
 }
 
 /**
@@ -90,18 +87,23 @@ export async function run(
  * current document.
  *
  * @keys `"` (normal)
- * @noreset
  */
-export async function selectRegister(_: Context, input?: string) {
-  if (input === undefined) {
-    _.extensionState.currentRegister = await keypress.forRegister(_);
-  } else {
+export async function selectRegister(_: Context, inputOr: InputOr<string | Register>) {
+  const input = await inputOr(() => keypress.forRegister(_));
+
+  if (typeof input === "string") {
+    if (input.length === 0) {
+      return;
+    }
+
     const extension = _.extensionState,
           registers = extension.registers;
 
     extension.currentRegister = input.startsWith(" ")
       ? registers.forDocument(_.document).get(input.slice(1))
       : registers.get(input);
+  } else {
+    _.extensionState.currentRegister = input;
   }
 }
 
@@ -177,7 +179,7 @@ export async function openMenu(
       throw new Error(`invalid menu: ${errors.join(", ")}`);
     }
 
-    return showMenu(menu, [], _.cancellationToken);
+    return showMenu(menu, []);
   }
 
   const menus = _.extensionState.menus;
@@ -196,5 +198,5 @@ export async function openMenu(
     valueSelection: lastPickedMenu === undefined ? undefined : [0, lastPickedMenu.length],
   }, _));
 
-  return showMenu.byName(input, additionalArgs, _.cancellationToken);
+  return showMenu.byName(input, additionalArgs);
 }

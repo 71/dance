@@ -11,6 +11,7 @@ import { loadCommands } from "../commands/load-all";
 import { Recorder } from "../api/record";
 import { Commands } from "../commands";
 import { AutoDisposable } from "../utils/disposables";
+import { StatusBar } from "../utils/status";
 
 // =============================================================================================
 // ==  MODE-SPECIFIC CONFIGURATION  ============================================================
@@ -30,8 +31,13 @@ export const enum SelectionBehavior {
  */
 export class Extension implements vscode.Disposable {
   // Events.
+  // ==========================================================================
+
   private readonly _onModeDidChange = new vscode.EventEmitter<EditorState>();
 
+  /**
+   * An event which fires on editor mode change.
+   */
   public readonly onModeDidChange = this._onModeDidChange.event;
 
   // Misc.
@@ -39,6 +45,8 @@ export class Extension implements vscode.Disposable {
   private readonly subscriptions: vscode.Disposable[] = [];
 
   // Configuration.
+  // ==========================================================================
+
   private readonly _gotoMenus = new Map<string, Menu>();
 
   public configuration = vscode.workspace.getConfiguration(extensionName);
@@ -47,25 +55,13 @@ export class Extension implements vscode.Disposable {
     return this._gotoMenus as ReadonlyMap<string, Menu>;
   }
 
-  // Commands.
-  private _commands?: Commands;
-
-  public get commands() {
-    assert(this._commands !== undefined);
-
-    return this._commands;
-  }
-
-  // General state.
-  public readonly statusBarItem: vscode.StatusBarItem;
-
-  public enabled: boolean = false;
+  // State.
+  // ==========================================================================
 
   /**
-   * The `CancellationTokenSource` for cancellable operations running in this
-   * editor.
+   * `StatusBar` for this instance of the extension.
    */
-  public cancellationTokenSource = new vscode.CancellationTokenSource();
+  public readonly statusBar = new StatusBar();
 
   /**
    * `Registers` for this instance of the extension.
@@ -83,27 +79,58 @@ export class Extension implements vscode.Disposable {
   public readonly recorder = new Recorder();
 
   // Ephemeral state needed by commands.
-  public currentCount: number = 0;
-  public currentRegister: Register | undefined = undefined;
+  // ==========================================================================
 
-  public constructor() {
-    this.statusBarItem = vscode.window.createStatusBarItem(undefined, 100);
-    this.statusBarItem.tooltip = "Current mode";
+  private _currentCount = 0;
+  private _currentRegister?: Register;
 
+  /**
+   * The counter for the next command.
+   */
+  public get currentCount() {
+    return this._currentCount;
+  }
+
+  public set currentCount(count: number) {
+    this._currentCount = count;
+
+    if (count !== 0) {
+      this.statusBar.countSegment.setContent(count.toString());
+    } else {
+      this.statusBar.countSegment.setContent();
+    }
+  }
+
+  /**
+   * The register to use in the next command.
+   */
+  public get currentRegister() {
+    return this._currentRegister;
+  }
+
+  public set currentRegister(register: Register | undefined) {
+    this._currentRegister = register;
+
+    if (register !== undefined) {
+      this.statusBar.registerSegment.setContent(register.name);
+    } else {
+      this.statusBar.registerSegment.setContent();
+    }
+  }
+
+  public constructor(public readonly commands: Commands) {
     // Configuration: modes.
     this.modes.observePreferences(this);
 
     // Configuration: menus.
     this.observePreference<Record<string, Menu>>(
       ".menus",
-      {},
-      (value) => {
+      (value, validator) => {
         this._gotoMenus.clear();
-
-        const validator = new SettingsValidator("menus");
 
         if (typeof value !== "object" || value === null) {
           validator.reportInvalidSetting("must be an object");
+          return;
         }
 
         for (const menuName in value) {
@@ -113,28 +140,90 @@ export class Extension implements vscode.Disposable {
           if (validationErrors.length === 0) {
             this._gotoMenus.set(menuName, menu);
           } else {
+            validator.enter(menuName);
+
             for (const error of validationErrors) {
-              validator.reportInvalidSetting(`error in menu ${menuName}: ${error}`);
+              validator.reportInvalidSetting(error);
             }
 
-            validator.displayErrorIfNeeded();
+            validator.leave();
           }
         }
       },
       true,
     );
 
-    // Lastly, enable the extension and set up modes.
-    this.setEnabled(this.configuration.get("enabled", true), false);
+    this.subscriptions.push(
+      // Track active editor.
+      vscode.window.onDidChangeActiveTextEditor((editor) => {
+        this._activeEditorState?.onDidBecomeInactive(editor !== undefined);
+
+        if (editor === undefined) {
+          this._activeEditorState = undefined;
+        } else {
+          this._activeEditorState = this.getEditorState(editor);
+          this._activeEditorState.onDidBecomeActive();
+        }
+      }),
+
+      // Notify editors when selections change.
+      vscode.window.onDidChangeTextEditorSelection((e) => {
+        this._documentStates
+          .get(e.textEditor.document)
+          ?.getEditorState(e.textEditor)
+          ?.onDidChangeTextEditorSelection(e);
+      }),
+
+      // Notify documents when selections change.
+      vscode.workspace.onDidChangeTextDocument((e) => {
+        this._documentStates.get(e.document)?.onDidChangeTextDocument(e);
+      }),
+
+      // Update configuration automatically.
+      vscode.workspace.onDidChangeConfiguration((e) => {
+        this.configuration = vscode.workspace.getConfiguration(extensionName);
+
+        for (const [section, handler] of this.configurationChangeHandlers.entries()) {
+          if (e.affectsConfiguration(section)) {
+            handler();
+          }
+        }
+      }),
+    );
+
+    // Register all commands.
+    for (const descriptor of Object.values(commands)) {
+      this.subscriptions.push(descriptor.register(this));
+    }
+
+    // Set up current active text editor, if any.
+    const activeEditor = vscode.window.activeTextEditor;
+
+    if (activeEditor !== undefined) {
+      const activeEditorState = this.getEditorState(activeEditor);
+
+      this._activeEditorState = activeEditorState;
+      activeEditorState.onDidBecomeActive();
+    }
   }
 
   /**
    * Disposes of the extension and all of its resources and subscriptions.
    */
   public dispose() {
-    this.cancellationTokenSource?.cancel();
-    this.setEnabled(false, false);
-    this.statusBarItem.dispose();
+    this._cancellationTokenSource.cancel();
+    this._cancellationTokenSource.dispose();
+
+    for (const documentState of this.documentStates()) {
+      documentState.dispose();
+    }
+
+    this._documentStates = new Map();
+    this._autoDisposables.forEach((disposable) => disposable.dispose());
+
+    assert(this._autoDisposables.size === 0);
+
+    this.statusBar.dispose();
   }
 
   /**
@@ -148,7 +237,6 @@ export class Extension implements vscode.Disposable {
    */
   public observePreference<T>(
     section: string,
-    defaultValue: T | undefined,
     handler: (value: T, validator: SettingsValidator) => void,
     triggerNow = false,
   ) {
@@ -164,14 +252,12 @@ export class Extension implements vscode.Disposable {
       configuration = vscode.workspace.getConfiguration();
     }
 
-    if (defaultValue === undefined) {
-      defaultValue = configuration.inspect<T>(section)!.defaultValue!;
-    }
+    const defaultValue = configuration.inspect<T>(section)!.defaultValue!;
 
     this.configurationChangeHandlers.set(fullName, () => {
       const validator = new SettingsValidator(fullName);
 
-      handler(configuration.get(section, defaultValue!), validator);
+      handler(configuration.get(section, defaultValue), validator);
 
       validator.displayErrorIfNeeded();
     });
@@ -183,93 +269,6 @@ export class Extension implements vscode.Disposable {
 
       validator.displayErrorIfNeeded();
     }
-  }
-
-  public async setEnabled(enabled: boolean, changeConfiguration: boolean) {
-    if (enabled === this.enabled) {
-      return;
-    }
-
-    this.subscriptions.splice(0).forEach((x) => x.dispose());
-
-    if (!enabled) {
-      this.statusBarItem.hide();
-
-      for (const documentState of this.documentStates()) {
-        documentState.dispose();
-      }
-
-      this._documentStates = new Map();
-      this._commands = undefined;
-      this._autoDisposables.forEach((disposable) => disposable.dispose());
-
-      assert(this._autoDisposables.size === 0);
-
-      vscode.commands.executeCommand("setContext", extensionName + ".enabled", false);
-
-      if (changeConfiguration) {
-        vscode.workspace.getConfiguration(extensionName).update("enabled", false);
-      }
-    } else {
-      this.statusBarItem.show();
-
-      this.subscriptions.push(
-        vscode.window.onDidChangeActiveTextEditor((editor) => {
-          this._activeEditorState?.onDidBecomeInactive();
-
-          if (editor === undefined) {
-            this._activeEditorState = undefined;
-          } else {
-            this._activeEditorState = this.getEditorState(editor);
-            this._activeEditorState.onDidBecomeActive();
-          }
-        }),
-
-        vscode.window.onDidChangeTextEditorSelection((e) => {
-          this._documentStates
-            .get(e.textEditor.document)
-            ?.getEditorState(e.textEditor)
-            ?.onDidChangeTextEditorSelection(e);
-        }),
-
-        vscode.workspace.onDidChangeTextDocument((e) => {
-          this._documentStates.get(e.document)?.onDidChangeTextDocument(e);
-        }),
-
-        vscode.workspace.onDidChangeConfiguration((e) => {
-          this.configuration = vscode.workspace.getConfiguration(extensionName);
-
-          for (const [section, handler] of this.configurationChangeHandlers.entries()) {
-            if (e.affectsConfiguration(section)) {
-              handler();
-            }
-          }
-        }),
-      );
-
-      this._commands = await loadCommands();
-
-      for (const descriptor of Object.values(this._commands!)) {
-        this.subscriptions.push(descriptor.register(this));
-      }
-
-      const activeEditor = vscode.window.activeTextEditor;
-
-      if (activeEditor !== undefined) {
-        const activeEditorState = this.getEditorState(activeEditor);
-
-        this._activeEditorState = activeEditorState;
-        activeEditorState.onDidBecomeActive();
-      }
-
-      vscode.commands.executeCommand("setContext", extensionName + ".enabled", true);
-
-      if (changeConfiguration) {
-        vscode.workspace.getConfiguration(extensionName).update("enabled", true);
-      }
-    }
-
-    return (this.enabled = enabled);
   }
 
   // =============================================================================================
@@ -332,8 +331,27 @@ export class Extension implements vscode.Disposable {
     }
   }
 
-  public notifyModeDidChange(editorState: EditorState) {
-    this._onModeDidChange.fire(editorState);
+  // =============================================================================================
+  // ==  CANCELLATION  ===========================================================================
+  // =============================================================================================
+
+  private _cancellationTokenSource = new vscode.CancellationTokenSource();
+
+  /**
+   * The token for the next command.
+   */
+  public get cancellationToken() {
+    return this._cancellationTokenSource.token;
+  }
+
+  /**
+   * Requests the cancellation of the last operation.
+   */
+  public cancelLastOperation() {
+    this._cancellationTokenSource.cancel();
+    this._cancellationTokenSource.dispose();
+
+    this._cancellationTokenSource = new vscode.CancellationTokenSource();
   }
 
   // =============================================================================================

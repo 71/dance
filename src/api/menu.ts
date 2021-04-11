@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Context, promptInList } from ".";
+import { Context, prompt } from ".";
 
 export interface Menu {
   readonly items: Menu.Items;
@@ -80,11 +80,10 @@ export function validateMenu(menu: Menu) {
 export async function showMenu(
   menu: Menu,
   additionalArgs: readonly any[] = [],
-  cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
 ) {
   const entries = Object.entries(menu.items);
   const items = entries.map((x) => [x[0], x[1].text] as const);
-  const choice = await promptInList(false, items, cancellationToken);
+  const choice = await prompt.one(items);
 
   if (choice === undefined) {
     return;
@@ -118,7 +117,6 @@ export namespace showMenu {
   export function byName(
     menuName: string,
     additionalArgs: readonly any[] = [],
-    cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
   ) {
     const menu = Context.WithoutActiveEditor.current.extensionState.menus.get(menuName);
 
@@ -126,6 +124,6 @@ export namespace showMenu {
       return Promise.reject(new Error(`menu ${JSON.stringify(menuName)} does not exist`));
     }
 
-    return showMenu(menu, additionalArgs, cancellationToken);
+    return showMenu(menu, additionalArgs);
   }
 }

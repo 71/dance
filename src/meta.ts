@@ -1,6 +1,7 @@
-import assert = require("assert");
+import * as assert from "assert";
 import * as fs from "fs/promises";
 import * as G from "glob";
+import * as path from "path";
 
 const verbose = process.argv.includes("--verbose");
 
@@ -384,7 +385,7 @@ export function parseKeys(keys: string) {
     return [];
   }
 
-  return keys.split(", ").map((keyString) => {
+  return keys.split(/, (?=`)/g).map((keyString) => {
     const match = /^(`+)(.+?)\1 \((.+?)\)$/.exec(keyString)!,
           keybinding = match[2].trim().replace(
             specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m]);
@@ -404,13 +405,31 @@ export function parseKeys(keys: string) {
       key += "Alt+";
     }
 
-    const remainingKeybinding = keybinding.replace(/[csa]-/g, "");
+    const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
+          whenClauses = ["editorTextFocus"];
+
+    for (const tag of match[3].split(", ")) {
+      switch (tag) {
+      case "normal":
+      case "insert":
+      case "input":
+        whenClauses.push(`dance.mode == '${tag}'`);
+        break;
+
+      case "recording":
+        whenClauses.push("dance.recording");
+        break;
+
+      default:
+        throw new Error("unknown keybinding tag " + tag);
+      }
+    }
 
     key += remainingKeybinding[0].toUpperCase() + remainingKeybinding.slice(1);
 
     return {
       key,
-      when: `editorTextFocus && dance.mode == '${match[3]}'`,
+      when: whenClauses.join(" && "),
     };
   });
 }
@@ -490,6 +509,28 @@ export function unindent(by: number, string: string) {
 }
 
 /**
+ * Updates a .build.ts file.
+ */
+async function buildFile(fileName: string, modules: parseDocComments.ParsedModule<any>[]) {
+  const relativeName = path.relative(__dirname, fileName),
+        relativeNameWithoutBuild = relativeName.replace(/build\.ts$/, ""),
+        modulePath = `./${relativeNameWithoutBuild}build`,
+        prefix = path.basename(relativeNameWithoutBuild),
+        outputName = (await fs.readdir(path.dirname(fileName)))
+          .find((path) => path.startsWith(prefix) && !path.endsWith(".build.ts"))!,
+        outputPath = path.join(path.dirname(fileName), outputName),
+        module: { build(modules: parseDocComments.ParsedModule<any>[]): Promise<string> } =
+          require(modulePath);
+
+  const existingContent = await fs.readFile(outputPath, "utf-8"),
+        existingContentHeader =
+          /^[\s\S]+?\n.+Content below this line was auto-generated.+\n/m.exec(existingContent)![0],
+        generatedContent = await module.build(modules);
+
+  await fs.writeFile(outputPath, existingContentHeader + generatedContent, "utf-8");
+}
+
+/**
  * The main entry point of the script.
  */
 async function main() {
@@ -504,10 +545,10 @@ async function main() {
     contentsBefore.push(...await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8"))));
   }
 
-  const commandModules = await getCommandModules();
+  const commandModules = await getCommandModules(),
+        filesToBuild = await glob(`${__dirname}/**/*.build.ts`);
 
-  await import("./commands/README.build").then((_) => _.build(commandModules));
-  await import("./commands/load-all.build").then((_) => _.build(commandModules));
+  await Promise.all(filesToBuild.map((path) => buildFile(path, commandModules)));
 
   if (ensureUpToDate) {
     const contentsAfter = await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8")));

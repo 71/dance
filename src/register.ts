@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 
-import { assert, Context, EditorRequiredError, Selections } from "./api";
+import { ArgumentError, assert, Context, EditNotAppliedError, EditorRequiredError, Selections } from "./api";
 import { SelectionBehavior } from "./state/extension";
+import { noUndoStops } from "./utils/misc";
 import { TrackedSelection } from "./utils/tracked-selection";
 
 /**
@@ -380,29 +381,55 @@ export abstract class RegisterSet {
   public readonly pipe = new GeneralPurposeRegister("|");
 
   /**
-   * The read-only "%" (`percent`) register, mapped to the name of the current
-   * document.
+   * The "%" (`percent`) register, mapped to the name of the current document.
    */
-  public readonly percent = new SpecialRegister("%", () =>
-    Promise.resolve([activeEditor().document.fileName]),
+  public readonly percent = new SpecialRegister(
+    "%",
+    () => Promise.resolve([activeEditor().document.fileName]),
+    (values) => {
+      if (values.length !== 1) {
+        return Promise.reject(new ArgumentError("a single file name must be selected"));
+      }
+
+      return vscode.workspace.openTextDocument(values[0]).then(() => {});
+    },
   );
 
-  // TODO: "." and "#" could probably be made read-write.
-
   /**
-   * The read-only "." (`dot`) register, mapped to the contents of the current
-   * selections.
+   * The "." (`dot`) register, mapped to the contents of the current selections.
    */
-  public readonly dot = new SpecialRegister(".", () => {
-    const editor = activeEditor(),
-          document = editor.document,
-          selectionBehavior = Context.currentOrUndefined?.editorState?.mode?.selectionBehavior,
-          selections = selectionBehavior === SelectionBehavior.Character
-            ? Selections.fromCharacterMode(editor.selections, document)
-            : editor.selections;
+  public readonly dot = new SpecialRegister(
+    ".",
+    () => {
+      const editor = activeEditor(),
+            document = editor.document,
+            selectionBehavior = Context.currentOrUndefined?.editorState?.mode?.selectionBehavior,
+            selections = selectionBehavior === SelectionBehavior.Character
+              ? Selections.fromCharacterMode(editor.selections, document)
+              : editor.selections;
 
-    return Promise.resolve(selections.map(document.getText.bind(document)));
-  });
+      return Promise.resolve(selections.map(document.getText.bind(document)));
+    },
+    (values) => {
+      const editor = activeEditor();
+
+      if (values.length !== editor.selections.length) {
+        return Promise.reject(new ArgumentError("as many selections as values must be given"));
+      }
+
+      return editor.edit((editBuilder) => {
+        const document = editor.document,
+              selectionBehavior = Context.currentOrUndefined?.editorState?.mode?.selectionBehavior,
+              selections = selectionBehavior === SelectionBehavior.Character
+                ? Selections.fromCharacterMode(editor.selections, document)
+                : editor.selections;
+
+        for (let i = 0; i < selections.length; i++) {
+          editBuilder.replace(selections[i], values[i]);
+        }
+      }, noUndoStops).then((succeeded) => EditNotAppliedError.throwIfNotApplied(succeeded));
+    },
+  );
 
   /**
    * The read-only "#" (`hash`) register, mapped to the indices of the current

@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 import * as api from "./api";
+import { loadCommands } from "./commands/load-all";
 import { Extension } from "./state/extension";
 
 /**
@@ -11,13 +12,15 @@ export const extensionName = "dance";
 /**
  * Global state of the extension.
  */
-export let extensionState: Extension;
+export let extensionState: Extension | undefined;
+
+let isActivated = false;
 
 /**
  * Function called by VS Code to activate the extension.
  */
 export function activate() {
-  extensionState = new Extension();
+  isActivated = true;
 
   const extensionData = vscode.extensions.getExtension(`gregoire.${extensionName}`),
         extensionPackageJSON = extensionData?.packageJSON;
@@ -29,13 +32,20 @@ export function activate() {
   if (extensionPackageJSON?.[`${extensionName}.disableArbitraryCommandExecution`]) {
     api.execute.disable();
   }
+
+  loadCommands().then((commands) => {
+    if (isActivated) {
+      extensionState = new Extension(commands);
+    }
+  });
 }
 
 /**
  * Function called by VS Code to deactivate the extension.
  */
 export function deactivate() {
-  extensionState.dispose();
+  isActivated = false;
+  extensionState?.dispose();
 }
 
 export { api };

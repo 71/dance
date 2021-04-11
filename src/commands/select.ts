@@ -56,6 +56,8 @@ export function line_below(_: Context, count: number) {
       return new vscode.Selection(line, 0, line + 1, 0);
     });
   }
+
+  Selections.reveal();
 }
 
 /**
@@ -88,6 +90,8 @@ export function line_below_extend(_: Context, count: number) {
       return new vscode.Selection(anchor, active);
     });
   }
+
+  Selections.reveal();
 }
 
 /**
@@ -111,6 +115,8 @@ export function line_above(_: Context, count: number) {
       return new vscode.Selection(line, 0, line - 1, 0);
     });
   }
+
+  Selections.reveal();
 }
 
 /**
@@ -142,6 +148,8 @@ export function line_above_extend(_: Context, count: number) {
       return new vscode.Selection(anchor, active);
     });
   }
+
+  Selections.reveal();
 }
 
 /**
@@ -163,10 +171,13 @@ export function lineStart(
 ) {
   if (count > 0) {
     const selection = _.selections[0],
-          newLine = Math.min(_.document.lineCount - 1, count),
+          newLine = Math.min(_.document.lineCount, count) - 1,
           newSelection = Selections.shift(selection, Positions.lineStart(newLine), shift);
 
-    return Selections.set([newSelection]);
+    Selections.set([newSelection]);
+    Selections.reveal();
+
+    return;
   }
 
   Selections.update.byIndex((_, selection) =>
@@ -193,10 +204,13 @@ export function lineEnd(
 ) {
   if (count > 0) {
     const selection = _.selections[0],
-          newLine = Math.min(_.document.lineCount - 1, count),
+          newLine = Math.min(_.document.lineCount, count) - 1,
           newSelection = Selections.shift(selection, Positions.lineEnd(newLine), shift);
 
-    return Selections.set([newSelection]);
+    Selections.set([newSelection]);
+    Selections.reveal();
+
+    return;
   }
 
   Selections.update.byIndex((_, selection, doc) =>

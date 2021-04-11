@@ -14,13 +14,14 @@ export class Mode {
   private _inheritsFrom: Mode;
   private _cursorStyle = vscode.TextEditorCursorStyle.Line;
   private _lineDecorationType?: vscode.TextEditorDecorationType;
-  private _lineHighlight?: string;
+  private _lineHighlight?: string | vscode.ThemeColor;
   private _lineNumbers = vscode.TextEditorLineNumbersStyle.On;
   private _selectionDecorationOptions?: vscode.DecorationRenderOptions;
   private _selectionDecorationType?: vscode.TextEditorDecorationType;
   private _selectionBehavior = SelectionBehavior.Caret;
   private _onEnterMode: readonly command.Any[] = [];
   private _onLeaveMode: readonly command.Any[] = [];
+  private _decorations: readonly Mode.Decoration[] = [];
 
   public get onChanged() {
     return this._onChanged.event;
@@ -46,14 +47,6 @@ export class Mode {
     return this._lineHighlight;
   }
 
-  public get lineDecorationType() {
-    return this._lineDecorationType;
-  }
-
-  public get selectionDecorationOptions() {
-    return this._selectionDecorationOptions;
-  }
-
   public get selectionDecorationType() {
     return this._selectionDecorationType;
   }
@@ -70,6 +63,10 @@ export class Mode {
     return this._onLeaveMode;
   }
 
+  public get decorations() {
+    return this._decorations;
+  }
+
   public constructor(
     public readonly modes: Modes,
     public readonly name: string,
@@ -77,13 +74,16 @@ export class Mode {
     public isPendingDeletion = false,
   ) {
     this._inheritsFrom = modes.vscodeMode;
-    this._raw = rawConfiguration;
+    this._raw = {};
 
     if (rawConfiguration != null) {
       this.apply(rawConfiguration, new SettingsValidator());
     }
   }
 
+  /**
+   * Disposes of the mode.
+   */
   public dispose() {
     this._onDeleted.fire(this);
 
@@ -91,6 +91,9 @@ export class Mode {
     this._onDeleted.dispose();
   }
 
+  /**
+   * Updates an underlying value of the mode.
+   */
   public update<K extends string & keyof this>(key: `_${K}`, value: this[K]) {
     if (this[key as keyof this] === value) {
       return;
@@ -100,6 +103,10 @@ export class Mode {
     this._onChanged.fire([this, [key.slice(1) as keyof Mode]]);
   }
 
+  /**
+   * Applies a new configuration to the mode, notifying subscribers of changes
+   * if needed.
+   */
   public apply(raw: Mode.Configuration, validator: SettingsValidator) {
     const willInheritFrom = raw.inheritFrom == null
       ? this.modes.vscodeMode
@@ -113,15 +120,15 @@ export class Mode {
 
     const up = willInheritFrom,
           top = this.modes.vscodeMode,
-          map = <RN extends keyof Mode.Configuration, N extends keyof Mode>(
+          map = <RN extends keyof Mode.Configuration, N extends keyof Mode, C>(
             rawName: RN,
             name: N,
             convert: (value: Exclude<Mode.Configuration[RN], null | undefined>,
-                      validator: SettingsValidator) => Mode[N],
+                      validator: SettingsValidator) => C,
           ) => {
             const value = raw[rawName];
 
-            if (value === undefined) {
+            if (value === undefined || value === "inherit") {
               // Unspecified: use parent value.
               return up[name];
             }
@@ -158,88 +165,74 @@ export class Mode {
       changedProperties.push("selectionBehavior");
     }
 
-    // Line highlight.
-    const lineHighlight = map("lineHighlight", "lineHighlight", (value) => value);
-
-    if (this._lineHighlight !== lineHighlight) {
-      this._lineHighlight = lineHighlight;
-      changedProperties.push("lineHighlight", "lineDecorationType");
-
-      this._lineDecorationType?.dispose();
-
-      if (lineHighlight === undefined || lineHighlight.length === 0) {
-        this._lineDecorationType = undefined;
-      } else {
-        this._lineDecorationType = vscode.window.createTextEditorDecorationType({
-          backgroundColor: lineHighlight[0] === "#"
-            ? lineHighlight
-            : new vscode.ThemeColor(lineHighlight),
-          isWholeLine: true,
-        });
-      }
-    }
-
     // Selection decorations.
-    const selectionDecorationOptions = map("selectionStyle", "selectionDecorationOptions",
-                                           Mode.decorationObjectToDecorationRenderOptions);
+    const disposePreviousDecorations = this._raw?.decorations != null;
+    let decorations = raw.decorations;
 
-    if (selectionDecorationOptions !== undefined) {
-      const currentOptions = this._selectionDecorationOptions;
-      let changed = false;
-
-      if (currentOptions === undefined) {
-        changed = true;
-      } else {
-        const currentKeys = new Set(Object.keys(currentOptions));
-
-        for (const key in selectionDecorationOptions) {
-          if (!currentKeys.delete(key)) {
-            changed = true;
-            break;
-          }
+    if (decorations === undefined) {
+      if (this._raw.decorations !== undefined) {
+        if (disposePreviousDecorations) {
+          this._decorations.forEach((d) => d.type.dispose());
         }
 
-        if (!changed && currentKeys.size > 0) {
-          changed = true;
+        this._decorations = up._decorations;
+        changedProperties.push("decorations");
+      }
+    } else if (decorations === null) {
+      if (this._raw.decorations !== null) {
+        if (disposePreviousDecorations) {
+          this._decorations.forEach((d) => d.type.dispose());
         }
 
-        if (!changed) {
-          for (const key in currentOptions) {
-            const currentValue = currentOptions[key as keyof typeof currentOptions],
-                  value = selectionDecorationOptions[key as keyof typeof currentOptions];
-
-            if (currentValue !== value) {
-              changed = true;
-              break;
-            }
-          }
-        }
+        this._decorations = top._decorations;
+        changedProperties.push("decorations");
+      }
+    } else if (JSON.stringify(decorations) !== JSON.stringify(this._raw?.decorations)) {
+      if (!Array.isArray(decorations)) {
+        decorations = [decorations as Mode.Configuration.Decoration];
       }
 
-      if (changed) {
-        this._selectionDecorationOptions = selectionDecorationOptions;
-        this._selectionDecorationType?.dispose();
-        this._selectionDecorationType =
-          vscode.window.createTextEditorDecorationType(selectionDecorationOptions);
-        changedProperties.push("selectionDecorationType", "selectionDecorationOptions");
+      if (disposePreviousDecorations) {
+        this._decorations.forEach((d) => d.type.dispose());
       }
-    } else if (this._selectionDecorationOptions !== undefined) {
-      this._selectionDecorationOptions = undefined;
-      this._selectionDecorationType?.dispose();
-      this._selectionDecorationType = undefined;
-      changedProperties.push("selectionDecorationType", "selectionDecorationOptions");
+
+      validator.enter("decorations");
+
+      this._decorations = decorations.flatMap((d) => {
+        const validatorErrors = validator.errors.length,
+              renderOptions = Mode.decorationObjectToDecorationRenderOptions(d, validator),
+              applyTo = Mode.applyToStringToApplyTo(d.applyTo ?? "all", validator);
+
+        if (validator.errors.length > validatorErrors) {
+          return [];
+        }
+
+        return [{
+          applyTo,
+          renderOptions,
+          type: vscode.window.createTextEditorDecorationType(renderOptions),
+        }];
+      });
+
+      validator.leave();
+      changedProperties.push("decorations");
     }
 
     // Events (subscribers don't care about changes to these properties, so we
     // don't add them to the `changedProperties`).
     this._onEnterMode = raw.onEnterMode ?? [];
     this._onLeaveMode = raw.onLeaveMode ?? [];
+    this._raw = raw;
 
     if (changedProperties.length > 0) {
       this._onChanged.fire([this, changedProperties]);
     }
   }
 
+  /**
+   * Validates and converts a string to a `vscode.TextEditorLineNumbersStyle`
+   * enum value.
+   */
   public static lineNumbersStringToLineNumbersStyle(
     lineNumbers: Mode.Configuration.LineNumbers,
     validator: SettingsValidator,
@@ -258,6 +251,10 @@ export class Mode {
     }
   }
 
+  /**
+   * Validates and converts a string to a `vscode.TextEditorCursorStyle` enum
+   * value.
+   */
   public static cursorStyleStringToCursorStyle(
     cursorStyle: Mode.Configuration.CursorStyle,
     validator: SettingsValidator,
@@ -282,8 +279,11 @@ export class Mode {
     }
   }
 
+  /**
+   * Validates and converts a string to a `SelectionBehavior` enum value.
+   */
   public static selectionBehaviorStringToSelectionBehavior(
-    behavior: "caret" | "character",
+    behavior: Mode.Configuration.SelectionBehavior,
     validator: SettingsValidator,
   ) {
     switch (behavior) {
@@ -301,6 +301,10 @@ export class Mode {
     }
   }
 
+  /**
+   * Validates and converts a configuration decoration to an actual
+   * `vscode.DecorationRenderOptions` object.
+   */
   public static decorationObjectToDecorationRenderOptions(
     object: Mode.Configuration.Decoration,
     validator: SettingsValidator,
@@ -312,7 +316,7 @@ export class Mode {
 
       if (value) {
         validator.enter(name);
-        options[name] = this.stringToColor(value, validator);
+        options[name] = this.stringToColor(value, validator, "#000");
         validator.leave();
       }
     }
@@ -322,6 +326,14 @@ export class Mode {
 
       if (value) {
         options[name] = value;
+      }
+    }
+
+    for (const name of ["isWholeLine"] as const) {
+      const value = object[name];
+
+      if (value != null) {
+        options[name] = !!object[name];
       }
     }
 
@@ -336,11 +348,31 @@ export class Mode {
     return options;
   }
 
-  public static stringToColor(value: unknown, validator: SettingsValidator) {
+  /**
+   * Validates and converts a string value to a valid `applyTo` value.
+   */
+  public static applyToStringToApplyTo(value: string, validator: SettingsValidator) {
+    const applyTo = value;
+
+    if (!["all", "main", "secondary"].includes(applyTo)) {
+      validator.reportInvalidSetting(`unrecognized applyTo ${JSON.stringify(applyTo)}`,
+                                     "applyTo");
+
+      return "all";
+    }
+
+    return applyTo as "all" | "main" | "secondary";
+  }
+
+  /**
+   * Validates and converts a string value to a string color or
+   * `vscode.ThemeColor`.
+   */
+  public static stringToColor(value: string, validator: SettingsValidator, invalidValue = "") {
     if (typeof value !== "string" || value.length === 0) {
       validator.reportInvalidSetting("color must be a non-empty string");
 
-      return "#000";
+      return invalidValue;
     }
 
     if (value[0] === "$") {
@@ -349,7 +381,7 @@ export class Mode {
       }
 
       validator.reportInvalidSetting("invalid color reference " + value);
-      return "#000";
+      return invalidValue;
     }
 
     if (value[0] === "#") {
@@ -358,7 +390,7 @@ export class Mode {
       }
 
       validator.reportInvalidSetting("invalid color " + value);
-      return "#000";
+      return invalidValue;
     }
 
     if (value.startsWith("rgb")) {
@@ -367,11 +399,11 @@ export class Mode {
       }
 
       validator.reportInvalidSetting("invalid color " + value);
-      return "#000";
+      return invalidValue;
     }
 
     validator.reportInvalidSetting("unknown color format " + value);
-    return "#000";
+    return invalidValue;
   }
 }
 
@@ -381,13 +413,22 @@ export namespace Mode {
    */
   export interface Configuration {
     readonly cursorStyle?: Configuration.CursorStyle;
+    readonly decorations?: Configuration.Decoration[] | Configuration.Decoration;
     readonly inheritFrom?: string | null;
     readonly lineHighlight?: string | null;
     readonly lineNumbers?: Configuration.LineNumbers;
     readonly onEnterMode?: readonly command.Any[];
     readonly onLeaveMode?: readonly command.Any[];
     readonly selectionBehavior?: Configuration.SelectionBehavior | null;
-    readonly selectionStyle?: Configuration.Decoration;
+  }
+
+  /**
+   * A mode decoration.
+   */
+  export interface Decoration {
+    readonly applyTo: "all" | "main" | "secondary";
+    readonly renderOptions: vscode.DecorationRenderOptions;
+    readonly type: vscode.TextEditorDecorationType;
   }
 
   export namespace Configuration {
@@ -416,11 +457,13 @@ export namespace Mode {
      * A decoration.
      */
     export interface Decoration {
+      readonly applyTo?: "all" | "main" | "secondary";
       readonly backgroundColor?: string;
       readonly borderColor?: string;
       readonly borderStyle?: string;
       readonly borderRadius?: string;
       readonly borderWidth?: string;
+      readonly isWholeLine?: boolean;
     }
   }
 }
@@ -429,40 +472,61 @@ export namespace Mode {
  * The set of all modes.
  */
 export class Modes {
-  /**
-   * The "VS Code" mode, which represents the settings assigned to the editor
-   * without taking Dance settings into account.
-   */
-  private readonly _vscodeMode = new Mode(this, "", undefined!);
-  private readonly _modes = new Map<string, Mode>([]);
+  private readonly _modes = new Map<string, Mode>();
 
+  private readonly _vscodeMode = new Mode(this, "", undefined!);
+  private readonly _inputMode = new Mode(this, "input", undefined!);
   private _defaultMode = new Mode(this, "default", {});
-  private _expectedDefaultModeName = "default";
 
   public constructor() {
-    this._modes.set("default", this._defaultMode);
+    for (const builtin of [this._defaultMode, this._inputMode]) {
+      this._modes.set(builtin.name, builtin);
+    }
+
     this._vscodeMode.apply({
       cursorStyle: "line",
       inheritFrom: null,
       lineHighlight: null,
       lineNumbers: "on",
       selectionBehavior: "caret",
-      selectionStyle: {},
+      decorations: [],
     }, new SettingsValidator());
   }
 
+  /**
+   * The default mode configured using `dance.defaultMode`.
+   */
   public get defaultMode() {
     return this._defaultMode;
   }
 
+  /**
+   * The input mode, set when awaiting user input.
+   */
+  public get inputMode() {
+    return this._inputMode;
+  }
+
+  /**
+   * The "VS Code" mode, which represents the settings assigned to the editor
+   * without taking Dance settings into account.
+   */
   public get vscodeMode() {
     return this._vscodeMode;
   }
 
+  /**
+   * Returns the `Mode` with the given name, or `undefined` if no such mode is
+   * defined.
+   */
   public get(name: string) {
     return this._modes.get(name);
   }
 
+  /**
+   * Returns the `Mode` with the given name, or creates one if no such mode is
+   * defined.
+   */
   public getOrCreateDummy(name: string) {
     let mode = this._modes.get(name);
 
@@ -473,14 +537,26 @@ export class Modes {
     return mode;
   }
 
+  /**
+   * Starts listening to changes in user preferences that may lead to updates to
+   * user modes.
+   */
   public observePreferences(extension: Extension) {
-    extension.observePreference<Modes.Configuration>(".modes", undefined, (value, validator) => {
+    // Mode definitions.
+    extension.observePreference<Modes.Configuration>(".modes", (value, validator) => {
       let isEmpty = true;
       const removeModes = new Set(this._modes.keys()),
-            expectedDefaultModeName = this._expectedDefaultModeName;
+            expectedDefaultModeName = extension.configuration.get<string>("defaultMode");
+
+      removeModes.delete(this.inputMode.name);
 
       for (const modeName in value) {
         removeModes.delete(modeName);
+
+        if (modeName === "input" || modeName === "") {
+          validator.reportInvalidSetting(`a mode cannot be named "${modeName}"`);
+          continue;
+        }
 
         let mode = this._modes.get(modeName);
         const configuration = value[modeName];
@@ -493,6 +569,7 @@ export class Modes {
             this._defaultMode = mode;
           }
         } else {
+          mode.isPendingDeletion = false;
           mode.apply(configuration, validator);
         }
 
@@ -518,10 +595,9 @@ export class Modes {
       }
     }, true);
 
-    extension.observePreference<string>(".defaultMode", undefined, (value, validator) => {
+    // Default mode.
+    extension.observePreference<string>(".defaultMode", (value, validator) => {
       const mode = this._modes.get(value);
-
-      this._expectedDefaultModeName = value;
 
       if (mode === undefined) {
         return validator.reportInvalidSetting("mode does not exist: " + value);
@@ -538,11 +614,10 @@ export class Modes {
     // VS Code settings.
     extension.observePreference<Mode.Configuration.CursorStyle>(
       "editor.cursorStyle",
-      undefined,
-      (value) => {
+      (value, validator) => {
         this._vscodeMode.update(
           "_cursorStyle",
-          Mode.cursorStyleStringToCursorStyle(value, new SettingsValidator()),
+          Mode.cursorStyleStringToCursorStyle(value, validator),
         );
       },
       true,
@@ -550,102 +625,11 @@ export class Modes {
 
     extension.observePreference<Mode.Configuration.LineNumbers>(
       "editor.lineNumbers",
-      undefined,
-      (value) => {
+      (value, validator) => {
         this._vscodeMode.update(
           "_lineNumbers",
-          Mode.lineNumbersStringToLineNumbersStyle(value, new SettingsValidator()),
+          Mode.lineNumbersStringToLineNumbersStyle(value, validator),
         );
-      },
-      true,
-    );
-
-    // Deprecated options.
-    extension.observePreference<Mode.Configuration.SelectionBehavior>(
-      ".selectionBehavior",
-      undefined,
-      (value) => {
-        this._vscodeMode.update(
-          "_selectionBehavior",
-          value === "caret" ? SelectionBehavior.Caret : SelectionBehavior.Character,
-        );
-      },
-      true,
-    );
-
-    for (const [modeName, defaultValue] of [
-      ["normal", "editor.hoverHighlightBackground"] as const,
-      ["insert", null] as const,
-    ]) {
-      extension.observePreference<string | null>(
-        `.${modeName}.lineHighlight`,
-        defaultValue,
-        (value) => {
-          const mode = this.get(modeName);
-
-          if (mode !== undefined) {
-            // TODO
-          }
-        },
-        true,
-      );
-    }
-
-    for (const [modeName, defaultValue] of [
-      ["normal", "relative"] as const,
-      ["insert", "inherit"] as const,
-    ]) {
-      extension.observePreference<string | null>(
-        `.${modeName}.lineNumbers`,
-        defaultValue,
-        (value) => {
-          const mode = this.get(modeName);
-
-          if (mode !== undefined) {
-            // TODO
-          }
-        },
-        true,
-      );
-    }
-
-    for (const modeName of ["normal", "insert"]) {
-      extension.observePreference<string | null>(
-        `.${modeName}.cursorStyle`,
-        "inherit",
-        (value) => {
-          const mode = this.get(modeName);
-
-          if (mode !== undefined) {
-            // TODO
-          }
-        },
-        true,
-      );
-    }
-
-    extension.observePreference<Record<string, string | vscode.ThemeColor>>(
-      ".insertMode.selectionStyle",
-      {},
-      (value) => {
-        if (typeof value !== "object" || value === null) {
-          return;
-        }
-
-        for (const key in value) {
-          const val = value[key];
-
-          if (typeof val !== "string") {
-            return;
-          }
-          if (val.startsWith("$")) {
-            value[key] = new vscode.ThemeColor(val.substr(1));
-          }
-        }
-
-        // TODO
-        // this.insertModeSelectionStyle?.dispose();
-        // this.insertModeSelectionStyle = vscode.window.createTextEditorDecorationType(value);
       },
       true,
     );

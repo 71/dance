@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import { DocumentState } from "./document";
 import { extensionName } from "../extension";
-import { assert, command, commands, Context, selectionsLines } from "../api";
+import { assert, command, commands, Context, edit, selectionsLines } from "../api";
 import { Mode } from "../mode";
 
 /**
@@ -18,7 +18,7 @@ export class EditorState {
    * we're using its internal identifier, which seems to be unique and
    * to stay the same over time.
    */
-  private _id: string;
+  private readonly _id: string;
 
   /** The last matching editor. */
   private _editor: vscode.TextEditor;
@@ -150,14 +150,16 @@ export class EditorState {
     }
 
     this._isChangingMode = false;
-    this.extension.notifyModeDidChange(this);
+
+    // @ts-expect-error
+    this.extension._onModeDidChange.fire(this);
   }
 
   private runCommands(
     commandsToRun: readonly command.Any[],
     error: (e: any) => string,
   ) {
-    const context = new Context(this, this.extension.cancellationTokenSource.token);
+    const context = new Context(this, this.extension.cancellationToken);
 
     return this.extension.runPromiseSafely(
       () => context.run(() => commands(...commandsToRun)),
@@ -173,7 +175,7 @@ export class EditorState {
   public onDidBecomeActive() {
     const { editor, mode } = this;
 
-    this.extension.statusBarItem.text = "$(chevron-right) " + mode.name;
+    this.extension.statusBar.activeModeSegment.setContent(mode.name);
 
     editor.options.lineNumbers = mode.lineNumbers;
     editor.options.cursorStyle = mode.cursorStyle;
@@ -185,12 +187,16 @@ export class EditorState {
    * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with
    * another editor.
    */
-  public onDidBecomeInactive() {
-    if (this._previousMode !== undefined) {
-      return this.setMode(this._previousMode);
+  public async onDidBecomeInactive(newEditorIsActive: boolean) {
+    if (!newEditorIsActive) {
+      this.extension.statusBar.activeModeSegment.setContent("<no active mode>");
+
+      await vscode.commands.executeCommand("setContext", extensionName + ".mode", undefined);
     }
 
-    return Promise.resolve();
+    if (this._previousMode !== undefined) {
+      await this.setMode(this._previousMode);
+    }
   }
 
   /**
@@ -219,48 +225,49 @@ export class EditorState {
   // =============================================================================================
 
   private clearDecorations(mode: Mode) {
-    const lineDecorationType = mode.lineDecorationType,
-          selectionDecorationType = mode.selectionDecorationType,
-          editor = this._editor;
+    const editor = this._editor,
+          empty = [] as never[];
 
-    if (lineDecorationType !== undefined) {
-      editor.setDecorations(lineDecorationType, []);
-    }
-
-    if (selectionDecorationType !== undefined) {
-      editor.setDecorations(selectionDecorationType, []);
+    for (const decoration of mode.decorations) {
+      editor.setDecorations(decoration.type, empty);
     }
   }
 
   private updateDecorations(mode: Mode) {
-    const lineDecorationType = mode.lineDecorationType,
-          selectionDecorationType = mode.selectionDecorationType,
-          editor = this._editor;
+    const editor = this._editor,
+          allSelections = editor.selections;
 
-    if (lineDecorationType !== undefined) {
-      const lines = selectionsLines(editor.selections),
-            ranges: vscode.Range[] = [];
+    for (const decoration of mode.decorations) {
+      const selections =
+        decoration.applyTo === "all"
+          ? allSelections
+          : decoration.applyTo === "main"
+            ? [allSelections[0]]
+            : allSelections.slice(1);
 
-      for (let i = 0, len = lines.length; i < len; i++) {
-        const startLine = lines[i];
-        let endLine = startLine;
+      if (decoration.renderOptions.isWholeLine) {
+        const lines = selectionsLines(selections),
+              ranges: vscode.Range[] = [];
 
-        while (i + 1 < lines.length && lines[i + 1] === endLine + 1) {
-          i++;
-          endLine++;
+        for (let i = 0, len = lines.length; i < len; i++) {
+          const startLine = lines[i];
+          let endLine = startLine;
+
+          while (i + 1 < lines.length && lines[i + 1] === endLine + 1) {
+            i++;
+            endLine++;
+          }
+
+          const start = new vscode.Position(startLine, 0),
+                end = startLine === endLine ? start : new vscode.Position(endLine, 0);
+
+          ranges.push(new vscode.Range(start, end));
         }
 
-        const start = new vscode.Position(startLine, 0),
-              end = startLine === endLine ? start : new vscode.Position(endLine, 0);
-
-        ranges.push(new vscode.Range(start, end));
+        editor.setDecorations(decoration.type, ranges);
+      } else {
+        editor.setDecorations(decoration.type, selections);
       }
-
-      editor.setDecorations(lineDecorationType, ranges);
-    }
-
-    if (selectionDecorationType !== undefined) {
-      editor.setDecorations(selectionDecorationType, editor.selections);
     }
 
     editor.options.cursorStyle = mode.cursorStyle;

@@ -19,17 +19,69 @@ const commandType = {
   },
 };
 
+const builtinModesAreDeprecatedMessage =
+  "Built-in modes are deprecated. Use `#dance.modes#` instead.";
+
+const modeNamePattern = {
+  pattern: /^[a-zA-Z]\w*$/.source,
+  patternErrorMessage: "",
+};
+
+const colorPattern = {
+  pattern: /^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\$([a-zA-Z]+(\.[a-zA-Z]+)+))$/.source,
+  patternErrorMessage: "Color should be an hex color or a '$' sign followed by a color identifier.",
+};
+
+const selectionDecorationType = {
+  type: "object",
+  properties: {
+    applyTo: {
+      enum: ["all", "main", "secondary"],
+      default: "all",
+      description: "The selections to apply this style to.",
+      enumDescriptions: [
+        "Apply to all selections.",
+        "Apply to main selection only.",
+        "Apply to all selections except main selection.",
+      ],
+    },
+    backgroundColor: {
+      type: "string",
+      ...colorPattern,
+    },
+    borderColor: {
+      type: "string",
+      ...colorPattern,
+    },
+    borderStyle: {
+      type: "string",
+    },
+    borderWidth: {
+      type: "string",
+    },
+    borderRadius: {
+      type: "string",
+    },
+    isWholeLine: {
+      type: "boolean",
+      default: false,
+    },
+  },
+};
+
 // Package information
 // ============================================================================
 
 const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
+
+  // Common package.json properties.
+  // ==========================================================================
+
   name: "dance",
-  displayName: "Dance",
   description: "Make those cursors dance with Kakoune-inspired keybindings.",
   version: "0.4.2",
   license: "ISC",
 
-  publisher: "gregoire",
   author: {
     name: "Grégoire Geis",
     email: "opensource@gregoirege.is",
@@ -39,16 +91,6 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
     type: "git",
     url: "https://github.com/71/dance.git",
   },
-
-  readme: "README.md",
-
-  categories: ["Keymaps", "Other"],
-
-  // The two properties below can be set when distributing Dance to ensure it
-  // cannot execute arbitrary code (with `dance.run`) or system commands (with
-  // `dance.selections.{filter,pipe}`).
-  "dance.disableArbitraryCodeExecution": false,
-  "dance.disableArbitraryCommandExecution": false,
 
   main: "./out/src/extension.js",
 
@@ -86,119 +128,123 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
     "vscode-test": "^1.3.0",
   },
 
+  // VS Code-specific properties.
+  // ==========================================================================
+
+  displayName: "Dance",
+  publisher: "gregoire",
+  categories: ["Keymaps", "Other"],
+  readme: "README.md",
+
   activationEvents: ["*"],
   extensionKind: ["ui", "workspace"],
 
+  // Dance-specific properties.
+  // ==========================================================================
+
+  // The two properties below can be set when distributing Dance to ensure it
+  // cannot execute arbitrary code (with `dance.run`) or system commands (with
+  // `dance.selections.{filter,pipe}`).
+  "dance.disableArbitraryCodeExecution": false,
+  "dance.disableArbitraryCommandExecution": false,
+
   contributes: {
+
+    // Configuration.
+    // ========================================================================
+
     configuration: {
       type: "object",
       title: "Dance",
       properties: {
-        "dance.enabled": {
-          type: "boolean",
-          default: true,
-          description: "Controls whether the Dance keybindings are enabled.",
-        },
         "dance.defaultMode": {
           type: "string",
+          scope: "language-overridable",
           default: "normal",
-          description: "Controls which mode is set by default when an editor is created.",
+          description: "Controls which mode is set by default when an editor is opened.",
+          ...modeNamePattern,
         },
         "dance.modes": {
           type: "object",
+          scope: "language-overridable",
           additionalProperties: {
             type: "object",
+            propertyNames: modeNamePattern,
             properties: {
-              items: {
-                type: "object",
-                additionalProperties: {
-                  type: "object",
-                  properties: {
-                    cursorStyle: {
-                      enum: [
-                        "line",
-                        "block",
-                        "underline",
-                        "line-thin",
-                        "block-outline",
-                        "underline-thin",
-                        "inherit",
-                      ],
-                      description: "Controls the cursor style.",
-                    },
-                    inheritFrom: {
-                      type: ["string", "null"],
-                      description:
-                        "Controls how default configuration options are obtained for this mode. "
-                        + "Specify a string to inherit from the mode with the given name, "
-                        + "and null to inherit from the VS Code configuration.",
-                    },
-                    lineHighlight: {
-                      type: ["string", "null"],
-                      markdownDescription:
-                        "Controls the line highlighting applied to active lines. "
-                        + "Can be an hex color, a [theme color]("
-                        + "https://code.visualstudio.com/api/references/theme-color) or null.",
-                    },
-                    lineNumbers: {
-                      enum: ["off", "on", "relative", "inherit"],
-                      description: "Controls the display of line numbers.",
-                      enumDescriptions: [
-                        "No line numbers.",
-                        "Absolute line numbers.",
-                        "Relative line numbers.",
-                        "Inherit from `editor.lineNumbers`.",
-                      ],
-                    },
-                    onEnterMode: {
-                      ...commandType,
-                      description:
-                        "Controls what commands should be executed upon entering this mode.",
-                    },
-                    onLeaveMode: {
-                      ...commandType,
-                      description:
-                        "Controls what commands should be executed upon leaving this mode.",
-                    },
-                    selectionBehavior: {
-                      enum: ["caret", "character"],
-                      default: "caret",
-                      description: "Controls how selections behave within VS Code.",
-                      markdownEnumDescriptions: [
-                        "Selections are anchored to carets, which is the native VS Code behavior; "
-                        + "that is, they are positioned *between* characters and can therefore be "
-                        + "empty.",
-                        "Selections are anchored to characters, like Kakoune; that is, they are "
-                        + "positioned *on* characters, and therefore cannot be empty. "
-                        + "Additionally, one-character selections will behave as if they were "
-                        + "non-directional, like Kakoune.",
-                      ],
-                    },
-                    selectionStyle: {
-                      type: "object",
-                      description: "The style to apply to selections.",
-                      properties: (Object as any).fromEntries(
-                        [
-                          "backgroundColor",
-                          "borderColor",
-                          "borderStyle",
-                          "borderWidth",
-                          "borderRadius",
-                        ].map((x) => [x, { type: "string" }]),
-                      ),
-                    },
-                  },
-                },
+              inheritFrom: {
+                type: ["string", "null"],
+                description:
+                  "Controls how default configuration options are obtained for this mode. "
+                  + "Specify a string to inherit from the mode with the given name, "
+                  + "and null to inherit from the VS Code configuration.",
+                ...modeNamePattern,
+              },
+              cursorStyle: {
+                enum: [
+                  "line",
+                  "block",
+                  "underline",
+                  "line-thin",
+                  "block-outline",
+                  "underline-thin",
+                  "inherit",
+                  null,
+                ],
+                description: "Controls the cursor style.",
+              },
+              lineHighlight: {
+                type: ["string", "null"],
+                markdownDescription:
+                  "Controls the line highlighting applied to active lines. "
+                  + "Can be an hex color, a [theme color]("
+                  + "https://code.visualstudio.com/api/references/theme-color) or null.",
+                ...colorPattern,
+              },
+              lineNumbers: {
+                enum: ["off", "on", "relative", "inherit", null],
+                description: "Controls the display of line numbers.",
+                enumDescriptions: [
+                  "No line numbers.",
+                  "Absolute line numbers.",
+                  "Relative line numbers.",
+                  "Inherit from `editor.lineNumbers`.",
+                ],
+              },
+              onEnterMode: {
+                ...commandType,
+                description:
+                  "Controls what commands should be executed upon entering this mode.",
+              },
+              onLeaveMode: {
+                ...commandType,
+                description:
+                  "Controls what commands should be executed upon leaving this mode.",
+              },
+              selectionBehavior: {
+                enum: ["caret", "character", null],
+                default: "caret",
+                description: "Controls how selections behave within VS Code.",
+                markdownEnumDescriptions: [
+                  "Selections are anchored to carets, which is the native VS Code behavior; "
+                  + "that is, they are positioned *between* characters and can therefore be "
+                  + "empty.",
+                  "Selections are anchored to characters, like Kakoune; that is, they are "
+                  + "positioned *on* characters, and therefore cannot be empty. "
+                  + "Additionally, one-character selections will behave as if they were "
+                  + "non-directional, like Kakoune.",
+                ],
+              },
+              decorations: {
+                ...selectionDecorationType,
+                type: ["array", "object", "null"],
+                description: "The decorations to apply to selections.",
+                items: selectionDecorationType,
               },
             },
             additionalProperties: false,
           },
           default: {
             insert: {
-              cursorStyle: "inherit",
-              lineHighlight: null,
-              lineNumbers: "inherit",
-              selectionStyle: null,
               onEnterMode: [
                 { command: ".selections.save",
                   args: {
@@ -221,120 +267,21 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
               ],
             },
             normal: {
-              cursorStyle: "inherit",
-              lineHighlight: "editor.hoverHighlightBackground",
               lineNumbers: "relative",
-              selectionStyle: null,
+              decorations: {
+                applyTo: "main",
+                backgroundColor: "$editor.hoverHighlightBackground",
+                isWholeLine: true,
+              },
             },
           },
           markdownDescription:
             "Controls the different modes available in Dance.",
         },
-        "dance.normalMode.lineHighlight": {
-          type: ["string", "null"],
-          default: "editor.hoverHighlightBackground",
-          markdownDescription:
-            "Controls the line highlighting applied to active lines in normal mode. "
-            + "Can be an hex color, a [theme color]("
-            + "https://code.visualstudio.com/api/references/theme-color) or null.",
-          deprecationMessage: "Built-in modes are deprecated. Use dance.modes instead.",
-        },
-        "dance.insertMode.lineHighlight": {
-          type: ["string", "null"],
-          default: null,
-          markdownDescription:
-            "Controls the line highlighting applied to active lines in insert mode. "
-            + "Can be an hex color, a [theme color]("
-            + "https://code.visualstudio.com/api/references/theme-color) or null.",
-          deprecationMessage: "Built-in modes are deprecated. Use dance.modes instead.",
-        },
-        "dance.normalMode.lineNumbers": {
-          enum: ["off", "on", "relative", "inherit"],
-          default: "relative",
-          description: "Controls the display of line numbers in normal mode.",
-          enumDescriptions: [
-            "No line numbers.",
-            "Absolute line numbers.",
-            "Relative line numbers.",
-            "Inherit from `editor.lineNumbers`.",
-          ],
-          deprecationMessage: "Built-in modes are deprecated. Use dance.modes instead.",
-        },
-        "dance.insertMode.lineNumbers": {
-          enum: ["off", "on", "relative", "inherit"],
-          default: "inherit",
-          description: "Controls the display of line numbers in insert mode.",
-          enumDescriptions: [
-            "No line numbers.",
-            "Absolute line numbers.",
-            "Relative line numbers.",
-            "Inherit from `editor.lineNumbers`.",
-          ],
-          deprecationMessage: "Built-in modes are deprecated. Use dance.modes instead.",
-        },
-        "dance.normalMode.cursorStyle": {
-          enum: [
-            "line",
-            "block",
-            "underline",
-            "line-thin",
-            "block-outline",
-            "underline-thin",
-            "inherit",
-          ],
-          default: "inherit",
-          description: "Controls the cursor style in normal mode.",
-          deprecationMessage: "Built-in modes are deprecated. Use dance.modes instead.",
-        },
-        "dance.insertMode.cursorStyle": {
-          enum: [
-            "line",
-            "block",
-            "underline",
-            "line-thin",
-            "block-outline",
-            "underline-thin",
-            "inherit",
-          ],
-          default: "inherit",
-          description: "Controls the cursor style in insert mode.",
-          deprecationMessage: "Built-in modes are deprecated. Use dance.modes instead.",
-        },
-        "dance.insertMode.selectionStyle": {
-          type: "object",
-          default: {
-            borderColor: "$editor.selectionBackground",
-            borderStyle: "solid",
-            borderWidth: "2px",
-            borderRadius: "1px",
-          },
-          description: "The style to apply to selections in insert mode.",
-          properties: (Object as any).fromEntries(
-            [
-              "backgroundColor",
-              "borderColor",
-              "borderStyle",
-              "borderWidth",
-              "borderRadius",
-            ].map((x) => [x, { type: "string" }]),
-          ),
-          deprecationMessage: "Built-in modes are deprecated. Use dance.modes instead.",
-        },
-        "dance.selectionBehavior": {
-          enum: ["caret", "character"],
-          default: "caret",
-          description: "Controls how selections behave within VS Code.",
-          markdownEnumDescriptions: [
-            "Selections are anchored to carets, which is the native VS Code behavior; that is, "
-            + "they are positioned *between* characters and can therefore be empty.",
-            "Selections are anchored to characters, like Kakoune; that is, they are positioned "
-            + "*on* characters, and therefore cannot be empty. Additionally, one-character "
-            + "selections will behave as if they were non-directional, like Kakoune.",
-          ],
-          deprecationMessage: "Built-in modes are deprecated. Use dance.modes instead.",
-        },
+
         "dance.menus": {
           type: "object",
+          scope: "language-overridable",
           additionalProperties: {
             type: "object",
             properties: {
@@ -345,14 +292,18 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
                   properties: {
                     text: {
                       type: "string",
+                      description: "Text shown in the menu.",
                     },
                     command: {
                       type: "string",
+                      description: "Command to execute on item selection.",
                     },
                     args: {
                       type: "array",
+                      description: "Arguments to the command to execute.",
                     },
                   },
+                  required: ["command"],
                 },
               },
             },
@@ -501,13 +452,133 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
           } as Record<string,
                       { items: Record<string, { text: string; command: string; args?: any[] }>}>,
         },
+
+        // Deprecated configuration:
+        "dance.enabled": {
+          type: "boolean",
+          default: true,
+          description: "Controls whether the Dance keybindings are enabled.",
+          deprecationMessage: "dance.enabled is deprecated; disable the Dance extension instead.",
+        },
+
+        "dance.normalMode.lineHighlight": {
+          type: ["string", "null"],
+          default: "editor.hoverHighlightBackground",
+          markdownDescription:
+            "Controls the line highlighting applied to active lines in normal mode. "
+            + "Can be an hex color, a [theme color]("
+            + "https://code.visualstudio.com/api/references/theme-color) or null.",
+          markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
+        },
+        "dance.insertMode.lineHighlight": {
+          type: ["string", "null"],
+          default: null,
+          markdownDescription:
+            "Controls the line highlighting applied to active lines in insert mode. "
+            + "Can be an hex color, a [theme color]("
+            + "https://code.visualstudio.com/api/references/theme-color) or null.",
+          markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
+        },
+        "dance.normalMode.lineNumbers": {
+          enum: ["off", "on", "relative", "inherit"],
+          default: "relative",
+          description: "Controls the display of line numbers in normal mode.",
+          enumDescriptions: [
+            "No line numbers.",
+            "Absolute line numbers.",
+            "Relative line numbers.",
+            "Inherit from `editor.lineNumbers`.",
+          ],
+          markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
+        },
+        "dance.insertMode.lineNumbers": {
+          enum: ["off", "on", "relative", "inherit"],
+          default: "inherit",
+          description: "Controls the display of line numbers in insert mode.",
+          enumDescriptions: [
+            "No line numbers.",
+            "Absolute line numbers.",
+            "Relative line numbers.",
+            "Inherit from `editor.lineNumbers`.",
+          ],
+          markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
+        },
+        "dance.normalMode.cursorStyle": {
+          enum: [
+            "line",
+            "block",
+            "underline",
+            "line-thin",
+            "block-outline",
+            "underline-thin",
+            "inherit",
+          ],
+          default: "inherit",
+          description: "Controls the cursor style in normal mode.",
+          markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
+        },
+        "dance.insertMode.cursorStyle": {
+          enum: [
+            "line",
+            "block",
+            "underline",
+            "line-thin",
+            "block-outline",
+            "underline-thin",
+            "inherit",
+          ],
+          default: "inherit",
+          description: "Controls the cursor style in insert mode.",
+          markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
+        },
+        "dance.insertMode.selectionStyle": {
+          type: "object",
+          default: {
+            borderColor: "$editor.selectionBackground",
+            borderStyle: "solid",
+            borderWidth: "2px",
+            borderRadius: "1px",
+          },
+          description: "The style to apply to selections in insert mode.",
+          properties: (Object as any).fromEntries(
+            [
+              "backgroundColor",
+              "borderColor",
+              "borderStyle",
+              "borderWidth",
+              "borderRadius",
+            ].map((x) => [x, { type: "string" }]),
+          ),
+          markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
+        },
+        "dance.selectionBehavior": {
+          enum: ["caret", "character"],
+          default: "caret",
+          description: "Controls how selections behave within VS Code.",
+          markdownEnumDescriptions: [
+            "Selections are anchored to carets, which is the native VS Code behavior; that is, "
+            + "they are positioned *between* characters and can therefore be empty.",
+            "Selections are anchored to characters, like Kakoune; that is, they are positioned "
+            + "*on* characters, and therefore cannot be empty. Additionally, one-character "
+            + "selections will behave as if they were non-directional, like Kakoune.",
+          ],
+          markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
+        },
       },
     },
+
+    // Commands.
+    // ========================================================================
+
     commands: modules.flatMap((module) => module.commands.map((x) => ({
       command: x.id,
       title: x.title,
       category: "Dance",
     }))),
+
+    // Keybindings.
+    // ========================================================================
+
     keybindings: (() => {
       const keybindings = modules.flatMap((module) => module.keybindings),
             alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
