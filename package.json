@@ -275,11 +275,28 @@
             "additionalProperties": false
           },
           "default": {
-            "insert": {
+            "insert": {},
+            "normal": {
+              "lineNumbers": "relative",
+              "decorations": {
+                "applyTo": "main",
+                "backgroundColor": "$editor.hoverHighlightBackground",
+                "isWholeLine": true
+              },
               "onEnterMode": [
-                {
-                  "command": ".selections.save",
-                  "args": {
+                [
+                  ".selections.restore",
+                  {
+                    "register": " ^",
+                    "try": true
+                  }
+                ]
+              ],
+              "onLeaveMode": [
+                [
+                  ".selections.save",
+                  {
+                    "register": " ^",
                     "style": {
                       "borderColor": "$editor.selectionBackground",
                       "borderStyle": "solid",
@@ -290,27 +307,16 @@
                       [
                         "mode-did-change",
                         {
-                          "except": "insert"
+                          "include": "normal"
                         }
+                      ],
+                      [
+                        "selections-did-change"
                       ]
                     ]
                   }
-                }
-              ],
-              "onLeaveMode": [
-                {
-                  "command": ".selections.restore",
-                  "args": {}
-                }
+                ]
               ]
-            },
-            "normal": {
-              "lineNumbers": "relative",
-              "decorations": {
-                "applyTo": "main",
-                "backgroundColor": "$editor.hoverHighlightBackground",
-                "isWholeLine": true
-              }
             }
           },
           "markdownDescription": "Controls the different modes available in Dance."

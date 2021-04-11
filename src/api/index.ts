@@ -52,6 +52,12 @@ export const enum Shift {
   Extend,
 }
 
+export const Forward = Direction.Forward,
+             Backward = Direction.Backward,
+             Jump = Shift.Jump,
+             Select = Shift.Select,
+             Extend = Shift.Extend;
+
 /**
  * Returns the module exported by the extension with the given identifier.
  */

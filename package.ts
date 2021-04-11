@@ -244,28 +244,7 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
             additionalProperties: false,
           },
           default: {
-            insert: {
-              onEnterMode: [
-                { command: ".selections.save",
-                  args: {
-                    style: {
-                      borderColor: "$editor.selectionBackground",
-                      borderStyle: "solid",
-                      borderWidth: "2px",
-                      borderRadius: "1px",
-                    },
-                    until: [
-                      ["mode-did-change", { except: "insert" }],
-                    ],
-                  },
-                },
-              ],
-              onLeaveMode: [
-                { command: ".selections.restore",
-                  args: {},
-                },
-              ],
-            },
+            insert: {},
             normal: {
               lineNumbers: "relative",
               decorations: {
@@ -273,6 +252,24 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
                 backgroundColor: "$editor.hoverHighlightBackground",
                 isWholeLine: true,
               },
+              onEnterMode: [
+                [".selections.restore", { register: " ^", try: true }],
+              ],
+              onLeaveMode: [
+                [".selections.save", {
+                  register: " ^",
+                  style: {
+                    borderColor: "$editor.selectionBackground",
+                    borderStyle: "solid",
+                    borderWidth: "2px",
+                    borderRadius: "1px",
+                  },
+                  until: [
+                    ["mode-did-change", { include: "normal" }],
+                    ["selections-did-change"],
+                  ],
+                }],
+              ],
             },
           },
           markdownDescription:

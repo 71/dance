@@ -477,7 +477,7 @@ export function changeDirection(_: Context, direction?: Direction) {
   switch (direction) {
   case Direction.Backward:
     Selections.update.byIndex((_, selection) =>
-      selection.isReversed || selection.isEmpty
+      selection.isReversed || selection.isEmpty || Selections.isNonDirectional(selection)
         ? selection
         : new vscode.Selection(selection.end, selection.start));
     break;
@@ -491,7 +491,7 @@ export function changeDirection(_: Context, direction?: Direction) {
 
   default:
     Selections.update.byIndex((_, selection) =>
-      selection.isEmpty
+      selection.isEmpty || Selections.isNonDirectional(selection)
         ? selection
         : new vscode.Selection(selection.active, selection.anchor));
     break;

@@ -46,7 +46,7 @@ export async function character(
         return undefined;
       }
 
-      position = moveTo(direction, input, position, document);
+      position = moveTo.excluded(direction, input, position, document);
 
       if (position === undefined) {
         return undefined;

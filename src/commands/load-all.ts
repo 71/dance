@@ -1,4 +1,4 @@
-import { ArgumentError, commands, Context, Direction, Shift } from "../api";
+import { ArgumentError, commands, Context, Direction, EditorRequiredError, Shift } from "../api";
 import { Register } from "../register";
 import { CommandDescriptor, Commands } from ".";
 
@@ -12,7 +12,15 @@ function getRegister<F extends Register.Flags>(
   const extension = _.extensionState;
 
   if (typeof register === "string") {
-    register = extension.registers.get(register);
+    if (register.startsWith(" ")) {
+      if (!(_ instanceof Context)) {
+        throw new EditorRequiredError();
+      }
+
+      register = extension.registers.forDocument(_.document).get(register.slice(1));
+    } else {
+      register = extension.registers.get(register);
+    }
   } else if (!(register instanceof Register)) {
     register = extension.registers.get(defaultRegisterName);
   }
@@ -445,12 +453,12 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.modes.insert.after",
-      (_) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce"])),
+      (_) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"   }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.insert.before",
-      (_) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce"])),
+      (_) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

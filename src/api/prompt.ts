@@ -125,41 +125,38 @@ export namespace prompt {
 /**
  * Awaits a keypress from the user and returns the entered key.
  */
-export function keypress(context = Context.current): Thenable<string> {
+export function keypress(context = Context.current): Promise<string> {
   if (context.cancellationToken.isCancellationRequested) {
     return Promise.reject(new CancellationError(CancellationError.Reason.CancellationToken));
   }
 
   const previousMode = context.editorState.mode;
 
-  context.editorState.setMode(context.extensionState.modes.inputMode);
+  return context.editorState.setMode(context.extensionState.modes.inputMode).then(() =>
+    new Promise<string>((resolve, reject) => {
+      try {
+        const subscriptions = [
+          vscode.commands.registerCommand("type", ({ text }: { text: string }) => {
+            if (subscriptions.length > 0) {
+              subscriptions.splice(0).forEach((s) => s.dispose());
+              context.editorState.setMode(previousMode).then(() => resolve(text));
+            }
+          }),
 
-  return new Promise<string>((resolve, reject) => {
-    try {
-      const subscriptions = [
-        vscode.commands.registerCommand("type", ({ text }: { text: string }) => {
-          if (subscriptions.length > 0) {
-            subscriptions.splice(0).forEach((s) => s.dispose());
-            context.editorState.setMode(previousMode);
-
-            resolve(text);
-          }
-        }),
-
-        context.cancellationToken.onCancellationRequested(() => {
-          if (subscriptions.length > 0) {
-            subscriptions.splice(0).forEach((s) => s.dispose());
-            context.editorState.setMode(previousMode);
-
-            reject(new CancellationError(CancellationError.Reason.PressedEscape));
-          }
-        }),
-      ];
-    } catch {
-      reject(new Error("unable to listen to keyboard events; is an extension "
-                      + 'overriding the "type" command (e.g VSCodeVim)?'));
-    }
-  });
+          context.cancellationToken.onCancellationRequested(() => {
+            if (subscriptions.length > 0) {
+              subscriptions.splice(0).forEach((s) => s.dispose());
+              context.editorState.setMode(previousMode)
+                .then(() => reject(new CancellationError(CancellationError.Reason.PressedEscape)));
+            }
+          }),
+        ];
+      } catch {
+        reject(new Error("unable to listen to keyboard events; is an extension "
+                        + 'overriding the "type" command (e.g VSCodeVim)?'));
+      }
+    }),
+  );
 }
 
 export namespace keypress {

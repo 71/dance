@@ -196,7 +196,13 @@ expect.addAssertion<vscode.Selection>(
   },
 );
 
-function selectionBuilder() {
+function selectionBuilder(
+  anchorLine?: number, anchorChar?: number, activeLine?: number, activeChar?: number,
+) {
+  if (activeChar !== undefined) {
+    return new vscode.Selection(anchorLine!, anchorChar!, activeLine!, activeChar);
+  }
+
   return {
     empty(line: number | vscode.Position, character?: number) {
       if (typeof line === "number") {
@@ -238,6 +244,10 @@ function selectionBuilder() {
   };
 }
 
+function positionBuilder(line: number, character: number) {
+  return new vscode.Position(line, character);
+}
+
 const AsyncFunction = async function () {}.constructor as FunctionConstructor;
 
 suite("API tests", function () {
@@ -254,14 +264,14 @@ suite("API tests", function () {
     const initialDocument = ExpectedDocument.parse(""),
           code = new AsyncFunction(...argNames, "await edit(() => {});");
 
-    const context = new api.Context(extensionState.getEditorState(editor), cancellationToken);
+    const context = new api.Context(extensionState!.getEditorState(editor), cancellationToken);
 
     await initialDocument.apply(editor);
     await context.run(() => code(...argValues));
   });
 
-  const argNames = [...Object.keys(api), "vscode", "assert", "expect", "selection"],
-        argValues = [...Object.values(api), vscode, assert, expect, selectionBuilder];
+  const argNames = [...Object.keys(api), "vscode", "expect", "selection", "position"],
+        argValues = [...Object.values(api), vscode, expect, selectionBuilder, positionBuilder];
 
   // Discover all tests.
   const basedir = path.join(this.file!, "../../../../src/api"),
@@ -291,7 +301,7 @@ suite("API tests", function () {
               after = toExpectedDocument(testInfo.after);
 
         test(testName, async function () {
-          const context = new api.Context(extensionState.getEditorState(editor), cancellationToken);
+          const context = new api.Context(extensionState!.getEditorState(editor), cancellationToken);
 
           await before?.apply(editor);
           await context.run(() => code(...argValues));

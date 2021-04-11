@@ -780,7 +780,7 @@ export namespace Selections {
    * empty selection extended by one character by `fromCharacterMode`.
    */
   export function isNonDirectional(selection: vscode.Selection, context = Context.current) {
-    return context.editorState.mode.selectionBehavior === SelectionBehavior.Character
+    return context.selectionBehavior === SelectionBehavior.Character
         && !selection.isReversed
         && isSingleCharacter(selection, context.document);
   }
@@ -789,14 +789,20 @@ export namespace Selections {
    * The position from which a seek operation should start. This is equivalent
    * to `selection.active` except when the selection is non-directional, in
    * which case this is whatever position is **furthest** from the given
-   * direction.
+   * direction (in order to include the current character in the search).
    */
-  export function seekFrom(selection: vscode.Selection, direction: Direction) {
-    if (isNonDirectional(selection)) {
-      return direction === Direction.Forward ? selection.start : selection.end;
+  export function seekFrom(
+    selection: vscode.Selection,
+    direction: Direction,
+    position = selection.active,
+  ) {
+    if (Context.current.selectionBehavior === SelectionBehavior.Character) {
+      return direction === Direction.Forward
+        ? (position === selection.start ? position : Positions.previous(position) ?? position)
+        : (position === selection.end ? position : Positions.next(position) ?? position);
     }
 
-    return selection.active;
+    return position;
   }
 
   /**
@@ -805,18 +811,43 @@ export namespace Selections {
    * - If `Shift.Jump`, `result.active == result.anchor == position`.
    * - If `Shift.Select`, `result.active == position`, `result.anchor == selection.active`.
    * - If `Shift.Extend`, `result.active == position`, `result.anchor == selection.anchor`.
+   *
+   * ### Example
+   *
+   * ```js
+   * const s1 = selection().empty(0, 0),
+   *       shifted1 = Selections.shift(s1, position(0, 4), Select);
+   *
+   * expect(shifted1, "to be ");
+   * ```
+   *
+   * With
+   *
+   * ```
+   * line with 23 characters
+   * ```
+   *
+   * ### Example
+   *
+   * ```js
+   * Context.current._selectionBehavior = 2;  // Character
+   * ```
    */
   export function shift(selection: vscode.Selection, position: vscode.Position, shift: Shift) {
-    switch (shift) {
-    case Shift.Jump:
-      return new vscode.Selection(position, position);
-
-    case Shift.Select:
-      return new vscode.Selection(selection.active, position);
-
-    case Shift.Extend:
-      return new vscode.Selection(selection.anchor, position);
+    if (shift === Shift.Jump) {
+      return Selections.empty(position);
     }
+
+    let anchor = shift === Shift.Select ? selection.active : selection.anchor;
+
+    // Doesn't shift properly when selection is reversed but not non-directional.
+    if (Context.current.selectionBehavior === SelectionBehavior.Character) {
+      const direction = anchor.isAfter(position) ? Direction.Backward : Direction.Forward;
+
+      anchor = seekFrom(selection, direction, anchor);
+    }
+
+    return new vscode.Selection(anchor, position);
   }
 
   /**

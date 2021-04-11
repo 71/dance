@@ -257,7 +257,7 @@ export class Extension implements vscode.Disposable {
     this.configurationChangeHandlers.set(fullName, () => {
       const validator = new SettingsValidator(fullName);
 
-      handler(configuration.get(section, defaultValue), validator);
+      handler(vscode.workspace.getConfiguration("dance").get(section, defaultValue), validator);
 
       validator.displayErrorIfNeeded();
     });

@@ -173,7 +173,7 @@ export class AutoDisposable implements vscode.Disposable {
     }
 
     switch (eventName) {
-    case "mode-did-change":
+    case AutoDisposable.EventType.OnModeDidChange:
       const except = [] as string[];
 
       if (Array.isArray(eventOpts.except)) {
@@ -182,11 +182,29 @@ export class AutoDisposable implements vscode.Disposable {
         except.push(eventOpts.except);
       }
 
+      const include = [] as string[];
+
+      if (Array.isArray(eventOpts.include)) {
+        include.push(...eventOpts.include);
+      } else if (typeof eventOpts.include === "string") {
+        include.push(eventOpts.include);
+      }
+
       editorState.extension.onModeDidChange((e) => {
-        if (e === editorState && !except.includes(e.mode.name)) {
+        if (e === editorState && !except.includes(e.mode.name)
+            && (include.length === 0 || include.includes(e.mode.name))) {
           this.dispose();
         }
       }, undefined, this._disposables);
+      break;
+
+    case AutoDisposable.EventType.OnSelectionsDidChange:
+      vscode.window.onDidChangeTextEditorSelection((e) => {
+        if (editorState.isFor(e.textEditor)
+            && e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
+          this.dispose();
+        }
+      });
       break;
 
     default:
@@ -198,8 +216,10 @@ export class AutoDisposable implements vscode.Disposable {
 export namespace AutoDisposable {
   export const enum EventType {
     OnModeDidChange = "mode-did-change",
+    OnSelectionsDidChange = "selections-did-change",
   }
 
   export type Event = EventType
-    | readonly [EventType.OnModeDidChange, { except?: string | string[] }];
+    | readonly [EventType.OnModeDidChange,
+                { except?: string | string[]; include?: string | string[] }];
 }

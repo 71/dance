@@ -201,6 +201,8 @@ export class Context extends ContextWithoutActiveEditor {
   private _documentState: DocumentState;
   private _editorState: EditorState;
 
+  private _selectionBehavior: SelectionBehavior;
+
   /**
    * The document state for the current editor.
    */
@@ -234,6 +236,15 @@ export class Context extends ContextWithoutActiveEditor {
   }
 
   /**
+   * The selection behavior for this context.
+   *
+   * @deprecated Try to avoid using this property.
+   */
+  public get selectionBehavior() {
+    return this._selectionBehavior;
+  }
+
+  /**
    * The current selections.
    *
    * Selections returned by this property **may be different** from the ones
@@ -244,7 +255,7 @@ export class Context extends ContextWithoutActiveEditor {
   public get selections() {
     const editor = this.editor as vscode.TextEditor;
 
-    if (this.editorState.mode.selectionBehavior === SelectionBehavior.Character) {
+    if (this._selectionBehavior === SelectionBehavior.Character) {
       return Selections.fromCharacterMode(editor.selections, editor.document);
     }
 
@@ -260,7 +271,7 @@ export class Context extends ContextWithoutActiveEditor {
   public set selections(selections: readonly vscode.Selection[]) {
     const editor = this.editor as vscode.TextEditor;
 
-    if (this.editorState.mode.selectionBehavior === SelectionBehavior.Character) {
+    if (this._selectionBehavior === SelectionBehavior.Character) {
       selections = Selections.toCharacterMode(selections, editor.document);
     }
 
@@ -277,6 +288,8 @@ export class Context extends ContextWithoutActiveEditor {
     this._editorState = this.extensionState.getEditorState(editor);
     this._document = document;
     this._editor = editor;
+
+    this._selectionBehavior = this._editorState.mode.selectionBehavior;
   }
 
   public constructor(
@@ -290,6 +303,8 @@ export class Context extends ContextWithoutActiveEditor {
     this._editorState = editorState;
     this._document = editorState.documentState.document;
     this._editor = editorState.editor;
+
+    this._selectionBehavior = editorState.mode.selectionBehavior;
   }
 }
 

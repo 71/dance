@@ -1,11 +1,16 @@
 import * as vscode from "vscode";
 
 import { Context, Direction } from "..";
+import { Positions } from "../positions";
 
 /**
  * Moves the given position towards the given direction until the given string
  * is found. If found, its start position will be returned; otherwise,
  * `undefined` will be returned.
+ *
+ * When navigating backward, the returned position **will include** the given
+ * input, which is not the case when navigating forward. Please make sure that
+ * this is what you want.
  */
 export function moveTo(
   direction: Direction,
@@ -50,19 +55,46 @@ export function moveTo(
   }
 }
 
-/**
- * Repeatedly calls `moveTo` in a direction.
- */
-export function repeatedly<R, F extends (...args: [...readonly any[], R]) => R | undefined>(
-  repetitions: number,
-  func: F,
-  ...args: Parameters<F>
-) {
-  let value = args.splice(args.length - 1)[0] as R | undefined;
+export namespace moveTo {
+  /**
+   * Same as `moveTo`, but also ensures that the result is excluded by
+   * translating the resulting position by `input.length` when going backward.
+   *
+   * @see moveTo
+   */
+  export function excluded(
+    direction: Direction,
+    string: string,
+    origin: vscode.Position,
+    document?: vscode.TextDocument,
+  ) {
+    const result = moveTo(direction, string, origin, document);
 
-  for (let i = 0; i < repetitions && value !== undefined; i++) {
-    value = func(...args, value);
+    if (result !== undefined && direction === Direction.Backward) {
+      return Positions.offset(result, string.length, document);
+    }
+
+    return result;
   }
 
-  return value;
+  /**
+   * Same as `moveTo`, but also ensures that the result is included by
+   * translating the resulting position by `input.length` when going forward.
+   *
+   * @see moveTo
+   */
+  export function included(
+    direction: Direction,
+    string: string,
+    origin: vscode.Position,
+    document?: vscode.TextDocument,
+  ) {
+    const result = moveTo(direction, string, origin, document);
+
+    if (result !== undefined && direction === Direction.Forward) {
+      return Positions.offset(result, string.length, document);
+    }
+
+    return result;
+  }
 }

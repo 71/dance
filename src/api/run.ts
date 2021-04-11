@@ -100,8 +100,8 @@ export namespace run {
     (...args: any[]): Thenable<unknown>;
   }
 
-  const AsyncFunction: new (...names: string[]) => CompiledFunction
-          = async function () {}.constructor as any,
+  const AsyncFunction: new (...names: string[]) => CompiledFunction =
+          async function () {}.constructor as any,
         functionCache = new Map<string, CachedFunction>();
 
   type CachedFunction = [function: CompiledFunction, lastAccessTimestamp: number];
@@ -258,7 +258,19 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
       const context = Context.WithoutActiveEditor.current;
 
       for (const [descriptor, argument] of batch as [CommandDescriptor, any][]) {
-        results.push(await descriptor.handler(context, Object.assign({}, argument)));
+        const ownedArgument = Object.assign({}, argument);
+
+        if (ownedArgument.try) {
+          delete ownedArgument.try;
+
+          try {
+            results.push(await descriptor.handler(context, ownedArgument));
+          } catch {
+            results.push(undefined);
+          }
+        } else {
+          results.push(await descriptor.handler(context, ownedArgument));
+        }
       }
     }
   }

@@ -475,7 +475,7 @@ export class Modes {
   private readonly _modes = new Map<string, Mode>();
 
   private readonly _vscodeMode = new Mode(this, "", undefined!);
-  private readonly _inputMode = new Mode(this, "input", undefined!);
+  private readonly _inputMode = new Mode(this, "input", { cursorStyle: "underline-thin" });
   private _defaultMode = new Mode(this, "default", {});
 
   public constructor() {
