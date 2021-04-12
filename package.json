@@ -1220,6 +1220,26 @@
         "category": "Dance"
       },
       {
+        "command": "dance.selections.clear.main",
+        "title": "Clear main selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.clear.secondary",
+        "title": "Clear secondary selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.copy",
+        "title": "Copy selections below",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.copy.above",
+        "title": "Copy selections above",
+        "category": "Dance"
+      },
+      {
         "command": "dance.selections.extendToLines",
         "title": "Extend to lines",
         "category": "Dance"
@@ -1241,7 +1261,12 @@
       },
       {
         "command": "dance.selections.filter.regexp",
-        "title": "Filter with RegExp",
+        "title": "Keep matching selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.filter.regexp.inverse",
+        "title": "Clear matching selections",
         "category": "Dance"
       },
       {
@@ -2002,6 +2027,30 @@
         "command": "dance.selections.changeDirection"
       },
       {
+        "key": "Alt+Space",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Clear main selections",
+        "command": "dance.selections.clear.main"
+      },
+      {
+        "key": "Space",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Clear secondary selections",
+        "command": "dance.selections.clear.secondary"
+      },
+      {
+        "key": "Shift+C",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Copy selections below",
+        "command": "dance.selections.copy"
+      },
+      {
+        "key": "Shift+Alt+C",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Copy selections above",
+        "command": "dance.selections.copy.above"
+      },
+      {
         "key": "Alt+X",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Extend to lines",
@@ -2022,8 +2071,14 @@
       {
         "key": "Alt+K",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Filter with RegExp",
+        "title": "Keep matching selections",
         "command": "dance.selections.filter.regexp"
+      },
+      {
+        "key": "Shift+Alt+K",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Clear matching selections",
+        "command": "dance.selections.filter.regexp.inverse"
       },
       {
         "key": "Shift+Alt+\\",
@@ -2181,11 +2236,6 @@
       {
         "command": "dance.ignore",
         "key": "V",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+C",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

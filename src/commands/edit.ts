@@ -271,7 +271,12 @@ export async function replaceCharacters(
  *
  * @keys `&` (normal)
  */
-export function align(_: Context, selections: readonly vscode.Selection[]) {
+export function align(
+  _: Context,
+  selections: readonly vscode.Selection[],
+
+  fill: Argument<string> = " ",
+) {
   const startChar = selections.reduce(
     (max, sel) => (sel.start.character > max ? sel.start.character : max),
     0,
@@ -281,7 +286,7 @@ export function align(_: Context, selections: readonly vscode.Selection[]) {
     for (let i = 0, len = selections.length; i < len; i++) {
       const selection = selections[i];
 
-      builder.insert(selection.start, " ".repeat(startChar - selection.start.character));
+      builder.insert(selection.start, fill.repeat(startChar - selection.start.character));
     }
   });
 }

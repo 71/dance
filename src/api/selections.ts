@@ -749,6 +749,21 @@ export namespace Selections {
   }
 
   /**
+   * Returns whether the two given ranges overlap.
+   */
+  export function overlap(a: vscode.Range, b: vscode.Range) {
+    const aStart = a.start,
+          aEnd = a.end,
+          bStart = b.start,
+          bEnd = b.end;
+
+    return !(aStart.line < bStart.line
+            || (aEnd.line === bEnd.line && aEnd.character < bStart.character))
+        && !(bStart.line < aStart.line
+            || (bEnd.line === aEnd.line && bEnd.character < aStart.character));
+  }
+
+  /**
    * Returns the line of the end of the given selection. If the selection ends
    * at the first character of a line and is not empty, this is equal to
    * `end.line - 1`. Otherwise, this is `end.line`.
@@ -772,6 +787,30 @@ export namespace Selections {
   }
 
   /**
+   * Returns the character of the end of the given selection. If the selection
+   * ends at the first character of a line and is not empty, this is equal to
+   * the length of the previous line plus one. Otherwise, this is
+   * `end.character`.
+   *
+   * @see endLine
+   */
+  export function endCharacter(
+    selection: vscode.Selection | vscode.Range,
+    document?: vscode.TextDocument,
+  ) {
+    const startLine = selection.start.line,
+          end = selection.end,
+          endLine = end.line,
+          endCharacter = end.character;
+
+    if (startLine !== endLine && endCharacter === 0) {
+      return (document ?? Context.current.document).lineAt(endLine - 1).text.length + 1;
+    }
+
+    return endCharacter;
+  }
+
+  /**
    * Returns the line of the active position of the given selection. If the
    * selection faces forward (the active position is the end of the selection),
    * returns `endLine(selection)`. Otherwise, returns `active.line`.
@@ -782,6 +821,19 @@ export namespace Selections {
     }
 
     return endLine(selection);
+  }
+
+  /**
+   * Returns the character of the active position of the given selection.
+   *
+   * @see activeLine
+   */
+  export function activeCharacter(selection: vscode.Selection, document?: vscode.TextDocument) {
+    if (selection.isReversed) {
+      return selection.active.character;
+    }
+
+    return endCharacter(selection, document);
   }
 
   /**

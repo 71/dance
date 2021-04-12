@@ -164,7 +164,7 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.edit.align",
-      (_) => _.runAsync((_) => align(_, _.selections)),
+      (_, argument) => _.runAsync((_) => align(_, _.selections, argument.fill)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -755,6 +755,7 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
 async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
   const {
     changeDirection,
+    copy,
     extendToLines,
     filter,
     pipe,
@@ -778,13 +779,18 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
+      "dance.selections.copy",
+      (_, argument) => _.runAsync((_) => copy(_, _.document, _.selections, getRepetitions(_, argument), getDirection(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
       "dance.selections.extendToLines",
       (_) => _.runAsync((_) => extendToLines(_)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.filter",
-      (_, argument) => _.runAsync((_) => filter(_, getInputOr(argument), argument.defaultInput)),
+      (_, argument) => _.runAsync((_) => filter(_, getInput(argument), getSetInput(argument), argument.defaultInput, argument.inverse, argument.interactive)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -848,6 +854,21 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
+      "dance.selections.clear.main",
+      (_) => _.runAsync(() => commands([".selections.filter", { "input": "i !== 0" }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.selections.clear.secondary",
+      (_) => _.runAsync(() => commands([".selections.filter", { "input": "i === 0" }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.selections.copy.above",
+      (_) => _.runAsync(() => commands([".selections.copy", { "direction": -1 }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
       "dance.selections.faceBackward",
       (_) => _.runAsync(() => commands([".selections.changeDirection", { "direction": -1 }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
@@ -860,6 +881,11 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.selections.filter.regexp",
       (_) => _.runAsync(() => commands([".selections.filter", { "defaultInput": "/" }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.selections.filter.regexp.inverse",
+      (_) => _.runAsync(() => commands([".selections.filter", { "defaultInput": "/", "inverse": true }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

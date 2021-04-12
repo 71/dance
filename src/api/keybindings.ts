@@ -648,6 +648,30 @@ const builtinKeybindings = [
     "command": "dance.selections.changeDirection"
   },
   {
+    "key": "Alt+Space",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Clear main selections",
+    "command": "dance.selections.clear.main"
+  },
+  {
+    "key": "Space",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Clear secondary selections",
+    "command": "dance.selections.clear.secondary"
+  },
+  {
+    "key": "Shift+C",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Copy selections below",
+    "command": "dance.selections.copy"
+  },
+  {
+    "key": "Shift+Alt+C",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Copy selections above",
+    "command": "dance.selections.copy.above"
+  },
+  {
     "key": "Alt+X",
     "when": "editorTextFocus && dance.mode == 'normal'",
     "title": "Extend to lines",
@@ -668,8 +692,14 @@ const builtinKeybindings = [
   {
     "key": "Alt+K",
     "when": "editorTextFocus && dance.mode == 'normal'",
-    "title": "Filter with RegExp",
+    "title": "Keep matching selections",
     "command": "dance.selections.filter.regexp"
+  },
+  {
+    "key": "Shift+Alt+K",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Clear matching selections",
+    "command": "dance.selections.filter.regexp.inverse"
   },
   {
     "key": "Shift+Alt+\\",

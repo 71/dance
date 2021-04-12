@@ -284,21 +284,28 @@ let lastFilterInput: string | undefined;
  *
  * @keys `$` (normal)
  *
- * #### Additional commands
+ * #### Variants
  *
- * | Title               | Identifier      | Keybinding     | Commands                                          |
- * | ------------------- | --------------- | -------------- | ------------------------------------------------- |
- * | Filter with RegExp  | `filter.regexp` | `a-k` (normal) | `[".selections.filter", { "defaultInput": "/" }]` |
+ * | Title                      | Identifier              | Keybinding         | Commands                                                           |
+ * | -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------ |
+ * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { "defaultInput": "/" }]`                  |
+ * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { "defaultInput": "/", "inverse": true }]` |
+ * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { "input": "i === 0" }]`                   |
+ * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { "input": "i !== 0" }]`                   |
  */
-export async function filter(
+export function filter(
   _: Context,
-  inputOr: InputOr<string>,
 
+  input: Input<string>,
+  setInput: SetInput<string>,
   defaultInput?: Argument<string>,
+  inverse: Argument<boolean> = false,
+  interactive: Argument<boolean> = true,
 ) {
-  defaultInput ??= lastFilterInput;
+  const document = _.document,
+        strings = _.selections.map((selection) => document.getText(selection));
 
-  const input = await inputOr(() => prompt({
+  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
     prompt: "Expression",
     validateInput(value) {
       try {
@@ -308,25 +315,23 @@ export async function filter(
         return e?.message ?? `${e}`;
       }
     },
-    value: defaultInput,
-    valueSelection: defaultInput === undefined
-      ? undefined
-      : [defaultInput.length, defaultInput.length],
-  }, _));
+    value: defaultInput ?? lastFilterInput,
+    valueSelection: defaultInput
+      ? [defaultInput.length, defaultInput.length]
+      : lastFilterInput
+        ? [0, lastFilterInput.length]
+        : undefined,
+  }, (input, selections) => {
+    return Selections.filter.byIndex(async (i) => {
+      const context = { $: strings[i], $$: strings, i, n: strings.length };
 
-  const document = _.document,
-        selections = _.selections,
-        strings = selections.map((selection) => document.getText(selection));
-
-  return _.run(() =>
-    Selections.filter.byIndex(async (i) => {
       try {
-        return !!await switchRun(input, { $: strings[i], $$: strings, i, n: strings.length });
+        return !!(await switchRun(input, context)) !== inverse;
       } catch {
-        return false;
+        return inverse;
       }
-    }).then(Selections.set),
-  );
+    }, selections).then(Selections.set).then(() => input);
+  });
 }
 
 let lastSelectInput: RegExp | undefined;
@@ -639,6 +644,58 @@ export function changeDirection(_: Context, direction?: Direction) {
   }
 }
 
+/**
+ * Copy selections below.
+ *
+ * @keys `s-c` (normal)
+ *
+ * #### Variant
+ *
+ * | Title                 | Identifier   | Keybinding       | Command                                     |
+ * | --------------------- | ------------ | ---------------- | ------------------------------------------- |
+ * | Copy selections above | `copy.above` | `s-a-c` (normal) | `[".selections.copy", { "direction": -1 }]` |
+ */
+export function copy(
+  _: Context,
+  document: vscode.TextDocument,
+  selections: readonly vscode.Selection[],
+  repetitions: number,
+
+  direction = Direction.Forward,
+) {
+  const newSelections = [] as vscode.Selection[],
+        lineCount = document.lineCount;
+
+  for (const selection of selections) {
+    const activeLine = Selections.activeLine(selection);
+    let currentLine = activeLine + direction;
+
+    for (let i = 0; i < repetitions;) {
+      if (currentLine < 0 || currentLine >= lineCount) {
+        break;
+      }
+
+      const copiedSelection = tryCopySelection(document, selection, currentLine);
+
+      if (copiedSelection === undefined) {
+        currentLine += direction;
+        continue;
+      }
+
+      newSelections.push(copiedSelection);
+
+      i++;
+      currentLine = direction === Direction.Backward
+        ? copiedSelection.end.line - 1
+        : copiedSelection.start.line + 1;
+    }
+  }
+
+  newSelections.push(...selections);
+
+  Selections.set(newSelections);
+}
+
 const indicesPerEditor = new Map<EditorState, AutoDisposable>();
 
 /**
@@ -749,4 +806,70 @@ export function toggleIndices(
   }
 
   onDidChangeSelection(editorState.editor);
+}
+
+function tryCopySelection(
+  document: vscode.TextDocument,
+  selection: vscode.Selection,
+  newActiveLine: number,
+) {
+  const active = selection.active,
+        anchor = selection.anchor,
+        activeLine = Selections.activeLine(selection),
+        endCharacter = Selections.endCharacter(selection, document);
+  let activeCharacter = selection.end === active ? endCharacter : active.character,
+      anchorCharacter = selection.end === anchor ? endCharacter : anchor.character;
+
+  if (activeLine === anchor.line) {
+    const newLineLength = document.lineAt(newActiveLine).text.length;
+
+    if (endCharacter > newLineLength) {
+      if (endCharacter !== newLineLength + 1) {
+        return undefined;
+      }
+
+      return selection.end === active
+        ? new vscode.Selection(newActiveLine, anchorCharacter, newActiveLine + 1, 0)
+        : new vscode.Selection(newActiveLine + 1, 0, newActiveLine, activeCharacter);
+    }
+
+    return new vscode.Selection(newActiveLine, anchorCharacter, newActiveLine, activeCharacter);
+  }
+
+  let newAnchorLine = newActiveLine + anchor.line - activeLine;
+
+  if (newAnchorLine < 0 || newAnchorLine >= document.lineCount) {
+    return undefined;
+  }
+
+  const newAnchorLineLength = document.lineAt(newAnchorLine).text.length;
+
+  if (anchorCharacter > newAnchorLineLength) {
+    if (anchorCharacter !== newAnchorLineLength + 1) {
+      return undefined;
+    }
+
+    newAnchorLine++;
+    anchorCharacter = 0;
+  }
+
+  const newActiveLineLength = document.lineAt(newActiveLine).text.length;
+
+  if (active.character > newActiveLineLength) {
+    if (activeCharacter !== newActiveLineLength + 1) {
+      return undefined;
+    }
+
+    newActiveLine++;
+    activeCharacter = 0;
+  }
+
+  const newSelection = new vscode.Selection(newAnchorLine, anchorCharacter,
+                                            newActiveLine, activeCharacter);
+
+  if (Selections.overlap(selection, newSelection)) {
+    return undefined;
+  }
+
+  return newSelection;
 }

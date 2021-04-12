@@ -110,6 +110,7 @@ export namespace run {
    * A few common inputs.
    */
   const safeExpressions = [
+    /^(\$\$?|[in]|\d+) *([=!]==?|[<>]=?|&{1,2}|\|{1,2}) *(\$\$?|[in]|\d+)$/,
     /^i( + 1)?$/,
     /^`\${await register\(["']\w+["'], *[i0-9]\)}` !== ["']false["']$/,
   ];
@@ -396,7 +397,7 @@ function getShell() {
  *    returned.
  * 2. If the string starts with "#", instead a command will be run.
  */
-export function switchRun(string: string, context?: object) {
+export function switchRun(string: string, context: { $: string } & Record<string, any>) {
   if (string.length === 0) {
     // An empty expression is just `undefined`.
     return Context.WithoutActiveEditor.wrap(Promise.resolve());
@@ -407,15 +408,15 @@ export function switchRun(string: string, context?: object) {
     const [regexp, replacement] = parseRegExpWithReplacement(string);
 
     if (replacement === undefined) {
-      return Context.WithoutActiveEditor.wrap(Promise.resolve(regexp.exec(string)));
+      return Context.WithoutActiveEditor.wrap(Promise.resolve(regexp.exec(context.$)));
     }
 
-    return Context.WithoutActiveEditor.wrap(Promise.resolve(string.replace(regexp, replacement)));
+    return Context.WithoutActiveEditor.wrap(Promise.resolve(context.$.replace(regexp, replacement)));
   }
 
   if (string[0] === "#") {
     // Shell command.
-    return execute(string.slice(1), (context as Record<string, any>)?.$);
+    return execute(string.slice(1), context.$);
   }
 
   // JavaScript expression.

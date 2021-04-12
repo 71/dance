@@ -123,13 +123,3 @@ define(Command.downPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
 define(Command.downHalfPage, CommandFlags.ChangeSelections, (_, { repetitions }) =>
   scrollBy(repetitions, "down", "halfPage"),
 );
-
-// Other bindings (%)
-// ===============================================================================================
-
-define(Command.selectBuffer, CommandFlags.ChangeSelections, ({ editor }) => {
-  const start = new vscode.Position(0, 0);
-  const end = editor.document.lineAt(editor.document.lineCount - 1).range.end;
-
-  editor.selection = new vscode.Selection(start, end);
-});
