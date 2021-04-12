@@ -1245,6 +1245,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.selections.hideIndices",
+        "title": "Hide selection indices",
+        "category": "Dance"
+      },
+      {
         "command": "dance.selections.pipe",
         "title": "Pipe selections",
         "category": "Dance"
@@ -1267,6 +1272,11 @@
       {
         "command": "dance.selections.reduce",
         "title": "Reduce selections to their cursor",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.reduce.edges",
+        "title": "Reduce selections to their ends",
         "category": "Dance"
       },
       {
@@ -1295,6 +1305,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.selections.showIndices",
+        "title": "Show selection indices",
+        "category": "Dance"
+      },
+      {
         "command": "dance.selections.split",
         "title": "Split selections",
         "category": "Dance"
@@ -1302,6 +1317,11 @@
       {
         "command": "dance.selections.splitLines",
         "title": "Split selections at line boundaries",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.toggleIndices",
+        "title": "Toggle selection indices",
         "category": "Dance"
       },
       {
@@ -2036,6 +2056,12 @@
         "command": "dance.selections.reduce"
       },
       {
+        "key": "Shift+Alt+S",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Reduce selections to their ends",
+        "command": "dance.selections.reduce.edges"
+      },
+      {
         "key": "Z",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Restore selections",
@@ -2084,6 +2110,12 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Split selections at line boundaries",
         "command": "dance.selections.splitLines"
+      },
+      {
+        "key": "Shift+Y",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Toggle selection indices",
+        "command": "dance.selections.toggleIndices"
       },
       {
         "key": "Shift+Alt+X",
@@ -2194,11 +2226,6 @@
       {
         "command": "dance.ignore",
         "key": "Shift+V",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+Y",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

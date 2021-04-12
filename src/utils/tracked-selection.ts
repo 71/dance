@@ -256,7 +256,7 @@ export namespace TrackedSelection {
       public readonly editor: Pick<vscode.TextEditor, "setDecorations" | "document">,
       renderOptions: vscode.DecorationRenderOptions,
     ) {
-      super(selections, editor.document);
+      super(selections, editor.document, rangeBehaviorToFlags(renderOptions.rangeBehavior));
 
       this._decorationType = vscode.window.createTextEditorDecorationType(renderOptions);
       this.updateDecorations();
@@ -291,5 +291,21 @@ export namespace TrackedSelection {
     private updateDecorations() {
       this.editor.setDecorations(this._decorationType, this.restoreNonEmpty());
     }
+  }
+}
+
+function rangeBehaviorToFlags(rangeBehavior: vscode.DecorationRangeBehavior | undefined) {
+  switch (rangeBehavior) {
+  case vscode.DecorationRangeBehavior.ClosedOpen:
+    return TrackedSelection.Flags.StrictStart;
+
+  case vscode.DecorationRangeBehavior.OpenClosed:
+    return TrackedSelection.Flags.StrictEnd;
+
+  case vscode.DecorationRangeBehavior.ClosedClosed:
+    return TrackedSelection.Flags.Strict;
+
+  default:
+    return TrackedSelection.Flags.Inclusive;
   }
 }

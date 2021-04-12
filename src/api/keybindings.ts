@@ -702,6 +702,12 @@ const builtinKeybindings = [
     "command": "dance.selections.reduce"
   },
   {
+    "key": "Shift+Alt+S",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Reduce selections to their ends",
+    "command": "dance.selections.reduce.edges"
+  },
+  {
     "key": "Z",
     "when": "editorTextFocus && dance.mode == 'normal'",
     "title": "Restore selections",
@@ -750,6 +756,12 @@ const builtinKeybindings = [
     "when": "editorTextFocus && dance.mode == 'normal'",
     "title": "Split selections at line boundaries",
     "command": "dance.selections.splitLines"
+  },
+  {
+    "key": "Shift+Y",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Toggle selection indices",
+    "command": "dance.selections.toggleIndices"
   },
   {
     "key": "Shift+Alt+X",

@@ -14,11 +14,25 @@ export type RegisterOr<_Default extends keyof Registers,
 
 /**
  * Indicates that an input is expected; if no input is given, the specified
- * function will be used to
+ * function will be used to update the input value in subsequent executions of
+ * this command.
  */
 export interface InputOr<T> {
   (promptDefaultInput: () => T): T;
   (promptDefaultInput: () => Thenable<T>): Thenable<T>;
+}
+
+/**
+ * Indicates that an input is expected.
+ */
+export type Input<T> = T | undefined;
+
+/**
+ * A function used to update the input value in subsequent executions of this
+ * command.
+ */
+export interface SetInput<T> {
+  (input: T): void;
 }
 
 /**

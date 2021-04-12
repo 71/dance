@@ -76,12 +76,16 @@ export namespace prompt {
     return {
       prompt: "Regular expression",
       validateInput(input) {
+        if (input.length === 0) {
+          return "RegExp cannot be empty";
+        }
+
         try {
           new RegExp(input, flags);
 
           return undefined;
         } catch {
-          return "Invalid ECMA RegExp.";
+          return "invalid RegExp";
         }
       },
     };
@@ -95,6 +99,47 @@ export namespace prompt {
     context = Context.WithoutActiveEditor.current,
   ) {
     return prompt(regexpOpts(flags), context).then((x) => new RegExp(x, flags));
+  }
+
+  /**
+   * Prompts the user for a result interactively.
+   */
+  export function interactive<T>(
+    compute: (input: string) => T | Thenable<T>,
+    reset: () => void,
+    options: vscode.InputBoxOptions = {},
+    interactive: boolean = true,
+  ): Thenable<T> {
+    let result: T;
+    const validateInput = options.validateInput;
+
+    if (!interactive) {
+      return prompt(options).then((value) => compute(value));
+    }
+
+    return prompt({
+      ...options,
+      async validateInput(input) {
+        const validationError = await validateInput?.(input);
+
+        if (validationError) {
+          return validationError;
+        }
+
+        try {
+          result = await compute(input);
+          return;
+        } catch (e) {
+          return `${e}`;
+        }
+      },
+    }).then(
+      () => result,
+      (err) => {
+        reset();
+        throw err;
+      },
+    );
   }
 
   /**

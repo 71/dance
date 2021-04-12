@@ -59,7 +59,7 @@
     <tr><td><a href="#selectlineEnd"><code>select.lineEnd</code></a></td><td>Select to line end</td><td><code>Alt+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>End</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectlineStart"><code>select.lineStart</code></a></td><td>Select to line start</td><td><code>Alt+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Home</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selecttoLine"><code>select.toLine</code></a></td><td>Select to line</td><td><code>G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=14><a href="#selections"><code>selections</code></a></td><td><a href="#selectionschangeDirection"><code>selections.changeDirection</code></a></td><td>Change direction of selections</td><td><code>Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=15><a href="#selections"><code>selections</code></a></td><td><a href="#selectionschangeDirection"><code>selections.changeDirection</code></a></td><td>Change direction of selections</td><td><code>Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionsextendToLines"><code>selections.extendToLines</code></a></td><td>Extend to lines</td><td><code>Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionsfilter"><code>selections.filter</code></a></td><td>Filter selections</td><td><code>Shift+4</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionspipe"><code>selections.pipe</code></a></td><td>Pipe selections</td><td><code>Shift+Alt+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -71,6 +71,7 @@
     <tr><td><a href="#selectionsselect"><code>selections.select</code></a></td><td>Select within selections</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionssplit"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionssplitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectionstoggleIndices"><code>selections.toggleIndices</code></a></td><td>Toggle selection indices</td><td><code>Shift+Y</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionstrimLines"><code>selections.trimLines</code></a></td><td>Trim lines</td><td><code>Shift+Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionstrimWhitespace"><code>selections.trimWhitespace</code></a></td><td>Trim whitespace</td><td><code>Shift+-</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=3><a href="#selections.rotate"><code>selections.rotate</code></a></td><td><a href="#selectionsrotateboth"><code>selections.rotate.both</code></a></td><td>Rotate selections clockwise</td><td><code>Shift+9</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -436,7 +437,7 @@ This command:
 
 Search for patterns and replace or add selections.
 
-### [`search.search`](./search.ts#L12-L29)
+### [`search.search`](./search.ts#L18-L40)
 
 Search.
 
@@ -447,10 +448,13 @@ Search.
 | Search backward (add) | `backward.add` | `a-?` (normal) | `[".search", { "direction": -1, "add": true }]` |
 
 This command:
+- accepts a register (by default, it uses `slash`).
+- may be repeated with a given number of repetitions.
 - takes an argument `add` of type `boolean`.
-- takes an input of type `string`.
+- takes an argument `interactive` of type `boolean`.
+- takes an input of type `Input<string | RegExp>`.
 
-### [`search.selection`](./search.ts#L43-L54)
+### [`search.selection`](./search.ts#L78-L93)
 
 Search current selection.
 
@@ -459,18 +463,18 @@ Search current selection.
 | Search current selection (smart) | `selection.smart` | `*` (normal) | `[".search.selection", { "smart": true }]` |
 
 This command:
-- does not require an active text editor.
+- accepts a register (by default, it uses `slash`).
 - takes an argument `smart` of type `boolean`.
 
-### [`search.next`](./search.ts#L58-L76)
+### [`search.next`](./search.ts#L122-L141)
 
 Select next match.
 
-| Title                 | Identifier     | Keybinding       | Command                                         |
-| --------------------- | -------------- | ---------------- | ----------------------------------------------- |
-| Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", { "add": true }]`             |
-| Select previous match | `previous`     | `a-n` (normal)   | `[".search", { "direction": -1 }]`              |
-| Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search", { "direction": -1, "add": true }]` |
+| Title                 | Identifier     | Keybinding       | Command                                              |
+| --------------------- | -------------- | ---------------- | ---------------------------------------------------- |
+| Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", { "add": true }]`                  |
+| Select previous match | `previous`     | `a-n` (normal)   | `[".search.next", { "direction": -1 }]`              |
+| Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search.next", { "direction": -1, "add": true }]` |
 
 This command:
 - accepts a register (by default, it uses `slash`).
@@ -615,14 +619,14 @@ This command:
 
 Interacting with selections.
 
-### [`selections.saveText`](./selections.ts#L17-L26)
+### [`selections.saveText`](./selections.ts#L19-L28)
 
 Copy selections text.
 
 This command:
 - accepts a register (by default, it uses `dquote`).
 
-### [`selections.save`](./selections.ts#L30-L43)
+### [`selections.save`](./selections.ts#L32-L45)
 
 Save selections.
 
@@ -631,14 +635,14 @@ This command:
 - takes an argument `style` of type `object`.
 - takes an argument `until` of type `AutoDisposable.Event[]`.
 
-### [`selections.restore`](./selections.ts#L70-L78)
+### [`selections.restore`](./selections.ts#L72-L80)
 
 Restore selections.
 
 This command:
 - accepts a register (by default, it uses `caret`).
 
-### [`selections.restore.withCurrent`](./selections.ts#L89-L108)
+### [`selections.restore.withCurrent`](./selections.ts#L91-L110)
 
 Combine register selections with current ones.
 
@@ -654,7 +658,7 @@ This command:
 - accepts a register (by default, it uses `caret`).
 - takes an argument `reverse` of type `boolean`.
 
-### [`selections.pipe`](./selections.ts#L211-L233)
+### [`selections.pipe`](./selections.ts#L213-L235)
 
 Pipe selections.
 
@@ -675,7 +679,7 @@ This command:
 - accepts a register (by default, it uses `pipe`).
 - takes an input of type `string`.
 
-### [`selections.filter`](./selections.ts#L280-L296)
+### [`selections.filter`](./selections.ts#L282-L298)
 
 Filter selections.
 
@@ -689,48 +693,63 @@ This command:
 - takes an argument `defaultInput` of type `string`.
 - takes an input of type `string`.
 
-### [`selections.select`](./selections.ts#L332-L337)
+### [`selections.select`](./selections.ts#L334-L345)
 
 Select within selections.
 
-### [`selections.split`](./selections.ts#L354-L364)
+This command:
+- takes an argument `interactive` of type `boolean`.
+- takes an input of type `Input<string | RegExp>`.
+
+### [`selections.split`](./selections.ts#L364-L376)
 
 Split selections.
 
 This command:
 - takes an argument `excludeEmpty` of type `boolean`.
+- takes an argument `interactive` of type `boolean`.
+- takes an input of type `Input<string | RegExp>`.
 
-### [`selections.splitLines`](./selections.ts#L385-L390)
+### [`selections.splitLines`](./selections.ts#L399-L409)
 
 Split selections at line boundaries.
 
-### [`selections.extendToLines`](./selections.ts#L394-L401)
+This command:
+- may be repeated with a given number of repetitions.
+
+### [`selections.extendToLines`](./selections.ts#L450-L457)
 
 Extend to lines.
 
 Extend selections to contain full lines (including end-of-line characters).
 
-### [`selections.trimLines`](./selections.ts#L428-L435)
+### [`selections.trimLines`](./selections.ts#L484-L491)
 
 Trim lines.
 
 Trim selections to only contain full lines (from start to line break).
 
-### [`selections.trimWhitespace`](./selections.ts#L460-L467)
+### [`selections.trimWhitespace`](./selections.ts#L516-L523)
 
 Trim whitespace.
 
 Trim whitespace at beginning and end of selections.
 
-### [`selections.reduce`](./selections.ts#L490-L503)
+### [`selections.reduce`](./selections.ts#L546-L565)
 
 Reduce selections to their cursor.
 
+#### Variant
+
+| Title                           | Identifier     | Keybinding       | Command                                       |
+| ------------------------------- | -------------- | ---------------- | --------------------------------------------- |
+| Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { "where": "both" }]` |
+
 This command:
 - takes an argument `handleCharacterBehavior` of type `boolean`.
-- takes an argument `where` of type `"active" | "anchor" | "start" | "end"`.
+- takes an argument `where` of type `"active" | "anchor" | "start" | "end" | "both"`.
 
-### [`selections.changeDirection`](./selections.ts#L525-L540)
+### [`selections.changeDirection`](./selections.ts#L602-L617)
 
 Change direction of selections.
 
@@ -740,6 +759,21 @@ Change direction of selections.
 | ------------------- | -------------- | -------------- | ------------------------------------------------------ |
 | Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { "direction": 1 }]`  |
 | Backward selections | `faceBackward` |                | `[".selections.changeDirection", { "direction": -1 }]` |
+
+### [`selections.toggleIndices`](./selections.ts#L644-L661)
+
+Toggle selection indices.
+
+#### Variants
+
+| Title                  | Identifier    | Command                                               |
+| ---------------------- | ------------- | ----------------------------------------------------- |
+| Show selection indices | `showIndices` | `[".selections.toggleIndices", { "display": true  }]` |
+| Hide selection indices | `hideIndices` | `[".selections.toggleIndices", { "display": false }]` |
+
+This command:
+- takes an argument `display` of type `boolean | undefined`.
+- takes an argument `until` of type `AutoDisposable.Event[]`.
 
 ## [`selections.rotate`](./selections.rotate.ts)
 

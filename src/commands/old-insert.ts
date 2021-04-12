@@ -4,64 +4,6 @@ import { Command, CommandDescriptor, CommandFlags, define } from ".";
 import { SelectionBehavior } from "../state/extension";
 import { SelectionHelper } from "../utils/selection-helper";
 
-define(
-  Command.insertBefore,
-  CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore,
-  () => {
-    // Nop.
-  },
-);
-
-define(
-  Command.insertAfter,
-  CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter,
-  () => {
-    // Nop.
-  },
-);
-
-define(
-  Command.insertLineStart,
-  CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertBefore,
-  ({ editor }) => {
-    const selections = editor.selections,
-          len = selections.length;
-
-    for (let i = 0; i < len; i++) {
-      const selection = selections[i],
-            lineStart = editor.document.lineAt(selection.start.line)
-              .firstNonWhitespaceCharacterIndex;
-
-      selections[i] = new vscode.Selection(
-        selection.anchor,
-        new vscode.Position(selection.start.line, lineStart),
-      );
-    }
-
-    editor.selections = selections;
-  },
-);
-
-define(
-  Command.insertLineEnd,
-  CommandFlags.ChangeSelections | CommandFlags.SwitchToInsertAfter,
-  ({ editor }) => {
-    const selections = editor.selections,
-          len = selections.length;
-
-    for (let i = 0; i < len; i++) {
-      const selection = selections[i];
-
-      selections[i] = new vscode.Selection(
-        selection.anchor,
-        new vscode.Position(selection.end.line, Number.MAX_SAFE_INTEGER),
-      );
-    }
-
-    editor.selections = selections;
-  },
-);
-
 define(Command.repeatInsert, CommandFlags.Edit, async ({ editor }, state) => {
   const editorState = state.extension.getEditorState(editor);
 

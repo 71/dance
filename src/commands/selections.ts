@@ -1,11 +1,13 @@
 import * as vscode from "vscode";
-import { Argument, InputOr, RegisterOr } from ".";
+import { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
 import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun, todo } from "../api";
 import { Mode } from "../mode";
 import { Register } from "../register";
+import { EditorState } from "../state/editor";
 import { SelectionBehavior } from "../state/extension";
 import { CharSet, getCharacters } from "../utils/charset";
 import { AutoDisposable } from "../utils/disposables";
+import { manipulateSelectionsInteractively } from "../utils/misc";
 import { SettingsValidator } from "../utils/settings-validator";
 import { TrackedSelection } from "../utils/tracked-selection";
 
@@ -327,59 +329,71 @@ export async function filter(
   );
 }
 
-let lastSelectInput: string | undefined;
+let lastSelectInput: RegExp | undefined;
 
 /**
  * Select within selections.
  *
  * @keys `s` (normal)
  */
-export async function select(_: Context, inputOr: InputOr<string | RegExp>) {
-  let input = await inputOr(() => prompt({
+export function select(
+  _: Context,
+
+  interactive: Argument<boolean> = true,
+  input: Input<string | RegExp>,
+  setInput: SetInput<RegExp>,
+) {
+  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
     ...prompt.regexpOpts("mu"),
-    value: lastSelectInput,
-  }).then((v) => new RegExp(v, "mu")));
+    value: lastSelectInput?.source,
+  }, (input, selections) => {
+    if (typeof input === "string") {
+      input = new RegExp(input, "mu");
+    }
 
-  if (typeof input === "string") {
-    input = new RegExp(input, "mu");
-  }
+    lastSelectInput = input;
 
-  lastSelectInput = input.source;
+    Selections.set(Selections.selectWithin(input, selections));
 
-  Selections.set(Selections.selectWithin(input));
+    return Promise.resolve(input);
+  });
 }
 
-let lastSplitInput: string | undefined;
+let lastSplitInput: RegExp | undefined;
 
 /**
  * Split selections.
  *
  * @keys `s-s` (normal)
  */
-export async function split(
+export function split(
   _: Context,
 
-  inputOr: InputOr<string | RegExp>,
-  excludeEmpty = false,
+  excludeEmpty: Argument<boolean> = false,
+  interactive: Argument<boolean> = true,
+  input: Input<string | RegExp>,
+  setInput: SetInput<RegExp>,
 ) {
-  let input = await inputOr(() => prompt({
-    ...prompt.regexpOpts("u"),
-    value: lastSplitInput,
-  }).then((v) => new RegExp(v, "u")));
+  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
+    ...prompt.regexpOpts("mu"),
+    value: lastSplitInput?.source,
+  }, (input, selections) => {
+    if (typeof input === "string") {
+      input = new RegExp(input, "mu");
+    }
 
-  if (typeof input === "string") {
-    input = new RegExp(input, "u");
-  }
+    lastSplitInput = input;
 
-  lastSplitInput = input.source;
+    let split = Selections.split(input, selections);
 
-  let split = Selections.split(input);
+    if (excludeEmpty) {
+      split = split.filter((s) => !s.isEmpty);
+    }
 
-  if (excludeEmpty) {
-    split = split.filter((s) => !s.isEmpty);
-  }
+    Selections.set(split);
 
-  Selections.set(split);
+    return Promise.resolve(input);
+  });
 }
 
 /**
@@ -387,8 +401,50 @@ export async function split(
  *
  * @keys `a-s` (normal)
  */
-export function splitLines(_: Context) {
-  Selections.set(Selections.split(_.document.eol === vscode.EndOfLine.CRLF ? /\r\n/g : /\n/g));
+export function splitLines(
+  _: Context,
+  document: vscode.TextDocument,
+  selections: readonly vscode.Selection[],
+  repetitions: number,
+) {
+  const newSelections = [] as vscode.Selection[];
+
+  for (let i = 0, len = selections.length; i < len; i++) {
+    const selection = selections[i],
+          start = selection.start,
+          end = selection.end,
+          startLine = start.line,
+          endLine = end.line,
+          isReversed = selection.isReversed;
+
+    if (startLine === endLine) {
+      newSelections.push(selection);
+
+      return;
+    }
+
+    // Add start line.
+    newSelections.push(
+      Selections.fromStartEnd(start, Positions.lineEnd(startLine, document), isReversed, document),
+    );
+
+    // Add intermediate lines.
+    for (let line = startLine + repetitions; line < endLine; line += repetitions) {
+      const start = Positions.lineStart(line),
+            end = Positions.lineEnd(line, document);
+
+      newSelections.push(Selections.fromStartEnd(start, end, isReversed, document));
+    }
+
+    // Add end line.
+    if (endLine % repetitions === 0) {
+      newSelections.push(
+        Selections.fromStartEnd(Positions.lineStart(endLine), end, isReversed, document),
+      );
+    }
+  }
+
+  Selections.set(newSelections);
 }
 
 /**
@@ -494,32 +550,53 @@ export function trimWhitespace(_: Context) {
  *   "active".
  *
  * @keys `;` (normal)
+ *
+ * #### Variant
+ *
+ * | Title                           | Identifier     | Keybinding       | Command                                       |
+ * | ------------------------------- | -------------- | ---------------- | --------------------------------------------- |
+ * | Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { "where": "both" }]` |
  */
 export function reduce(
   _: Context,
 
   handleCharacterBehavior = true,
-  where: Argument<"active" | "anchor" | "start" | "end"> = "active",
+  where: Argument<"active" | "anchor" | "start" | "end" | "both"> = "active",
 ) {
   ArgumentError.validate(
     "where",
-    ["active", "anchor", "start", "end"].includes(where),
-    `"where" must be "active", "anchor", "start", "end", or undefined`,
+    ["active", "anchor", "start", "end", "both"].includes(where),
+    `"where" must be "active", "anchor", "start", "end", "both", or undefined`,
   );
 
-  if (_.selectionBehavior === SelectionBehavior.Caret || !handleCharacterBehavior) {
-    Selections.update.byIndex((_, selection) => Selections.empty(selection[where]));
-  } else {
-    Selections.update.byIndex((_, selection) => {
-      const result = selection[where];
+  const takeWhere = handleCharacterBehavior && _.selectionBehavior === SelectionBehavior.Character
+    ? (selection: vscode.Selection, prop: Exclude<typeof where, "both">) => {
+        const result = selection[prop];
 
-      if (result === selection.end && !result.isEqual(selection.start)) {
-        return Selections.empty(Positions.previous(result)!);
+        if (result === selection.end && !result.isEqual(selection.start)) {
+          return Positions.previous(result)!;
+        }
+
+        return result;
       }
+    : (selection: vscode.Selection, prop: Exclude<typeof where, "both">) => selection[prop];
 
-      return Selections.empty(result);
-    });
+  if (where !== "both") {
+    Selections.update.byIndex((_, selection) => Selections.empty(takeWhere(selection, where)));
+
+    return;
   }
+
+  Selections.set(_.selections.flatMap((selection) => {
+    if (selection.isEmpty || Selections.isNonDirectional(selection)) {
+      return [selection];
+    }
+
+    return [
+      Selections.empty(takeWhere(selection, "active")),
+      Selections.empty(takeWhere(selection, "anchor")),
+    ];
+  }));
 }
 
 /**
@@ -560,4 +637,116 @@ export function changeDirection(_: Context, direction?: Direction) {
         : new vscode.Selection(selection.active, selection.anchor));
     break;
   }
+}
+
+const indicesPerEditor = new Map<EditorState, AutoDisposable>();
+
+/**
+ * Toggle selection indices.
+ *
+ * @keys `s-y` (normal)
+ *
+ * #### Variants
+ *
+ * | Title                  | Identifier    | Command                                               |
+ * | ---------------------- | ------------- | ----------------------------------------------------- |
+ * | Show selection indices | `showIndices` | `[".selections.toggleIndices", { "display": true  }]` |
+ * | Hide selection indices | `hideIndices` | `[".selections.toggleIndices", { "display": false }]` |
+ */
+export function toggleIndices(
+  _: Context,
+
+  display: Argument<boolean | undefined> = undefined,
+  until: Argument<AutoDisposable.Event[]> = [],
+) {
+  const editorState = _.editorState;
+  let disposable = indicesPerEditor.get(editorState);
+
+  if (disposable !== undefined) {
+    // Indices already exist; remove them.
+    if (display !== true) {
+      disposable.dispose();
+    }
+
+    return;
+  }
+
+  // Indices do not exist yet; add them.
+  if (display === false) {
+    return;
+  }
+
+  const indicesDecorationType = vscode.window.createTextEditorDecorationType({
+    after: {
+      color: new vscode.ThemeColor("textLink.activeForeground"),
+      margin: "0 0 0 20px",
+    },
+    isWholeLine: true,
+  });
+
+  function onDidChangeSelection(editor: vscode.TextEditor) {
+    // Collect selection indices for each line; keep the column of the cursor in
+    // memory for later.
+    const selections = editor.selections,
+          selectionsPerLine = new Map<number, [activeColumn: number, selectionIndex: number][]>();
+
+    for (let i = 0; i < selections.length; i++) {
+      const selection = selections[i],
+            active = selection.active,
+            activeLine = Selections.activeLine(selection),
+            activeCharacter = activeLine === active.line
+              ? active.character
+              : Number.MAX_SAFE_INTEGER,  // We were at the end of the line.
+            selectionsForLine = selectionsPerLine.get(activeLine);
+
+      if (selectionsForLine === undefined) {
+        selectionsPerLine.set(activeLine, [[activeCharacter, i]]);
+      } else {
+        selectionsForLine.push([activeCharacter, i]);
+      }
+    }
+
+    // For each line with selections, add a new decoration.
+    const ranges = [] as vscode.DecorationOptions[];
+
+    for (const [line, selectionsForLine] of selectionsPerLine) {
+      // Sort selection indices by their column to make sure they match the
+      // order seen by the user.
+      selectionsForLine.sort((a, b) => a[0] - b[0]);
+
+      const rangePosition = new vscode.Position(line, 0),
+            range = new vscode.Range(rangePosition, rangePosition);
+
+      ranges.push({
+        range,
+        renderOptions: {
+          after: {
+            contentText: "#" + selectionsForLine.map((x) => x[1]).join(", #"),
+          },
+        },
+      });
+    }
+
+    editor.setDecorations(indicesDecorationType, ranges);
+  }
+
+  disposable = _.extensionState
+    .createAutoDisposable()
+    .addDisposable(indicesDecorationType)
+    .addDisposable({
+      dispose() {
+        indicesPerEditor.delete(editorState);
+      },
+    })
+    .addDisposable(vscode.window.onDidChangeTextEditorSelection((e) => {
+      onDidChangeSelection(e.textEditor);
+    }));
+
+  indicesPerEditor.set(editorState, disposable);
+
+  if (Array.isArray(until)) {
+    until.forEach((until) => disposable!.disposeOnUserEvent(until, editorState));
+  }
+
+  onDidChangeSelection(editorState.editor);
 }

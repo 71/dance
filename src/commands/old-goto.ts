@@ -116,16 +116,6 @@ function toCharacter(func: CoordMapper, extend: ExtendBehavior) {
 }
 
 define(
-  Command.gotoLineStart,
-  CommandFlags.ChangeSelections,
-  toCharacter(toStartCharacterFunc, DoNotExtend),
-);
-define(
-  Command.gotoLineStartExtend,
-  CommandFlags.ChangeSelections,
-  toCharacter(toStartCharacterFunc, Extend),
-);
-define(
   Command.gotoLineStartNonBlank,
   CommandFlags.ChangeSelections,
   toCharacter(toFirstNonBlankCharacterFunc, DoNotExtend),
@@ -134,16 +124,6 @@ define(
   Command.gotoLineStartNonBlankExtend,
   CommandFlags.ChangeSelections,
   toCharacter(toFirstNonBlankCharacterFunc, Extend),
-);
-define(
-  Command.gotoLineEnd,
-  CommandFlags.ChangeSelections,
-  toCharacter(toEndCharacterFunc, DoNotExtend),
-);
-define(
-  Command.gotoLineEndExtend,
-  CommandFlags.ChangeSelections,
-  toCharacter(toEndCharacterFunc, Extend),
 );
 
 const toFirstVisibleLineFunc: CoordMapper = (from, { editor }) =>

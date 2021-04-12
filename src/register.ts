@@ -200,7 +200,7 @@ export namespace Register {
   }
 
   export interface WriteableSelections {
-    replaceSelectionSet(selections: TrackedSelection.Set): TrackedSelection.Set | undefined;
+    replaceSelectionSet(selections?: TrackedSelection.Set): TrackedSelection.Set | undefined;
   }
 
   export interface ReadableWriteableMacros {
@@ -252,7 +252,7 @@ class GeneralPurposeRegister extends Register implements Register.Readable,
     return this.selections;
   }
 
-  public replaceSelectionSet(trackedSelections: TrackedSelection.Set) {
+  public replaceSelectionSet(trackedSelections?: TrackedSelection.Set) {
     const previousSelectionSet = this.selections;
 
     this.selections = trackedSelections;

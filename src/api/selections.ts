@@ -39,10 +39,11 @@ import { execRange, splitRange } from "../utils/regexp";
  * assert.throws(() => setSelections([1]), NotASelectionError);
  * ```
  */
-export function setSelections(selections: vscode.Selection[]) {
+export function setSelections(selections: readonly vscode.Selection[]) {
   NotASelectionError.throwIfNotASelectionArray(selections);
 
   Context.current.selections = selections;
+  Selections.reveal(selections[0]);
 }
 
 /**

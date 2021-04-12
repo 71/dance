@@ -75,9 +75,18 @@ function determineFunctionExpression(f: parseDocComments.ParsedFunction<any>) {
       break;
 
     case "input":
+      takeArgument = true;
+      givenParameters.push("getInput(argument)");
+      break;
+
+    case "setInput":
+      takeArgument = true;
+      givenParameters.push("getSetInput(argument)");
+      break;
+
     case "inputOr":
       takeArgument = true;
-      givenParameters.push("getInput(_, argument)");
+      givenParameters.push("getInputOr(argument)");
       break;
 
     case "direction":

@@ -332,11 +332,129 @@ function characterSetCanMatchLineFeed(i: number, re: RegExp, inverse: boolean) {
   }
 }
 
+const mustBeEscapedToBeStatic =
+        new Uint8Array([..."()[]{}*+?^$."].map((c) => c.charCodeAt(0))),
+      mustNotBeEscapedToBeStatic =
+        new Uint8Array([..."123456789wWdDsSpPbBu"].map((c) => c.charCodeAt(0)));
+
+/**
+ * Returns the set of strings that the specified `RegExp` may match. If
+ * `undefined`, this `RegExp` can match dynamic strings.
+ */
+export function matchesStaticStrings(re: RegExp) {
+  const alternatives = [] as string[],
+        source = re.source;
+  let alt = "";
+
+  for (let i = 0, len = source.length; i < len; i++) {
+    const ch = source.charCodeAt(i);
+
+    if (ch === 124 /* | */) {
+      if (!alternatives.includes(alt)) {
+        alternatives.push(alt);
+      }
+
+      alt = "";
+    } else if (ch === 92 /* \ */) {
+      i++;
+
+      if (i === source.length) {
+        break;
+      }
+
+      const next = source.charCodeAt(i);
+
+      switch (next) {
+      case 110: // n
+        alt += "\n";
+        break;
+      case 114: // r
+        alt += "\r";
+        break;
+      case 116: // t
+        alt += "\t";
+        break;
+      case 102: // f
+        alt += "\f";
+        break;
+      case 118: // v
+        alt += "\v";
+        break;
+
+      case 99: // c
+        const controlCh = source.charCodeAt(i + 1),
+              isUpper = 65 <= controlCh && controlCh <= 90,
+              offset = (isUpper ? 65 /* A */ : 107 /* a */) - 1;
+
+        alt += String.fromCharCode(controlCh - offset);
+        break;
+
+      case 48: // 0
+        if (isRange(source, i + 1, 2, 48 /* 0 */, 55 /* 7 */)) {
+          alt += String.fromCharCode(parseInt(source.substr(i + 1, 2), 8));
+          i += 2;
+        } else {
+          alt += "\0";
+        }
+        break;
+
+      case 120: // x
+        if (isHex(source, i + 1, 2)) {
+          alt += String.fromCharCode(parseInt(source.substr(i + 1, 2), 16));
+          i += 2;
+        } else {
+          alt += "x";
+        }
+        break;
+
+      case 117: // u
+        if (source.charCodeAt(i + 1) === 123 /* { */) {
+          const end = source.indexOf("}", i + 2);
+
+          if (end === -1) {
+            return;
+          }
+
+          alt += String.fromCharCode(parseInt(source.slice(i + 2, end), 16));
+          i = end + 1;
+        } else if (isHex(source, i + 1, 4)) {
+          alt += String.fromCharCode(parseInt(source.substr(i + 1, 4), 16));
+          i += 4;
+        } else {
+          alt += "u";
+        }
+        return;
+
+      default:
+        if (mustNotBeEscapedToBeStatic.indexOf(next) !== -1) {
+          return;
+        }
+
+        alt += source[i];
+        break;
+      }
+    } else {
+      if (mustBeEscapedToBeStatic.indexOf(ch) !== -1) {
+        return;
+      }
+
+      alt += source[i];
+    }
+  }
+
+  if (!alternatives.includes(alt)) {
+    alternatives.push(alt);
+  }
+
+  return alternatives;
+}
+
 /**
  * Returns the last `RegExp` match in the given text.
  */
 export function execLast(re: RegExp, text: string) {
-  let lastMatch: RegExpExecArray | undefined;
+  let lastMatch: RegExpExecArray | undefined,
+      lastMatchIndex = 0;
 
   for (;;) {
     const match = re.exec(text);
@@ -349,13 +467,16 @@ export function execLast(re: RegExp, text: string) {
       throw new Error("RegExp returned empty result");
     }
 
-    lastMatch = Object.assign(match, { index: match.index + (lastMatch?.[0].length ?? 0) });
+    lastMatchIndex += match.index + (lastMatch?.[0].length ?? 0);
+    lastMatch = match;
     text = text.slice(match.index + match[0].length);
   }
 
   if (lastMatch === undefined) {
     return null;
   }
+
+  lastMatch.index = lastMatchIndex;
 
   return lastMatch;
 }
@@ -441,7 +562,7 @@ export function splitRange(text: string, re: RegExp) {
   for (let start = 0;;) {
     const match = re.exec(text);
 
-    if (match === null) {
+    if (match === null || text.length === 0) {
       sections.push([start, start + text.length]);
 
       return sections;
@@ -468,7 +589,7 @@ export function splitRange(text: string, re: RegExp) {
 export function execRange(text: string, re: RegExp) {
   const sections: [start: number, end: number][] = [];
 
-  for (let match = re.exec(text); match !== null; match = re.exec(text)) {
+  for (let match = re.exec(text); match !== null && text.length > 0; match = re.exec(text)) {
     const start = match.index,
           end = start + match[0].length;
 
