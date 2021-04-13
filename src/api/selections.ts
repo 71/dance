@@ -1103,10 +1103,22 @@ export namespace Selections {
     return start.character === 0 && end.character === 0 && start.line !== end.line;
   }
 
+  export function startsWithEntireLine(selection: vscode.Selection | vscode.Range) {
+    const start = selection.start;
+
+    return start.character === 0 && start.line !== selection.end.line;
+  }
+
   export function endsWithEntireLine(selection: vscode.Selection | vscode.Range) {
     const end = selection.end;
 
     return end.character === 0 && selection.start.line !== end.line;
+  }
+
+  export function activeLineIsFullySelected(selection: vscode.Selection) {
+    return selection.active === selection.start
+      ? startsWithEntireLine(selection)
+      : endsWithEntireLine(selection);
   }
 
   export function isMovingTowardsAnchor(selection: vscode.Selection, direction: Direction) {

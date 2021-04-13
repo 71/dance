@@ -258,13 +258,16 @@ export function line_below(_: Context, count: number) {
     });
   } else {
     Selections.update.byIndex((_, selection, document) => {
-      const line = Math.min(Selections.activeLine(selection) + count - 1, document.lineCount - 1);
+      const lastLine = document.lineCount - 1;
+      let line = Math.min(Selections.activeLine(selection) + count - 1, lastLine);
+
+      if (Selections.isEntireLines(selection) && line < lastLine) {
+        line++;
+      }
 
       return new vscode.Selection(line, 0, line + 1, 0);
     });
   }
-
-  Selections.reveal();
 }
 
 /**
@@ -297,8 +300,6 @@ export function line_below_extend(_: Context, count: number) {
       return new vscode.Selection(anchor, active);
     });
   }
-
-  Selections.reveal();
 }
 
 /**
@@ -317,46 +318,64 @@ export function line_above(_: Context, count: number) {
     });
   } else {
     Selections.update.byIndex((_, selection) => {
-      const line = Math.max(Selections.activeLine(selection) - count + 1, 0);
+      let line = Math.max(Selections.activeLine(selection) - count + 1, 0);
+
+      if (!Selections.isEntireLines(selection)) {
+        line++;
+      }
 
       return new vscode.Selection(line, 0, line - 1, 0);
     });
   }
-
-  Selections.reveal();
 }
 
 /**
  * Extend to line above.
  */
 export function line_above_extend(_: Context, count: number) {
-  // TODO: fix this logic
   if (count === 0 || count === 1) {
     Selections.update.byIndex((_, selection) => {
-      const isFullLine = Selections.isEntireLine(selection),
+      if (selection.isSingleLine) {
+        let line = Selections.activeLine(selection);
+
+        if (!Selections.isEntireLines(selection)) {
+          line++;
+        }
+
+        return new vscode.Selection(line, 0, line - 1, 0);
+      }
+
+      if (selection.active === selection.end && Selections.isEntireLine(selection)) {
+        const line = Selections.activeLine(selection);
+
+        return new vscode.Selection(line + 1, 0, line - 1, 0);
+      }
+
+      const isFullLine = Selections.activeLineIsFullySelected(selection),
             isFullLineDiff = isFullLine ? -1 : 0,
-            isSameLine = isFullLine || Selections.isSingleLine(selection);
+            active = new vscode.Position(Selections.activeLine(selection) + isFullLineDiff, 0);
 
-      const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor,
-            active = selection.active.character === 0 && !selection.isReversed && !isSameLine
-              ? selection.active.translate(-1 + isFullLineDiff)
-              : new vscode.Position(Selections.activeLine(selection) - 1 + isFullLineDiff, 0);
-
-      return new vscode.Selection(anchor, active);
+      return new vscode.Selection(selection.anchor, active);
     });
   } else {
-    Selections.update.byIndex((_, selection) => {
-      const line = Math.max(Selections.activeLine(selection) - count + 1, 0),
-            isSameLine = Selections.isSingleLine(selection);
+    Selections.update.byIndex((_, selection, document) => {
+      let line = Math.max(Selections.activeLine(selection) - count, 0),
+          anchor = selection.anchor;
 
-      const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor,
-            active = new vscode.Position(line - 1, 0);
+      if (selection.active === selection.end) {
+        anchor = selection.active;
+      }
 
-      return new vscode.Selection(anchor, active);
+      if (selection.isSingleLine) {
+        anchor = Positions.lineBreak(selection.anchor.line, document);
+        line++;
+      } else if (!Selections.startsWithEntireLine(selection)) {
+        line++;
+      }
+
+      return new vscode.Selection(anchor, new vscode.Position(line, 0));
     });
   }
-
-  Selections.reveal();
 }
 
 /**
