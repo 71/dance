@@ -107,7 +107,7 @@ function mapResults(
  *
  * ### Example
  * ```js
- * await insert((x) => `${x * 2}`);
+ * await insert(undefined, (x) => `${x * 2}`);
  * ```
  *
  * Before:
@@ -159,17 +159,17 @@ export namespace insert {
     /**
      * Keeps current selections.
      */
-    Keep,
+    Keep = "keep",
 
     /**
      * Extends current selections with inserted text.
      */
-    Extend,
+    Extend = "extend",
 
     /**
      * Selects inserted text.
      */
-    Inserted,
+    Inserted = "select",
   }
 
   /**
@@ -307,7 +307,7 @@ export function replace(
   f: replace.Callback<replace.Result> | replace.Callback<replace.AsyncResult>,
   selections?: readonly vscode.Selection[],
 ): Thenable<vscode.Selection[]> {
-  return insert(undefined, 0, f, selections);
+  return insert(undefined, insert.SelectionMapping.Keep, f, selections);
 }
 
 export namespace replace {
@@ -372,7 +372,7 @@ export namespace replace {
     f: ByIndexCallback<Result> | ByIndexCallback<AsyncResult>,
     selections?: readonly vscode.Selection[],
   ): Thenable<vscode.Selection[]> {
-    return insert.byIndex(undefined, 0, f, selections);
+    return insert.byIndex(undefined, insert.SelectionMapping.Keep, f, selections);
   }
 }
 

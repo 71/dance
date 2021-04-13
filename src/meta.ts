@@ -50,7 +50,7 @@ const keyMapping: Record<string, keyof parseDocComments.AdditionalCommand> = {
 
 const valueConverter: Record<keyof parseDocComments.AdditionalCommand, (x: string) => string> = {
   commands(commands) {
-    return commands.replace(/^`+|`+$/g, "");
+    return commands.replace(/^`+|`+$/g, "").replace("MAX_INT", `${2_147_483_647}`);
   },
   identifier(identifier) {
     return identifier.replace(/^`+|`+$/g, "");
@@ -64,40 +64,55 @@ const valueConverter: Record<keyof parseDocComments.AdditionalCommand, (x: strin
   qualifiedIdentifier(qualifiedIdentifier) {
     return qualifiedIdentifier;
   },
+  line() {
+    throw new Error("this should not be called");
+  },
 };
 
-function parseAdditional(qualificationPrefix: string, text: string) {
-  const re = /(\n(?:\|.+?)+\|)+/g,
+function parseAdditional(qualificationPrefix: string, text: string, textStartLine: number) {
+  const lines = text.split("\n"),
         additional: parseDocComments.AdditionalCommand[] = [];
 
-  for (let match = re.exec(text); match !== null; match = re.exec(text)) {
-    const lines = match[0].slice(1).split("\n"),
-          header = lines.shift()!,
-          keys = header
-            .slice(2, header.length - 2)        // Remove start and end |.
-            .split(" | ")                       // Split into keys.
-            .map((k) => keyMapping[k.trim()]);  // Normalize keys.
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
 
-    if (/^\|[-| ]+\|$/.test(lines[0])) {
-      lines.shift();
-    }
+    if (line.length > 2 && line.startsWith("| ") && line.endsWith(" |")) {
+      const keys = line
+        .slice(2, line.length - 2)          // Remove start and end |.
+        .split(" | ")                       // Split into keys.
+        .map((k) => keyMapping[k.trim()]);  // Normalize keys.
 
-    for (const line of lines) {
-      const obj: parseDocComments.AdditionalCommand = {},
-            values = line.slice(2, line.length - 2).split(" | ");
+      i++;
 
-      for (let i = 0; i < values.length; i++) {
-        const key = keys[i],
-              value = valueConverter[key](values[i].trim());
-
-        obj[key] = value;
+      if (/^\|[-| ]+\|$/.test(lines[i])) {
+        i++;
       }
 
-      if ("identifier" in obj) {
-        obj.qualifiedIdentifier = qualificationPrefix + obj.identifier;
-      }
+      while (i < lines.length) {
+        const line = lines[i];
 
-      additional.push(obj);
+        if (!line.startsWith("| ") || !line.endsWith(" |")) {
+          break;
+        }
+
+        i++;
+
+        const obj: parseDocComments.AdditionalCommand = { line: textStartLine + i },
+              values = line.slice(2, line.length - 2).split(" | ");
+
+        for (let j = 0; j < values.length; j++) {
+          const key = keys[j],
+                value = valueConverter[key](values[j].trim());
+
+          (obj as Record<string, any>)[key] = value;
+        }
+
+        if ("identifier" in obj) {
+          obj.qualifiedIdentifier = qualificationPrefix + obj.identifier;
+        }
+
+        additional.push(obj);
+      }
     }
   }
 
@@ -111,11 +126,13 @@ function parseAdditional(qualificationPrefix: string, text: string) {
 export function parseDocComments<T>(code: string, parseExample: (text: string) => T) {
   const moduleHeaderMatch = moduleCommentRe.exec(code);
   let moduleDoc: string,
-      moduleName: string;
+      moduleName: string,
+      moduleDocStartLine: number;
 
   if (moduleHeaderMatch !== null) {
     moduleDoc = moduleHeaderMatch[1].split("\n").map((line) => line.slice(3)).join("\n");
     moduleName = moduleHeaderMatch[2].replace(/^\.\//, "");
+    moduleDocStartLine = code.slice(0, moduleHeaderMatch.index).split("\n").length + 2;
   } else {
     return undefined;
   }
@@ -234,7 +251,7 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
       properties,
       summary,
       examples,
-      additional: parseAdditional(modulePrefix, doc),
+      additional: parseAdditional(modulePrefix, splitDocComment[0], startLine),
 
       parameters,
       returnType: returnType.length === 0 ? undefined : returnType,
@@ -247,7 +264,7 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
     name: moduleName,
     doc: moduleDoc,
 
-    additional: parseAdditional(modulePrefix, moduleDoc),
+    additional: parseAdditional(modulePrefix, moduleDoc, moduleDocStartLine),
 
     functions,
     functionNames: [...new Set(functions.map((f) => f.name))],
@@ -287,6 +304,7 @@ export namespace parseDocComments {
     qualifiedIdentifier?: string;
     keys?: string;
     commands?: string;
+    line: number;
   }
 
   export interface ParsedModule<T> {
@@ -385,7 +403,7 @@ export function parseKeys(keys: string) {
     return [];
   }
 
-  return keys.split(/, (?=`)/g).map((keyString) => {
+  return keys.split(/ *, (?=`)/g).map((keyString) => {
     const match = /^(`+)(.+?)\1 \((.+?)\)$/.exec(keyString)!,
           keybinding = match[2].trim().replace(
             specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m]);

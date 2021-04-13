@@ -239,62 +239,62 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.delete",
-      (_) => _.runAsync(() => commands([".edit.insert", { "register": "_" }])),
+      (_, argument) => _.runAsync(() => commands([".edit.insert", { "register": "_", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.delete-insert",
-      (_) => _.runAsync(() => commands([".edit.insert", { "register": "_" }], [".modes.set", { "input": "insert" }])),
+      (_, argument) => _.runAsync(() => commands([".edit.insert", { "register": "_", ...argument }], [".modes.set", { "input": "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above.insert",
-      (_) => _.runAsync(() => commands([".edit.newLine.above", { "select": true }], [".modes.set", { "input": "insert" }])),
+      (_, argument) => _.runAsync(() => commands([".edit.newLine.above", { "select": true, ...argument }], [".modes.set", { "input": "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below.insert",
-      (_) => _.runAsync(() => commands([".edit.newLine.below", { "select": true }], [".modes.set", { "input": "insert" }])),
+      (_, argument) => _.runAsync(() => commands([".edit.newLine.below", { "select": true, ...argument }], [".modes.set", { "input": "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.paste.after",
-      (_) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "end" }])),
+      (_, argument) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "end", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.paste.after.select",
-      (_) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "end", "select": true }])),
+      (_, argument) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "end", "select": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.paste.before",
-      (_) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "start" }])),
+      (_, argument) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "start", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.paste.before.select",
-      (_) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "start", "select": true }])),
+      (_, argument) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "start", "select": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.selectRegister-insert",
-      (_) => _.runAsync(() => commands([".selectRegister"], [".edit.insert"])),
+      (_, argument) => _.runAsync(() => commands([".selectRegister"], [".edit.insert"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.yank-delete",
-      (_) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert", { "register": "_" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert", { "register": "_", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.yank-delete-insert",
-      (_) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert", { "register": "_" }], [".modes.set", { "input": "insert" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert", { "register": "_", ...argument }], [".modes.set", { "input": "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.yank-replace",
-      (_) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert"])),
+      (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];
@@ -364,12 +364,12 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.history.repeat.objectSelection",
-      (_) => _.runAsync(() => commands([".history.repeat", { "include": "dance.selections.object.+" }])),
+      (_, argument) => _.runAsync(() => commands([".history.repeat", { "include": "dance.selections.object.+", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.history.repeat.selection",
-      (_) => _.runAsync(() => commands([".history.repeat", { "include": "dance.selections.+" }])),
+      (_, argument) => _.runAsync(() => commands([".history.repeat", { "include": "dance.selections.+", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];
@@ -461,42 +461,42 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.modes.insert.after",
-      (_) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"  , "handleCharacterBehavior": false }])),
+      (_, argument) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "end" , "handleCharacterBehavior": false, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.insert.before",
-      (_) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start", "handleCharacterBehavior": false }])),
+      (_, argument) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "start", "handleCharacterBehavior": false, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineEnd",
-      (_) => _.runAsync(() => commands([".select.lineEnd"  , { "shift": "jump" }], [".modes.set", { "input": "insert" }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineEnd" , { "shift": "jump", ...argument }], [".modes.set", { "input": "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineStart",
-      (_) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump" }], [".modes.set", { "input": "insert" }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump", ...argument }], [".modes.set", { "input": "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.set.insert",
-      (_) => _.runAsync(() => commands([".modes.set", { "input": "insert" }])),
+      (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.set.normal",
-      (_) => _.runAsync(() => commands([".modes.set", { "input": "normal" }])),
+      (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "normal", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.set.temporarily.insert",
-      (_) => _.runAsync(() => commands([".modes.set.temporarily", { "input": "insert" }])),
+      (_, argument) => _.runAsync(() => commands([".modes.set.temporarily", { "input": "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.set.temporarily.normal",
-      (_) => _.runAsync(() => commands([".modes.set.temporarily", { "input": "normal" }])),
+      (_, argument) => _.runAsync(() => commands([".modes.set.temporarily", { "input": "normal", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];
@@ -530,37 +530,37 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.search.add",
-      (_) => _.runAsync(() => commands([".search", { "add": true }])),
+      (_, argument) => _.runAsync(() => commands([".search", { "add": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.backward",
-      (_) => _.runAsync(() => commands([".search", { "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".search", { "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.backward.add",
-      (_) => _.runAsync(() => commands([".search", { "direction": -1, "add": true }])),
+      (_, argument) => _.runAsync(() => commands([".search", { "direction": -1, "add": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.next.add",
-      (_) => _.runAsync(() => commands([".search.next", { "add": true }])),
+      (_, argument) => _.runAsync(() => commands([".search.next", { "add": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.previous",
-      (_) => _.runAsync(() => commands([".search.next", { "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".search.next", { "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.previous.add",
-      (_) => _.runAsync(() => commands([".search.next", { "direction": -1, "add": true }])),
+      (_, argument) => _.runAsync(() => commands([".search.next", { "direction": -1, "add": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.selection.smart",
-      (_) => _.runAsync(() => commands([".search.selection", { "smart": true }])),
+      (_, argument) => _.runAsync(() => commands([".search.selection", { "smart": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];
@@ -572,6 +572,7 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
 async function loadSeekModule(): Promise<CommandDescriptor[]> {
   const {
     character,
+    enclosing,
     wordEnd,
     wordStart,
   } = await import("./seek");
@@ -581,6 +582,11 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
       "dance.seek.character",
       (_, argument) => _.runAsync((_) => character(_, getInputOr(argument), getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.include)),
       CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.seek.enclosing",
+      (_, argument) => enclosing(getDirection(argument), getShift(argument)),
+      CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd",
@@ -594,87 +600,102 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.seek.character.backward",
-      (_) => _.runAsync(() => commands([".seek.character", { "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".seek.character", { "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.character.extend",
-      (_) => _.runAsync(() => commands([".seek.character", { "shift": "extend" }])),
+      (_, argument) => _.runAsync(() => commands([".seek.character", { "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.character.extend.backward",
-      (_) => _.runAsync(() => commands([".seek.character", { "shift": "extend", "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".seek.character", { "shift": "extend", "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.character.included",
-      (_) => _.runAsync(() => commands([".seek.character", { "include": true }])),
+      (_, argument) => _.runAsync(() => commands([".seek.character", { "include": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.character.included.backward",
-      (_) => _.runAsync(() => commands([".seek.character", { "include": true, "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".seek.character", { "include": true, "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.character.included.extend",
-      (_) => _.runAsync(() => commands([".seek.character", { "include": true, "shift": "extend" }])),
+      (_, argument) => _.runAsync(() => commands([".seek.character", { "include": true, "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.character.included.extend.backward",
-      (_) => _.runAsync(() => commands([".seek.character", { "include": true, "shift": "extend", "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".seek.character", { "include": true, "shift": "extend", "direction": -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.seek.enclosing.backward",
+      (_, argument) => _.runAsync(() => commands([".seek.enclosing", { "direction": -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.seek.enclosing.extend",
+      (_, argument) => _.runAsync(() => commands([".seek.enclosing", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.seek.enclosing.extend.backward",
+      (_, argument) => _.runAsync(() => commands([".seek.enclosing", { "shift": "extend", "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd.extend",
-      (_) => _.runAsync(() => commands([".seek.wordEnd", { "shift": "extend" }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd.ws",
-      (_) => _.runAsync(() => commands([".seek.wordEnd", { "ws": true }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "ws": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd.ws.extend",
-      (_) => _.runAsync(() => commands([".seek.wordEnd", { "ws": true, "shift": "extend" }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "ws": true, "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.backward",
-      (_) => _.runAsync(() => commands([".seek.wordStart", { "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.extend",
-      (_) => _.runAsync(() => commands([".seek.wordStart", { "shift": "extend" }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.extend.backward",
-      (_) => _.runAsync(() => commands([".seek.wordStart", { "shift": "extend", "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "shift": "extend", "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.ws",
-      (_) => _.runAsync(() => commands([".seek.wordStart", { "ws": true }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.ws.backward",
-      (_) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.ws.extend",
-      (_) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "shift": "extend" }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.ws.extend.backward",
-      (_) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "shift": "extend", "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "shift": "extend", "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];
@@ -686,19 +707,51 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
 async function loadSelectModule(): Promise<CommandDescriptor[]> {
   const {
     buffer,
+    firstVisibleLine,
+    horizontally,
+    lastLine,
+    lastModification,
+    lastVisibleLine,
     lineEnd,
     lineStart,
     line_above,
     line_above_extend,
     line_below,
     line_below_extend,
-    toLine,
+    middleVisibleLine,
+    to,
+    vertically,
   } = await import("./select");
 
   return [
     new CommandDescriptor(
       "dance.select.buffer",
       (_) => _.runAsync((_) => buffer(_)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.firstVisibleLine",
+      (_, argument) => _.runAsync((_) => firstVisibleLine(_, getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.horizontally",
+      (_, argument) => _.runAsync((_) => horizontally(_, getRepetitions(_, argument), getDirection(argument), getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastLine",
+      (_, argument) => _.runAsync((_) => lastLine(_, _.document, getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastModification",
+      (_, argument) => _.runAsync((_) => lastModification(_, getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastVisibleLine",
+      (_, argument) => _.runAsync((_) => lastVisibleLine(_, getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -728,22 +781,167 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.lineStart",
-      (_, argument) => _.runAsync((_) => lineStart(_, getCount(_, argument), getShift(argument))),
+      (_, argument) => _.runAsync((_) => lineStart(_, getCount(_, argument), getShift(argument), argument.skipBlank)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
-      "dance.select.toLine",
-      (_, argument) => _.runAsync((_) => toLine(_, getCount(_, argument), getShift(argument))),
+      "dance.select.middleVisibleLine",
+      (_, argument) => _.runAsync((_) => middleVisibleLine(_, getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.to",
+      (_, argument) => _.runAsync((_) => to(_, getCount(_, argument), argument, getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.vertically",
+      (_, argument) => _.runAsync((_) => vertically(_, _.selections, getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.by)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.documentEnd.extend",
+      (_, argument) => _.runAsync(() => commands([".select.lineEnd", { "count": 2147483647, "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.documentEnd.jump",
+      (_, argument) => _.runAsync(() => commands([".select.lineEnd", { "count": 2147483647, "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.down.extend",
+      (_, argument) => _.runAsync(() => commands([".select.vertically", { "direction": 1, "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.down.jump",
+      (_, argument) => _.runAsync(() => commands([".select.vertically", { "direction": 1, "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.firstLine.extend",
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "count": 0, "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.firstLine.jump",
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "count": 0, "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.firstVisibleLine.extend",
+      (_, argument) => _.runAsync(() => commands([".select.firstVisibleLine", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.firstVisibleLine.jump",
+      (_, argument) => _.runAsync(() => commands([".select.firstVisibleLine", { "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastLine.extend",
+      (_, argument) => _.runAsync(() => commands([".select.lastLine", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastLine.jump",
+      (_, argument) => _.runAsync(() => commands([".select.lastLine", { "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastModification.extend",
+      (_, argument) => _.runAsync(() => commands([".select.lastModification", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastModification.jump",
+      (_, argument) => _.runAsync(() => commands([".select.lastModification", { "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastVisibleLine.extend",
+      (_, argument) => _.runAsync(() => commands([".select.lastVisibleLine", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lastVisibleLine.jump",
+      (_, argument) => _.runAsync(() => commands([".select.lastVisibleLine", { "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.left.extend",
+      (_, argument) => _.runAsync(() => commands([".select.horizontally", { "direction": -1, "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.left.jump",
+      (_, argument) => _.runAsync(() => commands([".select.horizontally", { "direction": -1, "shift": "jump", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.select.lineEnd.extend",
-      (_) => _.runAsync(() => commands([".select.lineEnd", { "shift": "extend" }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineEnd", { "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.select.lineStart.extend",
-      (_) => _.runAsync(() => commands([".select.lineStart", { "shift": "extend" }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lineStart.jump",
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lineStart.skipBlank.extend",
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "skipBlank": true, "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.lineStart.skipBlank.jump",
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "skipBlank": true, "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.middleVisibleLine.extend",
+      (_, argument) => _.runAsync(() => commands([".select.middleVisibleLine", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.middleVisibleLine.jump",
+      (_, argument) => _.runAsync(() => commands([".select.middleVisibleLine", { "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.right.extend",
+      (_, argument) => _.runAsync(() => commands([".select.horizontally", { "direction": 1, "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.right.jump",
+      (_, argument) => _.runAsync(() => commands([".select.horizontally", { "direction": 1, "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.to.extend",
+      (_, argument) => _.runAsync(() => commands([".select.to", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.to.jump",
+      (_, argument) => _.runAsync(() => commands([".select.to", { "shift": "jump", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.up.extend",
+      (_, argument) => _.runAsync(() => commands([".select.vertically", { "direction": -1, "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.select.up.jump",
+      (_, argument) => _.runAsync(() => commands([".select.vertically", { "direction": -1, "shift": "jump", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];
@@ -758,6 +956,8 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     copy,
     extendToLines,
     filter,
+    merge,
+    open,
     pipe,
     reduce,
     restore,
@@ -791,6 +991,16 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.selections.filter",
       (_, argument) => _.runAsync((_) => filter(_, getInput(argument), getSetInput(argument), argument.defaultInput, argument.inverse, argument.interactive)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.selections.merge",
+      (_) => merge(),
+      CommandDescriptor.Flags.None,
+    ),
+    new CommandDescriptor(
+      "dance.selections.open",
+      (_) => _.runAsync((_) => open(_)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -855,67 +1065,67 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.clear.main",
-      (_) => _.runAsync(() => commands([".selections.filter", { "input": "i !== 0" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.filter", { "input": "i !== 0", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.clear.secondary",
-      (_) => _.runAsync(() => commands([".selections.filter", { "input": "i === 0" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.filter", { "input": "i === 0", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.copy.above",
-      (_) => _.runAsync(() => commands([".selections.copy", { "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".selections.copy", { "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.faceBackward",
-      (_) => _.runAsync(() => commands([".selections.changeDirection", { "direction": -1 }])),
+      (_, argument) => _.runAsync(() => commands([".selections.changeDirection", { "direction": -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.faceForward",
-      (_) => _.runAsync(() => commands([".selections.changeDirection", { "direction": 1 }])),
+      (_, argument) => _.runAsync(() => commands([".selections.changeDirection", { "direction": 1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.filter.regexp",
-      (_) => _.runAsync(() => commands([".selections.filter", { "defaultInput": "/" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.filter", { "defaultInput": "/", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.filter.regexp.inverse",
-      (_) => _.runAsync(() => commands([".selections.filter", { "defaultInput": "/", "inverse": true }])),
+      (_, argument) => _.runAsync(() => commands([".selections.filter", { "defaultInput": "/", "inverse": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.hideIndices",
-      (_) => _.runAsync(() => commands([".selections.toggleIndices", { "display": false }])),
+      (_, argument) => _.runAsync(() => commands([".selections.toggleIndices", { "display": false, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.pipe.append",
-      (_) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|", "where": "end" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|", "where": "end", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.pipe.prepend",
-      (_) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|", "where": "start" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|", "where": "start", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.pipe.replace",
-      (_) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.reduce.edges",
-      (_) => _.runAsync(() => commands([".selections.reduce", { "where": "both" }])),
+      (_, argument) => _.runAsync(() => commands([".selections.reduce", { "where": "both", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.showIndices",
-      (_) => _.runAsync(() => commands([".selections.toggleIndices", { "display": true  }])),
+      (_, argument) => _.runAsync(() => commands([".selections.toggleIndices", { "display": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];
@@ -949,17 +1159,17 @@ async function loadSelectionsRotateModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.rotate.both.reverse",
-      (_) => _.runAsync(() => commands([".selections.rotate", { "reverse": true }])),
+      (_, argument) => _.runAsync(() => commands([".selections.rotate", { "reverse": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.rotate.contents.reverse",
-      (_) => _.runAsync(() => commands([".selections.rotate.contents", { "reverse": true }])),
+      (_, argument) => _.runAsync(() => commands([".selections.rotate.contents", { "reverse": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.rotate.selections.reverse",
-      (_) => _.runAsync(() => commands([".selections.rotate.selections", { "reverse": true }])),
+      (_, argument) => _.runAsync(() => commands([".selections.rotate.selections", { "reverse": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];

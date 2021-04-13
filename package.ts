@@ -392,60 +392,57 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
               }))(),
             },
 
-            ...Object.fromEntries(
-              [
-                ["", "go to"],
-                [".extend", "extend to"],
-              ].map(([suffix, desc]) => ["goto" + suffix, {
-                items: {
-                  "h": {
-                    text: `${desc} line start`,
-                    command: "dance.goto.lineStart" + suffix,
-                  },
-                  "l": { text: `${desc} line end`, command: "dance.goto.lineEnd" + suffix },
-                  "i": {
-                    text: `${desc} non-blank line start`,
-                    command: "dance.goto.lineStart.nonBlank" + suffix,
-                  },
-                  "g": {
-                    text: `${desc} first line`,
-                    command: "dance.goto.firstLine" + suffix,
-                  },
-                  "k": {
-                    text: `${desc} first line`,
-                    command: "dance.goto.firstLine" + suffix,
-                  },
-                  "j": {
-                    text: `${desc} last line`,
-                    command: "dance.goto.lastLine" + suffix,
-                  },
-                  "e": {
-                    text: `${desc} last char of last line`,
-                    command: "dance.goto.lastCharacter" + suffix,
-                  },
-                  "t": {
-                    text: `${desc} the first displayed line`,
-                    command: "dance.goto.firstVisibleLine" + suffix,
-                  },
-                  "c": {
-                    text: `${desc} the middle displayed line`,
-                    command: "dance.goto.middleVisibleLine" + suffix,
-                  },
-                  "b": {
-                    text: `${desc} the last displayed line`,
-                    command: "dance.goto.lastVisibleLine" + suffix,
-                  },
-                  "f": {
-                    text: `${desc} file whose name is selected`,
-                    command: "dance.goto.selectedFile" + suffix,
-                  },
-                  ".": {
-                    text: `${desc} last buffer modification position`,
-                    command: "dance.goto.lastModification" + suffix,
-                  },
+            "goto": {
+              items: {
+                "h": {
+                  text: "to line start",
+                  command: "dance.select.lineStart",
                 },
-              }]),
-            ),
+                "l": {
+                  text: "to line end",
+                  command: "dance.select.lineEnd",
+                },
+                "i": {
+                  text: "to non-blank line start",
+                  command: "dance.select.lineStart",
+                  args: [{ skipBlank: true }],
+                },
+                "gk": {
+                  text: "to first line",
+                  command: "dance.select.lineStart",
+                  args: [{ count: 0 }],
+                },
+                "j": {
+                  text: "to last line",
+                  command: "dance.select.lastLine",
+                },
+                "e": {
+                  text: "to last char of last line",
+                  command: "dance.select.lineEnd",
+                  args: [{ count: 2_147_483_647 }],
+                },
+                "t": {
+                  text: "to first displayed line",
+                  command: "dance.select.firstVisibleLine",
+                },
+                "c": {
+                  text: "to middle displayed line",
+                  command: "dance.select.middleVisibleLine",
+                },
+                "b": {
+                  text: "to last displayed line",
+                  command: "dance.select.lastVisibleLine",
+                },
+                "f": {
+                  text: "to file whose name is selected",
+                  command: "dance.selections.open",
+                },
+                ".": {
+                  text: "to last buffer modification position",
+                  command: "dance.select.lastModification",
+                },
+              },
+            },
           } as Record<string,
                       { items: Record<string, { text: string; command: string; args?: any[] }>}>,
         },

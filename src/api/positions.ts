@@ -78,6 +78,25 @@ export function offsetPosition(
   return document.positionAt(document.offsetAt(position) + by);
 }
 
+export namespace offsetPosition {
+  /**
+   * Same as `offsetPosition`, but clamps to document edges.
+   */
+  export function orEdge(
+    position: vscode.Position,
+    by: number,
+    document?: vscode.TextDocument,
+  ) {
+    const result = offsetPosition(position, by, document);
+
+    if (result === undefined) {
+      return by < 0 ? Positions.zero : Positions.last(document);
+    }
+
+    return result;
+  }
+}
+
 /**
  * Operations on `vscode.Position`s.
  */
@@ -87,10 +106,30 @@ export namespace Positions {
                offset = offsetPosition;
 
   /**
+   * The (0, 0) position.
+   */
+  export const zero = new vscode.Position(0, 0);
+
+  /**
+   * Returns the last position of the given document.
+   */
+  export function last(document = Context.current.document) {
+    return document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end;
+  }
+
+  /**
    * Returns the position at the start of the given line.
    */
   export function lineStart(line: number) {
     return new vscode.Position(line, 0);
+  }
+
+  /**
+   * Returns the position at the first non-blank character of the given line, or
+   * the end of the line if the line is fully blank.
+   */
+  export function nonBlankLineStart(line: number, document = Context.current.document) {
+    return new vscode.Position(line, document.lineAt(line).firstNonWhitespaceCharacterIndex);
   }
 
   /**
@@ -101,14 +140,10 @@ export namespace Positions {
   }
 
   /**
-   * Returns the last position of the given document.
+   * Returns the position after the end of the given line, i.e. the first
+   * position of the next line.
    */
-  export function last(document = Context.current.document) {
-    return document.lineAt(document.lineCount - 1).rangeIncludingLineBreak.end;
+  export function lineBreak(line: number, document = Context.current.document) {
+    return line + 1 === document.lineCount ? lineEnd(line, document) : lineStart(line + 1);
   }
-
-  /**
-   * The (0, 0) position.
-   */
-  export const zero = new vscode.Position(0, 0);
 }

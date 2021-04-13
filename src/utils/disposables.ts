@@ -173,6 +173,10 @@ export class AutoDisposable implements vscode.Disposable {
     }
 
     switch (eventName) {
+    case AutoDisposable.EventType.OnEditorWasClosed:
+      this.disposeOnEvent(editorState.onEditorWasClosed);
+      break;
+
     case AutoDisposable.EventType.OnModeDidChange:
       const except = [] as string[];
 
@@ -204,7 +208,7 @@ export class AutoDisposable implements vscode.Disposable {
             && e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
           this.dispose();
         }
-      });
+      }, undefined, this._disposables);
       break;
 
     default:
@@ -215,6 +219,7 @@ export class AutoDisposable implements vscode.Disposable {
 
 export namespace AutoDisposable {
   export const enum EventType {
+    OnEditorWasClosed = "editor-was-closed",
     OnModeDidChange = "mode-did-change",
     OnSelectionsDidChange = "selections-did-change",
   }

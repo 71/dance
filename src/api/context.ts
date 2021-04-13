@@ -279,6 +279,21 @@ export class Context extends ContextWithoutActiveEditor {
   }
 
   /**
+   * Equivalent to `selections[0]`.
+   *
+   * @see selections
+   */
+  public get mainSelection() {
+    const editor = this.editor as vscode.TextEditor;
+
+    if (this.selectionBehavior === SelectionBehavior.Character) {
+      return Selections.fromCharacterMode([editor.selection], editor.document)[0];
+    }
+
+    return editor.selection;
+  }
+
+  /**
    * Switches the context to the given document.
    */
   public async switchToDocument(document: vscode.TextDocument, alsoFocusEditor = false) {

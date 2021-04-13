@@ -76,12 +76,6 @@ export class DocumentState {
    * Called when `vscode.workspace.onDidChangeTextDocument` is triggered.
    */
   public onDidChangeTextDocument(e: vscode.TextDocumentChangeEvent) {
-    const editorStates = this._editorStates;
-
-    for (let i = 0; i < editorStates.length; i++) {
-      editorStates[i].onDidChangeTextDocument(e);
-    }
-
     this._history.recordChanges(e.contentChanges);
   }
 }

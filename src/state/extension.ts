@@ -171,13 +171,22 @@ export class Extension implements vscode.Disposable {
         this._documentStates
           .get(e.textEditor.document)
           ?.getEditorState(e.textEditor)
-          ?.onDidChangeTextEditorSelection(e);
+          ?.onDidChangeTextEditorSelection();
       }),
 
       // Notify documents when selections change.
       vscode.workspace.onDidChangeTextDocument((e) => {
         this._documentStates.get(e.document)?.onDidChangeTextDocument(e);
       }),
+
+      // TODO: dispose of `EditorState`s when editors are closed.
+      /*vscode.window.visibleTextEditors.onDidChangeVisibleTextEditors((e) => {
+        for (const editor of e) {
+          const documentState = this._documentStates.get(editor.document);
+
+
+        }
+      }),*/
 
       // Update configuration automatically.
       vscode.workspace.onDidChangeConfiguration((e) => {

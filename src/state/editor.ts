@@ -2,8 +2,9 @@ import * as vscode from "vscode";
 
 import { DocumentState } from "./document";
 import { extensionName } from "../extension";
-import { assert, command, commands, Context, edit, selectionsLines } from "../api";
+import { assert, command, commands, Context, Positions, selectionsLines } from "../api";
 import { Mode } from "../mode";
+import { SelectionBehavior } from "./extension";
 
 /**
  * Editor-specific state.
@@ -19,6 +20,8 @@ export class EditorState {
    * to stay the same over time.
    */
   private readonly _id: string;
+
+  private readonly _onEditorWasClosed = new vscode.EventEmitter<this>();
 
   /** The last matching editor. */
   private _editor: vscode.TextEditor;
@@ -60,9 +63,12 @@ export class EditorState {
   }
 
   /**
-   * Preferred columns when navigating up and down.
+   * An event which fires when the editor wrapped by this `EditorState` is
+   * closed.
    */
-  public readonly preferredColumns: number[] = [];
+  public get onEditorWasClosed() {
+    return this._onEditorWasClosed.event;
+  }
 
   public constructor(
     /** The state of the document for which this editor exists. */
@@ -83,12 +89,17 @@ export class EditorState {
    */
   public dispose() {
     const options = this._editor.options,
-          vscodeMode = this._mode.modes.vscodeMode;
+          mode = this._mode,
+          vscodeMode = mode.modes.vscodeMode;
 
     options.cursorStyle = vscodeMode.cursorStyle;
     options.lineNumbers = vscodeMode.lineNumbers;
 
-    this.clearDecorations(this.mode);
+    this.clearDecorations(mode);
+    this._characterDecorationType.dispose();
+
+    this._onEditorWasClosed.fire(this);
+    this._onEditorWasClosed.dispose();
   }
 
   /**
@@ -200,9 +211,10 @@ export class EditorState {
   }
 
   /**
-   * Called when `vscode.window.onDidChangeTextEditorSelection` is triggered.
+   * Called when `vscode.window.onDidChangeTextEditorSelection` is triggered on
+   * this editor.
    */
-  public async onDidChangeTextEditorSelection(e: vscode.TextEditorSelectionChangeEvent) {
+  public async onDidChangeTextEditorSelection() {
     if (this._previousMode !== undefined) {
       await this.setMode(this._previousMode);
     }
@@ -213,16 +225,13 @@ export class EditorState {
     this.updateDecorations(mode);
   }
 
-  /**
-   * Called when `vscode.workspace.onDidChangeTextDocument` is triggered on the
-   * document of the editor.
-   */
-  public onDidChangeTextDocument(e: vscode.TextDocumentChangeEvent) {
-  }
-
   // =============================================================================================
   // ==  DECORATIONS  ============================================================================
   // =============================================================================================
+
+  private readonly _characterDecorationType = vscode.window.createTextEditorDecorationType({
+    backgroundColor: new vscode.ThemeColor("editor.selectionBackground"),
+  });
 
   private clearDecorations(mode: Mode) {
     const editor = this._editor,
@@ -231,6 +240,8 @@ export class EditorState {
     for (const decoration of mode.decorations) {
       editor.setDecorations(decoration.type, empty);
     }
+
+    editor.setDecorations(this._characterDecorationType, empty);
   }
 
   private updateDecorations(mode: Mode) {
@@ -268,6 +279,32 @@ export class EditorState {
       } else {
         editor.setDecorations(decoration.type, selections);
       }
+    }
+
+    if (mode.selectionBehavior === SelectionBehavior.Character) {
+      const document = this._editor.document,
+            ranges = [] as vscode.Range[];
+
+      for (let i = 0; i < allSelections.length; i++) {
+        const selection = allSelections[i];
+
+        if (!selection.isEmpty) {
+          const end = Positions.next(selection.active, document);
+
+          if (end !== undefined) {
+            const active = selection.active,
+                  start = active.character === 0 || active === selection.start
+                    ? active
+                    : new vscode.Position(active.line, active.character - 1);
+
+            ranges.push(new vscode.Range(start, end));
+          }
+        }
+      }
+
+      editor.setDecorations(this._characterDecorationType, ranges);
+    } else {
+      editor.setDecorations(this._characterDecorationType, []);
     }
 
     editor.options.cursorStyle = mode.cursorStyle;

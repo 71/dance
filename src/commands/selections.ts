@@ -696,6 +696,31 @@ export function copy(
   Selections.set(newSelections);
 }
 
+/**
+ * Merge contiguous selections.
+ *
+ * @keys `a-_` (normal)
+ */
+export function merge() {
+  todo();
+}
+
+/**
+ * Open selected file.
+ */
+export async function open(_: Context) {
+  const path = await import("path"),
+        basePath = path.dirname(_.document.fileName);
+
+  await Promise.all(
+    Selections.map((text) =>
+      vscode.workspace
+        .openTextDocument(path.resolve(basePath, text))
+        .then(vscode.window.showTextDocument),
+    ),
+  );
+}
+
 const indicesPerEditor = new Map<EditorState, AutoDisposable>();
 
 /**
@@ -789,6 +814,7 @@ export function toggleIndices(
 
   disposable = _.extensionState
     .createAutoDisposable()
+    .disposeOnEvent(editorState.onEditorWasClosed)
     .addDisposable(indicesDecorationType)
     .addDisposable({
       dispose() {

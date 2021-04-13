@@ -31,22 +31,43 @@ export function build(commandModules: parseDocComments.ParsedModule<void>[]) {
 
 function toTable(modules: readonly parseDocComments.ParsedModule<any>[]) {
   const rows: string[][] = modules.flatMap((module) => {
-    const modulePrefix = module.name === "misc" ? "" : module.name + ".";
+    const modulePrefix = module.name === "misc" ? "" : module.name + ".",
+          allCommands = [] as (parseDocComments.ParsedFunction<void>
+                             | parseDocComments.AdditionalCommand)[];
 
-    return [...module.functions]
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map((f, i, { length }) => [
+    allCommands.push(...module.functions);
+    allCommands.push(
+      ...module.additional
+        .concat(...module.functions.flatMap((f) => f.additional))
+        .filter((a) => a.qualifiedIdentifier && a.identifier),
+    );
+
+    allCommands.sort((a, b) => {
+      const aName = "name" in a ? a.name : a.qualifiedIdentifier!,
+            bName = "name" in b ? b.name : b.qualifiedIdentifier!;
+
+      return aName.localeCompare(bName);
+    });
+
+    return allCommands.map((f, i, { length }) => {
+      const identifier = "name" in f ? modulePrefix + f.nameWithDot : f.qualifiedIdentifier,
+            summary = "summary" in f ? f.summary : f.title,
+            keys = parseKeys(("properties" in f ? f.properties.keys : f.keys) ?? ""),
+            link = "name" in f
+              ? `#${(modulePrefix + f.nameWithDot).replace(/\./g, "")}`
+              : `./${module.name}.ts#L${f.line + 1}`;
+
+      return [
         i === 0
           ? `<td rowspan=${length}><a href="#${module.name}"><code>${module.name}</code></a></td>`
           : "",
-        `<td><a href="#${(modulePrefix + f.nameWithDot).replace(/\./g, "")}"><code>${
-          modulePrefix + f.nameWithDot}</code></a></td>`,
-        `<td>${f.summary}</td>`,
+        `<td><a href="${link}"><code>${identifier}</code></a></td>`,
+        `<td>${summary}</td>`,
         `<td>${
-          parseKeys(f.properties.keys ?? "")
-            .map(({ key, when }) => `<code>${key}</code> (<code>${when}</code>)`).join("")
+          keys.map(({ key, when }) => `<code>${key}</code> (<code>${when}</code>)`).join("")
         }</td>`,
-      ]);
+      ];
+    });
   });
 
   return `

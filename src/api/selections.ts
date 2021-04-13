@@ -5,6 +5,7 @@ import { Context } from "./context";
 import { NotASelectionError } from "./errors";
 import { Positions } from "./positions";
 import { execRange, splitRange } from "../utils/regexp";
+import { Lines } from "./lines";
 
 /**
  * Sets the selections of the given editor.
@@ -44,6 +45,8 @@ export function setSelections(selections: readonly vscode.Selection[]) {
 
   Context.current.selections = selections;
   Selections.reveal(selections[0]);
+
+  return selections;
 }
 
 /**
@@ -887,14 +890,73 @@ export namespace Selections {
     selection: vscode.Selection,
     direction: Direction,
     position = selection.active,
+    context = Context.current,
   ) {
-    if (Context.current.selectionBehavior === SelectionBehavior.Character) {
+    if (context.selectionBehavior === SelectionBehavior.Character) {
+      const doc = context.document;
+
       return direction === Direction.Forward
-        ? (position === selection.start ? position : Positions.previous(position) ?? position)
-        : (position === selection.end ? position : Positions.next(position) ?? position);
+        ? (position === selection.start ? position : Positions.previous(position, doc) ?? position)
+        : (position === selection.end ? position : Positions.next(position, doc) ?? position);
     }
 
     return position;
+  }
+
+  /**
+   * Returns the start position of the active character of the selection.
+   *
+   * If the current character behavior is `Caret`, this is `selection.active`.
+   */
+  export function activeStart(selection: vscode.Selection, context = Context.current) {
+    const active = selection.active;
+
+    if (context.selectionBehavior !== SelectionBehavior.Character) {
+      return active;
+    }
+
+    const start = selection.start;
+
+    if (isSingleCharacter(selection, context.document)) {
+      return start;
+    }
+
+    return active === start ? start : Positions.previous(active, context.document)!;
+  }
+
+  /**
+   * Returns the end position of the active character of the selection.
+   *
+   * If the current character behavior is `Caret`, this is `selection.active`.
+   */
+  export function activeEnd(selection: vscode.Selection, context = Context.current) {
+    const active = selection.active;
+
+    if (context.selectionBehavior !== SelectionBehavior.Character) {
+      return active;
+    }
+
+    const end = selection.end;
+
+    if (isSingleCharacter(selection, context.document)) {
+      return end;
+    }
+
+    return active === end ? end : Positions.next(active, context.document)!;
+  }
+
+  /**
+   * Returns `activeStart(selection)` if `direction === Backward`, and
+   * `activeEnd(selection)` otherwise.
+   */
+  export function activeTowards(
+    selection: vscode.Selection,
+    direction: Direction,
+    context = Context.current,
+  ) {
+    return direction === Direction.Backward
+      ? activeStart(selection, context)
+      : activeEnd(selection, context);
   }
 
   /**
@@ -925,21 +987,48 @@ export namespace Selections {
    * Context.current._selectionBehavior = 2;  // Character
    * ```
    */
-  export function shift(selection: vscode.Selection, position: vscode.Position, shift: Shift) {
-    if (shift === Shift.Jump) {
-      return Selections.empty(position);
-    }
+  export function shift(
+    selection: vscode.Selection,
+    position: vscode.Position,
+    shift: Shift,
+    context = Context.current,
+  ) {
+    let anchor = shift === Shift.Jump
+      ? position
+      : shift === Shift.Select
+        ? selection.active
+        : selection.anchor;
 
-    let anchor = shift === Shift.Select ? selection.active : selection.anchor;
-
-    // Doesn't shift properly when selection is reversed but not non-directional.
-    if (Context.current.selectionBehavior === SelectionBehavior.Character) {
+    if (context.selectionBehavior === SelectionBehavior.Character && shift !== Shift.Jump) {
       const direction = anchor.isAfter(position) ? Direction.Backward : Direction.Forward;
 
-      anchor = seekFrom(selection, direction, anchor);
+      anchor = seekFrom(selection, direction, anchor, context);
     }
 
     return new vscode.Selection(anchor, position);
+  }
+
+  /**
+   * Same as `shift`, but also extends the active character towards the given
+   * direction in character selection mode. If `direction === Forward`, the
+   * active character will be selected such that
+   * `activeEnd(selection) === active`. If `direction === Backward`, the
+   * active character will be selected such that
+   * `activeStart(selection) === active`.
+   */
+  export function shiftTowards(
+    selection: vscode.Selection,
+    position: vscode.Position,
+    shift: Shift,
+    direction: Direction,
+    context = Context.current,
+  ) {
+    if (context.selectionBehavior === SelectionBehavior.Character
+        && direction === Direction.Backward) {
+      position = Positions.next(position) ?? position;
+    }
+
+    return Selections.shift(selection, position, shift, context);
   }
 
   /**
@@ -1012,6 +1101,18 @@ export namespace Selections {
           end = selection.end;
 
     return start.character === 0 && end.character === 0 && start.line !== end.line;
+  }
+
+  export function endsWithEntireLine(selection: vscode.Selection | vscode.Range) {
+    const end = selection.end;
+
+    return end.character === 0 && selection.start.line !== end.line;
+  }
+
+  export function isMovingTowardsAnchor(selection: vscode.Selection, direction: Direction) {
+    return direction === Direction.Backward
+      ? selection.active === selection.end
+      : selection.active === selection.start;
   }
 
   /**
@@ -1190,11 +1291,10 @@ export namespace Selections {
     selections: readonly vscode.Selection[],
     document?: vscode.TextDocument,
   ) {
-    const characterModeSelections = new Array<vscode.Selection>(selections.length);
+    const characterModeSelections = [] as vscode.Selection[];
 
-    for (let i = 0, len = characterModeSelections.length; i < len; i++) {
-      const selection = selections[i],
-            selectionActive = selection.active,
+    for (const selection of selections) {
+      const selectionActive = selection.active,
             selectionActiveLine = selectionActive.line,
             selectionActiveCharacter = selectionActive.character,
             selectionAnchor = selection.anchor,
@@ -1205,8 +1305,16 @@ export namespace Selections {
           changed = false;
 
       if (selectionAnchorLine === selectionActiveLine) {
-        if (selectionAnchorCharacter === selectionActiveCharacter + 1) {
+        if (selectionAnchorCharacter === selectionActiveCharacter) {
+          // Selection is empty: go to previous position.
+          anchor = active = Positions.previous(active, document) ?? active;
+          changed = active !== selectionActive;
+        } else if (selectionAnchorCharacter + 1 === selectionActiveCharacter) {
           // Selection is one-character long: make it empty.
+          active = selectionAnchor;
+          changed = true;
+        } else if (selectionAnchorCharacter - 1 === selectionActiveCharacter) {
+          // Selection is reversed and one-character long: make it empty.
           anchor = selectionActive;
           changed = true;
         } else if (selectionAnchorCharacter < selectionActiveCharacter) {
@@ -1214,7 +1322,7 @@ export namespace Selections {
           active = new vscode.Position(selectionActiveLine, selectionActiveCharacter - 1);
           changed = true;
         } else {
-          // Selection is empty or reversed: do nothing.
+          // Selection is reversed: do nothing.
         }
       } else if (selectionAnchorLine < selectionActiveLine) {
         // Selection is strictly forward-facing: make it shorter.
@@ -1234,11 +1342,17 @@ export namespace Selections {
           active = new vscode.Position(activePrevLine, activePrevLineLength);
           changed = true;
         }
+      } else if (selectionAnchorLine === selectionActiveLine + 1
+                 && selectionAnchorCharacter === 0
+                 && selectionActiveCharacter === Lines.length(selectionActiveLine, document)) {
+        // Selection is reversed and one-character long: make it empty.
+        anchor = selectionActive;
+        changed = true;
       } else {
         // Selection is reversed: do nothing.
       }
 
-      characterModeSelections[i] = changed ? new vscode.Selection(anchor, active) : selection;
+      characterModeSelections.push(changed ? new vscode.Selection(anchor, active) : selection);
     }
 
     return characterModeSelections;
@@ -1292,13 +1406,11 @@ export namespace Selections {
   export function fromCharacterMode(
     selections: readonly vscode.Selection[],
     document?: vscode.TextDocument,
-    direction: Direction = Direction.Forward,
   ) {
-    const caretModeSelections = new Array<vscode.Selection>(selections.length);
+    const caretModeSelections = [] as vscode.Selection[];
 
-    for (let i = 0, len = caretModeSelections.length; i < len; i++) {
-      const selection = selections[i],
-            selectionActive = selection.active,
+    for (const selection of selections) {
+      const selectionActive = selection.active,
             selectionActiveLine = selectionActive.line,
             selectionActiveCharacter = selectionActive.character,
             selectionAnchor = selection.anchor,
@@ -1335,18 +1447,7 @@ export namespace Selections {
         }
       }
 
-      if (!changed) {
-        caretModeSelections[i] = selection;
-        continue;
-      }
-
-      const reverse = direction === Direction.Backward
-        && selectionActiveLine === selectionAnchorLine
-        && selectionActiveCharacter === selectionAnchorCharacter;
-
-      caretModeSelections[i] = reverse
-        ? new vscode.Selection(active, selectionAnchor)
-        : new vscode.Selection(selectionAnchor, active);
+      caretModeSelections.push(changed ? new vscode.Selection(selectionAnchor, active) : selection);
     }
 
     return caretModeSelections;

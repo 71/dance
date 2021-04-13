@@ -498,6 +498,30 @@ const builtinKeybindings = [
     "command": "dance.seek.character.included.extend.backward"
   },
   {
+    "key": "M",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Select to next enclosing character",
+    "command": "dance.seek.enclosing"
+  },
+  {
+    "key": "Alt+M",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Select to previous enclosing character",
+    "command": "dance.seek.enclosing.backward"
+  },
+  {
+    "key": "Shift+M",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend to next enclosing character",
+    "command": "dance.seek.enclosing.extend"
+  },
+  {
+    "key": "Shift+Alt+M",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend to previous enclosing character",
+    "command": "dance.seek.enclosing.extend.backward"
+  },
+  {
     "key": "E",
     "when": "editorTextFocus && dance.mode == 'normal'",
     "title": "Select to next word end",
@@ -576,6 +600,54 @@ const builtinKeybindings = [
     "command": "dance.select.buffer"
   },
   {
+    "key": "Shift+J",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend down",
+    "command": "dance.select.down.extend"
+  },
+  {
+    "key": "Shift+Down",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend down",
+    "command": "dance.select.down.extend"
+  },
+  {
+    "key": "J",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Jump down",
+    "command": "dance.select.down.jump"
+  },
+  {
+    "key": "Down",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Jump down",
+    "command": "dance.select.down.jump"
+  },
+  {
+    "key": "Shift+H",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend left",
+    "command": "dance.select.left.extend"
+  },
+  {
+    "key": "Shift+Left",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend left",
+    "command": "dance.select.left.extend"
+  },
+  {
+    "key": "H",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Jump left",
+    "command": "dance.select.left.jump"
+  },
+  {
+    "key": "Left",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Jump left",
+    "command": "dance.select.left.jump"
+  },
+  {
     "key": "X",
     "when": "editorTextFocus && dance.mode == 'normal'",
     "title": "Select line below",
@@ -636,10 +708,136 @@ const builtinKeybindings = [
     "command": "dance.select.lineStart.extend"
   },
   {
+    "key": "Shift+L",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend right",
+    "command": "dance.select.right.extend"
+  },
+  {
+    "key": "Shift+Right",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend right",
+    "command": "dance.select.right.extend"
+  },
+  {
+    "key": "L",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Jump right",
+    "command": "dance.select.right.jump"
+  },
+  {
+    "key": "Right",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Jump right",
+    "command": "dance.select.right.jump"
+  },
+  {
+    "key": "Shift+G",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend to",
+    "command": "dance.select.to.extend"
+  },
+  {
     "key": "G",
     "when": "editorTextFocus && dance.mode == 'normal'",
-    "title": "Select to line",
-    "command": "dance.select.toLine"
+    "title": "Go to",
+    "command": "dance.select.to.jump"
+  },
+  {
+    "key": "Shift+K",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend up",
+    "command": "dance.select.up.extend"
+  },
+  {
+    "key": "Shift+Up",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Extend up",
+    "command": "dance.select.up.extend"
+  },
+  {
+    "key": "K",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Jump up",
+    "command": "dance.select.up.jump"
+  },
+  {
+    "key": "Up",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Jump up",
+    "command": "dance.select.up.jump"
+  },
+  {
+    "key": "Ctrl+F",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "command": "dance.select.vertically",
+    "args": {
+      "by": "page",
+      "direction": 1
+    }
+  },
+  {
+    "key": "Ctrl+F",
+    "when": "editorTextFocus && dance.mode == 'insert'",
+    "command": "dance.select.vertically",
+    "args": {
+      "by": "page",
+      "direction": 1
+    }
+  },
+  {
+    "key": "Ctrl+D",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "command": "dance.select.vertically",
+    "args": {
+      "by": "halfPage",
+      "direction": 1
+    }
+  },
+  {
+    "key": "Ctrl+D",
+    "when": "editorTextFocus && dance.mode == 'insert'",
+    "command": "dance.select.vertically",
+    "args": {
+      "by": "halfPage",
+      "direction": 1
+    }
+  },
+  {
+    "key": "Ctrl+B",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "command": "dance.select.vertically",
+    "args": {
+      "by": "page",
+      "direction": -1
+    }
+  },
+  {
+    "key": "Ctrl+B",
+    "when": "editorTextFocus && dance.mode == 'insert'",
+    "command": "dance.select.vertically",
+    "args": {
+      "by": "page",
+      "direction": -1
+    }
+  },
+  {
+    "key": "Ctrl+U",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "command": "dance.select.vertically",
+    "args": {
+      "by": "halfPage",
+      "direction": -1
+    }
+  },
+  {
+    "key": "Ctrl+U",
+    "when": "editorTextFocus && dance.mode == 'insert'",
+    "command": "dance.select.vertically",
+    "args": {
+      "by": "halfPage",
+      "direction": -1
+    }
   },
   {
     "key": "Alt+;",
@@ -700,6 +898,12 @@ const builtinKeybindings = [
     "when": "editorTextFocus && dance.mode == 'normal'",
     "title": "Clear matching selections",
     "command": "dance.selections.filter.regexp.inverse"
+  },
+  {
+    "key": "Shift+Alt+-",
+    "when": "editorTextFocus && dance.mode == 'normal'",
+    "title": "Merge contiguous selections",
+    "command": "dance.selections.merge"
   },
   {
     "key": "Shift+Alt+\\",

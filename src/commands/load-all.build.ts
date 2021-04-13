@@ -30,7 +30,7 @@ export function build(commandModules: parseDocComments.ParsedModule<void>[]) {
               .map((x) => `
                 new CommandDescriptor(
                   "dance.${x.qualifiedIdentifier}",
-                  (_) => _.runAsync(() => commands(${x.commands})),
+                  ${buildCommandsExpression(x)},
                   CommandDescriptor.Flags.RequiresActiveEditor,
                 ),`)
               .sort()
@@ -190,4 +190,10 @@ function determineFunctionFlags(f: parseDocComments.ParsedFunction<any>) {
   }
 
   return flags.map((flag) => "CommandDescriptor.Flags." + flag).join(" | ");
+}
+
+function buildCommandsExpression(f: parseDocComments.AdditionalCommand) {
+  const commands = f.commands!.replace(/ +/g, " ").replace(/ \}\]/g, ", ...argument }]");
+
+  return `(_, argument) => _.runAsync(() => commands(${commands}))`;
 }

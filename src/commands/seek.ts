@@ -66,6 +66,26 @@ export async function character(
 }
 
 /**
+ * Select to next enclosing character.
+ *
+ * @keys `m` (normal)
+ *
+ * #### Variants
+ *
+ * | Title                                  | Identifier                  | Keybinding       | Command                                                       |
+ * | -------------------------------------- | --------------------------- | ---------------- | ------------------------------------------------------------- |
+ * | Extend to next enclosing character     | `enclosing.extend`          | `s-m` (normal)   | `[".seek.enclosing", { "shift": "extend" }]`                  |
+ * | Select to previous enclosing character | `enclosing.backward`        | `a-m` (normal)   | `[".seek.enclosing", { "direction": -1 }]`                    |
+ * | Extend to previous enclosing character | `enclosing.extend.backward` | `s-a-m` (normal) | `[".seek.enclosing", { "shift": "extend", "direction": -1 }]` |
+ */
+export function enclosing(
+  direction = Direction.Forward,
+  shift = Shift.Select,
+) {
+  todo();
+}
+
+/**
  * Select to next word start.
  *
  * Select the word and following whitespaces on the right of the end of each selection.
