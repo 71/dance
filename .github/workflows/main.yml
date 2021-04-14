@@ -19,7 +19,7 @@ jobs:
         run: yarn run check
 
       - name: Ensure auto-generated files are up-to-date
-        run: yarn run ts-node ./meta.ts --ensure-up-to-date --check --build-package-json
+        run: yarn run ts-node ./meta.ts --ensure-up-to-date --check
 
       - name: Check tests
         run: yarn run test

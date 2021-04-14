@@ -894,11 +894,6 @@
         "category": "Dance"
       },
       {
-        "command": "dance.load-all.loadCommands",
-        "title": "Loads and returns all defined commands",
-        "category": "Dance"
-      },
-      {
         "command": "dance.cancel",
         "title": "Cancel Dance operation",
         "category": "Dance"
@@ -1554,6 +1549,690 @@
         "category": "Dance"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "dance.edit.align",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.case.swap",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.case.toLower",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.case.toUpper",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.copyIndentation",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.deindent",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.deindent.withIncomplete",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.delete",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.delete-insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.indent",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.indent.withEmpty",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.join",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.join.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.newLine.above",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.newLine.above.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.newLine.below",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.newLine.below.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.paste.after",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.paste.after.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.paste.before",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.paste.before.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.replaceCharacters",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.selectRegister-insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.yank-delete",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.yank-delete-insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.yank-replace",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.forward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.recording.play",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.recording.start",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.recording.stop",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.redo",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.repeat",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.repeat.edit",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.repeat.objectSelection",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.repeat.selection",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.undo",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.keybindings.setup",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.cancel",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.ignore",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.openMenu",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.run",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selectRegister",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.updateCount",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.insert.after",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.insert.before",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.insert.lineEnd",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.insert.lineStart",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.normal",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.temporarily",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.temporarily.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.temporarily.normal",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.add",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.backward.add",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.next",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.next.add",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.previous",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.previous.add",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.selection",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.selection.smart",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.character",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.character.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.character.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.character.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.character.included",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.character.included.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.character.included.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.character.included.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.enclosing",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.enclosing.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.enclosing.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.enclosing.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordEnd",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordEnd.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordEnd.ws",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordEnd.ws.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordStart",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordStart.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordStart.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordStart.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordStart.ws",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordStart.ws.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordStart.ws.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordStart.ws.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.buffer",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.documentEnd.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.documentEnd.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.down.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.down.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstVisibleLine",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstVisibleLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstVisibleLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.horizontally",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastLine",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastModification",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastModification.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastModification.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastVisibleLine",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastVisibleLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastVisibleLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.left.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.left.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.line.above",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.line.above.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.line.below",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.line.below.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineEnd",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineEnd.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart.skipBlank.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart.skipBlank.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.middleVisibleLine",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.middleVisibleLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.middleVisibleLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.right.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.right.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.to",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.to.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.to.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.up.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.up.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.vertically",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.changeDirection",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.clear.main",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.clear.secondary",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.copy",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.copy.above",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.extendToLines",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.faceBackward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.faceForward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.filter",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.filter.regexp",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.filter.regexp.inverse",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.hideIndices",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.merge",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.open",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.pipe",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.pipe.append",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.pipe.prepend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.pipe.replace",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.reduce",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.reduce.edges",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.restore",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.restore.withCurrent",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.save",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.saveText",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.showIndices",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.split",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.splitLines",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.toggleIndices",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.trimLines",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.trimWhitespace",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.both",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.both.reverse",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.contents",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.contents.reverse",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.selections",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.selections.reverse",
+          "when": "dance.mode == 'normal'"
+        }
+      ]
+    },
     "keybindings": [
       {
         "key": "Shift+7",

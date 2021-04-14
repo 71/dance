@@ -228,23 +228,23 @@ function promptInList(
   items: readonly (readonly [string, string])[],
   init: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
   cancellationToken: vscode.CancellationToken,
-): Thenable<number[]>;
+): Thenable<string | number[]>;
 function promptInList(
   canPickMany: false,
   items: readonly (readonly [string, string])[],
   init: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
   cancellationToken: vscode.CancellationToken,
-): Thenable<number>;
+): Thenable<string | number>;
 
 function promptInList(
   canPickMany: boolean,
   items: readonly (readonly [string, string])[],
   init: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
   cancellationToken: vscode.CancellationToken,
-): Thenable<number | number[]> {
+): Thenable<string | number | number[]> {
   const itemsKeys = items.map(([k, _]) => k.includes(", ") ? k.split(", ") : [...k]);
 
-  return new Promise<number | number[]>((resolve, reject) => {
+  return new Promise<string | number | number[]>((resolve, reject) => {
     const quickPick = vscode.window.createQuickPick(),
           quickPickItems = [] as vscode.QuickPickItem[];
 
@@ -261,10 +261,12 @@ function promptInList(
     quickPick.placeholder = "Press one of the below keys.";
 
     const subscriptions = [
-      quickPick.onDidChangeValue((key) => {
+      quickPick.onDidChangeValue((rawKey) => {
         if (subscriptions.length === 0) {
           return;
         }
+
+        let key = rawKey;
 
         if (!isCaseSignificant) {
           key = key.toLowerCase();
@@ -275,7 +277,7 @@ function promptInList(
         subscriptions.splice(0).forEach((s) => s.dispose());
 
         if (index === -1) {
-          return reject(new CancellationError(CancellationError.Reason.PressedEscape));
+          return resolve(rawKey);
         }
 
         if (canPickMany) {

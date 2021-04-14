@@ -376,17 +376,6 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
 }
 
 /**
- * Loads the "index" module and returns its defined commands.
- */
-async function loadIndexModule(): Promise<CommandDescriptor[]> {
-  const {
-  } = await import("./index");
-
-  return [
-  ];
-}
-
-/**
  * Loads the "keybindings" module and returns its defined commands.
  */
 async function loadKeybindingsModule(): Promise<CommandDescriptor[]> {
@@ -399,23 +388,6 @@ async function loadKeybindingsModule(): Promise<CommandDescriptor[]> {
       "dance.keybindings.setup",
       (_, argument) => _.runAsync((_) => setup(_, getRegister(_, argument, "dquote", Register.Flags.CanWrite))),
       CommandDescriptor.Flags.RequiresActiveEditor,
-    ),
-  ];
-}
-
-/**
- * Loads the "load-all" module and returns its defined commands.
- */
-async function loadLoad-allModule(): Promise<CommandDescriptor[]> {
-  const {
-    loadCommands,
-  } = await import("./load-all");
-
-  return [
-    new CommandDescriptor(
-      "dance.load-all.loadCommands",
-      (_) => loadCommands(),
-      CommandDescriptor.Flags.None,
     ),
   ];
 }
@@ -446,7 +418,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.openMenu",
-      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.additionalArgs)),
+      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.additionalArgs)),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
@@ -489,12 +461,12 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.modes.insert.after",
-      (_, argument) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "end" , "handleCharacterBehavior": false, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "end", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.insert.before",
-      (_, argument) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "start", "handleCharacterBehavior": false, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "start", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1038,7 +1010,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.reduce",
-      (_, argument) => _.runAsync((_) => reduce(_, argument.handleCharacterBehavior, argument.where)),
+      (_, argument) => _.runAsync((_) => reduce(_, argument.where)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1210,9 +1182,7 @@ export async function loadCommands(): Promise<Commands> {
   const allModules = await Promise.all([
     loadEditModule(),
     loadHistoryModule(),
-    loadIndexModule(),
     loadKeybindingsModule(),
-    loadLoad-allModule(),
     loadMiscModule(),
     loadModesModule(),
     loadSearchModule(),

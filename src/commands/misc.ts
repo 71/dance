@@ -164,12 +164,21 @@ let lastPickedMenu: string | undefined;
 
 /**
  * Open menu.
+ *
+ * If no input is specified, a prompt will ask for the name of the menu to open.
+ *
+ * Alternatively, a `menu` can be inlined in the arguments.
+ *
+ * Pass a `prefix` argument to insert the prefix string followed by the typed
+ * key if it does not match any menu entry. This can be used to implement chords
+ * like `jj`.
  */
 export async function openMenu(
   _: Context.WithoutActiveEditor,
   inputOr: InputOr<string>,
 
   menu?: Argument<Menu>,
+  prefix?: Argument<string>,
   additionalArgs: Argument<any[]> = [],
 ) {
   if (typeof menu === "object") {
@@ -179,7 +188,7 @@ export async function openMenu(
       throw new Error(`invalid menu: ${errors.join(", ")}`);
     }
 
-    return showMenu(menu, []);
+    return showMenu(menu, [], prefix);
   }
 
   const menus = _.extensionState.menus;
@@ -198,5 +207,5 @@ export async function openMenu(
     valueSelection: lastPickedMenu === undefined ? undefined : [0, lastPickedMenu.length],
   }, _));
 
-  return showMenu.byName(input, additionalArgs);
+  return showMenu.byName(input, additionalArgs, prefix);
 }

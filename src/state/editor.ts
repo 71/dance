@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import { DocumentState } from "./document";
 import { extensionName } from "../extension";
-import { assert, command, commands, Context, Positions, selectionsLines } from "../api";
+import { assert, command, commands, Context, Positions, Selections, selectionsLines } from "../api";
 import { Mode } from "../mode";
 import { SelectionBehavior } from "./extension";
 
@@ -32,7 +32,6 @@ export class EditorState {
   private _isChangingMode = false;
 
   private _mode!: Mode;
-  private _previousMode?: Mode;
 
   /**
    * The mode of the editor.
@@ -123,7 +122,7 @@ export class EditorState {
   /**
    * Sets the mode of the editor.
    */
-  public async setMode(mode: Mode, temporary = false) {
+  public async setMode(mode: Mode) {
     if (this._isChangingMode) {
       throw new Error("calling EditorState.setMode in a mode change handler is forbidden");
     }
@@ -144,8 +143,14 @@ export class EditorState {
           JSON.stringify(previousMode.name)}: ${e}`,
       );
 
-      if (temporary && this._previousMode === undefined) {
-        this._previousMode = previousMode;
+      if (previousMode.selectionBehavior !== mode.selectionBehavior) {
+        const editor = this._editor,
+              document = editor.document,
+              selections = editor.selections;
+
+        editor.selections = mode.selectionBehavior === SelectionBehavior.Character
+          ? Selections.toCharacterMode(selections, document)
+          : Selections.fromCharacterMode(selections, document);
       }
     }
 
@@ -204,25 +209,15 @@ export class EditorState {
 
       await vscode.commands.executeCommand("setContext", extensionName + ".mode", undefined);
     }
-
-    if (this._previousMode !== undefined) {
-      await this.setMode(this._previousMode);
-    }
   }
 
   /**
    * Called when `vscode.window.onDidChangeTextEditorSelection` is triggered on
    * this editor.
    */
-  public async onDidChangeTextEditorSelection() {
-    if (this._previousMode !== undefined) {
-      await this.setMode(this._previousMode);
-    }
-
-    const mode = this._mode;
-
+  public onDidChangeTextEditorSelection() {
     // Update decorations.
-    this.updateDecorations(mode);
+    this.updateDecorations(this._mode);
   }
 
   // =============================================================================================

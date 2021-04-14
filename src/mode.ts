@@ -13,10 +13,8 @@ export class Mode {
   private _raw: Mode.Configuration = {};
   private _inheritsFrom: Mode;
   private _cursorStyle = vscode.TextEditorCursorStyle.Line;
-  private _lineDecorationType?: vscode.TextEditorDecorationType;
   private _lineHighlight?: string | vscode.ThemeColor;
   private _lineNumbers = vscode.TextEditorLineNumbersStyle.On;
-  private _selectionDecorationOptions?: vscode.DecorationRenderOptions;
   private _selectionDecorationType?: vscode.TextEditorDecorationType;
   private _selectionBehavior = SelectionBehavior.Caret;
   private _onEnterMode: readonly command.Any[] = [];

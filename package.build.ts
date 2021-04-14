@@ -568,6 +568,13 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
       category: "Dance",
     }))),
 
+    menus: {
+      commandPalette: modules.flatMap((module) => module.commands.map((x) => ({
+        command: x.id,
+        when: x.when,
+      }))),
+    },
+
     // Keybindings.
     // ========================================================================
 

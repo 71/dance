@@ -130,6 +130,10 @@ export async function restore_withCurrent(
     ["-", "Select shortest"],
   ]);
 
+  if (typeof type === "string") {
+    return;
+  }
+
   if (type === 0) {
     _.selections = from.concat(add);
 
@@ -565,7 +569,6 @@ export function trimWhitespace(_: Context) {
 export function reduce(
   _: Context,
 
-  handleCharacterBehavior = true,
   where: Argument<"active" | "anchor" | "start" | "end" | "both"> = "active",
 ) {
   ArgumentError.validate(
@@ -574,7 +577,7 @@ export function reduce(
     `"where" must be "active", "anchor", "start", "end", "both", or undefined`,
   );
 
-  const takeWhere = handleCharacterBehavior && _.selectionBehavior === SelectionBehavior.Character
+  const takeWhere = _.selectionBehavior === SelectionBehavior.Character
     ? (selection: vscode.Selection, prop: Exclude<typeof where, "both">) => {
         const result = selection[prop];
 

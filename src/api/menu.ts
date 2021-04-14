@@ -27,7 +27,7 @@ export function validateMenu(menu: Menu) {
     return ["menu must be an object"];
   }
 
-  if (typeof menu.items !== "object" || Object.keys(menu.items ?? {}).length < 2) {
+  if (typeof menu.items !== "object" || Object.keys(menu.items ?? {}).length === 0) {
     return ['menu must have an subobject "items" with at least two entries.'];
   }
 
@@ -80,12 +80,17 @@ export function validateMenu(menu: Menu) {
 export async function showMenu(
   menu: Menu,
   additionalArgs: readonly any[] = [],
+  prefix?: string,
 ) {
   const entries = Object.entries(menu.items);
   const items = entries.map((x) => [x[0], x[1].text] as const);
   const choice = await prompt.one(items);
 
-  if (choice === undefined) {
+  if (typeof choice === "string") {
+    if (prefix !== undefined) {
+      await vscode.commands.executeCommand("default:type", { text: prefix + choice });
+    }
+
     return;
   }
 
@@ -117,6 +122,7 @@ export namespace showMenu {
   export function byName(
     menuName: string,
     additionalArgs: readonly any[] = [],
+    prefix?: string,
   ) {
     const menu = Context.WithoutActiveEditor.current.extensionState.menus.get(menuName);
 

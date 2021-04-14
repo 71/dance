@@ -23,8 +23,19 @@ export function toMode(modeName: string, count?: number) {
     return context.editorState.setMode(mode);
   }
 
-  return context.editorState.setMode(mode, true).then(() => {
-    todo();
-  });
+  const disposable = context.extensionState
+    .createAutoDisposable()
+    .addDisposable(context.extensionState.onModeDidChange((editorState) => {
+      if (editorState !== context.editorState) {
+        return;
+      }
+
+      if (editorState.mode !== mode) {
+        disposable.dispose();
+      }
+    }))
+    .disposeOnEvent(context.editorState.onEditorWasClosed);
+
   // TODO: watch document changes and command executions
+  return context.editorState.setMode(mode);
 }

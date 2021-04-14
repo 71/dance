@@ -201,8 +201,6 @@ export class Context extends ContextWithoutActiveEditor {
   private _documentState: DocumentState;
   private _editorState: EditorState;
 
-  private _selectionBehavior: SelectionBehavior;
-
   /**
    * The document state for the current editor.
    */
@@ -241,7 +239,7 @@ export class Context extends ContextWithoutActiveEditor {
    * @deprecated Try to avoid using this property.
    */
   public get selectionBehavior() {
-    return this._selectionBehavior;
+    return this._editorState.mode.selectionBehavior;
   }
 
   /**
@@ -303,8 +301,6 @@ export class Context extends ContextWithoutActiveEditor {
     this._editorState = this.extensionState.getEditorState(editor);
     this._document = document;
     this._editor = editor;
-
-    this._selectionBehavior = this._editorState.mode.selectionBehavior;
   }
 
   public constructor(
@@ -318,8 +314,6 @@ export class Context extends ContextWithoutActiveEditor {
     this._editorState = editorState;
     this._document = editorState.documentState.document;
     this._editor = editorState.editor;
-
-    this._selectionBehavior = editorState.mode.selectionBehavior;
   }
 }
 

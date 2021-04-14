@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { ArgumentError, assert, Context, EditNotAppliedError, EditorRequiredError, Selections } from "./api";
+import { ArgumentError, Context, EditNotAppliedError, EditorRequiredError, Selections } from "./api";
 import { SelectionBehavior } from "./state/extension";
 import { noUndoStops } from "./utils/misc";
 import { TrackedSelection } from "./utils/tracked-selection";

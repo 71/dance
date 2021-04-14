@@ -344,10 +344,7 @@ export class Builder {
             apiFiles.map((filepath) =>
               fs.readFile(filepath, "utf-8").then((code) => parseDocComments(code, filepath))));
 
-    this._apiModules = apiModules.filter((m) => m !== undefined) as Builder.ParsedModule[];
-    this._apiModules.sort((a, b) => a.name.localeCompare(b.name));
-
-    return this._apiModules;
+    return this._apiModules = apiModules.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   /**
@@ -360,15 +357,12 @@ export class Builder {
 
     const commandsGlob = `${__dirname}/src/commands/**/*.ts`,
           commandFiles = await glob(commandsGlob, /* ignore= */ "**/*.build.ts"),
-          commandModules = await Promise.all(
-            // TODO: no need to filter old-files
-            commandFiles.filter((file) => !file.includes("old-")).map((filepath) =>
-              fs.readFile(filepath, "utf-8").then((code) => parseDocComments(code, filepath))));
+          allCommandModules = await Promise.all(
+            commandFiles.map((filepath) =>
+              fs.readFile(filepath, "utf-8").then((code) => parseDocComments(code, filepath)))),
+          commandModules = allCommandModules.filter((m) => m.doc.length > 0);
 
-    this._commandModules = commandModules.filter((m) => m !== undefined) as Builder.ParsedModule[];
-    this._commandModules.sort((a, b) => a.name.localeCompare(b.name));
-
-    return this._commandModules;
+    return this._commandModules = commandModules.sort((a, b) => a.name.localeCompare(b.name));
   }
 }
 
@@ -413,6 +407,7 @@ export namespace Builder {
     readonly commands: {
       readonly id: string;
       readonly title: string;
+      readonly when?: string;
     }[];
 
     readonly keybindings: {
@@ -487,12 +482,21 @@ export function parseKeys(keys: string) {
  * Returns all defined commands in the given module.
  */
 function getCommands(module: Omit<Builder.ParsedModule, "commands">) {
+  // TODO: improve conditions
   return [
-    ...module.functions.map((f) => ({ id: `dance.${f.qualifiedName}`, title: f.summary })),
+    ...module.functions.map((f) => ({
+      id: `dance.${f.qualifiedName}`,
+      title: f.summary,
+      when: "dance.mode == 'normal'",
+    })),
     ...module.additional
       .concat(...module.functions.flatMap((f) => f.additional))
       .filter((a) => a.identifier !== undefined && a.title !== undefined)
-      .map((a) => ({ id: `dance.${a.qualifiedIdentifier}`, title: a.title! })),
+      .map((a) => ({
+        id: `dance.${a.qualifiedIdentifier}`,
+        title: a.title!,
+        when: "dance.mode == 'normal'",
+      })),
   ].sort((a, b) => a.id.localeCompare(b.id));
 }
 

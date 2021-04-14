@@ -21,6 +21,10 @@ export async function setup(_: Context, register: RegisterOr<"dquote", Register.
     ["p", "prepend keybindings"],
   ]);
 
+  if (typeof action === "string") {
+    return;
+  }
+
   const keybindings = await prompt.many([
     ["d", "default keybindings"],
   ]);
