@@ -1,202 +1,28 @@
-// @ts-expect-error
-import * as expect from "unexpected";
-
+/* eslint-disable require-await */
 import * as assert from "assert";
-import * as fs     from "fs";
-import * as glob   from "glob";
-import * as path   from "path";
 import * as vscode from "vscode";
 
-import { execAll, ExpectedDocument } from "./utils";
-import { api, extensionState } from "../../src/extension";
+import { expect, ExpectedDocument } from "./utils";
+import { extensionState } from "../../src/extension";
+import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, moveWhile, NotASelectionError, replace, rotate, rotateSelections, search, Select, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
+import { SelectionBehavior } from "../../src/state/extension";
 
-interface Expect<T = any> {
-  <T>(subject: T, assertion: string, ...args: readonly any[]): {
-    readonly and: Expect.Continuation<T>;
+function selection(): {
+  empty(line: number | vscode.Position, character?: number): vscode.Selection;
+
+  anchor(line: number | vscode.Position, character?: number): {
+    active(line: number | vscode.Position, character?: number): vscode.Selection;
   };
 
-  readonly it: Expect.Continuation<T>;
-
-  addAssertion<T>(
-    pattern: string,
-    handler: (expect: Expect<T>, subject: T, ...args: readonly any[]) => void,
-  ): void;
-
-  addType<T>(typeDefinition: {
-    name: string;
-    identify: (value: unknown) => boolean;
-
-    base?: string;
-    inspect?: (value: T, depth: number, output: Expect.Output, inspect: Expect.Inspect) => any;
-  }): void;
+  active(line: number | vscode.Position, character?: number): {
+    anchor(line: number | vscode.Position, character?: number): vscode.Selection;
+  };
 }
 
-namespace Expect {
-  export interface Continuation<T = any> {
-    (assertion: string, ...args: readonly any[]): { readonly and: Continuation<T> };
-  }
+function selection(anchorLine: number, anchorChar: number, activeLine: number, activeChar: number):
+  vscode.Selection;
 
-  export interface Inspect {
-    (value: any, depth: number): any;
-  }
-
-  export interface Output {
-    text(text: string): Output;
-    append(_: any): Output;
-  }
-}
-
-declare const expect: Expect;
-
-interface Test {
-  functionName?: string;
-  flags: string;
-  n: number;
-  code: string;
-  before?: string;
-  after?: string;
-}
-
-function toExpectedDocument(text: string | undefined) {
-  return text === undefined ? undefined : ExpectedDocument.parse(text.replace(/·/g, " "));
-}
-
-function parseDocTests(contents: string, path: string) {
-  const tests = [] as Test[],
-        docContents = contents
-          .split("\n")
-          .map((line) => line.trimLeft())
-          .filter((line) => line.startsWith("*") || line.startsWith("export function "))
-          .map((line) => line.startsWith("*") ? line.slice(2) : "^" + line.slice(16))
-          .join("\n");
-
-  // eslint-disable-next-line max-len
-  const re = /^\^(\w+)|^### Example\n+[\s\S]*?^```(.+)\n([\s\S]+?)^```\n+(?:^(?:Before|With):\n^```\n([\s\S]*?)^```\n+(?:^After:\n^```\n([\s\S]+?)^```)?)?/gm,
-        pendingTests = [] as Test[];
-
-  for (const [_, functionName, flags, code, before, after] of execAll(re, docContents)) {
-    if (functionName === undefined) {
-      pendingTests.push({ n: pendingTests.length, flags, code, before, after });
-    } else {
-      if (tests.length > 0 && tests[tests.length - 1].functionName === functionName) {
-        pendingTests.forEach((test) => test.n += tests[tests.length - 1].n + 1);
-      }
-      pendingTests.forEach((test) => test.functionName = functionName);
-      tests.push(...pendingTests.splice(0));
-    }
-  }
-
-  assert.strictEqual(
-    execAll(/^### Example/gm, docContents).length,
-    tests.length,
-    `cannot parse all tests in file ${path}`,
-  );
-
-  return tests;
-}
-
-const shortPos = (p: vscode.Position) => `${p.line}:${p.character}`;
-
-expect.addType<vscode.Position>({
-  name: "position",
-  identify: (v) => v instanceof vscode.Position,
-  base: "object",
-
-  inspect: (value, _, output) => {
-    output
-      .text("Position(")
-      .text(shortPos(value))
-      .text(")");
-  },
-});
-
-expect.addType<vscode.Selection>({
-  name: "selection",
-  identify: (v) => v instanceof vscode.Selection,
-  base: "object",
-
-  inspect: (value, _, output) => {
-    output
-      .text("Selection(")
-      .text(shortPos(value.anchor))
-      .text(" -> ")
-      .text(shortPos(value.active))
-      .text(")");
-  },
-});
-
-expect.addAssertion<vscode.Position>(
-  "<position> [not] to (have|be at) coords <number> <number>",
-  (expect, subject, line: number, character: number) => {
-    expect(subject, "[not] to satisfy", { line, character });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to be empty at coords <number> <number>",
-  (expect, subject, line: number, character: number) => {
-    expect(subject, "[not] to start at", new vscode.Position(line, character))
-      .and("[not] to be empty");
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to be empty",
-  (expect, subject) => {
-    expect(subject, "[not] to satisfy", { isEmpty: true });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to be reversed",
-  (expect, subject) => {
-    expect(subject, "[not] to satisfy", { isReversed: true });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to start at <position>",
-  (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { start: position });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to end at <position>",
-  (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { end: position });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to (have anchor|be anchored) at <position>",
-  (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { anchor: position });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to (have cursor|be active) at <position>",
-  (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { active: position });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to (have anchor|be anchored) at coords <number> <number>",
-  (expect, subject, line: number, character: number) => {
-    expect(subject, "[not] to be anchored at", new vscode.Position(line, character));
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to (have cursor|be active) at coords <number> <number>",
-  (expect, subject, line: number, character: number) => {
-    expect(subject, "[not] to be active at", new vscode.Position(line, character));
-  },
-);
-
-function selectionBuilder(
+function selection(
   anchorLine?: number, anchorChar?: number, activeLine?: number, activeChar?: number,
 ) {
   if (activeChar !== undefined) {
@@ -244,71 +70,1106 @@ function selectionBuilder(
   };
 }
 
-function positionBuilder(line: number, character: number) {
+function position(line: number, character: number) {
   return new vscode.Position(line, character);
 }
 
-const AsyncFunction = async function () {}.constructor as FunctionConstructor;
+function setSelectionBehavior(selectionBehavior: SelectionBehavior) {
+  // @ts-expect-error
+  Context.current._selectionBehavior = selectionBehavior;
+}
 
 suite("API tests", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
-  const cancellationToken = new vscode.CancellationTokenSource().token;
+  const cancellationToken = new vscode.CancellationTokenSource().token,
+        extension = extensionState!;
 
   this.beforeAll(async () => {
     document = await vscode.workspace.openTextDocument();
     editor = await vscode.window.showTextDocument(document);
-
-    // Warm up to avoid inaccurately reporting long tests.
-    const initialDocument = ExpectedDocument.parse(""),
-          code = new AsyncFunction(...argNames, "await edit(() => {});");
-
-    const context = new api.Context(extensionState!.getEditorState(editor), cancellationToken);
-
-    await initialDocument.apply(editor);
-    await context.run(() => code(...argValues));
   });
 
-  const argNames = [...Object.keys(api), "vscode", "expect", "selection", "position"],
-        argValues = [...Object.values(api), vscode, expect, selectionBuilder, positionBuilder];
+  //
+  // Content below this line was auto-generated by api.test.build.ts. Do not edit manually.
 
-  // Discover all tests.
-  const basedir = path.join(this.file!, "../../../../src/api"),
-        fileNames = glob.sync("**/*.ts", { cwd: basedir });
+  suite("dance/src/api/context.ts", function () {
 
-  for (const fileName of fileNames) {
-    const filePath = path.join(basedir, fileName),
-          contents = fs.readFileSync(filePath, "utf-8"),
-          tests = parseDocTests(contents, fileName);
+    test("function text", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo bar
+            `);
 
-    if (tests.length === 0) {
-      continue;
-    }
+      await before.apply(editor);
 
-    suite(fileName, function () {
-      for (let i = 0; i < tests.length; i++) {
-        const testInfo = tests[i];
-        let testName = `function ${testInfo.functionName!}`;
+      await context.runAsync(async () => {
+        const start = new vscode.Position(0, 0),
+              end = new vscode.Position(0, 3);
 
-        if (testInfo.n > 0 || (i + 1 < tests.length && tests[i + 1].n === 1)) {
-          testName += `#${testInfo.n}`;
-        }
+        assert.strictEqual(
+          text(new vscode.Range(start, end)),
+          "foo",
+        );
+      });
 
-        // Wrap code in block to allow redefinition of parameters.
-        const code = new AsyncFunction(...argNames, `{\n${testInfo.code}\n}`),
-              before = toExpectedDocument(testInfo.before),
-              after = toExpectedDocument(testInfo.after);
-
-        test(testName, async function () {
-          const context = new api.Context(extensionState!.getEditorState(editor), cancellationToken);
-
-          await before?.apply(editor);
-          await context.run(() => code(...argValues));
-
-          after?.assertEquals(editor);
-        });
-      }
+      // No expected end document.
     });
-  }
+
+    test("function text", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo bar
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        const start1 = new vscode.Position(0, 0),
+              end1 = new vscode.Position(0, 3),
+              start2 = new vscode.Position(0, 4),
+              end2 = new vscode.Position(0, 7);
+
+        assert.deepStrictEqual(
+          text([new vscode.Range(start1, end1), new vscode.Range(start2, end2)]),
+          ["foo", "bar"],
+        );
+      });
+
+      // No expected end document.
+    });
+
+  });
+
+  suite("dance/src/api/functional.ts", function () {
+
+    test("function isPosition", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const position = new vscode.Position(0, 0),
+              range = new vscode.Range(position, position),
+              selection = new vscode.Selection(position, position);
+
+        assert(isPosition(position));
+        assert(!isPosition(range));
+        assert(!isPosition(selection));
+      });
+
+      // No expected end document.
+    });
+
+    test("function isRange", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const position = new vscode.Position(0, 0),
+              range = new vscode.Range(position, position),
+              selection = new vscode.Selection(position, position);
+
+        assert(!isRange(position));
+        assert(isRange(range));
+        assert(!isRange(selection));
+      });
+
+      // No expected end document.
+    });
+
+    test("function isSelection", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const position = new vscode.Position(0, 0),
+              range = new vscode.Range(position, position),
+              selection = new vscode.Selection(position, position);
+
+        assert(!isSelection(position));
+        assert(!isSelection(range));
+        assert(isSelection(selection));
+      });
+
+      // No expected end document.
+    });
+
+  });
+
+  suite("dance/src/api/edit/index.ts", function () {
+
+    test("function insert", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              1 2 3
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              2 4 6
+              ^ 0
+                ^ 1
+                  ^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await insert(undefined, (x) => `${+x * 2}`);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function byIndex", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              1 2 3
+              ^ 0
+                ^ 1
+                  ^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await insert.byIndex("start", (i) => `${i + 1}`);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function replace", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              1 2 3
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              2 4 6
+              ^ 0
+                ^ 1
+                  ^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await replace((x) => `${+x * 2}`);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function byIndex", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              1 2 3
+              ^ 0
+                ^ 1
+                  ^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await replace.byIndex((i) => `${i + 1}`);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function rotate", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              b c a
+              ^ 1
+                ^ 2
+                  ^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await rotate(1);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function selectionsOnly", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 1
+                ^ 2
+                  ^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        rotate.selectionsOnly(1);
+      });
+
+      after.assertEquals(editor);
+    });
+
+  });
+
+  suite("dance/src/api/search/index.ts", function () {
+
+    test("function backward", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abc
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        const [p1, [t1]] = search.backward(/\w/, new vscode.Position(0, 1))!;
+
+        assert.deepStrictEqual(p1, new vscode.Position(0, 0));
+        assert.strictEqual(t1, "a");
+
+        const [p2, [t2]] = search.backward(/\w/, new vscode.Position(0, 2))!;
+
+        assert.deepStrictEqual(p2, new vscode.Position(0, 1));
+        assert.strictEqual(t2, "b");
+
+        const [p3, [t3]] = search.backward(/\w+/, new vscode.Position(0, 2))!;
+
+        assert.deepStrictEqual(p3, new vscode.Position(0, 0));
+        assert.strictEqual(t3, "ab");
+
+        assert.strictEqual(
+          search.backward(/\w/, new vscode.Position(0, 0)),
+          undefined,
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function forward", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abc
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        const [p1, [t1]] = search.forward(/\w/, new vscode.Position(0, 0))!;
+
+        assert.deepStrictEqual(p1, new vscode.Position(0, 0));
+        assert.strictEqual(t1, "a");
+
+        const [p2, [t2]] = search.forward(/\w/, new vscode.Position(0, 1))!;
+
+        assert.deepStrictEqual(p2, new vscode.Position(0, 1));
+        assert.strictEqual(t2, "b");
+
+        const [p3, [t3]] = search.forward(/\w+/, new vscode.Position(0, 1))!;
+
+        assert.deepStrictEqual(p3, new vscode.Position(0, 1));
+        assert.strictEqual(t3, "bc");
+
+        assert.strictEqual(
+          search.forward(/\w/, new vscode.Position(0, 3)),
+          undefined,
+        );
+      });
+
+      // No expected end document.
+    });
+
+  });
+
+  suite("dance/src/api/edit/linewise.ts", function () {
+
+    test("function indentLines", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a
+
+              c
+              d
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+                a
+
+              c
+                d
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await indentLines([0, 1, 3]);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function indentLines#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+                  a
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await indentLines([0], 2);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function indentLines#2", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a
+
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+                a
+              ··
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await indentLines([0, 1], 1, true);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function deindentLines", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+                a
+              ··
+                  c
+                  d
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a
+
+                  c
+                d
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await deindentLines([0, 1, 3]);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function deindentLines#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+                a
+              ··
+                  c
+                  d
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a
+
+                  c
+              d
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await deindentLines([0, 1, 3], 2);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function joinLines", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b
+              c d
+              e f
+              g h
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a b c d
+              e f
+              g h
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await joinLines([0]);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function joinLines#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b
+              c d
+              e f
+              g h
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a b c d
+              e f
+              g h
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await joinLines([0, 1]);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function joinLines#2", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b
+              c d
+              e f
+              g h
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a b c d
+              e f g h
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await joinLines([0, 2]);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function joinLines#3", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b
+              c d
+              e f
+              g h
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a b
+              c d    e f
+              g h
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await joinLines([1], "    ");
+      });
+
+      after.assertEquals(editor);
+    });
+
+  });
+
+  suite("dance/src/api/search/move.ts", function () {
+
+    test("function backward", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abc
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        assert.deepStrictEqual(
+          moveWhile.backward((c) => /\w/.test(c), new vscode.Position(0, 3)),
+          new vscode.Position(0, 0),
+        );
+
+        assert.deepStrictEqual(
+          moveWhile.backward((c) => c === "c", new vscode.Position(0, 3)),
+          new vscode.Position(0, 2),
+        );
+
+        assert.deepStrictEqual(
+          moveWhile.backward((c) => c === "b", new vscode.Position(0, 3)),
+          new vscode.Position(0, 3),
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function forward", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abc
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        assert.deepStrictEqual(
+          moveWhile.forward((c) => /\w/.test(c), new vscode.Position(0, 0)),
+          new vscode.Position(0, 3),
+        );
+
+        assert.deepStrictEqual(
+          moveWhile.forward((c) => c === "a", new vscode.Position(0, 0)),
+          new vscode.Position(0, 1),
+        );
+
+        assert.deepStrictEqual(
+          moveWhile.forward((c) => c === "b", new vscode.Position(0, 0)),
+          new vscode.Position(0, 0),
+        );
+      });
+
+      // No expected end document.
+    });
+
+  });
+
+  suite("dance/src/api/selections.ts", function () {
+
+    test("function setSelections", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              hello world
+              ^ 0
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              hello world
+                    ^^^^^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        const start = new vscode.Position(0, 6),
+              end = new vscode.Position(0, 11);
+
+        setSelections([new vscode.Selection(start, end)]);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function setSelections#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        assert.throws(() => setSelections([]), EmptySelectionsError);
+        assert.throws(() => setSelections([1 as any]), NotASelectionError);
+      });
+
+      // No expected end document.
+    });
+
+    test("function filterSelections", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo 123
+              ^^^ 0
+                  ^^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        const atChar = (character: number) => new vscode.Position(0, character);
+
+        assert.deepStrictEqual(
+          filterSelections((text) => !isNaN(+text)),
+          [new vscode.Selection(atChar(4), atChar(7))],
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function filterSelections", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo 123
+              ^^^ 0
+                  ^^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        const atChar = (character: number) => new vscode.Position(0, character);
+
+        assert.deepStrictEqual(
+          await filterSelections(async (text) => !isNaN(+text)),
+          [new vscode.Selection(atChar(4), atChar(7))],
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function updateSelections", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo 123
+              ^^^ 0
+                  ^^^ 1
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              foo 123
+              |^^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        const reverseUnlessNumber = (text: string, sel: vscode.Selection) =>
+          isNaN(+text) ? new vscode.Selection(sel.active, sel.anchor) : undefined;
+
+        updateSelections(reverseUnlessNumber);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function updateSelections#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo 123
+              ^^^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        assert.throws(() => updateSelections(() => undefined), EmptySelectionsError);
+      });
+
+      // No expected end document.
+    });
+
+    test("function updateSelections", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo 123
+              ^^^ 0
+                  ^^^ 1
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              foo 123
+                  |^^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        const reverseIfNumber = async (text: string, sel: vscode.Selection) =>
+          !isNaN(+text) ? new vscode.Selection(sel.active, sel.anchor) : undefined;
+
+        await updateSelections(reverseIfNumber);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function rotateSelections", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo bar baz
+              ^^^ 0   ^^^ 2
+                  ^^^ 1
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              foo bar baz
+              ^^^ 1   ^^^ 0
+                  ^^^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        setSelections(rotateSelections(1));
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function rotateSelections#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              foo bar baz
+              ^^^ 0   ^^^ 2
+                  ^^^ 1
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              foo bar baz
+              ^^^ 2   ^^^ 1
+                  ^^^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        setSelections(rotateSelections(-1));
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function selectionsLines", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              ab
+              ^^ 0
+              cd
+              ^ 1
+              ef
+              gh
+              ^ 2
+               ^ 3
+              ij
+              ^ 3
+              kl
+              | 4
+              mn
+               ^^ 5
+              op
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(selectionsLines(), "to only contain", 0, 1, 3, 4, 5, 6);
+      });
+
+      // No expected end document.
+    });
+
+    test("function shift", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const s1 = selection().empty(0, 0),
+              shifted1 = Selections.shift(s1, position(0, 4), Select);
+
+        expect(shifted1, "to be ");
+      });
+
+      // No expected end document.
+    });
+
+    test("function shift#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        setSelectionBehavior(SelectionBehavior.Character);
+      });
+
+      // No expected end document.
+    });
+
+    test("function isEntireLine", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abc
+              ^^^^ 0
+              def
+              ^^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.isEntireLine(Selections.current[0]), "to be true");
+        expect(Selections.isEntireLine(Selections.current[1]), "to be false");
+      });
+
+      // No expected end document.
+    });
+
+    test("function isEntireLine#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abc
+              ^^^^ 0
+              def
+              ^^^^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.isEntireLine(Selections.current[0]), "to be false");
+      });
+
+      // No expected end document.
+    });
+
+    test("function isEntireLines", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abc
+              ^^^^ 0
+              def
+              ^^^^ 0
+              ghi
+              ^^^^ 1
+              jkl
+              ^^^^ 2
+              mno
+              ^^^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.isEntireLines(Selections.current[0]), "to be true");
+        expect(Selections.isEntireLines(Selections.current[1]), "to be true");
+        expect(Selections.isEntireLines(Selections.current[2]), "to be false");
+      });
+
+      // No expected end document.
+    });
+
+    test("function length", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abc
+              ^^^^ 0
+              def
+              ^^^ 0
+              ghi
+              ^ 1
+                | 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.length(Selections.current[0]), "to be", 7);
+        expect(Selections.length(Selections.current[1]), "to be", 1);
+        expect(Selections.length(Selections.current[2]), "to be", 0);
+      });
+
+      // No expected end document.
+    });
+
+    test("function fromStartEnd", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const p0 = new vscode.Position(0, 0),
+              p1 = new vscode.Position(0, 1);
+
+        expect(Selections.fromStartEnd(p0, p1, false), "to satisfy", {
+          start: p0,
+          end: p1,
+          anchor: p0,
+          active: p1,
+          isReversed: false,
+        });
+
+        expect(Selections.fromStartEnd(p0, p1, true), "to satisfy", {
+          start: p0,
+          end: p1,
+          anchor: p1,
+          active: p0,
+          isReversed: true,
+        });
+      });
+
+      // No expected end document.
+    });
+
+    test("function toCharacterMode", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a
+              b
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.toCharacterMode([selection().anchor(0, 0).active(0, 1)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 0),
+        ]);
+
+        expect(Selections.toCharacterMode([selection().anchor(0, 1).active(1, 0)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 1),
+        ]);
+
+        expect(Selections.toCharacterMode([selection().anchor(0, 0).active(1, 1)]), "to satisfy", [
+          expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 1, 0),
+        ]);
+
+        // Same lines as above, but with anchor and active reversed: nothing changes.
+        expect(Selections.toCharacterMode([selection().active(0, 0).anchor(0, 1)]), "to satisfy", [
+          selection().active(0, 0).anchor(0, 1),
+        ]);
+
+        expect(Selections.toCharacterMode([selection().active(0, 1).anchor(1, 0)]), "to satisfy", [
+          selection().active(0, 1).anchor(1, 0),
+        ]);
+
+        expect(Selections.toCharacterMode([selection().active(0, 0).anchor(1, 1)]), "to satisfy", [
+          selection().active(0, 0).anchor(1, 1),
+        ]);
+      });
+
+      // No expected end document.
+    });
+
+    test("function fromCharacterMode", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+            `);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        expect(Selections.fromCharacterMode([selection().empty(0, 0)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 0),
+        ]);
+      });
+
+      // No expected end document.
+    });
+
+    test("function fromCharacterMode#1", async function () {
+      const editorState = extension.getEditorState(editor),
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a
+              b
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.fromCharacterMode([selection().empty(0, 0)]), "to satisfy", [
+          expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 0, 1),
+        ]);
+
+        // At the end of the line, it selects the line ending:
+        expect(Selections.fromCharacterMode([selection().empty(0, 1)]), "to satisfy", [
+          expect.it("to have anchor at coords", 0, 1).and("to have cursor at coords", 1, 0),
+        ]);
+
+        // But it does nothing at the end of the document:
+        expect(Selections.fromCharacterMode([selection().empty(2, 0)]), "to satisfy", [
+          expect.it("to be empty at coords", 2, 0),
+        ]);
+      });
+
+      // No expected end document.
+    });
+
+  });
 });

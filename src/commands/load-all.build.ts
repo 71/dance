@@ -1,9 +1,11 @@
 import * as assert from "assert";
-import { parseDocComments, unindent } from "../meta";
+import { Builder, unindent } from "../../meta";
 
-export function build(commandModules: parseDocComments.ParsedModule<void>[]) {
+export async function build(builder: Builder) {
+  const modules = await builder.getCommandModules();
+
   return unindent(4, `
-    ${commandModules.map((module) => unindent(8, `
+    ${modules.map((module) => unindent(8, `
         /**
          * Loads the "${module.name}" module and returns its defined commands.
          */
@@ -44,7 +46,7 @@ export function build(commandModules: parseDocComments.ParsedModule<void>[]) {
      */
     export async function loadCommands(): Promise<Commands> {
       const allModules = await Promise.all([${
-        commandModules
+        modules
           .map((module) => `\n${" ".repeat(8)}load${capitalize(module.name!)}Module(),`)
           .join("")}
       ]);
@@ -60,7 +62,7 @@ function capitalize(text: string) {
   return text.replace(/(\.|^)[a-z]/g, (x, dot) => x.slice(dot.length).toUpperCase());
 }
 
-function determineFunctionExpression(f: parseDocComments.ParsedFunction<any>) {
+function determineFunctionExpression(f: Builder.ParsedFunction) {
   const givenParameters: string[] = [];
   let inContext = false,
       takeArgument = false;
@@ -177,7 +179,7 @@ function determineFunctionExpression(f: parseDocComments.ParsedFunction<any>) {
   return `(${inputParameters.join(", ")}) => ${call}`;
 }
 
-function determineFunctionFlags(f: parseDocComments.ParsedFunction<any>) {
+function determineFunctionFlags(f: Builder.ParsedFunction) {
   const flags = [] as string[];
 
   if (f.parameters.some(([_, t]) => ["Context"].includes(t))
@@ -192,7 +194,7 @@ function determineFunctionFlags(f: parseDocComments.ParsedFunction<any>) {
   return flags.map((flag) => "CommandDescriptor.Flags." + flag).join(" | ");
 }
 
-function buildCommandsExpression(f: parseDocComments.AdditionalCommand) {
+function buildCommandsExpression(f: Builder.AdditionalCommand) {
   const commands = f.commands!.replace(/ +/g, " ").replace(/ \}\]/g, ", ...argument }]");
 
   return `(_, argument) => _.runAsync(() => commands(${commands}))`;

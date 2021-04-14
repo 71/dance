@@ -1,7 +1,7 @@
 import * as assert from "assert";
-import * as fs from "fs/promises";
-import * as G from "glob";
-import * as path from "path";
+import * as fs     from "fs/promises";
+import * as G      from "glob";
+import * as path   from "path";
 
 const verbose = process.argv.includes("--verbose");
 
@@ -37,7 +37,7 @@ function countNewLines(text: string) {
   return count;
 }
 
-const keyMapping: Record<string, keyof parseDocComments.AdditionalCommand> = {
+const keyMapping: Record<string, keyof Builder.AdditionalCommand> = {
   Command: "commands",
   Commands: "commands",
   Identifier: "identifier",
@@ -48,7 +48,7 @@ const keyMapping: Record<string, keyof parseDocComments.AdditionalCommand> = {
   Title: "title",
 };
 
-const valueConverter: Record<keyof parseDocComments.AdditionalCommand, (x: string) => string> = {
+const valueConverter: Record<keyof Builder.AdditionalCommand, (x: string) => string> = {
   commands(commands) {
     return commands.replace(/^`+|`+$/g, "").replace("MAX_INT", `${2_147_483_647}`);
   },
@@ -71,7 +71,7 @@ const valueConverter: Record<keyof parseDocComments.AdditionalCommand, (x: strin
 
 function parseAdditional(qualificationPrefix: string, text: string, textStartLine: number) {
   const lines = text.split("\n"),
-        additional: parseDocComments.AdditionalCommand[] = [];
+        additional: Builder.AdditionalCommand[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -97,7 +97,7 @@ function parseAdditional(qualificationPrefix: string, text: string, textStartLin
 
         i++;
 
-        const obj: parseDocComments.AdditionalCommand = { line: textStartLine + i },
+        const obj: Builder.AdditionalCommand = { line: textStartLine + i },
               values = line.slice(2, line.length - 2).split(" | ");
 
         for (let j = 0; j < values.length; j++) {
@@ -123,18 +123,20 @@ function parseAdditional(qualificationPrefix: string, text: string, textStartLin
  * Parses all the doc comments of functions in the given string of TypeScript
  * code. Examples will be parsed using the given function.
  */
-export function parseDocComments<T>(code: string, parseExample: (text: string) => T) {
-  const moduleHeaderMatch = moduleCommentRe.exec(code);
+function parseDocComments(code: string, modulePath: string) {
   let moduleDoc: string,
-      moduleName: string,
-      moduleDocStartLine: number;
+      moduleDocStartLine: number,
+      moduleName: string;
+  const moduleHeaderMatch = moduleCommentRe.exec(code);
 
   if (moduleHeaderMatch !== null) {
     moduleDoc = moduleHeaderMatch[1].split("\n").map((line) => line.slice(3)).join("\n");
-    moduleName = moduleHeaderMatch[2].replace(/^\.\//, "");
     moduleDocStartLine = code.slice(0, moduleHeaderMatch.index).split("\n").length + 2;
+    moduleName = moduleHeaderMatch[2].replace(/^\.\//, "");
   } else {
-    return undefined;
+    moduleDoc = "";
+    moduleDocStartLine = 0;
+    moduleName = path.basename(modulePath, ".ts");
   }
 
   if (verbose) {
@@ -143,7 +145,7 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
 
   const modulePrefix = moduleName === "misc" ? "" : moduleName + ".";
 
-  const functions: parseDocComments.ParsedFunction<T>[] = [],
+  const functions: Builder.ParsedFunction[] = [],
         namespaces: string[] = [];
   let previousIndentation = 0;
 
@@ -188,6 +190,9 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
               if (match = /^(\w+) *= *(\w+)\.([\w.]+)$/.exec(p)) {
                 return [match[1], `${match[2]} = ${match[2]}.${match[3]}`] as [string, string];
               }
+              if (match = /^(\.\.\.\w+): *(.+)$/.exec(p)) {
+                return [match[1], match[2]] as [string, string];
+              }
 
               throw new Error(`unrecognized parameter pattern ${p}`);
             }),
@@ -225,7 +230,6 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
                                            }),
           summary = /((?:.+(?:\n|$))+)/.exec(doc)![0].trim().replace(/\.$/, ""),
           examplesStrings = splitDocComment.slice(1),
-          examples = examplesStrings.map(parseExample),
           nameWithDot = functionName.replace(/_/g, ".");
 
     let qualifiedName = modulePrefix;
@@ -250,7 +254,7 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
       doc,
       properties,
       summary,
-      examples,
+      examples: examplesStrings,
       additional: parseAdditional(modulePrefix, splitDocComment[0], startLine),
 
       parameters,
@@ -261,6 +265,7 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
   docCommentRe.lastIndex = 0;
 
   return {
+    path: path.relative(path.dirname(__dirname), modulePath).replace(/\\/g, "/"),
     name: moduleName,
     doc: moduleDoc,
 
@@ -275,67 +280,7 @@ export function parseDocComments<T>(code: string, parseExample: (text: string) =
     get keybindings() {
       return getKeybindings(this);
     },
-  } as parseDocComments.ParsedModule<T>;
-}
-
-export namespace parseDocComments {
-  export interface ParsedFunction<T> {
-    readonly namespace?: string;
-    readonly name: string;
-    readonly nameWithDot: string;
-    readonly qualifiedName: string;
-
-    readonly startLine: number;
-    readonly endLine: number;
-
-    readonly doc: string;
-    readonly properties: Record<string, string>;
-    readonly summary: string;
-    readonly examples: T[];
-    readonly additional: AdditionalCommand[];
-
-    readonly parameters: readonly [name: string, type: string][];
-    readonly returnType: string | undefined;
-  }
-
-  export interface AdditionalCommand {
-    title?: string;
-    identifier?: string;
-    qualifiedIdentifier?: string;
-    keys?: string;
-    commands?: string;
-    line: number;
-  }
-
-  export interface ParsedModule<T> {
-    readonly name: string;
-    readonly doc: string;
-
-    readonly additional: readonly AdditionalCommand[];
-    readonly functions: readonly ParsedFunction<T>[];
-    readonly functionNames: readonly string[];
-
-    readonly commands: {
-      readonly id: string;
-      readonly title: string;
-    }[];
-
-    readonly keybindings: {
-      readonly title?: string;
-      readonly key: string;
-      readonly when: string;
-      readonly command: string;
-      readonly args?: any;
-    }[];
-  }
-
-  export function parseApiExample(text: string) {
-
-  }
-
-  export function parseCommandExample(text: string) {
-
-  }
+  } as Builder.ParsedModule;
 }
 
 /**
@@ -380,18 +325,104 @@ export function glob(pattern: string, ignore?: string) {
 }
 
 /**
- * Returns all modules for command files.
+ * A class used in .build.ts files.
  */
-export async function getCommandModules() {
-  const commandFiles = await glob(`${__dirname}/commands/**/*.ts`, /* ignore= */ "**/*.build.ts"),
-        commandModules = await Promise.all(
-          commandFiles.map((path) =>
-            fs.readFile(path, "utf-8")
-              .then((code) => parseDocComments(code, parseDocComments.parseCommandExample))),
-        );
+export class Builder {
+  private _apiModules?: Builder.ParsedModule[];
+  private _commandModules?: Builder.ParsedModule[];
 
-  return (commandModules.filter((m) => m !== undefined) as parseDocComments.ParsedModule<void>[])
-    .sort((a, b) => a.name!.localeCompare(b.name!));
+  /**
+   * Returns all modules for API files.
+   */
+  public async getApiModules() {
+    if (this._apiModules !== undefined) {
+      return this._apiModules;
+    }
+
+    const apiFiles = await glob(`${__dirname}/src/api/**/*.ts`, /* ignore= */ "**/*.build.ts"),
+          apiModules = await Promise.all(
+            apiFiles.map((filepath) =>
+              fs.readFile(filepath, "utf-8").then((code) => parseDocComments(code, filepath))));
+
+    this._apiModules = apiModules.filter((m) => m !== undefined) as Builder.ParsedModule[];
+    this._apiModules.sort((a, b) => a.name.localeCompare(b.name));
+
+    return this._apiModules;
+  }
+
+  /**
+   * Returns all modules for command files.
+   */
+  public async getCommandModules() {
+    if (this._commandModules !== undefined) {
+      return this._commandModules;
+    }
+
+    const commandsGlob = `${__dirname}/src/commands/**/*.ts`,
+          commandFiles = await glob(commandsGlob, /* ignore= */ "**/*.build.ts"),
+          commandModules = await Promise.all(
+            // TODO: no need to filter old-files
+            commandFiles.filter((file) => !file.includes("old-")).map((filepath) =>
+              fs.readFile(filepath, "utf-8").then((code) => parseDocComments(code, filepath))));
+
+    this._commandModules = commandModules.filter((m) => m !== undefined) as Builder.ParsedModule[];
+    this._commandModules.sort((a, b) => a.name.localeCompare(b.name));
+
+    return this._commandModules;
+  }
+}
+
+export namespace Builder {
+  export interface ParsedFunction {
+    readonly namespace?: string;
+    readonly name: string;
+    readonly nameWithDot: string;
+    readonly qualifiedName: string;
+
+    readonly startLine: number;
+    readonly endLine: number;
+
+    readonly doc: string;
+    readonly properties: Record<string, string>;
+    readonly summary: string;
+    readonly examples: string[];
+    readonly additional: AdditionalCommand[];
+
+    readonly parameters: readonly [name: string, type: string][];
+    readonly returnType: string | undefined;
+  }
+
+  export interface AdditionalCommand {
+    title?: string;
+    identifier?: string;
+    qualifiedIdentifier?: string;
+    keys?: string;
+    commands?: string;
+    line: number;
+  }
+
+  export interface ParsedModule {
+    readonly path: string;
+    readonly name: string;
+    readonly doc: string;
+
+    readonly additional: readonly AdditionalCommand[];
+    readonly functions: readonly ParsedFunction[];
+    readonly functionNames: readonly string[];
+
+    readonly commands: {
+      readonly id: string;
+      readonly title: string;
+    }[];
+
+    readonly keybindings: {
+      readonly title?: string;
+      readonly key: string;
+      readonly when: string;
+      readonly command: string;
+      readonly args?: any;
+    }[];
+  }
 }
 
 /**
@@ -455,7 +486,7 @@ export function parseKeys(keys: string) {
 /**
  * Returns all defined commands in the given module.
  */
-function getCommands(module: Omit<parseDocComments.ParsedModule<any>, "commands">) {
+function getCommands(module: Omit<Builder.ParsedModule, "commands">) {
   return [
     ...module.functions.map((f) => ({ id: `dance.${f.qualifiedName}`, title: f.summary })),
     ...module.additional
@@ -468,7 +499,7 @@ function getCommands(module: Omit<parseDocComments.ParsedModule<any>, "commands"
 /**
  * Returns all defined keybindings in the given module.
  */
-function getKeybindings(module: Omit<parseDocComments.ParsedModule<any>, "keybindings">) {
+function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
   return [
     ...module.functions.flatMap((f) => parseKeys(f.properties.keys ?? "").map((key) => ({
       ...key,
@@ -529,23 +560,24 @@ export function unindent(by: number, string: string) {
 /**
  * Updates a .build.ts file.
  */
-async function buildFile(fileName: string, modules: parseDocComments.ParsedModule<any>[]) {
+async function buildFile(fileName: string, builder: Builder) {
   const relativeName = path.relative(__dirname, fileName),
         relativeNameWithoutBuild = relativeName.replace(/build\.ts$/, ""),
         modulePath = `./${relativeNameWithoutBuild}build`,
-        prefix = path.basename(relativeNameWithoutBuild),
-        outputName = (await fs.readdir(path.dirname(fileName)))
-          .find((path) => path.startsWith(prefix) && !path.endsWith(".build.ts"))!,
-        outputPath = path.join(path.dirname(fileName), outputName),
-        module: { build(modules: parseDocComments.ParsedModule<any>[]): Promise<string> } =
-          require(modulePath);
+        module: { build(builder: Builder): Promise<string> } = require(modulePath),
+        generatedContent = await module.build(builder);
 
-  const existingContent = await fs.readFile(outputPath, "utf-8"),
-        existingContentHeader =
-          /^[\s\S]+?\n.+Content below this line was auto-generated.+\n/m.exec(existingContent)![0],
-        generatedContent = await module.build(modules);
+  if (typeof generatedContent === "string") {
+    const prefix = path.basename(relativeNameWithoutBuild),
+          outputName = (await fs.readdir(path.dirname(fileName)))
+            .find((path) => path.startsWith(prefix) && !path.endsWith(".build.ts"))!,
+          outputPath = path.join(path.dirname(fileName), outputName),
+          outputContent = await fs.readFile(outputPath, "utf-8"),
+          outputContentHeader =
+            /^[\s\S]+?\n.+Content below this line was auto-generated.+\n/m.exec(outputContent)![0];
 
-  await fs.writeFile(outputPath, existingContentHeader + generatedContent, "utf-8");
+    await fs.writeFile(outputPath, outputContentHeader + generatedContent, "utf-8");
+  }
 }
 
 /**
@@ -555,18 +587,23 @@ async function main() {
   let success = true;
 
   const ensureUpToDate = process.argv.includes("--ensure-up-to-date"),
-        check = process.argv.includes("--check"),
-        contentsBefore: string[] = [],
-        fileNames = [`${__dirname}/commands/README.md`, `${__dirname}/commands/index.ts`];
+        check = process.argv.includes("--check");
+
+  const contentsBefore: string[] = [],
+        fileNames = [
+          `${__dirname}/package.json`,
+          `${__dirname}/src/commands/README.md`,
+          `${__dirname}/src/commands/index.ts`,
+        ];
 
   if (ensureUpToDate) {
     contentsBefore.push(...await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8"))));
   }
 
-  const commandModules = await getCommandModules(),
+  const builder = new Builder(),
         filesToBuild = await glob(`${__dirname}/**/*.build.ts`);
 
-  await Promise.all(filesToBuild.map((path) => buildFile(path, commandModules)));
+  await Promise.all(filesToBuild.map((path) => buildFile(path, builder)));
 
   if (ensureUpToDate) {
     const contentsAfter = await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8")));
@@ -583,7 +620,8 @@ async function main() {
   }
 
   if (check) {
-    const filesToCheck = await glob(`${__dirname}/commands/**/*.ts`, /* ignore= */ "**/*.build.ts"),
+    const filesToCheck = await glob(
+            `${__dirname}/src/commands/**/*.ts`, /* ignore= */ "**/*.build.ts"),
           contentsToCheck = await Promise.all(filesToCheck.map((f) => fs.readFile(f, "utf-8")));
 
     for (let i = 0; i < filesToCheck.length; i++) {

@@ -31,18 +31,18 @@ export namespace search {
    *
    * ### Example
    *
-   * ```js
-   * const [p1, [t1]] = search.backward(/\w/, new vscode.Position(0, 1));
+   * ```ts
+   * const [p1, [t1]] = search.backward(/\w/, new vscode.Position(0, 1))!;
    *
    * assert.deepStrictEqual(p1, new vscode.Position(0, 0));
    * assert.strictEqual(t1, "a");
    *
-   * const [p2, [t2]] = search.backward(/\w/, new vscode.Position(0, 2));
+   * const [p2, [t2]] = search.backward(/\w/, new vscode.Position(0, 2))!;
    *
    * assert.deepStrictEqual(p2, new vscode.Position(0, 1));
    * assert.strictEqual(t2, "b");
    *
-   * const [p3, [t3]] = search.backward(/\w+/, new vscode.Position(0, 2));
+   * const [p3, [t3]] = search.backward(/\w+/, new vscode.Position(0, 2))!;
    *
    * assert.deepStrictEqual(p3, new vscode.Position(0, 0));
    * assert.strictEqual(t3, "ab");
@@ -90,18 +90,18 @@ export namespace search {
    *
    * ### Example
    *
-   * ```js
-   * const [p1, [t1]] = search.forward(/\w/, new vscode.Position(0, 0));
+   * ```ts
+   * const [p1, [t1]] = search.forward(/\w/, new vscode.Position(0, 0))!;
    *
    * assert.deepStrictEqual(p1, new vscode.Position(0, 0));
    * assert.strictEqual(t1, "a");
    *
-   * const [p2, [t2]] = search.forward(/\w/, new vscode.Position(0, 1));
+   * const [p2, [t2]] = search.forward(/\w/, new vscode.Position(0, 1))!;
    *
    * assert.deepStrictEqual(p2, new vscode.Position(0, 1));
    * assert.strictEqual(t2, "b");
    *
-   * const [p3, [t3]] = search.forward(/\w+/, new vscode.Position(0, 1));
+   * const [p3, [t3]] = search.forward(/\w+/, new vscode.Position(0, 1))!;
    *
    * assert.deepStrictEqual(p3, new vscode.Position(0, 1));
    * assert.strictEqual(t3, "bc");

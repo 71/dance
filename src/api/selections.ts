@@ -37,7 +37,7 @@ import { Lines } from "./lines";
  * ### Example
  * ```js
  * assert.throws(() => setSelections([]), EmptySelectionsError);
- * assert.throws(() => setSelections([1]), NotASelectionError);
+ * assert.throws(() => setSelections([1 as any]), NotASelectionError);
  * ```
  */
 export function setSelections(selections: readonly vscode.Selection[]) {
@@ -58,7 +58,7 @@ export function setSelections(selections: readonly vscode.Selection[]) {
  * ### Example
  *
  * ```js
- * const atChar = (character) => new vscode.Position(0, character);
+ * const atChar = (character: number) => new vscode.Position(0, character);
  *
  * assert.deepStrictEqual(
  *   filterSelections((text) => !isNaN(+text)),
@@ -87,7 +87,7 @@ export function filterSelections(
  * ### Example
  *
  * ```js
- * const atChar = (character) => new vscode.Position(0, character);
+ * const atChar = (character: number) => new vscode.Position(0, character);
  *
  * assert.deepStrictEqual(
  *   await filterSelections(async (text) => !isNaN(+text)),
@@ -387,7 +387,7 @@ export namespace mapSelections {
  * ### Example
  *
  * ```js
- * const reverseUnlessNumber = (text, sel) =>
+ * const reverseUnlessNumber = (text: string, sel: vscode.Selection) =>
  *   isNaN(+text) ? new vscode.Selection(sel.active, sel.anchor) : undefined;
  *
  * updateSelections(reverseUnlessNumber);
@@ -429,7 +429,7 @@ export function updateSelections(
  * ### Example
  *
  * ```js
- * const reverseIfNumber = async (text, sel) =>
+ * const reverseIfNumber = async (text: string, sel: vscode.Selection) =>
  *   !isNaN(+text) ? new vscode.Selection(sel.active, sel.anchor) : undefined;
  *
  * await updateSelections(reverseIfNumber);
@@ -569,7 +569,7 @@ export function rotateSelections(
  * ### Example
  *
  * ```js
- * expect(selectionsLines()).to.have.members([0, 1, 3, 4, 5, 6]);
+ * expect(selectionsLines(), "to only contain", 0, 1, 3, 4, 5, 6);
  * ```
  *
  * With:
@@ -984,7 +984,7 @@ export namespace Selections {
    * ### Example
    *
    * ```js
-   * Context.current._selectionBehavior = 2;  // Character
+   * setSelectionBehavior(SelectionBehavior.Character);
    * ```
    */
   export function shift(

@@ -283,12 +283,12 @@ export namespace moveWhile {
    * );
    *
    * assert.deepStrictEqual(
-   *   moveWhile.backward((c) => c === 'c', new vscode.Position(0, 3)),
+   *   moveWhile.backward((c) => c === "c", new vscode.Position(0, 3)),
    *   new vscode.Position(0, 2),
    * );
    *
    * assert.deepStrictEqual(
-   *   moveWhile.backward((c) => c === 'b', new vscode.Position(0, 3)),
+   *   moveWhile.backward((c) => c === "b", new vscode.Position(0, 3)),
    *   new vscode.Position(0, 3),
    * );
    * ```
@@ -314,12 +314,12 @@ export namespace moveWhile {
    * );
    *
    * assert.deepStrictEqual(
-   *   moveWhile.forward((c) => c === 'a', new vscode.Position(0, 0)),
+   *   moveWhile.forward((c) => c === "a", new vscode.Position(0, 0)),
    *   new vscode.Position(0, 1),
    * );
    *
    * assert.deepStrictEqual(
-   *   moveWhile.forward((c) => c === 'b', new vscode.Position(0, 0)),
+   *   moveWhile.forward((c) => c === "b", new vscode.Position(0, 0)),
    *   new vscode.Position(0, 0),
    * );
    * ```

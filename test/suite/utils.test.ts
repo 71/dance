@@ -2,7 +2,8 @@ import * as assert from "assert";
 import * as fs     from "fs";
 import * as vscode from "vscode";
 
-import { ExpectedDocument, execAll, resolve } from "./utils";
+import { execAll } from "./build-utils";
+import { ExpectedDocument, resolve } from "./utils";
 
 function stringifySelection(selection: vscode.Selection) {
   return `${selection.anchor.line}:${selection.anchor.character} → `

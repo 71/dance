@@ -14,43 +14,5 @@
         "isDefault": true
       }
     },
-    {
-      "type": "shell",
-      "command": "node_modules/.bin/ts-node",
-      "args": [
-        "test/suite/commands.utils.ts",
-        "show-selection-boundaries",
-        "${file}",
-      ],
-      "label": "show selection boundaries",
-      "group": "test",
-      "problemMatcher": [],
-    },
-    {
-      "type": "shell",
-      "command": "node_modules/.bin/ts-node",
-      "args": [
-        "test/suite/commands.utils.ts",
-        "hide-selection-boundaries",
-        "${file}",
-      ],
-      "label": "hide selection boundaries",
-      "group": "test",
-      "problemMatcher": [],
-    },
-    {
-      "type": "shell",
-      "command": "node_modules/.bin/ts-node",
-      "args": [
-        "test/suite/commands.utils.ts",
-        "add-selection",
-        "${file}",
-        "${lineNumber}",
-        "${selectedText}",
-      ],
-      "label": "add selection",
-      "group": "test",
-      "problemMatcher": [],
-    },
   ]
 }

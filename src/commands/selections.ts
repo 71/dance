@@ -726,7 +726,7 @@ const indicesPerEditor = new Map<EditorState, AutoDisposable>();
 /**
  * Toggle selection indices.
  *
- * @keys `s-y` (normal)
+ * @keys `enter` (normal)
  *
  * #### Variants
  *

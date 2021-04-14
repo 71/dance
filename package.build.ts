@@ -1,6 +1,4 @@
-import { writeFile } from "fs/promises";
-
-import { getCommandModules, parseDocComments } from "./src/meta";
+import type { Builder } from "./meta";
 
 // Shared values
 // ============================================================================
@@ -72,14 +70,14 @@ const selectionDecorationType = {
 // Package information
 // ============================================================================
 
-const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
+export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   // Common package.json properties.
   // ==========================================================================
 
   name: "dance",
   description: "Make those cursors dance with Kakoune-inspired keybindings.",
-  version: "0.4.2",
+  version: "0.5.0-rc",
   license: "ISC",
 
   author: {
@@ -101,7 +99,7 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
   scripts: {
     "check": "eslint .",
     "format": "eslint . --fix",
-    "generate": "ts-node ./src/meta.ts && ts-node ./package.ts",
+    "generate": "ts-node ./meta.ts",
     "vscode:prepublish": "yarn run generate && yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
@@ -598,12 +596,12 @@ const pkg = (modules: parseDocComments.ParsedModule<void>[]) => ({
 // Save to package.json
 // ============================================================================
 
-async function save() {
-  await writeFile(
+export async function build(builder: Builder) {
+  const fs = await import("fs/promises");
+
+  await fs.writeFile(
     `${__dirname}/package.json`,
-    JSON.stringify(pkg(await getCommandModules()), undefined, 2) + "\n",
+    JSON.stringify(pkg(await builder.getCommandModules()), undefined, 2) + "\n",
     "utf-8",
   );
 }
-
-save();

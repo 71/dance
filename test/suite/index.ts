@@ -16,10 +16,8 @@ export function run(testsRoot: string, cb: (error: any, failures?: number) => vo
       mocha.grep("ExpectedDocument#parse");
 
       files = ["utils.test.js"];
-    } else if (currentFile.startsWith("test/suite/commands/")) {
-      mocha.grep(path.basename(currentFile, path.extname(currentFile)));
-
-      files = ["commands.test.js"];
+    } else if (currentFile.startsWith("test/suite/commands/") && currentFile.endsWith(".md")) {
+      files = [path.join("commands", path.basename(currentFile, ".md") + ".test.js")];
     } else if (currentFile.includes(".test.")) {
       const currentFileAsJs = path.basename(currentFile).replace(/\.ts$/, ".js");
 

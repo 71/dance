@@ -4,23 +4,47 @@ import "source-map-support/register";
 
 import * as assert from "assert";
 import * as path   from "path";
+// @ts-expect-error
+import * as expect from "unexpected";
 import * as vscode from "vscode";
 
-export function longestStringLength<T>(f: (v: T) => string, values: readonly T[]) {
-  return values.reduce((longest, curr) => Math.max(longest, f(curr).length), 0);
+interface Expect<T = any> {
+  <T>(subject: T, assertion: string, ...args: readonly any[]): {
+    readonly and: Expect.Continuation<T>;
+  };
+
+  readonly it: Expect.Continuation<T>;
+
+  addAssertion<T>(
+    pattern: string,
+    handler: (expect: Expect<T>, subject: T, ...args: readonly any[]) => void,
+  ): void;
+
+  addType<T>(typeDefinition: {
+    name: string;
+    identify: (value: unknown) => boolean;
+
+    base?: string;
+    inspect?: (value: T, depth: number, output: Expect.Output, inspect: Expect.Inspect) => any;
+  }): void;
 }
 
-export function execAll(re: RegExp, contents: string) {
-  assert(re.global);
-
-  const matches = [] as RegExpExecArray[];
-
-  for (let match = re.exec(contents); match !== null; match = re.exec(contents)) {
-    matches.push(match);
+namespace Expect {
+  export interface Continuation<T = any> {
+    (assertion: string, ...args: readonly any[]): { readonly and: Continuation<T> };
   }
 
-  return matches;
+  export interface Inspect {
+    (value: any, depth: number): any;
+  }
+
+  export interface Output {
+    text(text: string): Output;
+    append(_: any): Output;
+  }
 }
+
+export declare const expect: Expect;
 
 /**
  * Resolves a path starting at the root of the Git repository.
@@ -29,6 +53,107 @@ export function resolve(subpath: string) {
   // Current path is dance/out/test/suite/utils
   return path.join(__dirname, "../../..", subpath);
 }
+
+const shortPos = (p: vscode.Position) => `${p.line}:${p.character}`;
+
+expect.addType<vscode.Position>({
+  name: "position",
+  identify: (v) => v instanceof vscode.Position,
+  base: "object",
+
+  inspect: (value, _, output) => {
+    output
+      .text("Position(")
+      .text(shortPos(value))
+      .text(")");
+  },
+});
+
+expect.addType<vscode.Selection>({
+  name: "selection",
+  identify: (v) => v instanceof vscode.Selection,
+  base: "object",
+
+  inspect: (value, _, output) => {
+    output
+      .text("Selection(")
+      .text(shortPos(value.anchor))
+      .text(" -> ")
+      .text(shortPos(value.active))
+      .text(")");
+  },
+});
+
+expect.addAssertion<vscode.Position>(
+  "<position> [not] to (have|be at) coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to satisfy", { line, character });
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to be empty at coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to start at", new vscode.Position(line, character))
+      .and("[not] to be empty");
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to be empty",
+  (expect, subject) => {
+    expect(subject, "[not] to satisfy", { isEmpty: true });
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to be reversed",
+  (expect, subject) => {
+    expect(subject, "[not] to satisfy", { isReversed: true });
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to start at <position>",
+  (expect, subject, position: vscode.Position) => {
+    expect(subject, "[not] to satisfy", { start: position });
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to end at <position>",
+  (expect, subject, position: vscode.Position) => {
+    expect(subject, "[not] to satisfy", { end: position });
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to (have anchor|be anchored) at <position>",
+  (expect, subject, position: vscode.Position) => {
+    expect(subject, "[not] to satisfy", { anchor: position });
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to (have cursor|be active) at <position>",
+  (expect, subject, position: vscode.Position) => {
+    expect(subject, "[not] to satisfy", { active: position });
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to (have anchor|be anchored) at coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to be anchored at", new vscode.Position(line, character));
+  },
+);
+
+expect.addAssertion<vscode.Selection>(
+  "<selection> [not] to (have cursor|be active) at coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to be active at", new vscode.Position(line, character));
+  },
+);
 
 function stringifySelection(document: vscode.TextDocument, selection: vscode.Selection) {
   const content = document.getText();
@@ -55,7 +180,15 @@ export class ExpectedDocument {
     public readonly selections: vscode.Selection[] = [],
   ) {}
 
+  public static parseIndented(indent: number, text: string) {
+    return ExpectedDocument.parse(
+      text.replace(new RegExp(`^ {${indent}}`, "gm"), "").replace(/ +$/, ""),
+    );
+  }
+
   public static parse(text: string) {
+    text = text.replace(/·/g, " ");
+
     const selections = [] as vscode.Selection[],
           lines = [] as string[];
     let previousLineStart = 0;

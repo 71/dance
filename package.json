@@ -1,7 +1,7 @@
 {
   "name": "dance",
   "description": "Make those cursors dance with Kakoune-inspired keybindings.",
-  "version": "0.4.2",
+  "version": "0.5.0-rc",
   "license": "ISC",
   "author": {
     "name": "Grégoire Geis",
@@ -18,7 +18,7 @@
   "scripts": {
     "check": "eslint .",
     "format": "eslint . --fix",
-    "generate": "ts-node ./src/meta.ts && ts-node ./package.ts",
+    "generate": "ts-node ./meta.ts",
     "vscode:prepublish": "yarn run generate && yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
@@ -891,6 +891,11 @@
       {
         "command": "dance.keybindings.setup",
         "title": "Set up Dance keybindings",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.load-all.loadCommands",
+        "title": "Loads and returns all defined commands",
         "category": "Dance"
       },
       {
@@ -2530,7 +2535,7 @@
         "command": "dance.selections.splitLines"
       },
       {
-        "key": "Shift+Y",
+        "key": "Enter",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Toggle selection indices",
         "command": "dance.selections.toggleIndices"
@@ -2584,6 +2589,11 @@
       {
         "command": "dance.ignore",
         "key": "Shift+V",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.ignore",
+        "key": "Shift+Y",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

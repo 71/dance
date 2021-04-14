@@ -142,12 +142,14 @@ export namespace prompt {
     );
   }
 
+  export type ListPair = readonly [string, string];
+
   /**
    * Prompts the user to choose one item among a list of items, and returns the
    * index of the item that was picked.
    */
   export function one(
-    items: readonly (readonly [string, string])[],
+    items: readonly ListPair[],
     init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
     context = Context.WithoutActiveEditor.current,
   ) {
@@ -159,7 +161,7 @@ export namespace prompt {
    * list of indices of picked items.
    */
   export function many(
-    items: readonly (readonly [string, string])[],
+    items: readonly ListPair[],
     init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
     context = Context.WithoutActiveEditor.current,
   ) {

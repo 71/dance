@@ -107,7 +107,7 @@ function mapResults(
  *
  * ### Example
  * ```js
- * await insert(undefined, (x) => `${x * 2}`);
+ * await insert(undefined, (x) => `${+x * 2}`);
  * ```
  *
  * Before:
@@ -210,7 +210,7 @@ export namespace insert {
    *
    * ### Example
    * ```js
-   * await insert.byIndex("", (i) => `${i + 1}`);
+   * await insert.byIndex("start", (i) => `${i + 1}`);
    * ```
    *
    * Before:
@@ -284,7 +284,7 @@ export namespace insert {
  *
  * ### Example
  * ```js
- * await replace((x) => `${x * 2}`);
+ * await replace((x) => `${+x * 2}`);
  * ```
  *
  * Before:

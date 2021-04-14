@@ -1,6 +1,8 @@
-import { parseDocComments, parseKeys, unindent } from "../meta";
+import { Builder, parseKeys, unindent } from "../../meta";
 
-export function build(commandModules: parseDocComments.ParsedModule<void>[]) {
+export async function build(builder: Builder) {
+  const commandModules = await builder.getCommandModules();
+
   return unindent(4, `
     <details>
     <summary><b>Quick reference</b></summary>
@@ -29,11 +31,10 @@ export function build(commandModules: parseDocComments.ParsedModule<void>[]) {
   `);
 }
 
-function toTable(modules: readonly parseDocComments.ParsedModule<any>[]) {
+function toTable(modules: readonly Builder.ParsedModule[]) {
   const rows: string[][] = modules.flatMap((module) => {
     const modulePrefix = module.name === "misc" ? "" : module.name + ".",
-          allCommands = [] as (parseDocComments.ParsedFunction<void>
-                             | parseDocComments.AdditionalCommand)[];
+          allCommands = [] as (Builder.ParsedFunction | Builder.AdditionalCommand)[];
 
     allCommands.push(...module.functions);
     allCommands.push(
@@ -85,7 +86,7 @@ function toTable(modules: readonly parseDocComments.ParsedModule<any>[]) {
   `;
 }
 
-function determineSupportedInputs(f: parseDocComments.ParsedFunction<any>) {
+function determineSupportedInputs(f: Builder.ParsedFunction) {
   const supported: string[] = [];
   let requiresActiveEditor = false;
 
