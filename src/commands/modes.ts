@@ -20,12 +20,12 @@ declare module "./modes";
  *
  * Other variants are provided to switch to insert mode:
  *
- * | Title                | Identifier         | Keybinding     | Commands                                                                                                            |
- * | -------------------- | ------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------- |
- * | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }]` |
- * | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"   }]` |
- * | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { "shift": "jump" }], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }]`                                 |
- * | Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { "shift": "jump" }], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end" }]`                                 |
+ * | Title                | Identifier         | Keybinding     | Commands                                                                                                                                             |
+ * | -------------------- | ------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+ * | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }]`                                  |
+ * | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"   }]`                                  |
+ * | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { "shift": "jump", "skipBlank": true }], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }]` |
+ * | Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { "shift": "jump" }]                   , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end" }]`   |
  */
 export async function set(_: Context, inputOr: InputOr<string>) {
   await toMode(await inputOr(() => prompt(validateModeName())));

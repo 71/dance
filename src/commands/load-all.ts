@@ -471,12 +471,12 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineEnd",
-      (_, argument) => _.runAsync(() => commands([".select.lineEnd" , { "shift": "jump", ...argument }], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "end", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineEnd" , { "shift": "jump", ...argument }] , [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "end", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineStart",
-      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump", ...argument }], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "start", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump", "skipBlank": true, ...argument }], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "start", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
