@@ -211,10 +211,10 @@ replaced by the text.
 | Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { "handleNewLine": true, "where": "start", "select": true }]`                          |
 | Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { "handleNewLine": true, "where": "end", "select": true }]`                            |
 | Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { "register": "_" }]`                                                                  |
-| Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".edit.insert", { "register": "_" }], [".modes.set", { "input": "insert" }]`                           |
+| Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".modes.set", { "input": "insert" }], [".edit.insert", { "register": "_" }]`                           |
 | Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText"], [".edit.insert", { "register": "_" }]`                                        |
 | Copy and replace                   | `yank-replace`          | `s-r` (normal)                 | `[".selections.saveText"], [".edit.insert"]`                                                             |
-| Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal)                   | `[".selections.saveText"], [".edit.insert", { "register": "_" }], [".modes.set", { "input": "insert" }]` |
+| Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal)                   | `[".selections.saveText"], [".modes.set", { "input": "insert" }], [".edit.insert", { "register": "_" }]` |
 
 This command:
 - accepts a register (by default, it uses `dquote`).
@@ -313,7 +313,7 @@ Insert new line above each selection.
 
 | Title                                      | Identifier             | Keybinding     | Commands                                                                             |
 | ------------------------------------------ | ---------------------- | -------------- | ------------------------------------------------------------------------------------ |
-| Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { "select": true }], [".modes.set", { "input": "insert" }]` |
+| Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".modes.set", { "input": "insert" }], [".edit.newLine.above", { "select": true }]` |
 
 This command:
 - takes an argument `select` of type `boolean`.
@@ -326,7 +326,7 @@ Insert new line below each selection.
 
 | Title                                      | Identifier             | Keybinding   | Commands                                                                             |
 | ------------------------------------------ | ---------------------- | ------------ | ------------------------------------------------------------------------------------ |
-| Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { "select": true }], [".modes.set", { "input": "insert" }]` |
+| Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".modes.set", { "input": "insert" }], [".edit.newLine.below", { "select": true }]` |
 
 This command:
 - takes an argument `select` of type `boolean`.
@@ -489,9 +489,17 @@ This command:
 - takes an argument `addDigits` of type `number`.
 - takes an input of type `number`.
 
-### [`openMenu`](./misc.ts#L165-L175)
+### [`openMenu`](./misc.ts#L165-L183)
 
 Open menu.
+
+If no input is specified, a prompt will ask for the name of the menu to open.
+
+Alternatively, a `menu` can be inlined in the arguments.
+
+Pass a `prefix` argument to insert the prefix string followed by the typed
+key if it does not match any menu entry. This can be used to implement chords
+like `jj`.
 
 This command:
 - does not require an active text editor.
@@ -521,8 +529,8 @@ Other variants are provided to switch to insert mode:
 | -------------------- | ------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------- |
 | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward"], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }]` |
 | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward"] , [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end"   }]` |
-| Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { "shift": "jump" }], [".modes.set", { "input": "insert" }]`                                 |
-| Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { "shift": "jump" }], [".modes.set", { "input": "insert" }]`                                 |
+| Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { "shift": "jump" }], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "start" }]`                                 |
+| Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { "shift": "jump" }], [".modes.set", { "input": "insert" }], [".selections.reduce", { "where": "end" }]`                                 |
 
 This command:
 - takes an input of type `string`.

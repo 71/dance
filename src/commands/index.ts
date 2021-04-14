@@ -105,10 +105,10 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
 
         const ownedArgument = Object.assign({}, argument) as Record<string, unknown>;
 
-        if (ownedArgument.count === undefined) {
+        if (ownedArgument.count === undefined && extension.currentCount !== 0) {
           ownedArgument.count = extension.currentCount;
         }
-        if (ownedArgument.register === undefined) {
+        if (ownedArgument.register === undefined && extension.currentRegister !== undefined) {
           ownedArgument.register = extension.currentRegister;
         }
 

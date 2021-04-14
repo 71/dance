@@ -244,17 +244,17 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.delete-insert",
-      (_, argument) => _.runAsync(() => commands([".edit.insert", { "register": "_", ...argument }], [".modes.set", { "input": "insert", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "insert", ...argument }], [".edit.insert", { "register": "_", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above.insert",
-      (_, argument) => _.runAsync(() => commands([".edit.newLine.above", { "select": true, ...argument }], [".modes.set", { "input": "insert", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "insert", ...argument }], [".edit.newLine.above", { "select": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below.insert",
-      (_, argument) => _.runAsync(() => commands([".edit.newLine.below", { "select": true, ...argument }], [".modes.set", { "input": "insert", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "insert", ...argument }], [".edit.newLine.below", { "select": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -289,7 +289,7 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.yank-delete-insert",
-      (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert", { "register": "_", ...argument }], [".modes.set", { "input": "insert", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".modes.set", { "input": "insert", ...argument }], [".edit.insert", { "register": "_", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -471,12 +471,12 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineEnd",
-      (_, argument) => _.runAsync(() => commands([".select.lineEnd" , { "shift": "jump", ...argument }], [".modes.set", { "input": "insert", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineEnd" , { "shift": "jump", ...argument }], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "end", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineStart",
-      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump", ...argument }], [".modes.set", { "input": "insert", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump", ...argument }], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "start", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
