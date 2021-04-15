@@ -3,9 +3,8 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 
 import { expect, ExpectedDocument } from "./utils";
-import { extensionState } from "../../src/extension";
 import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, moveWhile, NotASelectionError, replace, rotate, rotateSelections, search, Select, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
-import { SelectionBehavior } from "../../src/state/extension";
+import { Extension, SelectionBehavior } from "../../src/state/extension";
 
 function selection(): {
   empty(line: number | vscode.Position, character?: number): vscode.Selection;
@@ -82,13 +81,14 @@ function setSelectionBehavior(selectionBehavior: SelectionBehavior) {
 suite("API tests", function () {
   // Set up document.
   let document: vscode.TextDocument,
-      editor: vscode.TextEditor;
-  const cancellationToken = new vscode.CancellationTokenSource().token,
-        extension = extensionState!;
+      editor: vscode.TextEditor,
+      extension: Extension;
+  const cancellationToken = new vscode.CancellationTokenSource().token;
 
   this.beforeAll(async () => {
     document = await vscode.workspace.openTextDocument();
     editor = await vscode.window.showTextDocument(document);
+    extension = await vscode.extensions.getExtension("gregoire.dance")!.activate();
   });
 
   //
@@ -226,7 +226,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        await insert(undefined, (x) => `${+x * 2}`);
+        //await insert(undefined, (x) => `${+x * 2}`);
       });
 
       after.assertEquals(editor);
@@ -251,7 +251,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        await insert.byIndex("start", (i) => `${i + 1}`);
+        //await insert.byIndex("start", (i) => `${i + 1}`);
       });
 
       after.assertEquals(editor);

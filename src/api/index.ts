@@ -17,7 +17,7 @@ export * from "./run";
 export * from "./search";
 export * from "./search/move";
 export * from "./search/move-to";
-export * from "./search/pairs";
+export * from "./search/seeker";
 export * from "./selections";
 
 /**

@@ -33,10 +33,11 @@ export function activate() {
     api.execute.disable();
   }
 
-  loadCommands().then((commands) => {
+  return loadCommands().then((commands) => {
     if (isActivated) {
-      extensionState = new Extension(commands);
+      return extensionState = new Extension(commands);
     }
+    return;
   });
 }
 

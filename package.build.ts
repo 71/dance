@@ -306,7 +306,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           },
           default: {
             "object": {
-              items: ((command = "dance.objects.performSelection") => ({
+              items: ((command = "dance.seek.object") => ({
                 "b()": {
                   command,
                   args: [{ object: "parens" }],

@@ -5,7 +5,7 @@ import "source-map-support/register";
 import * as assert from "assert";
 import * as path   from "path";
 // @ts-expect-error
-import * as expect from "unexpected";
+import * as unexpected from "unexpected";
 import * as vscode from "vscode";
 
 interface Expect<T = any> {
@@ -44,8 +44,6 @@ namespace Expect {
   }
 }
 
-export declare const expect: Expect;
-
 /**
  * Resolves a path starting at the root of the Git repository.
  */
@@ -53,6 +51,8 @@ export function resolve(subpath: string) {
   // Current path is dance/out/test/suite/utils
   return path.join(__dirname, "../../..", subpath);
 }
+
+export const expect: Expect = unexpected.clone();
 
 const shortPos = (p: vscode.Position) => `${p.line}:${p.character}`;
 

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { Direction } from ".";
 import { Context } from "./context";
 
 /**
@@ -145,5 +146,14 @@ export namespace Positions {
    */
   export function lineBreak(line: number, document = Context.current.document) {
     return line + 1 === document.lineCount ? lineEnd(line, document) : lineStart(line + 1);
+  }
+
+  /**
+   * Returns the last position of the current document when going in the given
+   * direction. If `Backward`, this is `Positions.zero`. If `Forward`, this is
+   * `Positions.last(document)`.
+   */
+  export function edge(direction: Direction, document?: vscode.TextDocument) {
+    return direction === Direction.Backward ? Positions.zero : last(document);
   }
 }

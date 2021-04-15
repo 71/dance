@@ -47,11 +47,11 @@ export async function build() {
               };
 
         ${tests.map((test) => {
-          const comesAfter = test.comesAfter.padEnd(comesAfterPadding),
-                title = test.title.padEnd(testNamePadding);
+          const paddedComesAfter = test.comesAfter.padEnd(comesAfterPadding),
+                paddedTitle = test.title.padEnd(testNamePadding);
 
           return unindent(4, `
-            test("transition ${comesAfter} > ${title}", async function () {
+            test("transition ${paddedComesAfter} > ${paddedTitle}", async function () {
               const beforeDocument = await documents["${test.comesAfter}"];
 
               if (beforeDocument === undefined) {
@@ -71,9 +71,9 @@ export async function build() {
                 afterDocument.assertEquals(editor);
 
                 // Test passed, allow dependent tests to run.
-                notifyDependents["${title}"](afterDocument);
+                notifyDependents["${test.title}"](afterDocument);
               } catch (e) {
-                notifyDependents["${title}"](undefined);
+                notifyDependents["${test.title}"](undefined);
 
                 throw e;
               }
