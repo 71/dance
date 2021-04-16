@@ -458,9 +458,11 @@ export interface Node<To extends Node<To>> {
 }
 
 export namespace Node {
+  export type Inner<T extends Node<any>> = T extends Node<infer R> ? R : never;
+
   export interface ReverseState {
     readonly expression: Expression;
-    readonly groupReversed: boolean[];
+    readonly reversedGroups: (Group | undefined)[];
   }
 }
 
@@ -491,13 +493,12 @@ export class Sequence implements Node<Sequence> {
 }
 
 export namespace Sequence {
-  export type Node = Group | Lookaround | CharacterSet | Raw | Escaped | CharacterClass | Dot | Anchor | NumericEscape;
+  export type Node = Repeat | Anchor;
 }
 
 export abstract class Disjunction<To extends Node<To>> implements Node<To> {
   public constructor(
     public readonly alternatives: readonly Sequence[],
-    public readonly repeat?: Repeat,
   ) {}
 
   protected prefix() {
@@ -505,11 +506,7 @@ export abstract class Disjunction<To extends Node<To>> implements Node<To> {
   }
 
   protected suffix() {
-    if (this.repeat === undefined) {
-      return ")";
-    }
-
-    return ")" + this.repeat.toString();
+    return ")";
   }
 
   public toString() {
@@ -531,14 +528,13 @@ export abstract class Disjunction<To extends Node<To>> implements Node<To> {
   public abstract reverse(state: Node.ReverseState): To;
 }
 
-export class Group extends Disjunction<Group | NumericEscape> {
+export class Group extends Disjunction<Group | NumericEscape | Backreference> {
   public constructor(
     alternatives: readonly Sequence[],
-    repeat: Repeat | undefined,
     public readonly index?: number,
     public readonly name?: string,
   ) {
-    super(alternatives, repeat);
+    super(alternatives);
   }
 
   protected prefix() {
@@ -551,14 +547,13 @@ export class Group extends Disjunction<Group | NumericEscape> {
     return "(";
   }
 
-  public reverse(state: Node.ReverseState) {
-    if (this.index !== undefined && state.groupReversed[this.index - 1]) {
+  public reverse(state: Node.ReverseState): Group | NumericEscape | Backreference {
+    if (this.index !== undefined && state.reversedGroups[this.index - 1] !== undefined) {
       return new NumericEscape(this.index);
     }
 
     return new Group(
       this.alternatives.map((a) => a.reverse(state) as Sequence),
-      this.repeat,
       this.index,
       this.name,
     );
@@ -865,11 +860,10 @@ export class Anchor implements Node<Anchor> {
 export class Lookaround extends Disjunction<Lookaround> {
   public constructor(
     alternatives: readonly Sequence[],
-    repeat: Repeat | undefined,
     public readonly isNegative: boolean,
     public readonly isLookbehind: boolean,
   ) {
-    super(alternatives, repeat);
+    super(alternatives);
   }
 
   protected prefix() {
@@ -879,15 +873,15 @@ export class Lookaround extends Disjunction<Lookaround> {
   public reverse(state: Node.ReverseState) {
     return new Lookaround(
       this.alternatives.map((a) => a.reverse(state)),
-      this.repeat,
       this.isNegative,
       this.isLookbehind,
     );
   }
 }
 
-export class Repeat {
+export class Repeat<T extends Repeat.Node = Repeat.Node> implements Node<Repeat> {
   public constructor(
+    public readonly node: T,
     public readonly min?: number,
     public readonly max?: number,
     public readonly lazy = false,
@@ -905,28 +899,52 @@ export class Repeat {
     return this.min === undefined && this.max === 1;
   }
 
+  public get isNonRepeated() {
+    return this.min === 1 && this.max === 1 && !this.lazy;
+  }
+
   public toString() {
+    const node = this.node.toString(),
+          lazy = this.lazy ? "?" : "";
+
     if (this.isOptional) {
-      return "?";
+      return node + "?" + lazy;
     }
 
-    const lazy = this.lazy ? "?" : "";
-
     if (this.isPlus) {
-      return "+" + lazy;
+      return node + "+" + lazy;
     }
 
     if (this.isStar) {
-      return "*" + lazy;
+      return node + "*" + lazy;
     }
 
-    return `{${this.min ?? ""},${this.max ?? ""}}${lazy}`;
+    return `${node}{${this.min ?? ""},${this.max ?? ""}}${lazy}`;
+  }
+
+  public reverse(state: Node.ReverseState): Repeat<Node.Inner<T>> {
+    const reversed = this.node.reverse(state) as any;
+
+    if (reversed === this.node) {
+      return this as any;
+    }
+
+    return new Repeat(reversed, this.min, this.max, this.lazy);
+  }
+
+  public firstCharacter() {
+    return this.node.firstCharacter();
   }
 }
 
-export class NumericEscape implements Node<Group | NumericEscape> {
+export namespace Repeat {
+  export type Node = Group | Lookaround | CharacterSet | Raw | Escaped | CharacterClass | Dot
+                   | NumericEscape | Backreference;
+}
+
+export class NumericEscape implements Node<Group | NumericEscape | Backreference> {
   public constructor(
-    public readonly n: number,
+    public n: number,
   ) {
     assert(n > 0);
   }
@@ -938,17 +956,46 @@ export class NumericEscape implements Node<Group | NumericEscape> {
   public reverse(state: Node.ReverseState) {
     const i = this.n - 1;
 
-    if (i >= state.groupReversed.length || state.groupReversed[i]) {
+    if (i >= state.reversedGroups.length || state.reversedGroups[i] !== undefined) {
       return this;
     }
 
-    state.groupReversed[i] = true;
-
     const group = state.expression.groups[i];
 
-    return new Group(
+    return state.reversedGroups[i] = new Group(
       group.alternatives.map((a) => a.reverse(state)),
-      group.repeat,
+      group.index,
+      group.name,
+    );
+  }
+
+  public firstCharacter() {
+    return undefined;
+  }
+}
+
+export class Backreference implements Node<Group | NumericEscape | Backreference> {
+  public constructor(
+    public readonly name: string,
+  ) {}
+
+  public toString() {
+    return "\\k<" + this.name + ">";
+  }
+
+  public reverse(state: Node.ReverseState) {
+    const n = state.expression.groups.findIndex((g) => g.name === this.name);
+
+    assert(n !== -1);
+
+    if (state.reversedGroups[n] !== undefined) {
+      return this;
+    }
+
+    const group = state.expression.groups[n];
+
+    return state.reversedGroups[n] = new Group(
+      group.alternatives.map((a) => a.reverse(state)),
       group.index,
       group.name,
     );
@@ -980,15 +1027,16 @@ export class Expression extends Disjunction<Expression> {
     if (state === undefined) {
       state = {
         expression: this,
-        groupReversed: Array.from(this.groups, () => false),
+        reversedGroups: Array.from(this.groups, () => undefined),
       };
     }
 
-    return new Expression(
-      this.re,
-      this.groups,
-      this.alternatives.map((a) => a.reverse(state!)),
-    );
+    const alternatives = this.alternatives.map((a) => a.reverse(state!)),
+          re = new RegExp(alternatives.join(""), this.re.flags);
+
+    assert(state.reversedGroups.indexOf(undefined) === -1);
+
+    return new Expression(re, state.reversedGroups as Group[], alternatives);
   }
 }
 
@@ -1026,7 +1074,7 @@ export function parse(re: RegExp) {
         groups = [] as Group[];
   let i = 0;
 
-  function repeat() {
+  function repeat<T extends Repeat.Node>(node: T) {
     const ch = src.charCodeAt(i);
     let min: number | undefined,
         max: number | undefined;
@@ -1073,7 +1121,7 @@ export function parse(re: RegExp) {
 
             i = start - 1;
 
-            return undefined;
+            return new Repeat(node, 1, 1, false);
           }
 
           break;
@@ -1081,13 +1129,14 @@ export function parse(re: RegExp) {
 
         i = start - 1;
 
-        return undefined;
+        return new Repeat(node, 1, 1, false);
       }
     } else if (ch === CharCodes.Question) {
       i++;
-      return new Repeat(0, 1);
+      min = 0;
+      max = 1;
     } else {
-      return undefined;
+      return new Repeat(node, 1, 1, false);
     }
 
     let lazy = false;
@@ -1097,13 +1146,13 @@ export function parse(re: RegExp) {
       i++;
     }
 
-    return new Repeat(min, max, lazy);
+    return new Repeat(node, min, max, lazy);
   }
 
   function escapedCharacter<InCharSet extends boolean>(
     inCharSet: InCharSet,
   ): Raw | CharacterSet | Escaped | CharacterClass
-   | (InCharSet extends true ? never : NumericEscape) {
+   | (InCharSet extends true ? never : NumericEscape | Backreference) {
     switch (src.charCodeAt(i++)) {
     case 110: // n
       return new Raw("\n");
@@ -1202,6 +1251,18 @@ export function parse(re: RegExp) {
         return new NumericEscape(+src.slice(start, i)) as any;
       }
 
+      if (!inCharSet && src.charCodeAt(i - 1) === 107 /* k */) {
+        assert(src.charCodeAt(i) === CharCodes.LAngle);
+
+        const start = i + 1,
+              end = src.indexOf(">", start);
+
+        assert(end > start);
+
+        i = end + 1;
+        return new Backreference(src.slice(start, end)) as any;
+      }
+
       return new Raw(src[i - 1]);
     }
   }
@@ -1276,7 +1337,7 @@ export function parse(re: RegExp) {
     assert(false);
   }
 
-  function group(): [readonly Sequence[], Repeat | undefined] {
+  function group(): readonly Sequence[] {
     const alternatives: Sequence[] = [],
           sequence: Sequence.Node[] = [];
 
@@ -1284,7 +1345,7 @@ export function parse(re: RegExp) {
       switch (src.charCodeAt(i)) {
       case CharCodes.RParen:
         i++;
-        return [alternatives, repeat()];
+        return alternatives;
 
       case CharCodes.Pipe:
         i++;
@@ -1297,20 +1358,20 @@ export function parse(re: RegExp) {
 
           if (next === CharCodes.Colon) {
             i += 3;
-            sequence.push(new Group(...group()));
+            sequence.push(repeat(new Group(group())));
           } else if (next === CharCodes.Eq) {
             i += 3;
-            sequence.push(new Lookaround(...group(), false, false));
+            sequence.push(repeat(new Lookaround(group(), false, false)));
           } else if (next === CharCodes.Bang) {
             i += 3;
-            sequence.push(new Lookaround(...group(), true, false));
+            sequence.push(repeat(new Lookaround(group(), true, false)));
           } else if (next === CharCodes.LAngle) {
             if (src.charCodeAt(i) === CharCodes.Eq) {
               i += 4;
-              sequence.push(new Lookaround(...group(), false, true));
+              sequence.push(repeat(new Lookaround(group(), false, true)));
             } else if (src.charCodeAt(i + 3) === CharCodes.Bang) {
               i += 4;
-              sequence.push(new Lookaround(...group(), true, true));
+              sequence.push(repeat(new Lookaround(group(), true, true)));
             } else {
               i += 3;
 
@@ -1322,7 +1383,7 @@ export function parse(re: RegExp) {
               }
 
               i++;
-              sequence.push(groups[n - 1] = new Group(...group(), n, src.slice(start, i - 2)));
+              sequence.push(repeat(groups[n - 1] = new Group(group(), n, src.slice(start, i - 2))));
             }
           } else {
             assert(false);
@@ -1330,23 +1391,23 @@ export function parse(re: RegExp) {
         } else {
           const n = groups.push(dummyGroup);
 
-          sequence.push(groups[n - 1] = new Group(...group(), n));
+          sequence.push(repeat(groups[n - 1] = new Group(group(), n) as any) as Repeat<Group>);
         }
         break;
 
       case CharCodes.Backslash:
         i++;
-        sequence.push(escapedCharacter(/* inCharSet= */ false));
+        sequence.push(repeat(escapedCharacter(/* inCharSet= */ false)));
         break;
 
       case CharCodes.LBracket:
         i++;
-        sequence.push(characterSet());
+        sequence.push(repeat(characterSet()));
         break;
 
       case CharCodes.Dot:
         i++;
-        sequence.push(re.dotAll ? Dot.includingNewLine : Dot.excludingNewLine);
+        sequence.push(repeat(re.dotAll ? Dot.includingNewLine : Dot.excludingNewLine));
         break;
 
       case CharCodes.Caret:
@@ -1360,12 +1421,14 @@ export function parse(re: RegExp) {
         break;
 
       default:
-        if (sequence.length > 0 && sequence[sequence.length - 1] instanceof Raw) {
-          const prev = sequence[sequence.length - 1] as Raw;
+        if (sequence.length > 0
+            && (sequence[sequence.length - 1] as Repeat<Raw>).node instanceof Raw
+            && (sequence[sequence.length - 1] as Repeat<Raw>).isNonRepeated) {
+          const prev = (sequence[sequence.length - 1] as Repeat<Raw>).node;
 
-          sequence[sequence.length - 1] = new Raw(prev.string + src[i]);
+          sequence[sequence.length - 1] = repeat(new Raw(prev.string + src[i]));
         } else {
-          sequence.push(new Raw(src[i]));
+          sequence.push(repeat(new Raw(src[i])));
         }
         break;
       }
@@ -1373,10 +1436,10 @@ export function parse(re: RegExp) {
 
     alternatives.push(new Sequence(sequence));
 
-    return [alternatives, undefined];
+    return alternatives;
   }
 
-  return new Expression(re, groups, group()[0]);
+  return new Expression(re, groups, group());
 }
 
 /**
@@ -1480,6 +1543,77 @@ export function parseRegExpWithReplacement(regexp: string) {
 export function escapeForRegExp(text: string) {
   // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Returns a `RegExp` that matches if any of the two given `RegExp`s does, and
+ * the index of the "marker group" that will be equal to `""` if the `RegExp`
+ * that matched the input is `b`.
+ */
+export function anyRegExp(a: RegExp, b: RegExp) {
+  const flags = [...new Set([...a.flags, ...b.flags])].join(""),
+        aGroups = new RegExp("|" + a.source, a.flags).exec("")!.length - 1,
+        bGroups = new RegExp("|" + b.source, b.flags).exec("")!.length - 1;
+
+  // Update backreferences in `b` to ensure they point to the right indices.
+  const bSource = replaceUnlessEscaped(b.source, /\\(\d+)/g, (text, n) => {
+    if (n[0] === "0" || +n > bGroups) {
+      return text;
+    }
+
+    return "\\" + (+n + aGroups);
+  });
+
+  return [new RegExp(`(?:${a.source})|(?:${bSource})()`, flags), aGroups + bGroups + 1] as const;
+}
+
+/**
+ * Same as `text.replace(...args)`, but does not replaced escaped characters.
+ */
+export function replaceUnlessEscaped(text: string, re: RegExp, replace: (...args: any) => string) {
+  return text.replace(re, (...args) => {
+    const offset = args[args.length - 2],
+          text = args[args.length - 1];
+
+    if (isEscaped(text, offset)) {
+      return args[0];
+    }
+
+    return replace(...args);
+  });
+}
+
+/**
+ * Same as `text.replace(...args)`, but does not replaced escaped characters.
+ */
+export function matchUnlessEscaped(text: string, re: RegExp) {
+  assert(re.global);
+
+  for (let match = re.exec(text); match !== null; match = re.exec(text)) {
+    if (!isEscaped(text, match.index)) {
+      return match;
+    }
+  }
+
+  return null;
+}
+
+function isEscaped(text: string, offset: number) {
+  if (offset === 0) {
+    return false;
+  }
+
+  let isEscaped = false;
+
+  for (let i = offset - 1; i >= 0; i--) {
+    if (text[i] === "\\") {
+      isEscaped = !isEscaped;
+    } else {
+      return isEscaped;
+    }
+  }
+
+  return isEscaped;
 }
 
 /**

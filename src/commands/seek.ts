@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 
 import { Argument, InputOr } from ".";
-import { Context, Direction, keypress, moveTo, Positions, Selections, Shift, todo } from "../api";
+import { ArgumentError, Context, Direction, keypress, moveTo, Pair, pair, Positions, Selections, Shift, surroundedBy, todo } from "../api";
+import { SelectionBehavior } from "../state/extension";
 
 /**
  * Update selections based on the text surrounding them.
@@ -65,6 +66,14 @@ export async function character(
   });
 }
 
+const defaultEnclosingPatterns = [
+  "\\[", "\\]",
+  "\\(", "\\)",
+  "\\{", "\\}",
+  "/\\*", "\\*/",
+  "\\bbegin\\b", "\\bend\\b",
+];
+
 /**
  * Select to next enclosing character.
  *
@@ -79,10 +88,67 @@ export async function character(
  * | Extend to previous enclosing character | `enclosing.extend.backward` | `s-a-m` (normal) | `[".seek.enclosing", { "shift": "extend", "direction": -1 }]` |
  */
 export function enclosing(
+  _: Context,
+
   direction = Direction.Forward,
   shift = Shift.Select,
+  open: Argument<boolean> = true,
+  pairs: Argument<readonly string[]> = defaultEnclosingPatterns,
 ) {
-  todo();
+  ArgumentError.validate(
+    "pairs",
+    (pairs.length & 1) === 0,
+    "an even number of pairs must be given",
+  );
+
+  const selectionBehavior = _.selectionBehavior,
+        compiledPairs = [] as Pair[];
+
+  for (let i = 0; i < pairs.length; i += 2) {
+    compiledPairs.push(pair(new RegExp(pairs[i], "mu"), new RegExp(pairs[i], "mu")));
+  }
+
+  // This command intentionally ignores repetitions to be consistent with
+  // Kakoune.
+  // It only finds one next enclosing character and drags only once to its
+  // matching counterpart. Repetitions > 1 does exactly the same with rep=1,
+  // even though executing the command again will jump back and forth.
+  Selections.update.byIndex((_, selection, document) => {
+    // First, find an enclosing char (which may be the current character).
+    let currentCharacter = selection.active;
+
+    if (selectionBehavior === SelectionBehavior.Caret) {
+      if (direction === Direction.Backward && selection.isReversed) {
+        // When moving backwards, the first character to consider is the
+        // character to the left, not the right. However, we hackily special
+        // case `|[foo]>` (> is anchor, | is active) to jump to the end in the
+        // current group.
+        currentCharacter = Positions.previous(currentCharacter, document) ?? currentCharacter;
+      } else if (direction === Direction.Forward && !selection.isReversed && !selection.isEmpty) {
+        // Similarly, we special case `<[foo]|` to jump back in the current
+        // group.
+        currentCharacter = Positions.previous(currentCharacter, document) ?? currentCharacter;
+      }
+    }
+
+    if (selectionBehavior === SelectionBehavior.Caret && direction === Direction.Backward) {
+      // When moving backwards, the first character to consider is the
+      // character to the left, not the right.
+      currentCharacter = Positions.previous(currentCharacter, document) ?? currentCharacter;
+    }
+
+    const enclosedRange = surroundedBy(compiledPairs, direction, currentCharacter, open, document);
+
+    if (enclosedRange === undefined) {
+      return undefined;
+    }
+
+    if (shift === Shift.Extend) {
+      return new vscode.Selection(selection.anchor, enclosedRange.active);
+    }
+
+    return enclosedRange;
+  });
 }
 
 /**

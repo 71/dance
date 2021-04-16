@@ -13,11 +13,13 @@ export * from "./menu";
 export * from "./modes";
 export * from "./positions";
 export * from "./prompt";
+export * from "./registers";
 export * from "./run";
 export * from "./search";
+export * from "./search/lines";
 export * from "./search/move";
 export * from "./search/move-to";
-export * from "./search/seeker";
+export * from "./search/pairs";
 export * from "./selections";
 
 /**

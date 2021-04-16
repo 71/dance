@@ -133,6 +133,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   publisher: "gregoire",
   categories: ["Keymaps", "Other"],
   readme: "README.md",
+  icon: "assets/dance.svg",
 
   activationEvents: ["*"],
   extensionKind: ["ui", "workspace"],

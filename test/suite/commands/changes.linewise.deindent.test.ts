@@ -62,9 +62,9 @@ suite("changes.linewise.deindent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["1    "](afterDocument);
+      notifyDependents["1"](afterDocument);
     } catch (e) {
-      notifyDependents["1    "](undefined);
+      notifyDependents["1"](undefined);
 
       throw e;
     }

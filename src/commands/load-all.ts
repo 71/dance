@@ -585,8 +585,8 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.seek.enclosing",
-      (_, argument) => enclosing(getDirection(argument), getShift(argument)),
-      CommandDescriptor.Flags.None,
+      (_, argument) => _.runAsync((_) => enclosing(_, getDirection(argument), getShift(argument), argument.pairs)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd",

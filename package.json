@@ -50,6 +50,7 @@
     "Other"
   ],
   "readme": "README.md",
+  "icon": "assets/dance.svg",
   "activationEvents": [
     "*"
   ],
@@ -358,7 +359,7 @@
             "object": {
               "items": {
                 "b()": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "parens"
@@ -367,7 +368,7 @@
                   "text": "parenthesis block"
                 },
                 "B{}": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "braces"
@@ -376,7 +377,7 @@
                   "text": "braces block"
                 },
                 "r[]": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "brackets"
@@ -385,7 +386,7 @@
                   "text": "brackets block"
                 },
                 "a<>": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "angleBrackets"
@@ -394,7 +395,7 @@
                   "text": "angle block"
                 },
                 "Q\"": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "doubleQuoteString"
@@ -403,7 +404,7 @@
                   "text": "double quote string"
                 },
                 "q'": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "singleQuoteString"
@@ -412,7 +413,7 @@
                   "text": "single quote string"
                 },
                 "g`": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "graveQuoteString"
@@ -421,7 +422,7 @@
                   "text": "grave quote string"
                 },
                 "w": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "word"
@@ -430,7 +431,7 @@
                   "text": "word"
                 },
                 "W": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "WORD"
@@ -439,7 +440,7 @@
                   "text": "WORD"
                 },
                 "s": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "sentence"
@@ -448,7 +449,7 @@
                   "text": "sentence"
                 },
                 "p": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "paragraph"
@@ -457,7 +458,7 @@
                   "text": "paragraph"
                 },
                 " ": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "whitespaces"
@@ -466,7 +467,7 @@
                   "text": "whitespaces"
                 },
                 "i": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "indent"
@@ -475,7 +476,7 @@
                   "text": "indent"
                 },
                 "n": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "number"
@@ -484,7 +485,7 @@
                   "text": "number"
                 },
                 "u": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "argument"
@@ -493,7 +494,7 @@
                   "text": "argument"
                 },
                 "c": {
-                  "command": "dance.objects.performSelection",
+                  "command": "dance.seek.object",
                   "args": [
                     {
                       "object": "custom"

@@ -172,6 +172,8 @@ function searchNaiveBackward(
   end: vscode.Position,
   document: vscode.TextDocument,
 ) {
+  re.lastIndex = 0;
+
   // Find all matches before the origin and take the last one.
   const searchRange = new vscode.Range(end, origin),
         match = regexp.execLast(re, document.getText(searchRange));
@@ -189,6 +191,8 @@ function searchNaiveForward(
   end: vscode.Position,
   document: vscode.TextDocument,
 ) {
+  re.lastIndex = 0;
+
   // Look for a match in all the rest of the document.
   const searchRange = new vscode.Range(origin, end),
         match = re.exec(document.getText(searchRange));
@@ -208,6 +212,8 @@ function searchSingleLineRegExpBackward(
   end: vscode.Position,
   document: vscode.TextDocument,
 ) {
+  re.lastIndex = 0;
+
   // Loop for a match line by line, starting at the current line.
   const currentLine = document.lineAt(origin),
         match = regexp.execLast(re, currentLine.text.slice(0, origin.character));
@@ -244,6 +250,8 @@ function searchSingleLineRegExpForward(
   end: vscode.Position,
   document: vscode.TextDocument,
 ) {
+  re.lastIndex = 0;
+
   // Loop for a match line by line, starting at the current line.
   const currentLine = document.lineAt(origin),
         match = re.exec(currentLine.text.slice(origin.character));
@@ -290,6 +298,8 @@ function searchOneOfBackward(
   if (origin.line - endLine < lineRange) {
     return;
   }
+
+  re.lastIndex = 0;
 
   const originLine = origin.line,
         lines = [document.lineAt(originLine).text.slice(0, origin.character)],
@@ -341,6 +351,8 @@ function searchOneOfForward(
   if (origin.line + lineRange >= endLine) {
     return;
   }
+
+  re.lastIndex = 0;
 
   const originLine = origin.line,
         lines = [document.lineAt(originLine).text.slice(origin.character)],

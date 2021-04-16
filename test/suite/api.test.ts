@@ -226,7 +226,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        //await insert(undefined, (x) => `${+x * 2}`);
+        await insert(undefined, (x) => `${+x * 2}`);
       });
 
       after.assertEquals(editor);
@@ -251,7 +251,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        //await insert.byIndex("start", (i) => `${i + 1}`);
+        await insert.byIndex("start", (i) => `${i + 1}`);
       });
 
       after.assertEquals(editor);
