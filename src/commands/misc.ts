@@ -3,7 +3,7 @@ import * as api from "../api";
 import { Argument, InputOr } from ".";
 import { Context, InputError, keypress, Menu, prompt, showMenu, validateMenu } from "../api";
 import { Extension } from "../state/extension";
-import { Register } from "../register";
+import { Register } from "../state/registers";
 
 /**
  * Miscellaneous commands that don't deserve their own category.

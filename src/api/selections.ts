@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
-import { SelectionBehavior } from "../state/extension";
 import { Direction, Shift } from ".";
 import { Context } from "./context";
 import { NotASelectionError } from "./errors";
 import { Positions } from "./positions";
 import { execRange, splitRange } from "../utils/regexp";
 import { Lines } from "./lines";
+import { SelectionBehavior } from "../state/modes";
 
 /**
  * Sets the selections of the given editor.

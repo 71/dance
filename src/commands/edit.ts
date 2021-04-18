@@ -14,7 +14,7 @@ import {
   selectionsLines,
   setSelections,
 } from "../api";
-import { Register } from "../register";
+import { Register } from "../state/registers";
 import { Argument, InputOr, RegisterOr } from ".";
 import { TrackedSelection } from "../utils/tracked-selection";
 

@@ -1,10 +1,9 @@
 import * as vscode from "vscode";
 import { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
 import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun, todo } from "../api";
-import { Mode } from "../mode";
-import { Register } from "../register";
-import { EditorState } from "../state/editor";
-import { SelectionBehavior } from "../state/extension";
+import { Mode, SelectionBehavior } from "../state/modes";
+import { Register } from "../state/registers";
+import { EditorState } from "../state/editor-state";
 import { CharSet, getCharacters } from "../utils/charset";
 import { AutoDisposable } from "../utils/disposables";
 import { manipulateSelectionsInteractively } from "../utils/misc";
@@ -80,7 +79,7 @@ export function restore(
 ) {
   const selectionSet = register.getSelectionSet();
 
-  if (selectionSet === undefined || selectionSet.selections.length === 0) {
+  if (selectionSet === undefined) {
     throw new EmptySelectionsError(`no selections are saved in register "${register.name}"`);
   }
 

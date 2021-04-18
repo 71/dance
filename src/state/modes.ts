@@ -1,7 +1,13 @@
 import * as vscode from "vscode";
-import { command } from "./api";
-import { Extension, SelectionBehavior } from "./state/extension";
-import { SettingsValidator } from "./utils/settings-validator";
+import { command } from "../api";
+import { extensionName } from "../extension";
+import { Extension } from "./extension";
+import { SettingsValidator } from "../utils/settings-validator";
+
+export const enum SelectionBehavior {
+  Caret = 1,
+  Character = 2,
+}
 
 /**
  * An editing mode.
@@ -556,7 +562,8 @@ export class Modes implements Iterable<Mode> {
     extension.observePreference<Modes.Configuration>(".modes", (value, validator) => {
       let isEmpty = true;
       const removeModes = new Set(this._modes.keys()),
-            expectedDefaultModeName = extension.configuration.get<string>("defaultMode");
+            expectedDefaultModeName = vscode.workspace.getConfiguration(extensionName)
+              .get<string>("defaultMode");
 
       removeModes.delete(this.inputMode.name);
 

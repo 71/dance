@@ -3,8 +3,8 @@ import * as api from "../api";
 
 import { Argument } from ".";
 import { Context, Direction, Lines, Positions, Selections, Shift, showMenu, todo } from "../api";
-import { EditorState } from "../state/editor";
-import { SelectionBehavior } from "../state/extension";
+import { EditorState } from "../state/editor-state";
+import { SelectionBehavior } from "../state/modes";
 
 /**
  * Update selections based on their position in the document.
@@ -96,7 +96,7 @@ export function vertically(
       .createAutoDisposable()
       .disposeOnEvent(editorState.onEditorWasClosed)
       .addDisposable(vscode.window.onDidChangeTextEditorSelection((e) => {
-        if (!editorState.isFor(e.textEditor)) {
+        if (editorState.editor !== e.textEditor) {
           return;
         }
 

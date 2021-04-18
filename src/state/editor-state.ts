@@ -1,29 +1,19 @@
 import * as vscode from "vscode";
 
-import { DocumentState } from "./document";
+import { DocumentState } from "./document-state";
 import { extensionName } from "../extension";
 import { assert, command, commands, Context, Positions, Selections, selectionsLines } from "../api";
-import { Mode } from "../mode";
-import { SelectionBehavior } from "./extension";
+import { Mode, SelectionBehavior } from "./modes";
 
 /**
  * Editor-specific state.
  */
-export class EditorState {
-  /**
-   * The internal identifir of the ID.
-   *
-   * Unlike documents, VS Code does not reuse `vscode.TextEditor` objects,
-   * so comparing by reference using `===` may not always return `true`,
-   * even for the same document. To keep editor-specific state anyway,
-   * we're using its internal identifier, which seems to be unique and
-   * to stay the same over time.
-   */
-  private readonly _id: string;
-
+export class EditorState implements vscode.Disposable {
   private readonly _onEditorWasClosed = new vscode.EventEmitter<this>();
 
-  /** The last matching editor. */
+  /**
+   * The corresponding visible `vscode.TextEditor`.
+   */
   private _editor: vscode.TextEditor;
 
   /**
@@ -31,6 +21,9 @@ export class EditorState {
    */
   private _isChangingMode = false;
 
+  /**
+   * The active mode in this editor.
+   */
   private _mode!: Mode;
 
   /**
@@ -76,16 +69,11 @@ export class EditorState {
     /** The text editor for which state is being kept. */
     editor: vscode.TextEditor,
   ) {
-    this._id = getEditorId(editor);
     this._editor = editor;
 
     this.setMode(documentState.extension.modes.defaultMode);
   }
 
-  /**
-   * Disposes of the resources owned by and of the subscriptions of this
-   * instance.
-   */
   public dispose() {
     const options = this._editor.options,
           mode = this._mode,
@@ -105,18 +93,11 @@ export class EditorState {
    * Updates the instance of `vscode.TextEditor` for this editor.
    */
   public updateEditor(editor: vscode.TextEditor) {
-    assert(this.isFor(editor));
+    assert(this.documentState.document === editor.document);
 
     this._editor = editor;
 
     return this;
-  }
-
-  /**
-   * Returns whether this state is for the given editor.
-   */
-  public isFor(editor: vscode.TextEditor) {
-    return this.documentState.document === editor.document && this._id === getEditorId(editor);
   }
 
   /**
@@ -162,7 +143,7 @@ export class EditorState {
     );
 
     if (this.isActive) {
-      await this.onDidBecomeActive();
+      await this.notifyDidBecomeActive();
     }
 
     this._isChangingMode = false;
@@ -188,7 +169,7 @@ export class EditorState {
    * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with
    * this editor.
    */
-  public onDidBecomeActive() {
+  public notifyDidBecomeActive() {
     const { editor, mode } = this;
 
     this.extension.statusBar.activeModeSegment.setContent(mode.name);
@@ -203,20 +184,21 @@ export class EditorState {
    * Called when `vscode.window.onDidChangeActiveTextEditor` is triggered with
    * another editor.
    */
-  public async onDidBecomeInactive(newEditorIsActive: boolean) {
+  public notifyDidBecomeInactive(newEditorIsActive: boolean) {
     if (!newEditorIsActive) {
       this.extension.statusBar.activeModeSegment.setContent("<no active mode>");
 
-      await vscode.commands.executeCommand("setContext", extensionName + ".mode", undefined);
+      return vscode.commands.executeCommand("setContext", extensionName + ".mode", undefined);
     }
+
+    return Promise.resolve();
   }
 
   /**
    * Called when `vscode.window.onDidChangeTextEditorSelection` is triggered on
    * this editor.
    */
-  public onDidChangeTextEditorSelection() {
-    // Update decorations.
+  public notifyDidChangeTextEditorSelection() {
     this.updateDecorations(this._mode);
   }
 
@@ -305,8 +287,4 @@ export class EditorState {
     editor.options.cursorStyle = mode.cursorStyle;
     editor.options.lineNumbers = mode.lineNumbers;
   }
-}
-
-function getEditorId(editor: vscode.TextEditor) {
-  return ((editor as unknown) as { readonly id: string }).id;
 }

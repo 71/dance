@@ -11,16 +11,13 @@ function mapResults(
   replacements: readonly replace.Result[],
 ) {
   // TODO: honor mapping.
-  const savedSelections: (TrackedSelection | undefined)[] = [];
+  let savedSelections: TrackedSelection.Array | undefined;
+  const discardedSelections = new Uint8Array(selections.length);
 
   if (editor.selections !== selections) {
     // We can avoid all the book keeping below if the selections we are
     // modifying are the editor's.
-    const document = editor.document;
-
-    for (let i = 0, len = selections.length; i < len; i++) {
-      savedSelections.push(TrackedSelection.from(selections[i], document));
-    }
+    savedSelections = TrackedSelection.fromArray(selections, editor.document);
   }
 
   const promise = edit((editBuilder) => {
@@ -30,61 +27,57 @@ function mapResults(
 
       if (result === undefined) {
         editBuilder.delete(selection);
-        savedSelections[i] = undefined;
+        discardedSelections[i] = 1;
       } else if (where === undefined) {
         editBuilder.replace(selection, result);
 
-        if (savedSelections.length > 0 && savedSelections[i]!.length !== result.length) {
-          const savedSelection = savedSelections[i]!,
-                documentChangedEvent: vscode.TextDocumentContentChangeEvent[] = [{
-                  range: selection,
-                  rangeOffset: savedSelection.offset,
-                  rangeLength: savedSelection.length,
-                  text: result,
-                }];
+        if (savedSelections !== undefined
+            && TrackedSelection.length(savedSelections, i) !== result.length) {
+          const documentChangedEvent: vscode.TextDocumentContentChangeEvent[] = [{
+            range: selection,
+            rangeOffset: TrackedSelection.offset(savedSelections, i),
+            rangeLength: TrackedSelection.length(savedSelections, i),
+            text: result,
+          }];
 
-          for (let j = 0, len = savedSelections.length; j < len; j++) {
-            savedSelections[j]?.updateAfterDocumentChanged(documentChangedEvent, flags);
-          }
+          TrackedSelection.updateAfterDocumentChanged(savedSelections, documentChangedEvent, flags);
         }
       } else {
         const position = selection[where];
 
         editBuilder.replace(position, result);
 
-        if (savedSelections.length > 0) {
-          const savedSelection = savedSelections[i]!,
-                documentChangedEvent: vscode.TextDocumentContentChangeEvent[] = [{
-                  range: new vscode.Range(position, position),
-                  rangeOffset: position === selection.start
-                    ? savedSelection.offset
-                    : savedSelection.offset + savedSelection.length,
-                  rangeLength: 0,
-                  text: result,
-                }];
+        if (savedSelections !== undefined) {
+          const selectionOffset = TrackedSelection.offset(savedSelections, i),
+                selectionLength = TrackedSelection.length(savedSelections, i);
 
-          for (let j = 0, len = savedSelections.length; j < len; j++) {
-            savedSelections[j]?.updateAfterDocumentChanged(documentChangedEvent, flags);
-          }
+          const documentChangedEvent: vscode.TextDocumentContentChangeEvent[] = [{
+            range: new vscode.Range(position, position),
+            rangeOffset: position === selection.start
+              ? selectionOffset
+              : selectionOffset + selectionLength,
+            rangeLength: 0,
+            text: result,
+          }];
+
+          TrackedSelection.updateAfterDocumentChanged(savedSelections, documentChangedEvent, flags);
         }
       }
     }
   }).then(() => {
-    if (savedSelections.length === 0) {
+    if (savedSelections === undefined) {
       return editor.selections;
     }
 
     const results: vscode.Selection[] = [],
           document = editor.document;
 
-    for (let i = 0, len = savedSelections.length; i < len; i++) {
-      const savedSelection = savedSelections[i];
-
-      if (savedSelection === undefined) {
+    for (let i = 0, len = discardedSelections.length; i < len; i++) {
+      if (discardedSelections[i]) {
         continue;
       }
 
-      results.push(savedSelection.restore(document));
+      results.push(TrackedSelection.restore(savedSelections, i, document));
     }
 
     return results;

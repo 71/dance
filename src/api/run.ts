@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import * as api from ".";
 import { CommandDescriptor } from "../commands";
 import { parseRegExpWithReplacement } from "../utils/regexp";
 import { Context } from "./context";
@@ -52,9 +53,9 @@ function ensureCacheIsPopulated() {
     return;
   }
 
-  for (const name in exports) {
+  for (const name in api) {
     cachedParameterNames.push(name);
-    cachedParameters.push(exports[name]);
+    cachedParameters.push((api as any)[name]);
   }
 
   cachedParameterNames.push("vscode");

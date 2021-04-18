@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Register } from "../register";
+import { Register } from "../state/registers";
 import { Context } from "./context";
 
 /**

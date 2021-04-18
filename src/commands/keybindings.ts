@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import { RegisterOr } from ".";
 import { Context, prompt, todo } from "../api";
-import { Register } from "../register";
+import { Register } from "../state/registers";
 
 /**
  * Utilities for setting up keybindings.

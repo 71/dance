@@ -1,8 +1,9 @@
 import * as vscode from "vscode";
 
 import { Argument, RegisterOr } from ".";
-import { todo } from "../api";
-import { Register } from "../register";
+import { ArgumentError, Context, todo } from "../api";
+import { Register } from "../state/registers";
+import { ActiveRecording } from "../state/recorder";
 
 /**
  * Interact with history.
@@ -89,15 +90,26 @@ export function recording_play(
   }
 }
 
+const recordingPerRegister = new WeakMap<Register, ActiveRecording>();
+
 /**
  * Start recording macro.
  *
  * @keys `s-q` (normal)
  */
 export function recording_start(
+  _: Context,
   register: RegisterOr<"arobase", Register.Flags.CanReadWriteMacros>,
 ) {
-  todo();
+  ArgumentError.validate(
+    "register",
+    !recordingPerRegister.has(register),
+    "a recording is already active",
+  );
+
+  const recording = _.extensionState.recorder.startRecording();
+
+  recordingPerRegister.set(register, recording);
 }
 
 /**
@@ -106,9 +118,16 @@ export function recording_start(
  * @keys `escape` (normal, recording)
  */
 export function recording_stop(
+  _: Context,
   register: RegisterOr<"arobase", Register.Flags.CanReadWriteMacros>,
 ) {
-  // Note: this command executes even if a macro recording is not in progess,
-  // so that <esc> will noop instead of defaulting to deselecting in VSCode.
-  todo();
+  const recording = recordingPerRegister.get(register);
+
+  ArgumentError.validate(
+    "register",
+    recording !== undefined,
+    "no recording is active in the given register",
+  );
+
+  register.setRecordedCommands(recording.complete());
 }

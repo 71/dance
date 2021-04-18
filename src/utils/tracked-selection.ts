@@ -1,134 +1,5 @@
 import * as vscode from "vscode";
-
-/**
- * A selection that is being tracked. Changes to the document will be applied to
- * the selection in order to restore it later.
- */
-export class TrackedSelection {
-  private _anchorOffset: number;
-  private _activeOffset: number;
-
-  public constructor(anchorOffset: number, activeOffset: number) {
-    this._anchorOffset = anchorOffset;
-    this._activeOffset = activeOffset;
-  }
-
-  /**
-   * Creates a new `TrackedSelection`, reading offsets from the given selection
-   * in the given document.
-   */
-  public static from(selection: vscode.Selection, document: vscode.TextDocument) {
-    const anchor = selection.anchor,
-          active = selection.active;
-
-    if (anchor.line === active.line) {
-      const anchorOffset = document.offsetAt(anchor),
-            activeOffset = anchorOffset + active.character - anchor.character;
-
-      return new TrackedSelection(anchorOffset, activeOffset);
-    }
-
-    return new TrackedSelection(document.offsetAt(anchor), document.offsetAt(active));
-  }
-
-  /**
-   * Creates a new `TrackedSelection`, reading offsets from the given selection
-   * in the given document.
-   */
-  public static fromArray(selections: readonly vscode.Selection[], document: vscode.TextDocument) {
-    const trackedSelections = new Array<TrackedSelection>(selections.length);
-
-    for (let i = 0, len = selections.length; i < len; i++) {
-      trackedSelections[i] = TrackedSelection.from(selections[i], document);
-    }
-
-    return trackedSelections;
-  }
-
-  /** The offset of the anchor in its document. */
-  public get anchorOffset() {
-    return this._anchorOffset;
-  }
-
-  /** The offset of the active position in its document. */
-  public get activeOffset() {
-    return this._activeOffset;
-  }
-
-  /** Whether the selection is reversed (i.e. `activeOffset < anchorOffset`). */
-  public get isReversed() {
-    return this._activeOffset < this._anchorOffset;
-  }
-
-  /** The offset of the start position in its document. */
-  public get offset() {
-    return Math.min(this._activeOffset, this._anchorOffset);
-  }
-
-  /** The length of the selection in its document. */
-  public get length() {
-    const activeOffset = this._activeOffset,
-          anchorOffset = this._anchorOffset;
-
-    return activeOffset > anchorOffset ? activeOffset - anchorOffset : anchorOffset - activeOffset;
-  }
-
-  /**
-   * Returns the anchor of the saved selection.
-   */
-  public anchor(document: vscode.TextDocument) {
-    return document.positionAt(this._anchorOffset);
-  }
-
-  /**
-   * Returns the active position of the saved selection.
-   */
-  public active(document: vscode.TextDocument) {
-    return document.positionAt(this._activeOffset);
-  }
-
-  /**
-   * Returns the saved selection, restored in the given document.
-   */
-  public restore(document: vscode.TextDocument) {
-    return new vscode.Selection(this.anchor(document), this.active(document));
-  }
-
-  /**
-   * Updates the underlying selection to reflect a change in its document.
-   */
-  public updateAfterDocumentChanged(
-    changes: readonly vscode.TextDocumentContentChangeEvent[],
-    flags: TrackedSelection.Flags,
-  ) {
-    let activeOffset = this._activeOffset,
-        anchorOffset = this._anchorOffset;
-
-    const activeIsStart = activeOffset <= anchorOffset,
-          anchorIsStart = activeOffset >= anchorOffset,
-          inclusiveStart = (flags & TrackedSelection.Flags.StrictStart) === 0,
-          inclusiveEnd = (flags & TrackedSelection.Flags.StrictEnd) === 0,
-          inclusiveActive = activeIsStart ? inclusiveStart : inclusiveEnd,
-          inclusiveAnchor = anchorIsStart ? inclusiveStart : inclusiveEnd;
-
-    for (let i = 0, len = changes.length; i < len; i++) {
-      const change = changes[i],
-            diff = change.text.length - change.rangeLength,
-            offset = change.rangeOffset + change.rangeLength;
-
-      if (offset < activeOffset || (inclusiveActive && offset === activeOffset)) {
-        activeOffset += diff;
-      }
-
-      if (offset < anchorOffset || (inclusiveAnchor && offset === anchorOffset)) {
-        anchorOffset += diff;
-      }
-    }
-
-    this._activeOffset = activeOffset;
-    this._anchorOffset = anchorOffset;
-  }
-}
+import { ArgumentError } from "../api";
 
 export namespace TrackedSelection {
   /**
@@ -144,47 +15,176 @@ export namespace TrackedSelection {
   }
 
   /**
+   * An array of tracked selections selections.
+   */
+  export interface Array extends Iterable<number> {
+    [index: number]: number;
+    readonly length: number;
+  }
+
+  /**
+   * Creates a new `TrackedSelection.Array`, reading offsets from the given
+   * selections in the given document.
+   */
+  export function fromArray(
+    selections: readonly vscode.Selection[],
+    document: vscode.TextDocument,
+  ): Array {
+    const trackedSelections = [] as number[];
+
+    for (let i = 0, len = selections.length; i < len; i++) {
+      const selection = selections[i],
+            anchor = selection.anchor,
+            active = selection.active;
+
+      if (anchor.line === active.line) {
+        const anchorOffset = document.offsetAt(anchor),
+              activeOffset = anchorOffset + active.character - anchor.character;
+
+        trackedSelections.push(anchorOffset, activeOffset);
+      } else {
+        trackedSelections.push(document.offsetAt(anchor), document.offsetAt(active));
+      }
+    }
+
+    return trackedSelections;
+  }
+
+  export function restore(array: Array, index: number, document: vscode.TextDocument) {
+    const anchor = document.positionAt(array[index << 1]),
+          active = document.positionAt(array[(index << 1) | 1]);
+
+    return new vscode.Selection(anchor, active);
+  }
+
+  export function length(array: Array, index: number) {
+    index <<= 1;
+
+    const anchorOffset = array[index << 1],
+          activeOffset = array[(index << 1) | 1];
+
+    return Math.abs(anchorOffset - activeOffset);
+  }
+
+  export function offset(array: Array, index: number) {
+    index <<= 1;
+
+    const anchorOffset = array[index << 1],
+          activeOffset = array[(index << 1) | 1];
+
+    return Math.min(anchorOffset, activeOffset);
+  }
+
+  /**
+   * Returns the saved selections, restored in the given document.
+   */
+  export function restoreArray(array: Array, document: vscode.TextDocument) {
+    const selections = [] as vscode.Selection[];
+
+    for (let i = 0, len = array.length >> 1; i < len; i++) {
+      selections.push(restore(array, i, document));
+    }
+
+    return selections;
+  }
+
+  /**
+   * Returns the saved selections, restored in the given document, skipping
+   * empty selections.
+   */
+  export function restoreNonEmpty(array: Array, document: vscode.TextDocument) {
+    const selections = [] as vscode.Selection[];
+
+    for (let i = 0, len = array.length >> 1; i < len; i++) {
+      const anchorOffset = array[i << 1],
+            activeOffset = array[(i << 1) | 1];
+
+      if (anchorOffset === activeOffset) {
+        continue;
+      }
+
+      selections.push(
+        new vscode.Selection(document.positionAt(anchorOffset), document.positionAt(activeOffset)),
+      );
+    }
+
+    return selections;
+  }
+
+  /**
+   * Updates the underlying selection to reflect a change in its document.
+   */
+  export function updateAfterDocumentChanged(
+    array: Array,
+    changes: readonly vscode.TextDocumentContentChangeEvent[],
+    flags: TrackedSelection.Flags,
+  ) {
+    for (let i = 0, len = array.length; i < len; i += 2) {
+      let anchorOffset = array[i],
+          activeOffset = array[i + 1];
+
+      const activeIsStart = activeOffset <= anchorOffset,
+            anchorIsStart = activeOffset >= anchorOffset,
+            inclusiveStart = (flags & Flags.StrictStart) === 0,
+            inclusiveEnd = (flags & Flags.StrictEnd) === 0,
+            inclusiveActive = activeIsStart ? inclusiveStart : inclusiveEnd,
+            inclusiveAnchor = anchorIsStart ? inclusiveStart : inclusiveEnd;
+
+      for (let i = 0, len = changes.length; i < len; i++) {
+        const change = changes[i],
+              diff = change.text.length - change.rangeLength,
+              offset = change.rangeOffset + change.rangeLength;
+
+        if (offset < activeOffset || (inclusiveActive && offset === activeOffset)) {
+          activeOffset += diff;
+        }
+
+        if (offset < anchorOffset || (inclusiveAnchor && offset === anchorOffset)) {
+          anchorOffset += diff;
+        }
+      }
+
+      array[i] = anchorOffset;
+      array[i + 1] = activeOffset;
+    }
+  }
+
+  /**
    * A set of `TrackedSelection`s.
    */
   export class Set implements vscode.Disposable {
     private readonly _onDisposed = new vscode.EventEmitter<this>();
-    private readonly _selections: TrackedSelection[];
+    private readonly _selections: Array;
     private readonly _subscription: vscode.Disposable;
 
     public get onDisposed() {
       return this._onDisposed.event;
     }
 
-    public get selections() {
-      return this._selections as readonly TrackedSelection[];
-    }
-
     public constructor(
-      selections: TrackedSelection[],
+      selections: Array,
       public readonly document: vscode.TextDocument,
       public readonly flags = Flags.Inclusive,
     ) {
+      ArgumentError.validate("selections", selections.length > 0, "selections cannot be empty");
+
       this._selections = selections;
       this._subscription =
         vscode.workspace.onDidChangeTextDocument(this.updateAfterDocumentChanged, this);
     }
 
-    public addTrackedSelections(selections: readonly TrackedSelection[]) {
-      this._selections.push(...selections);
+    public addArray(array: Array) {
+      (this._selections as number[]).push(...array);
 
       return this;
     }
 
     public addSelections(selections: readonly vscode.Selection[]) {
-      return this.addTrackedSelections(TrackedSelection.fromArray(selections, this.document));
-    }
-
-    public addTrackedSelection(selection: TrackedSelection) {
-      return this.addTrackedSelections([selection]);
+      return this.addArray(TrackedSelection.fromArray(selections, this.document));
     }
 
     public addSelection(selection: vscode.Selection) {
-      return this.addTrackedSelection(TrackedSelection.from(selection, this.document));
+      return this.addArray(TrackedSelection.fromArray([selection], this.document));
     }
 
     /**
@@ -197,49 +197,20 @@ export namespace TrackedSelection {
         return false;
       }
 
-      const trackedSelections = this._selections,
-            flags = this.flags,
-            changes = e.contentChanges;
-
-      for (let i = 0, len = trackedSelections.length; i < len; i++) {
-        trackedSelections[i].updateAfterDocumentChanged(changes, flags);
-      }
+      updateAfterDocumentChanged(this._selections, e.contentChanges, this.flags);
 
       return true;
     }
 
     public restore() {
-      const document = this.document,
-            trackedSelections = this.selections,
-            trackedSelectionsLen = trackedSelections.length,
-            selections = new Array<vscode.Selection>(trackedSelectionsLen);
-
-      for (let i = 0; i < trackedSelectionsLen; i++) {
-        selections[i] = trackedSelections[i].restore(document);
-      }
-
-      return selections;
+      return restoreArray(this._selections, this.document);
     }
 
     public restoreNonEmpty() {
-      const document = this.document,
-            trackedSelections = this.selections,
-            trackedSelectionsLen = trackedSelections.length,
-            selections = [] as vscode.Selection[];
-
-      for (let i = 0; i < trackedSelectionsLen; i++) {
-        const trackedSelection = trackedSelections[i];
-
-        if (trackedSelection.length > 0) {
-          selections.push(trackedSelection.restore(document));
-        }
-      }
-
-      return selections;
+      return restoreNonEmpty(this._selections, this.document);
     }
 
     public dispose() {
-      this._selections.length = 0;
       this._subscription.dispose();
     }
   }
@@ -252,7 +223,7 @@ export namespace TrackedSelection {
     private readonly _decorationType: vscode.TextEditorDecorationType;
 
     public constructor(
-      selections: TrackedSelection[],
+      selections: Array,
       public readonly editor: Pick<vscode.TextEditor, "setDecorations" | "document">,
       renderOptions: vscode.DecorationRenderOptions,
     ) {
@@ -262,11 +233,14 @@ export namespace TrackedSelection {
       this.updateDecorations();
     }
 
-    public addTrackedSelections(selections: readonly TrackedSelection[]) {
-      super.addTrackedSelections(selections);
+    public addArray(selections: Array) {
+      super.addArray(selections);
 
-      if (selections.some((selection) => selection.length > 0)) {
-        this.updateDecorations();
+      for (let i = 0, len = selections.length; i < len; i += 2) {
+        if (selections[i] !== selections[i + 1]) {
+          this.updateDecorations();
+          break;
+        }
       }
 
       return this;

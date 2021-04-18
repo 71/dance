@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 
-import { ArgumentError, Context, EditNotAppliedError, EditorRequiredError, Selections } from "./api";
-import { SelectionBehavior } from "./state/extension";
-import { noUndoStops } from "./utils/misc";
-import { TrackedSelection } from "./utils/tracked-selection";
+import { ArgumentError, Context, EditNotAppliedError, EditorRequiredError, Selections } from "../api";
+import { SelectionBehavior } from "./modes";
+import { noUndoStops } from "../utils/misc";
+import { TrackedSelection } from "../utils/tracked-selection";
 
 /**
  * The base class for all registers.

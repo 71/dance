@@ -1,5 +1,4 @@
 import { Context } from "./context";
-import { todo } from "./errors";
 
 /**
  * Switches to the mode with the given name.

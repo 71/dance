@@ -3,7 +3,7 @@ import * as api from "../api";
 
 import { Argument, Input, RegisterOr, SetInput } from ".";
 import { Context, Direction, EmptySelectionsError, Positions, prompt, Selections } from "../api";
-import { Register } from "../register";
+import { Register } from "../state/registers";
 import { manipulateSelectionsInteractively } from "../utils/misc";
 import { escapeForRegExp } from "../utils/regexp";
 import { CharSet, getCharSetFunction } from "../utils/charset";

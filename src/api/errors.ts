@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { Register } from "../register";
-import { EditorState } from "../state/editor";
+import { Register } from "../state/registers";
+import { EditorState } from "../state/editor-state";
 import { Context } from "./context";
 
 /**

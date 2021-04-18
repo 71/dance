@@ -187,6 +187,10 @@ function determineFunctionFlags(f: Builder.ParsedFunction) {
     flags.push("RequiresActiveEditor");
   }
 
+  if ("noreplay" in f.properties) {
+    flags.push("DoNotReplay");
+  }
+
   if (flags.length === 0) {
     return "CommandDescriptor.Flags.None";
   }

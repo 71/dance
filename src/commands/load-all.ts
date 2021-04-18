@@ -1,5 +1,5 @@
 import { ArgumentError, commands, Context, Direction, EditorRequiredError, Shift } from "../api";
-import { Register } from "../register";
+import { Register } from "../state/registers";
 import { CommandDescriptor, Commands } from ".";
 
 function getRegister<F extends Register.Flags>(
@@ -334,13 +334,13 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.history.recording.start",
-      (_, argument) => recording_start(getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros)),
-      CommandDescriptor.Flags.None,
+      (_, argument) => _.runAsync((_) => recording_start(_, getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.history.recording.stop",
-      (_, argument) => recording_stop(getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros)),
-      CommandDescriptor.Flags.None,
+      (_, argument) => _.runAsync((_) => recording_stop(_, getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.history.redo",
@@ -585,7 +585,7 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.seek.enclosing",
-      (_, argument) => _.runAsync((_) => enclosing(_, getDirection(argument), getShift(argument), argument.pairs)),
+      (_, argument) => _.runAsync((_) => enclosing(_, getDirection(argument), getShift(argument), argument.open, argument.pairs)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

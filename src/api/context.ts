@@ -1,11 +1,12 @@
 import * as vscode from "vscode";
-import { EditorState } from "../state/editor";
-import { Extension, SelectionBehavior } from "../state/extension";
+import { EditorState } from "../state/editor-state";
+import { Extension } from "../state/extension";
 import { noUndoStops } from "../utils/misc";
 import { EditNotAppliedError, Selections } from ".";
 import { EditorRequiredError } from "./errors";
 import { CommandDescriptor } from "../commands";
-import { DocumentState } from "../state/document";
+import { DocumentState } from "../state/document-state";
+import { SelectionBehavior } from "../state/modes";
 
 let currentContext: ContextWithoutActiveEditor | undefined;
 

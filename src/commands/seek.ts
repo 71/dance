@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import { Argument, InputOr } from ".";
 import { ArgumentError, Context, Direction, keypress, moveTo, Pair, pair, Positions, Selections, Shift, surroundedBy, todo } from "../api";
-import { SelectionBehavior } from "../state/extension";
+import { SelectionBehavior } from "../state/modes";
 
 /**
  * Update selections based on the text surrounding them.

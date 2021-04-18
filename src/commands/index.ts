@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import { Context, EditorRequiredError } from "../api";
 import { Extension } from "../state/extension";
-import { Register, Registers } from "../register";
+import { Register, Registers } from "../state/registers";
 
 /**
  * Indicates that a register is expected; if no register is given, the
@@ -143,10 +143,13 @@ export namespace CommandDescriptor {
    */
   export const enum Flags {
     /** No specific behavior. */
-    None = 0,
+    None = 0b0000,
 
     /** An active editor must be available. */
-    RequiresActiveEditor = 1,
+    RequiresActiveEditor = 0b0001,
+
+    /** The command should not be replayed in macros and repeats. */
+    DoNotReplay = 0b0010,
   }
 }
 

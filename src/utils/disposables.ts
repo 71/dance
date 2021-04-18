@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { EditorState } from "../state/editor";
+import { EditorState } from "../state/editor-state";
 import { Extension } from "../state/extension";
 
 declare class WeakRef<T extends object> {
@@ -204,7 +204,7 @@ export class AutoDisposable implements vscode.Disposable {
 
     case AutoDisposable.EventType.OnSelectionsDidChange:
       vscode.window.onDidChangeTextEditorSelection((e) => {
-        if (editorState.isFor(e.textEditor)
+        if (editorState.editor === e.textEditor
             && e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
           this.dispose();
         }
