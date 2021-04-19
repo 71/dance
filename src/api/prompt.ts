@@ -177,23 +177,23 @@ export function keypress(context = Context.current): Promise<string> {
     return Promise.reject(new CancellationError(CancellationError.Reason.CancellationToken));
   }
 
-  const previousMode = context.editorState.mode;
+  const previousMode = context.mode;
 
-  return context.editorState.setMode(context.extensionState.modes.inputMode).then(() =>
+  return context.switchToMode(context.extension.modes.inputMode).then(() =>
     new Promise<string>((resolve, reject) => {
       try {
         const subscriptions = [
           vscode.commands.registerCommand("type", ({ text }: { text: string }) => {
             if (subscriptions.length > 0) {
               subscriptions.splice(0).forEach((s) => s.dispose());
-              context.editorState.setMode(previousMode).then(() => resolve(text));
+              context.switchToMode(previousMode).then(() => resolve(text));
             }
           }),
 
           context.cancellationToken.onCancellationRequested(() => {
             if (subscriptions.length > 0) {
               subscriptions.splice(0).forEach((s) => s.dispose());
-              context.editorState.setMode(previousMode)
+              context.switchToMode(previousMode)
                 .then(() => reject(new CancellationError(CancellationError.Reason.PressedEscape)));
             }
           }),
@@ -214,12 +214,12 @@ export namespace keypress {
     const firstKey = await keypress(context);
 
     if (firstKey !== " ") {
-      return context.extensionState.registers.get(firstKey);
+      return context.extension.registers.get(firstKey);
     }
 
     const secondKey = await keypress(context);
 
-    return context.extensionState.registers.forDocument(context.document).get(secondKey);
+    return context.extension.registers.forDocument(context.document).get(secondKey);
   }
 }
 

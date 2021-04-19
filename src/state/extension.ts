@@ -1,7 +1,5 @@
 import * as vscode from "vscode";
 
-import { DocumentState } from "./document-state";
-import { EditorState } from "./editor-state";
 import { extensionName } from "../extension";
 import { Register, Registers } from "./registers";
 import { assert, CancellationError, Menu, validateMenu } from "../api";
@@ -11,6 +9,7 @@ import { Recorder } from "./recorder";
 import { Commands } from "../commands";
 import { AutoDisposable } from "../utils/disposables";
 import { StatusBar } from "./status-bar";
+import { Editors } from "./editors";
 
 // ===============================================================================================
 // ==  EXTENSION  ================================================================================
@@ -20,19 +19,9 @@ import { StatusBar } from "./status-bar";
  * Global state of the extension.
  */
 export class Extension implements vscode.Disposable {
-  // Events.
-  // ==========================================================================
-
-  private readonly _onModeDidChange = new vscode.EventEmitter<EditorState>();
-
-  /**
-   * An event which fires on editor mode change.
-   */
-  public readonly onModeDidChange = this._onModeDidChange.event;
-
   // Misc.
-  private readonly configurationChangeHandlers = new Map<string, () => void>();
-  private readonly subscriptions: vscode.Disposable[] = [];
+  private readonly _configurationChangeHandlers = new Map<string, () => void>();
+  private readonly _subscriptions: vscode.Disposable[] = [];
 
   // Configuration.
   // ==========================================================================
@@ -65,6 +54,11 @@ export class Extension implements vscode.Disposable {
    * `Recorder` for this instance of the extension.
    */
   public readonly recorder = new Recorder(this.statusBar);
+
+  /**
+   * `Editors` for this instance of the extension.
+   */
+  public readonly editors = new Editors(this);
 
   // Ephemeral state needed by commands.
   // ==========================================================================
@@ -141,72 +135,10 @@ export class Extension implements vscode.Disposable {
       true,
     );
 
-    this.subscriptions.push(
-      // Track visible editors.
-      vscode.window.onDidChangeVisibleTextEditors((visibleEditors) => {
-        // As soon as editors go out of view, their related vscode.TextEditor
-        // instances are made obsolete. However, we'd still like to keep state
-        // like active mode and selections in case the user reopens that editor
-        // shortly.
-
-        // First, group all editors per document.
-        const editorsPerDocument = groupEditorsPerDocument(visibleEditors);
-
-        // Then, for each group, try to match visible editors to previously
-        // visible editors.,
-        const remainingDocuments = new Set(this.documentStates());
-
-        for (const editorGroup of editorsPerDocument.values()) {
-          const documentState = this.getDocumentState(editorGroup[0].document);
-
-          remainingDocuments.delete(documentState);
-          documentState.updateEditorStates(editorGroup);
-        }
-
-        // And finally notify remaining documents that they have no editors
-        // associated with them anymore.
-        for (const remainingDocument of remainingDocuments) {
-          remainingDocument.updateEditorStates([]);
-        }
-      }),
-
-      // Track active editor.
-      vscode.window.onDidChangeActiveTextEditor((editor) => {
-        this._activeEditorState?.notifyDidBecomeInactive(editor !== undefined);
-
-        if (editor === undefined) {
-          this._activeEditorState = undefined;
-        } else {
-          // Note that the call to `getEditorState` below requires that visible
-          // editors are updated via `onDidChangeVisibleTextEditors`. Thankfully
-          // `onDidChangeActiveTextEditor` is indeed triggered *after* that
-          // event.
-          this._activeEditorState = this.getEditorState(editor);
-          this._activeEditorState!.notifyDidBecomeActive();
-        }
-      }),
-
-      // Notify editors when selections change.
-      vscode.window.onDidChangeTextEditorSelection((e) => {
-        this._documentStates
-          .get(e.textEditor.document)
-          ?.getEditorState(e.textEditor)
-          ?.notifyDidChangeTextEditorSelection();
-      }),
-
-      // Dispose of documents when relevant.
-      vscode.workspace.onDidCloseTextDocument((document) => {
-        const documentState = this._documentStates.get(document);
-
-        if (documentState !== undefined) {
-          this._documentStates.delete(document);
-          documentState.dispose();
-        }
-      }),
-
+    this._subscriptions.push(
       // Update configuration automatically.
       vscode.workspace.onDidChangeConfiguration((e) => {
-        for (const [section, handler] of this.configurationChangeHandlers.entries()) {
+        for (const [section, handler] of this._configurationChangeHandlers.entries()) {
           if (e.affectsConfiguration(section)) {
             handler();
           }
@@ -216,22 +148,7 @@ export class Extension implements vscode.Disposable {
 
     // Register all commands.
     for (const descriptor of Object.values(commands)) {
-      this.subscriptions.push(descriptor.register(this));
-    }
-
-    // Set up current visible editors.
-    groupEditorsPerDocument(vscode.window.visibleTextEditors).forEach((editors, document) => {
-      this.getDocumentState(document).updateEditorStates(editors);
-    });
-
-    // Set up current active text editor, if any.
-    const activeEditor = vscode.window.activeTextEditor;
-
-    if (activeEditor !== undefined) {
-      const activeEditorState = this.getEditorState(activeEditor);
-
-      this._activeEditorState = activeEditorState;
-      activeEditorState!.notifyDidBecomeActive();
+      this._subscriptions.push(descriptor.register(this));
     }
   }
 
@@ -242,11 +159,6 @@ export class Extension implements vscode.Disposable {
     this._cancellationTokenSource.cancel();
     this._cancellationTokenSource.dispose();
 
-    for (const documentState of this.documentStates()) {
-      documentState.dispose();
-    }
-
-    this._documentStates = new Map();
     this._autoDisposables.forEach((disposable) => disposable.dispose());
 
     assert(this._autoDisposables.size === 0);
@@ -282,7 +194,7 @@ export class Extension implements vscode.Disposable {
 
     const defaultValue = configuration.inspect<T>(section)!.defaultValue!;
 
-    this.configurationChangeHandlers.set(fullName, () => {
+    this._configurationChangeHandlers.set(fullName, () => {
       const validator = new SettingsValidator(fullName);
 
       handler(vscode.workspace.getConfiguration("dance").get(section, defaultValue), validator);
@@ -296,74 +208,6 @@ export class Extension implements vscode.Disposable {
       handler(configuration.get(section, defaultValue), validator);
 
       validator.displayErrorIfNeeded();
-    }
-  }
-
-  // =============================================================================================
-  // ==  DOCUMENT AND EDITOR STATES  =============================================================
-  // =============================================================================================
-
-  private _documentStates = new WeakMap<vscode.TextDocument, DocumentState>();
-  private _activeEditorState?: EditorState;
-
-  /**
-   * Returns the `EditorState` for the active `vscode.TextEditor`, or
-   * `undefined` if `vscode.window.activeTextEditor === undefined`.
-   */
-  public get activeEditorState() {
-    return this._activeEditorState;
-  }
-
-  /**
-   * Returns the `DocumentState` for the given `vscode.TextDocument`.
-   */
-  public getDocumentState(document: vscode.TextDocument) {
-    let state = this._documentStates.get(document);
-
-    if (state === undefined) {
-      this._documentStates.set(document, (state = new DocumentState(this, document)));
-    }
-
-    return state;
-  }
-
-  /**
-   * Returns the `EditorState` for the given `vscode.TextEditor`.
-   */
-  public getEditorState(editor: vscode.TextEditor) {
-    const editorState = this.getDocumentState(editor.document).getEditorState(editor);
-
-    if (editorState === undefined) {
-      throw new Error(
-        "given editor does not have an equivalent EditorState; has it gone out of view?",
-      );
-    }
-
-    return editorState;
-  }
-
-  /**
-   * Returns an iterator over all known `DocumentState`s.
-   */
-  public *documentStates() {
-    const documents = vscode.workspace.textDocuments,
-          len = documents.length;
-
-    for (let i = 0; i < len; i++) {
-      const documentState = this._documentStates.get(documents[i]);
-
-      if (documentState !== undefined) {
-        yield documentState;
-      }
-    }
-  }
-
-  /**
-   * Returns an iterator over all known `EditorState`s.
-   */
-  public *editorStates() {
-    for (const documentState of this.documentStates()) {
-      yield* documentState.editorStates();
     }
   }
 
@@ -455,21 +299,4 @@ export class Extension implements vscode.Disposable {
       return errorValue();
     }
   }
-}
-
-function groupEditorsPerDocument(editors: readonly vscode.TextEditor[]) {
-  const editorsPerDocument = new Map<vscode.TextDocument, vscode.TextEditor[]>();
-
-  for (let i = 0; i < editors.length; i++) {
-    const editor = editors[i],
-          editorsForDocument = editorsPerDocument.get(editor.document);
-
-    if (editorsForDocument === undefined) {
-      editorsPerDocument.set(editor.document, [editor]);
-    } else {
-      editorsForDocument.push(editor);
-    }
-  }
-
-  return editorsPerDocument;
 }

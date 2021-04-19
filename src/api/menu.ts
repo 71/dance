@@ -124,7 +124,7 @@ export namespace showMenu {
     additionalArgs: readonly any[] = [],
     prefix?: string,
   ) {
-    const menu = Context.WithoutActiveEditor.current.extensionState.menus.get(menuName);
+    const menu = Context.WithoutActiveEditor.current.extension.menus.get(menuName);
 
     if (menu === undefined) {
       return Promise.reject(new Error(`menu ${JSON.stringify(menuName)} does not exist`));

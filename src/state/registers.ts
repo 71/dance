@@ -403,7 +403,7 @@ export abstract class RegisterSet {
     () => {
       const editor = activeEditor(),
             document = editor.document,
-            selectionBehavior = Context.currentOrUndefined?.editorState?.mode?.selectionBehavior,
+            selectionBehavior = Context.currentOrUndefined?.mode?.selectionBehavior,
             selections = selectionBehavior === SelectionBehavior.Character
               ? Selections.fromCharacterMode(editor.selections, document)
               : editor.selections;
@@ -419,7 +419,7 @@ export abstract class RegisterSet {
 
       return editor.edit((editBuilder) => {
         const document = editor.document,
-              selectionBehavior = Context.currentOrUndefined?.editorState?.mode?.selectionBehavior,
+              selectionBehavior = Context.currentOrUndefined?.mode?.selectionBehavior,
               selections = selectionBehavior === SelectionBehavior.Character
                 ? Selections.fromCharacterMode(editor.selections, document)
                 : editor.selections;

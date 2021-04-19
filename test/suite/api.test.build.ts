@@ -38,7 +38,7 @@ export async function build(builder: Builder) {
           }
 
           const decls = [
-            "editorState = extension.getEditorState(editor)",
+            "editorState = extension.editors.getState(editor)!",
             "context = new Context(editorState, cancellationToken)",
           ];
 

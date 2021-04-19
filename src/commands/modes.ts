@@ -46,7 +46,7 @@ export async function set_temporarily(_: Context, inputOr: InputOr<string>, repe
 }
 
 function validateModeName(ctx = Context.WithoutActiveEditor.current) {
-  const modes = ctx.extensionState.modes;
+  const modes = ctx.extension.modes;
 
   return {
     prompt: "Mode name",

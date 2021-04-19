@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
 import { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
 import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun, todo } from "../api";
+import { PerEditorState } from "../state/editors";
 import { Mode, SelectionBehavior } from "../state/modes";
 import { Register } from "../state/registers";
-import { EditorState } from "../state/editor-state";
 import { CharSet, getCharacters } from "../utils/charset";
 import { AutoDisposable } from "../utils/disposables";
 import { manipulateSelectionsInteractively } from "../utils/misc";
@@ -57,12 +57,12 @@ export function save(
     trackedSelectionSet = new TrackedSelection.Set(trackedSelections, document);
   }
 
-  const disposable = _.extensionState
+  const disposable = _.extension
     .createAutoDisposable()
     .addNotifyingDisposable(trackedSelectionSet);
 
   if (Array.isArray(until)) {
-    until.forEach((until) => disposable.disposeOnUserEvent(until, _.editorState));
+    until.forEach((until) => disposable.disposeOnUserEvent(until, _));
   }
 
   register.replaceSelectionSet(trackedSelectionSet)?.dispose();
@@ -723,7 +723,7 @@ export async function open(_: Context) {
   );
 }
 
-const indicesPerEditor = new Map<EditorState, AutoDisposable>();
+const indicesToken = PerEditorState.registerState<AutoDisposable>(/* isDisposable= */ true);
 
 /**
  * Toggle selection indices.
@@ -743,12 +743,13 @@ export function toggleIndices(
   display: Argument<boolean | undefined> = undefined,
   until: Argument<AutoDisposable.Event[]> = [],
 ) {
-  const editorState = _.editorState;
-  let disposable = indicesPerEditor.get(editorState);
+  const editorState = _.getState();
+  let disposable = editorState.get(indicesToken);
 
   if (disposable !== undefined) {
     // Indices already exist; remove them.
     if (display !== true) {
+      editorState.store(indicesToken, undefined);
       disposable.dispose();
     }
 
@@ -814,23 +815,17 @@ export function toggleIndices(
     editor.setDecorations(indicesDecorationType, ranges);
   }
 
-  disposable = _.extensionState
+  disposable = _.extension
     .createAutoDisposable()
-    .disposeOnEvent(editorState.onEditorWasClosed)
     .addDisposable(indicesDecorationType)
-    .addDisposable({
-      dispose() {
-        indicesPerEditor.delete(editorState);
-      },
-    })
     .addDisposable(vscode.window.onDidChangeTextEditorSelection((e) => {
       onDidChangeSelection(e.textEditor);
     }));
 
-  indicesPerEditor.set(editorState, disposable);
+  editorState.store(indicesToken, disposable);
 
   if (Array.isArray(until)) {
-    until.forEach((until) => disposable!.disposeOnUserEvent(until, editorState));
+    until.forEach((until) => disposable!.disposeOnUserEvent(until, _));
   }
 
   onDidChangeSelection(editorState.editor);

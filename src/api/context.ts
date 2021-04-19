@@ -1,12 +1,12 @@
 import * as vscode from "vscode";
-import { EditorState } from "../state/editor-state";
-import { Extension } from "../state/extension";
-import { noUndoStops } from "../utils/misc";
-import { EditNotAppliedError, Selections } from ".";
-import { EditorRequiredError } from "./errors";
+
+import { EditNotAppliedError, EditorRequiredError } from "./errors";
+import { Selections } from "./selections";
 import { CommandDescriptor } from "../commands";
-import { DocumentState } from "../state/document-state";
-import { SelectionBehavior } from "../state/modes";
+import { PerEditorState } from "../state/editors";
+import { Extension } from "../state/extension";
+import { Mode, SelectionBehavior } from "../state/modes";
+import { noUndoStops } from "../utils/misc";
 
 let currentContext: ContextWithoutActiveEditor | undefined;
 
@@ -66,7 +66,7 @@ class ContextWithoutActiveEditor {
     /**
      * The global extension state.
      */
-    public readonly extensionState: Extension,
+    public readonly extension: Extension,
 
     /**
      * The token used to cancel an operation running in the current context.
@@ -198,23 +198,7 @@ export class Context extends ContextWithoutActiveEditor {
 
   private _document: vscode.TextDocument;
   private _editor: vscode.TextEditor;
-
-  private _documentState: DocumentState;
-  private _editorState: EditorState;
-
-  /**
-   * The document state for the current editor.
-   */
-  public get documentState() {
-    return this._documentState;
-  }
-
-  /**
-   * The editor state for the current editor.
-   */
-  public get editorState() {
-    return this._editorState;
-  }
+  private _mode: Mode;
 
   /**
    * The current `vscode.TextDocument`.
@@ -235,12 +219,19 @@ export class Context extends ContextWithoutActiveEditor {
   }
 
   /**
+   * The `Mode` associated with the current `vscode.TextEditor`.
+   */
+  public get mode() {
+    return this._mode;
+  }
+
+  /**
    * The selection behavior for this context.
    *
    * @deprecated Try to avoid using this property.
    */
   public get selectionBehavior() {
-    return this._editorState.mode.selectionBehavior;
+    return this._mode.selectionBehavior;
   }
 
   /**
@@ -292,29 +283,41 @@ export class Context extends ContextWithoutActiveEditor {
     return editor.selection;
   }
 
+  public constructor(
+    state: PerEditorState,
+    cancellationToken: vscode.CancellationToken,
+    commandDescriptor?: CommandDescriptor,
+  ) {
+    super(state.extension, cancellationToken, commandDescriptor);
+
+    this._document = state.editor.document;
+    this._editor = state.editor;
+    this._mode = state.mode;
+  }
+
+  /**
+   * Returns the mode-specific state for the current context.
+   */
+  public getState() {
+    return this.extension.editors.getState(this._editor)!;
+  }
+
   /**
    * Switches the context to the given document.
    */
   public async switchToDocument(document: vscode.TextDocument, alsoFocusEditor = false) {
     const editor = await vscode.window.showTextDocument(document, undefined, !alsoFocusEditor);
 
-    this._documentState = this.extensionState.getDocumentState(document);
-    this._editorState = this.extensionState.getEditorState(editor);
     this._document = document;
     this._editor = editor;
+    this._mode = this.extension.editors.getState(editor).mode;
   }
 
-  public constructor(
-    editorState: EditorState,
-    cancellationToken: vscode.CancellationToken,
-    commandDescriptor?: CommandDescriptor,
-  ) {
-    super(editorState.extension, cancellationToken, commandDescriptor);
-
-    this._documentState = editorState.documentState;
-    this._editorState = editorState;
-    this._document = editorState.documentState.document;
-    this._editor = editorState.editor;
+  /**
+   * Switches the mode of the current editor to the given mode.
+   */
+  public switchToMode(mode: Mode) {
+    return this.extension.editors.getState(this._editor).setMode(mode);
   }
 }
 
@@ -332,7 +335,7 @@ export namespace Context {
    * there is an active text editor.
    */
   export function create(extension: Extension, command: CommandDescriptor) {
-    const activeEditorState = extension.activeEditorState,
+    const activeEditorState = extension.editors.active,
           cancellationToken = extension.cancellationToken;
 
     return activeEditorState === undefined
@@ -345,7 +348,7 @@ export namespace Context {
    * editor.
    */
   export function createWithActiveTextEditor(extension: Extension, command: CommandDescriptor) {
-    const activeEditorState = extension.activeEditorState;
+    const activeEditorState = extension.editors.active;
 
     EditorRequiredError.throwUnlessAvailable(activeEditorState);
 

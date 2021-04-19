@@ -107,7 +107,7 @@ export function recording_start(
     "a recording is already active",
   );
 
-  const recording = _.extensionState.recorder.startRecording();
+  const recording = _.extension.recorder.startRecording();
 
   recordingPerRegister.set(register, recording);
 }

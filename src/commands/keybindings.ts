@@ -13,7 +13,7 @@ declare module "./keybindings";
  */
 export async function setup(_: Context, register: RegisterOr<"dquote", Register.Flags.CanWrite>) {
   await vscode.commands.executeCommand("workbench.action.openGlobalKeybindingsFile");
-  await _.switchToDocument(_.extensionState.activeEditorState!.editor.document);
+  await _.switchToDocument(_.extension.editors.active!.editor.document);
 
   const action = await prompt.one([
     ["y", "yank keybindings to register"],

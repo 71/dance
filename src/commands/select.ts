@@ -3,8 +3,8 @@ import * as api from "../api";
 
 import { Argument } from ".";
 import { Context, Direction, Lines, Positions, Selections, Shift, showMenu, todo } from "../api";
-import { EditorState } from "../state/editor-state";
 import { SelectionBehavior } from "../state/modes";
+import { PerEditorState } from "../state/editors";
 
 /**
  * Update selections based on their position in the document.
@@ -26,7 +26,8 @@ interface PreferredColumnsState {
   preferredColumns: number[];
 }
 
-const preferredColumnsPerEditor = new WeakMap<EditorState, PreferredColumnsState>();
+const preferredColumnsToken =
+  PerEditorState.registerState<PreferredColumnsState>(/* isDisposable= */ false);
 
 /**
  * Select vertically.
@@ -69,8 +70,7 @@ export function vertically(
     }
   }
 
-  const editorState = _.editorState,
-        document = _.document,
+  const document = _.document,
         isCharacterMode = _.selectionBehavior === SelectionBehavior.Character;
 
   const activeEnd = (selection: vscode.Selection) => {
@@ -86,13 +86,14 @@ export function vertically(
   };
 
   // Get or create the `PreferredColumnsState` for this editor.
-  let preferredColumnsState = preferredColumnsPerEditor.get(editorState);
+  const editorState = _.getState();
+  let preferredColumnsState = editorState.get(preferredColumnsToken);
 
   if (preferredColumnsState === undefined) {
     // That disposable will be automatically disposed of when the selections in
     // the editor change due to an action outside of the current command. When
     // it is disposed, it will clear the preferred columns for this editor.
-    const disposable = _.extensionState
+    const disposable = _.extension
       .createAutoDisposable()
       .disposeOnEvent(editorState.onEditorWasClosed)
       .addDisposable(vscode.window.onDidChangeTextEditorSelection((e) => {
@@ -107,11 +108,11 @@ export function vertically(
           return;
         }
 
-        preferredColumnsPerEditor.delete(editorState);
+        editorState.store(preferredColumnsToken, undefined);
         disposable.dispose();
       }));
 
-    preferredColumnsPerEditor.set(
+    editorState.store(
       editorState,
       preferredColumnsState = {
         disposable,

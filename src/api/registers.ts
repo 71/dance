@@ -15,7 +15,7 @@ export function register(name: string, i: number): Thenable<string | undefined>;
 export function register(name: string): Thenable<readonly string[] | undefined>;
 
 export function register(name: string, i?: number) {
-  const register: Register = Context.current.extensionState.registers.get(name);
+  const register: Register = Context.current.extension.registers.get(name);
 
   register.ensureCanRead();
 
@@ -40,7 +40,7 @@ export namespace register {
   export function selection(name: string): Thenable<readonly vscode.Selection[] | undefined>;
 
   export function selection(name: string, i?: number): any {
-    const register: Register = Context.current.extensionState.registers.get(name);
+    const register: Register = Context.current.extension.registers.get(name);
 
     register.ensureCanReadSelections();
 

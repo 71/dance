@@ -4,7 +4,8 @@ import * as vscode from "vscode";
 
 import { expect, ExpectedDocument } from "./utils";
 import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, moveWhile, NotASelectionError, replace, rotate, rotateSelections, search, Select, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
-import { Extension, SelectionBehavior } from "../../src/state/extension";
+import { Extension } from "../../src/state/extension";
+import { SelectionBehavior } from "../../src/state/modes";
 
 function selection(): {
   empty(line: number | vscode.Position, character?: number): vscode.Selection;
@@ -97,7 +98,7 @@ suite("API tests", function () {
   suite("dance/src/api/context.ts", function () {
 
     test("function text", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo bar
@@ -119,7 +120,7 @@ suite("API tests", function () {
     });
 
     test("function text", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo bar
@@ -147,7 +148,7 @@ suite("API tests", function () {
   suite("dance/src/api/functional.ts", function () {
 
     test("function isPosition", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken);
 
       // No setup needed.
@@ -166,7 +167,7 @@ suite("API tests", function () {
     });
 
     test("function isRange", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken);
 
       // No setup needed.
@@ -185,7 +186,7 @@ suite("API tests", function () {
     });
 
     test("function isSelection", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken);
 
       // No setup needed.
@@ -208,7 +209,7 @@ suite("API tests", function () {
   suite("dance/src/api/edit/index.ts", function () {
 
     test("function insert", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               1 2 3
@@ -233,7 +234,7 @@ suite("API tests", function () {
     });
 
     test("function byIndex", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a b c
@@ -258,7 +259,7 @@ suite("API tests", function () {
     });
 
     test("function replace", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               1 2 3
@@ -283,7 +284,7 @@ suite("API tests", function () {
     });
 
     test("function byIndex", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a b c
@@ -308,7 +309,7 @@ suite("API tests", function () {
     });
 
     test("function rotate", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a b c
@@ -333,7 +334,7 @@ suite("API tests", function () {
     });
 
     test("function selectionsOnly", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a b c
@@ -362,7 +363,7 @@ suite("API tests", function () {
   suite("dance/src/api/search/index.ts", function () {
 
     test("function backward", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               abc
@@ -396,7 +397,7 @@ suite("API tests", function () {
     });
 
     test("function forward", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               abc
@@ -434,7 +435,7 @@ suite("API tests", function () {
   suite("dance/src/api/edit/linewise.ts", function () {
 
     test("function indentLines", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a
@@ -459,7 +460,7 @@ suite("API tests", function () {
     });
 
     test("function indentLines#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a
@@ -478,7 +479,7 @@ suite("API tests", function () {
     });
 
     test("function indentLines#2", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a
@@ -499,7 +500,7 @@ suite("API tests", function () {
     });
 
     test("function deindentLines", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
                 a
@@ -524,7 +525,7 @@ suite("API tests", function () {
     });
 
     test("function deindentLines#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
                 a
@@ -549,7 +550,7 @@ suite("API tests", function () {
     });
 
     test("function joinLines", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a b
@@ -573,7 +574,7 @@ suite("API tests", function () {
     });
 
     test("function joinLines#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a b
@@ -597,7 +598,7 @@ suite("API tests", function () {
     });
 
     test("function joinLines#2", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a b
@@ -620,7 +621,7 @@ suite("API tests", function () {
     });
 
     test("function joinLines#3", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a b
@@ -648,7 +649,7 @@ suite("API tests", function () {
   suite("dance/src/api/search/move.ts", function () {
 
     test("function backward", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               abc
@@ -677,7 +678,7 @@ suite("API tests", function () {
     });
 
     test("function forward", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               abc
@@ -710,7 +711,7 @@ suite("API tests", function () {
   suite("dance/src/api/selections.ts", function () {
 
     test("function setSelections", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               hello world
@@ -734,7 +735,7 @@ suite("API tests", function () {
     });
 
     test("function setSelections#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken);
 
       // No setup needed.
@@ -748,7 +749,7 @@ suite("API tests", function () {
     });
 
     test("function filterSelections", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo 123
@@ -771,7 +772,7 @@ suite("API tests", function () {
     });
 
     test("function filterSelections", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo 123
@@ -794,7 +795,7 @@ suite("API tests", function () {
     });
 
     test("function updateSelections", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo 123
@@ -819,7 +820,7 @@ suite("API tests", function () {
     });
 
     test("function updateSelections#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo 123
@@ -836,7 +837,7 @@ suite("API tests", function () {
     });
 
     test("function updateSelections", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo 123
@@ -861,7 +862,7 @@ suite("API tests", function () {
     });
 
     test("function rotateSelections", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo bar baz
@@ -884,7 +885,7 @@ suite("API tests", function () {
     });
 
     test("function rotateSelections#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               foo bar baz
@@ -907,7 +908,7 @@ suite("API tests", function () {
     });
 
     test("function selectionsLines", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               ab
@@ -937,7 +938,7 @@ suite("API tests", function () {
     });
 
     test("function shift", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken);
 
       // No setup needed.
@@ -953,7 +954,7 @@ suite("API tests", function () {
     });
 
     test("function shift#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken);
 
       // No setup needed.
@@ -966,7 +967,7 @@ suite("API tests", function () {
     });
 
     test("function isEntireLine", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               abc
@@ -986,7 +987,7 @@ suite("API tests", function () {
     });
 
     test("function isEntireLine#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               abc
@@ -1005,7 +1006,7 @@ suite("API tests", function () {
     });
 
     test("function isEntireLines", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               abc
@@ -1032,7 +1033,7 @@ suite("API tests", function () {
     });
 
     test("function length", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               abc
@@ -1056,7 +1057,7 @@ suite("API tests", function () {
     });
 
     test("function fromStartEnd", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken);
 
       // No setup needed.
@@ -1086,7 +1087,7 @@ suite("API tests", function () {
     });
 
     test("function toCharacterMode", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a
@@ -1126,7 +1127,7 @@ suite("API tests", function () {
     });
 
     test("function fromCharacterMode", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
             `);
@@ -1143,7 +1144,7 @@ suite("API tests", function () {
     });
 
     test("function fromCharacterMode#1", async function () {
-      const editorState = extension.getEditorState(editor),
+      const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
               a

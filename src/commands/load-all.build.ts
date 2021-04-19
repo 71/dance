@@ -113,15 +113,15 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
       break;
 
     case "extension":
-      givenParameters.push("_.extensionState");
+      givenParameters.push("_.extension");
       break;
 
     case "modes":
-      givenParameters.push("_.extensionState.modes");
+      givenParameters.push("_.extension.modes");
       break;
 
     case "registers":
-      givenParameters.push("_.extensionState.registers");
+      givenParameters.push("_.extension.registers");
       break;
 
     case "count":
@@ -183,7 +183,7 @@ function determineFunctionFlags(f: Builder.ParsedFunction) {
   const flags = [] as string[];
 
   if (f.parameters.some(([_, t]) => ["Context"].includes(t))
-      || f.parameters.some(([p]) => ["document", "selections", "editorState"].includes(p))) {
+      || f.parameters.some(([p]) => ["document", "selections"].includes(p))) {
     flags.push("RequiresActiveEditor");
   }
 

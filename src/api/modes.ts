@@ -12,29 +12,27 @@ export function toMode(modeName: string, count: number): Thenable<void>;
 
 export function toMode(modeName: string, count?: number) {
   const context = Context.current,
-        mode = context.extensionState.modes.get(modeName);
+        mode = context.extension.modes.get(modeName);
 
   if (mode === undefined || mode.isPendingDeletion) {
     throw new Error(`mode ${JSON.stringify(modeName)} does not exist`);
   }
 
   if (!count) {
-    return context.editorState.setMode(mode);
+    return context.switchToMode(mode);
   }
 
-  const disposable = context.extensionState
-    .createAutoDisposable()
-    .addDisposable(context.extensionState.onModeDidChange((editorState) => {
-      if (editorState !== context.editorState) {
-        return;
-      }
+  const editorState = context.getState();
 
-      if (editorState.mode !== mode) {
+  const disposable = context.extension
+    .createAutoDisposable()
+    .addDisposable(context.extension.editors.onModeDidChange((editorState) => {
+      if (editorState.editor === context.editor && editorState.mode !== mode) {
         disposable.dispose();
       }
     }))
-    .disposeOnEvent(context.editorState.onEditorWasClosed);
+    .disposeOnEvent(editorState.onVisibilityDidChange);
 
   // TODO: watch document changes and command executions
-  return context.editorState.setMode(mode);
+  return context.switchToMode(mode);
 }

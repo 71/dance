@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import { EditorState } from "../state/editor-state";
-import { Extension } from "../state/extension";
+import { Context } from "../api";
+import { PerEditorState } from "../state/editors";
 
 declare class WeakRef<T extends object> {
   public constructor(value: T);
@@ -139,7 +139,8 @@ export class AutoDisposable implements vscode.Disposable {
     return this;
   }
 
-  public disposeOnUserEvent(event: AutoDisposable.Event, editorState: EditorState) {
+  public disposeOnUserEvent(event: AutoDisposable.Event, context: Context) {
+    const editorState = context.extension.editors.getState(context.editor as any)!;
     let eventName: AutoDisposable.EventType,
         eventOpts: Record<string, unknown>;
 
@@ -194,7 +195,7 @@ export class AutoDisposable implements vscode.Disposable {
         include.push(eventOpts.include);
       }
 
-      editorState.extension.onModeDidChange((e) => {
+      editorState.extension.editors.onModeDidChange((e) => {
         if (e === editorState && !except.includes(e.mode.name)
             && (include.length === 0 || include.includes(e.mode.name))) {
           this.dispose();

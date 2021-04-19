@@ -96,14 +96,14 @@ export async function selectRegister(_: Context, inputOr: InputOr<string | Regis
       return;
     }
 
-    const extension = _.extensionState,
+    const extension = _.extension,
           registers = extension.registers;
 
     extension.currentRegister = input.startsWith(" ")
       ? registers.forDocument(_.document).get(input.slice(1))
       : registers.get(input);
   } else {
-    _.extensionState.currentRegister = input;
+    _.extension.currentRegister = input;
   }
 }
 
@@ -191,7 +191,7 @@ export async function openMenu(
     return showMenu(menu, [], prefix);
   }
 
-  const menus = _.extensionState.menus;
+  const menus = _.extension.menus;
   const input = await inputOr(() => prompt({
     prompt: "Menu name",
     validateInput(value) {

@@ -190,7 +190,7 @@ export function command(commandName: string, ...args: readonly any[]): Thenable<
  * Runs the VS Code commands with the given identifiers and optional arguments.
  */
 export async function commands(...commands: readonly command.Any[]): Promise<any[]> {
-  const extension = Context.WithoutActiveEditor.current.extensionState,
+  const extension = Context.WithoutActiveEditor.current.extension,
         batches = [] as ([CommandDescriptor, any][] | [string, any])[],
         currentBatch = [] as [CommandDescriptor, any][];
 

@@ -9,7 +9,7 @@ function getRegister<F extends Register.Flags>(
   requiredFlags: F,
 ): Register.WithFlags<F> {
   let register = argument.register;
-  const extension = _.extensionState;
+  const extension = _.extension;
 
   if (typeof register === "string") {
     if (register.startsWith(" ")) {
@@ -408,7 +408,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.cancel",
-      (_) => cancel(_.extensionState),
+      (_) => cancel(_.extension),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
@@ -433,7 +433,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.updateCount",
-      (_, argument) => _.runAsync((_) => updateCount(_, getCount(_, argument), _.extensionState, getInputOr(argument), argument.addDigits)),
+      (_, argument) => _.runAsync((_) => updateCount(_, getCount(_, argument), _.extension, getInputOr(argument), argument.addDigits)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];

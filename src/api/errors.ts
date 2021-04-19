@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
-import { Register } from "../state/registers";
-import { EditorState } from "../state/editor-state";
 import { Context } from "./context";
+import { PerEditorState } from "../state/editors";
 
 /**
  * Asserts that the given condition is true.
@@ -147,7 +146,7 @@ export class EditorRequiredError extends Error {
     super("active editor required");
   }
 
-  public static throwUnlessAvailable<T extends EditorState | vscode.TextEditor>(
+  public static throwUnlessAvailable<T extends PerEditorState | vscode.TextEditor>(
     editorState: T | undefined,
   ): asserts editorState is T {
     if (editorState === undefined) {
