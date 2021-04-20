@@ -39,17 +39,17 @@
     <tr><td><a href="#editnewLineabove"><code>edit.newLine.above</code></a></td><td>Insert new line above each selection</td><td><code>Shift+Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editnewLinebelow"><code>edit.newLine.below</code></a></td><td>Insert new line below each selection</td><td><code>Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editreplaceCharacters"><code>edit.replaceCharacters</code></a></td><td>Replace characters</td><td><code>R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=11><a href="#history"><code>history</code></a></td><td><a href="#historybackward"><code>history.backward</code></a></td><td>Move backward in history</td><td><code>Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#historyforward"><code>history.forward</code></a></td><td>Move forward in history</td><td><code>Shift+Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./history.ts#L53"><code>history.repeat.objectSelection</code></a></td><td>Repeat last object selection</td><td><code>Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./history.ts#L52"><code>history.repeat.selection</code></a></td><td>Repeat last selection change</td><td></td></tr>
-    <tr><td><a href="#historyrecordingplay"><code>history.recording.play</code></a></td><td>Play macro</td><td><code>Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#historyrecordingstart"><code>history.recording.start</code></a></td><td>Start recording macro</td><td><code>Shift+Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#historyrecordingstop"><code>history.recording.stop</code></a></td><td>Stop recording macro</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'normal' && dance.recording</code>)</td></tr>
+    <tr><td rowspan=11><a href="#history"><code>history</code></a></td><td><a href="./history.ts#L55"><code>history.repeat.objectSelection</code></a></td><td>Repeat last object selection</td><td><code>Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./history.ts#L54"><code>history.repeat.selection</code></a></td><td>Repeat last selection change</td><td></td></tr>
+    <tr><td><a href="#historyrecordingplay"><code>history.recording.play</code></a></td><td>Replay recording</td><td><code>Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#historyrecordingstart"><code>history.recording.start</code></a></td><td>Start recording</td><td><code>Shift+Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#historyrecordingstop"><code>history.recording.stop</code></a></td><td>Stop recording</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'normal' && dance.isRecording</code>)</td></tr>
     <tr><td><a href="#historyredo"><code>history.redo</code></a></td><td>Redo</td><td><code>Shift+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#historyredoselections"><code>history.redo.selections</code></a></td><td>Redo a change of selections</td><td><code>Shift+Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyrepeat"><code>history.repeat</code></a></td><td>Repeat last change</td><td></td></tr>
     <tr><td><a href="#historyrepeatedit"><code>history.repeat.edit</code></a></td><td>Repeat last edit without a command</td><td><code>.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyundo"><code>history.undo</code></a></td><td>Undo</td><td><code>U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#historyundoselections"><code>history.undo.selections</code></a></td><td>Undo a change of selections</td><td><code>Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=1><a href="#keybindings"><code>keybindings</code></a></td><td><a href="#keybindingssetup"><code>keybindings.setup</code></a></td><td>Set up Dance keybindings</td><td></td></tr>
     <tr><td rowspan=6><a href="#misc"><code>misc</code></a></td><td><a href="#cancel"><code>cancel</code></a></td><td>Cancel Dance operation</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Escape</code> (<code>editorTextFocus && dance.mode == 'input'</code>)</td></tr>
     <tr><td><a href="#ignore"><code>ignore</code></a></td><td>Ignore key</td><td></td></tr>
@@ -72,10 +72,10 @@
     <tr><td><a href="./search.ts#L25"><code>search.add</code></a></td><td>Search (add)</td><td><code>Shift+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L26"><code>search.backward</code></a></td><td>Search backward</td><td><code>Alt+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L27"><code>search.backward.add</code></a></td><td>Search backward (add)</td><td><code>Shift+Alt+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L129"><code>search.next.add</code></a></td><td>Add next match</td><td><code>Shift+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L130"><code>search.previous</code></a></td><td>Select previous match</td><td><code>Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L131"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L85"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L132"><code>search.next.add</code></a></td><td>Add next match</td><td><code>Shift+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L133"><code>search.previous</code></a></td><td>Select previous match</td><td><code>Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L134"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L88"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#searchselection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Shift+Alt+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=24><a href="#seek"><code>seek</code></a></td><td><a href="#seekcharacter"><code>seek.character</code></a></td><td>Select to character (excluded)</td><td><code>T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#seekenclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -349,21 +349,21 @@ Redo.
 This command:
 - does not require an active text editor.
 
-### [`history.backward`](./history.ts#L31-L36)
+### [`history.undo.selections`](./history.ts#L31-L36)
 
-Move backward in history.
-
-This command:
-- does not require an active text editor.
-
-### [`history.forward`](./history.ts#L39-L44)
-
-Move forward in history.
+Undo a change of selections.
 
 This command:
 - does not require an active text editor.
 
-### [`history.repeat`](./history.ts#L47-L60)
+### [`history.redo.selections`](./history.ts#L40-L45)
+
+Redo a change of selections.
+
+This command:
+- does not require an active text editor.
+
+### [`history.repeat`](./history.ts#L49-L62)
 
 Repeat last change.
 
@@ -378,7 +378,7 @@ This command:
 - takes an argument `exclude` of type `string`.
 - takes an argument `include` of type `string`.
 
-### [`history.repeat.edit`](./history.ts#L66-L71)
+### [`history.repeat.edit`](./history.ts#L68-L73)
 
 Repeat last edit without a command.
 
@@ -386,25 +386,25 @@ This command:
 - does not require an active text editor.
 - may be repeated with a given number of repetitions.
 
-### [`history.recording.play`](./history.ts#L77-L85)
+### [`history.recording.play`](./history.ts#L79-L89)
 
-Play macro.
+Replay recording.
 
 This command:
 - accepts a register (by default, it uses `arobase`).
 - does not require an active text editor.
 - may be repeated with a given number of repetitions.
 
-### [`history.recording.start`](./history.ts#L95-L103)
+### [`history.recording.start`](./history.ts#L105-L113)
 
-Start recording macro.
+Start recording.
 
 This command:
 - accepts a register (by default, it uses `arobase`).
 
-### [`history.recording.stop`](./history.ts#L115-L123)
+### [`history.recording.stop`](./history.ts#L125-L133)
 
-Stop recording macro.
+Stop recording.
 
 This command:
 - accepts a register (by default, it uses `arobase`).
@@ -569,7 +569,7 @@ This command:
 - takes an argument `interactive` of type `boolean`.
 - takes an input of type `Input<string | RegExp>`.
 
-### [`search.selection`](./search.ts#L78-L93)
+### [`search.selection`](./search.ts#L81-L96)
 
 Search current selection.
 
@@ -581,7 +581,7 @@ This command:
 - accepts a register (by default, it uses `slash`).
 - takes an argument `smart` of type `boolean`.
 
-### [`search.next`](./search.ts#L122-L141)
+### [`search.next`](./search.ts#L125-L144)
 
 Select next match.
 

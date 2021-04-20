@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { ArgumentError, assert, command, commands, Context, Positions, Selections, selectionsLines } from "../api";
+import { assert, command, commands, Context, Positions, Selections, selectionsLines } from "../api";
 import { extensionName } from "../extension";
 import { Extension } from "./extension";
 import { Mode, SelectionBehavior } from "./modes";
@@ -12,6 +12,7 @@ export class PerEditorState implements vscode.Disposable {
   private readonly _onEditorWasClosed = new vscode.EventEmitter<this>();
   private readonly _onVisibilityDidChange = new vscode.EventEmitter<this>();
   private _isVisible = true;
+  private _mode!: Mode;
 
   /**
    * The corresponding visible `vscode.TextEditor`.
@@ -59,11 +60,13 @@ export class PerEditorState implements vscode.Disposable {
   public constructor(
     public readonly extension: Extension,
     private _editor: vscode.TextEditor,
-    private _mode: Mode,
+    mode: Mode,
   ) {
     for (let i = 0; i < PerEditorState._registeredStates.length; i++) {
       this._storage.push(undefined);
     }
+
+    this.setMode(mode);
   }
 
   public dispose() {
@@ -348,14 +351,6 @@ export class PerEditorState implements vscode.Disposable {
 
 export namespace PerEditorState {
   export declare class Token<T> {}
-
-  export const enum Closed {
-    /**
-     * Editor is closed permanently, and w
-     */
-    Permanently,
-    Temporarily,
-  }
 }
 
 /**
@@ -400,14 +395,16 @@ export class Editors implements vscode.Disposable {
     vscode.workspace.onDidCloseTextDocument(
       this._handleDidCloseTextDocument, this, this._subscriptions);
 
-    this._handleDidChangeVisibleTextEditors(vscode.window.visibleTextEditors);
+    process.nextTick(() => {
+      this._handleDidChangeVisibleTextEditors(vscode.window.visibleTextEditors);
 
-    const activeTextEditor = vscode.window.activeTextEditor;
+      const activeTextEditor = vscode.window.activeTextEditor;
 
-    if (activeTextEditor !== undefined) {
-      this._activeEditor = this._editors.get(activeTextEditor);
-      this._activeEditor?.notifyDidBecomeActive();
-    }
+      if (activeTextEditor !== undefined) {
+        this._activeEditor = this._editors.get(activeTextEditor);
+        this._activeEditor?.notifyDidBecomeActive();
+      }
+    });
   }
 
   public dispose() {

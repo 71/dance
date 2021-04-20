@@ -305,31 +305,21 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
  */
 async function loadHistoryModule(): Promise<CommandDescriptor[]> {
   const {
-    backward,
-    forward,
     recording_play,
     recording_start,
     recording_stop,
     redo,
+    redo_selections,
     repeat,
     repeat_edit,
     undo,
+    undo_selections,
   } = await import("./history");
 
   return [
     new CommandDescriptor(
-      "dance.history.backward",
-      (_) => backward(),
-      CommandDescriptor.Flags.None,
-    ),
-    new CommandDescriptor(
-      "dance.history.forward",
-      (_) => forward(),
-      CommandDescriptor.Flags.None,
-    ),
-    new CommandDescriptor(
       "dance.history.recording.play",
-      (_, argument) => recording_play(getRepetitions(_, argument), getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros)),
+      (_, argument) => _.runAsync((_) => recording_play(_, getRepetitions(_, argument), getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros))),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
@@ -348,6 +338,11 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
+      "dance.history.redo.selections",
+      (_) => redo_selections(),
+      CommandDescriptor.Flags.None,
+    ),
+    new CommandDescriptor(
       "dance.history.repeat",
       (_, argument) => repeat(getRepetitions(_, argument), argument.include, argument.exclude),
       CommandDescriptor.Flags.None,
@@ -360,6 +355,11 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.history.undo",
       (_) => undo(),
+      CommandDescriptor.Flags.None,
+    ),
+    new CommandDescriptor(
+      "dance.history.undo.selections",
+      (_) => undo_selections(),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(

@@ -29,19 +29,21 @@ export function redo() {
 }
 
 /**
- * Move backward in history.
+ * Undo a change of selections.
  *
  * @keys `a-u` (normal)
  */
-export function backward() {
+export function undo_selections() {
+  return vscode.commands.executeCommand("cursorUndo");
 }
 
 /**
- * Move forward in history.
+ * Redo a change of selections.
  *
  * @keys `s-a-u` (normal)
  */
-export function forward() {
+export function redo_selections() {
+  return vscode.commands.executeCommand("cursorRedo");
 }
 
 /**
@@ -75,25 +77,33 @@ export function repeat_edit(repetitions: number) {
 }
 
 /**
- * Play macro.
+ * Replay recording.
  *
  * @keys `q` (normal)
  */
 export function recording_play(
+  _: Context.WithoutActiveEditor,
+
   repetitions: number,
   register: RegisterOr<"arobase", Register.Flags.CanReadWriteMacros>,
 ) {
-  const commands = register.getRecordedCommands();
+  const recording = register.getRecording();
+
+  ArgumentError.validate(
+    "recording",
+    recording !== undefined,
+    () => `register "${register.name}" does not hold a recording`,
+  );
 
   for (let i = 0; i < repetitions; i++) {
-    todo();
+    recording.replay(_);
   }
 }
 
 const recordingPerRegister = new WeakMap<Register, ActiveRecording>();
 
 /**
- * Start recording macro.
+ * Start recording.
  *
  * @keys `s-q` (normal)
  */
@@ -113,7 +123,7 @@ export function recording_start(
 }
 
 /**
- * Stop recording macro.
+ * Stop recording.
  *
  * @keys `escape` (normal, recording)
  */
@@ -129,5 +139,5 @@ export function recording_stop(
     "no recording is active in the given register",
   );
 
-  register.setRecordedCommands(recording.complete());
+  register.setRecording(recording.complete());
 }

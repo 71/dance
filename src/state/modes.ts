@@ -482,7 +482,7 @@ export class Modes implements Iterable<Mode> {
   private readonly _inputMode = new Mode(this, "input", { cursorStyle: "underline-thin" });
   private _defaultMode = new Mode(this, "default", {});
 
-  public constructor() {
+  public constructor(extension: Extension) {
     for (const builtin of [this._defaultMode, this._inputMode]) {
       this._modes.set(builtin.name, builtin);
     }
@@ -495,6 +495,8 @@ export class Modes implements Iterable<Mode> {
       selectionBehavior: "caret",
       decorations: [],
     }, new SettingsValidator());
+
+    this._observePreferences(extension);
   }
 
   /**
@@ -557,7 +559,7 @@ export class Modes implements Iterable<Mode> {
    * Starts listening to changes in user preferences that may lead to updates to
    * user modes.
    */
-  public observePreferences(extension: Extension) {
+  private _observePreferences(extension: Extension) {
     // Mode definitions.
     extension.observePreference<Modes.Configuration>(".modes", (value, validator) => {
       let isEmpty = true;

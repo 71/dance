@@ -49,7 +49,8 @@ export function search(
     lastSearchInput = input;
     register.set([]);
 
-    const newSelections = add ? selections.slice() : [];
+    const newSelections = add ? selections.slice() : [],
+          regexpMatches = [] as RegExpMatchArray[];
 
     newSelections.push(...Selections.map.byIndex((_, selection, document) => {
       let newSelection = selection;
@@ -64,12 +65,14 @@ export function search(
 
         newSelection = Selections.fromLength(searchResult[0], searchResult[1][0].length,
                                              false /* isReversed */, document);
+        regexpMatches.push(searchResult[1]);
       }
 
       return newSelection;
     }, selections));
 
     Selections.set(newSelections);
+    _.extension.registers.updateRegExpMatches(regexpMatches);
 
     return register.set([input.source]).then(() => input as RegExp);
   });

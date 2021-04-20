@@ -835,33 +835,28 @@
         "category": "Dance"
       },
       {
-        "command": "dance.history.backward",
-        "title": "Move backward in history",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.history.forward",
-        "title": "Move forward in history",
-        "category": "Dance"
-      },
-      {
         "command": "dance.history.recording.play",
-        "title": "Play macro",
+        "title": "Replay recording",
         "category": "Dance"
       },
       {
         "command": "dance.history.recording.start",
-        "title": "Start recording macro",
+        "title": "Start recording",
         "category": "Dance"
       },
       {
         "command": "dance.history.recording.stop",
-        "title": "Stop recording macro",
+        "title": "Stop recording",
         "category": "Dance"
       },
       {
         "command": "dance.history.redo",
         "title": "Redo",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.redo.selections",
+        "title": "Redo a change of selections",
         "category": "Dance"
       },
       {
@@ -887,6 +882,11 @@
       {
         "command": "dance.history.undo",
         "title": "Undo",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.undo.selections",
+        "title": "Undo a change of selections",
         "category": "Dance"
       },
       {
@@ -1661,14 +1661,6 @@
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.history.backward",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.history.forward",
-          "when": "dance.mode == 'normal'"
-        },
-        {
           "command": "dance.history.recording.play",
           "when": "dance.mode == 'normal'"
         },
@@ -1682,6 +1674,10 @@
         },
         {
           "command": "dance.history.redo",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.redo.selections",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -1702,6 +1698,10 @@
         },
         {
           "command": "dance.history.undo",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.undo.selections",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -2404,33 +2404,21 @@
         "command": "dance.edit.yank-replace"
       },
       {
-        "key": "Alt+U",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Move backward in history",
-        "command": "dance.history.backward"
-      },
-      {
-        "key": "Shift+Alt+U",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Move forward in history",
-        "command": "dance.history.forward"
-      },
-      {
         "key": "Q",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Play macro",
+        "title": "Replay recording",
         "command": "dance.history.recording.play"
       },
       {
         "key": "Shift+Q",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Start recording macro",
+        "title": "Start recording",
         "command": "dance.history.recording.start"
       },
       {
         "key": "Escape",
-        "when": "editorTextFocus && dance.mode == 'normal' && dance.recording",
-        "title": "Stop recording macro",
+        "when": "editorTextFocus && dance.mode == 'normal' && dance.isRecording",
+        "title": "Stop recording",
         "command": "dance.history.recording.stop"
       },
       {
@@ -2438,6 +2426,12 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Redo",
         "command": "dance.history.redo"
+      },
+      {
+        "key": "Shift+Alt+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Redo a change of selections",
+        "command": "dance.history.redo.selections"
       },
       {
         "key": ".",
@@ -2456,6 +2450,12 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Undo",
         "command": "dance.history.undo"
+      },
+      {
+        "key": "Alt+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Undo a change of selections",
+        "command": "dance.history.undo.selections"
       },
       {
         "key": "Escape",

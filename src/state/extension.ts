@@ -48,7 +48,7 @@ export class Extension implements vscode.Disposable {
   /**
    * `Modes` for this instance of the extension.
    */
-  public readonly modes = new Modes();
+  public readonly modes = new Modes(this);
 
   /**
    * `Recorder` for this instance of the extension.
@@ -101,9 +101,6 @@ export class Extension implements vscode.Disposable {
   }
 
   public constructor(public readonly commands: Commands) {
-    // Configuration: modes.
-    this.modes.observePreferences(this);
-
     // Configuration: menus.
     this.observePreference<Record<string, Menu>>(
       ".menus",

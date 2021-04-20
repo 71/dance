@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 
-import { ArgumentError, Context, EditNotAppliedError, EditorRequiredError, Selections } from "../api";
+import { ArgumentError, assert, Context, EditNotAppliedError, EditorRequiredError, Selections } from "../api";
 import { SelectionBehavior } from "./modes";
 import { noUndoStops } from "../utils/misc";
 import { TrackedSelection } from "../utils/tracked-selection";
+import { Recording } from "./recorder";
 
 /**
  * The base class for all registers.
@@ -204,8 +205,8 @@ export namespace Register {
   }
 
   export interface ReadableWriteableMacros {
-    getRecordedCommands(): any | undefined;
-    setRecordedCommands(commands: any): void;
+    getRecording(): Recording | undefined;
+    setRecording(recording: Recording): void;
   }
 }
 
@@ -217,54 +218,54 @@ class GeneralPurposeRegister extends Register implements Register.Readable,
                                                          Register.ReadableSelections,
                                                          Register.WriteableSelections,
                                                          Register.ReadableWriteableMacros {
-  public readonly flags: Register.Flags;
+  public readonly flags = Register.Flags.CanRead
+                        | Register.Flags.CanReadSelections
+                        | Register.Flags.CanReadWriteMacros
+                        | Register.Flags.CanWrite
+                        | Register.Flags.CanWriteSelections;
 
-  private values?: readonly string[];
-  private selections?: TrackedSelection.Set;
+  private _values?: readonly string[];
+  private _recording?: Recording;
+  private _selections?: TrackedSelection.Set;
 
   public constructor(
     public readonly name: string,
   ) {
     super();
-
-    this.flags = Register.Flags.CanRead
-               | Register.Flags.CanReadSelections
-               | Register.Flags.CanReadWriteMacros
-               | Register.Flags.CanWrite
-               | Register.Flags.CanWriteSelections;
   }
 
   public set(values: readonly string[]) {
-    this.values = values;
+    this._values = values;
 
     return Promise.resolve();
   }
 
   public get() {
-    return Promise.resolve(this.values);
+    return Promise.resolve(this._values);
   }
 
   public getSelections() {
-    return this.selections?.restore();
+    return this._selections?.restore();
   }
 
   public getSelectionSet() {
-    return this.selections;
+    return this._selections;
   }
 
   public replaceSelectionSet(trackedSelections?: TrackedSelection.Set) {
-    const previousSelectionSet = this.selections;
+    const previousSelectionSet = this._selections;
 
-    this.selections = trackedSelections;
+    this._selections = trackedSelections;
 
     return previousSelectionSet;
   }
 
-  public getRecordedCommands() {
-    return undefined;
+  public getRecording() {
+    return this._recording;
   }
 
-  public setRecordedCommands(commands: any) {
+  public setRecording(recording: Recording) {
+    this._recording = recording;
   }
 }
 
@@ -303,15 +304,15 @@ class SpecialRegister extends Register implements Register.Readable,
  */
 class ClipboardRegister extends Register implements Register.Readable,
                                                     Register.Writeable {
-  private lastStrings?: readonly string[];
-  private lastRawText?: string;
+  private _lastStrings?: readonly string[];
+  private _lastRawText?: string;
 
   public readonly name = '"';
   public readonly flags = Register.Flags.CanRead | Register.Flags.CanWrite;
 
   public get() {
     return vscode.env.clipboard.readText().then((text) =>
-      text === this.lastRawText ? this.lastStrings : [text],
+      text === this._lastRawText ? this._lastStrings : [text],
     );
   }
 
@@ -322,10 +323,10 @@ class ClipboardRegister extends Register implements Register.Readable,
       newline = "\r\n";
     }
 
-    this.lastStrings = values;
-    this.lastRawText = values.join(newline);
+    this._lastStrings = values;
+    this._lastRawText = values.join(newline);
 
-    return vscode.env.clipboard.writeText(this.lastRawText);
+    return vscode.env.clipboard.writeText(this._lastRawText);
   }
 }
 
@@ -445,7 +446,10 @@ export abstract class RegisterSet {
   public readonly underscore = new SpecialRegister("_", () => Promise.resolve([""]));
 
   /**
-   * The read-only ":" (`colon`) register, mapped to the last entered command.
+   * The ":" (`colon`) register.
+   *
+   * In Kakoune it is mapped to the last entered * command, but since we don't
+   * have access to that information in Dance, it's a general purpose register.
    */
   public readonly colon = new GeneralPurposeRegister(":");
 
@@ -536,6 +540,31 @@ export abstract class RegisterSet {
 
     return register;
   }
+
+  /**
+   * Updates the contents of the numeric registers to hold the groups matched by
+   * the last `RegExp` search operation.
+   *
+   * @deprecated Do not call -- internal implementation detail.
+   */
+  public updateRegExpMatches(matches: RegExpMatchArray[]) {
+    assert(matches.length > 0);
+
+    const transposed = [] as string[][],
+          groupsCount = matches[0].length;
+
+    for (let i = 1; i < groupsCount; i++) {
+      const strings = [] as string[];
+
+      for (const match of matches) {
+        strings.push(match[i]);
+      }
+
+      transposed.push(strings);
+    }
+
+    this._lastMatches = transposed;
+  }
 }
 
 /**
@@ -569,9 +598,5 @@ export class Registers extends RegisterSet {
     }
 
     return registers;
-  }
-
-  public updateRegExpMatches(matches: RegExpExecArray[]) {
-    // TODO.
   }
 }

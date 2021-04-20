@@ -94,8 +94,8 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
   /**
    * Invokes the command with the given argument.
    */
-  public async invokeSafely(extension: Extension, argument: unknown) {
-    const result = await extension.runPromiseSafely(
+  public invokeSafely(extension: Extension, argument: unknown) {
+    return extension.runPromiseSafely(
       async () => {
         const context = Context.create(extension, this);
 
@@ -115,15 +115,17 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
         extension.currentCount = 0;
         extension.currentRegister = undefined;
 
-        return await this.handler(context as any, ownedArgument);
+        const result = await this.handler(context as any, ownedArgument);
+
+        // Record command *after* executing it, to ensure it did not encounter
+        // an error.
+        extension.recorder.recordCommand(this, ownedArgument);
+
+        return result;
       },
       () => undefined,
       (e) => `error executing command "${this.identifier}": ${e.message}`,
     );
-
-    // TODO: record history; restore preferred columns.
-
-    return result;
   }
 
   /**

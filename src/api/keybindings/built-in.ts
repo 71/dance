@@ -171,33 +171,21 @@ const builtinKeybindings = [
     command: "dance.edit.yank-replace",
   },
   {
-    key: "Alt+U",
-    when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Move backward in history",
-    command: "dance.history.backward",
-  },
-  {
-    key: "Shift+Alt+U",
-    when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Move forward in history",
-    command: "dance.history.forward",
-  },
-  {
     key: "Q",
     when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Play macro",
+    title: "Replay recording",
     command: "dance.history.recording.play",
   },
   {
     key: "Shift+Q",
     when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Start recording macro",
+    title: "Start recording",
     command: "dance.history.recording.start",
   },
   {
     key: "Escape",
-    when: "editorTextFocus && dance.mode == 'normal' && dance.recording",
-    title: "Stop recording macro",
+    when: "editorTextFocus && dance.mode == 'normal' && dance.isRecording",
+    title: "Stop recording",
     command: "dance.history.recording.stop",
   },
   {
@@ -205,6 +193,12 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Redo",
     command: "dance.history.redo",
+  },
+  {
+    key: "Shift+Alt+U",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Redo a change of selections",
+    command: "dance.history.redo.selections",
   },
   {
     key: ".",
@@ -223,6 +217,12 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Undo",
     command: "dance.history.undo",
+  },
+  {
+    key: "Alt+U",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Undo a change of selections",
+    command: "dance.history.undo.selections",
   },
   {
     key: "Escape",

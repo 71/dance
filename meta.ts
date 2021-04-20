@@ -461,7 +461,7 @@ export function parseKeys(keys: string) {
         break;
 
       case "recording":
-        whenClauses.push("dance.recording");
+        whenClauses.push("dance.isRecording");
         break;
 
       default:
