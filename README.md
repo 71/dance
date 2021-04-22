@@ -60,7 +60,7 @@ following changes have been made:
 
 ### Custom modes
 
-All modes are custom. By default, the `normal` and `input` modes are defined,
+All modes are custom. By default, the `normal` and `insert` modes are defined,
 and many [Kakoune]-inspired keybindings are available. More modes can be
 created, though. These modes are configured with `dance.modes`.
 
