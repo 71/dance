@@ -317,7 +317,11 @@ export class Context extends ContextWithoutActiveEditor {
    * Switches the mode of the current editor to the given mode.
    */
   public switchToMode(mode: Mode) {
-    return this.extension.editors.getState(this._editor).setMode(mode);
+    const state = this.extension.editors.getState(this._editor);
+
+    return state.setMode(mode).then(() => {
+      this._mode = state.mode;
+    });
   }
 }
 

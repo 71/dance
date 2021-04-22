@@ -260,8 +260,9 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
     } else {
       const context = Context.WithoutActiveEditor.current;
 
-      for (const [descriptor, argument] of batch as [CommandDescriptor, any][]) {
-        const ownedArgument = Object.assign({}, argument);
+      for (const pair of batch as [CommandDescriptor, any][]) {
+        const [descriptor, argument] = pair,
+              ownedArgument = pair[1] = Object.assign({}, argument);
 
         if (ownedArgument.try) {
           delete ownedArgument.try;
@@ -274,6 +275,18 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
         } else {
           results.push(await descriptor.handler(context, ownedArgument));
         }
+      }
+    }
+  }
+
+  const recorder = extension.recorder;
+
+  for (const batch of batches) {
+    if (typeof batch[0] === "string") {
+      recorder.recordExternalCommand(batch[0], batch[1]);
+    } else {
+      for (const [descriptor, argument] of batch as [CommandDescriptor, any][]) {
+        recorder.recordCommand(descriptor, argument);
       }
     }
   }

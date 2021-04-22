@@ -223,9 +223,9 @@ function parseDocComments(code: string, modulePath: string) {
 
     const splitDocComment = docComment.split(/\n### Example\n/gm),
           properties: Record<string, string> = {},
-          doc = splitDocComment[0].replace(/\n@(param \w+|\w+) ((?:.+\n)(?: {2}.+\n)*)/g,
+          doc = splitDocComment[0].replace(/^@(param \w+|\w+)(?:\n| ((?:.+\n)(?: {2}.+\n)*))/gm,
                                            (_, k: string, v: string) => {
-                                             properties[k] = v.replace(/\n {2}/g, " ").trim();
+                                             properties[k] = v?.replace(/\n {2}/g, " ").trim();
                                              return "";
                                            }),
           summary = /((?:.+(?:\n|$))+)/.exec(doc)![0].trim().replace(/\.$/, ""),
@@ -605,9 +605,15 @@ async function main() {
   }
 
   const builder = new Builder(),
-        filesToBuild = await glob(`${__dirname}/**/*.build.ts`);
+        filesToBuild = await glob(`${__dirname}/**/*.build.ts`),
+        buildErrors: unknown[] = [];
 
-  await Promise.all(filesToBuild.map((path) => buildFile(path, builder)));
+  await Promise.all(
+    filesToBuild.map((path) => buildFile(path, builder).catch((e) => buildErrors.push(e))));
+
+  if (buildErrors.length > 0) {
+    console.error(buildErrors);
+  }
 
   if (ensureUpToDate) {
     const contentsAfter = await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8")));

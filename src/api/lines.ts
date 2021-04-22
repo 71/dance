@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 import { Context } from "./context";
+import { assert } from "./errors";
 
 /**
  * Returns the 0-based number of the first visible line in the current editor.
@@ -64,4 +65,116 @@ export namespace Lines {
 
     return line;
   }
+}
+
+function diffAddedByTabs(text: string, editor: Pick<vscode.TextEditor, "options">) {
+  const tabSize = editor.options.tabSize as number;
+  let total = 0;
+
+  for (const ch of text) {
+    if (ch === "\t") {
+      total += tabSize - 1;
+    }
+  }
+
+  return total;
+}
+
+/**
+ * Returns the position corresponding to the character at the given position,
+ * taking into account tab characters that precede it.
+ */
+export function column(
+  position: vscode.Position,
+  editor?: Pick<vscode.TextEditor, "document" | "options">,
+): vscode.Position;
+
+/**
+ * Returns the render column corresponding to the specified character in the
+ * specified line, taking into account tab characters that precede it.
+ */
+export function column(
+  line: number,
+  character: number,
+  editor?: Pick<vscode.TextEditor, "document" | "options">,
+): number;
+
+export function column(
+  line: number | vscode.Position,
+  character?: number | Pick<vscode.TextEditor, "document" | "options">,
+  editor?: Pick<vscode.TextEditor, "document" | "options">,
+) {
+  if (typeof line === "number") {
+    editor ??= Context.current.editor;
+
+    const text = editor.document.lineAt(line).text.slice(0, character as number);
+
+    return text.length + diffAddedByTabs(text, editor);
+  }
+
+  editor ??= Context.current.editor;
+
+  const text = editor.document.lineAt(line.line).text.slice(0, line.character);
+
+  return new vscode.Position(line.line, text.length + diffAddedByTabs(text, editor));
+}
+
+export namespace column {
+  /**
+   * Returns the `vscode.Position`-compatible position for the given position.
+   * Reverses the diff added by `column`.
+   */
+  export function character(
+    position: vscode.Position,
+    editor?: Pick<vscode.TextEditor, "document" | "options">,
+  ): vscode.Position;
+
+  /**
+   * Returns the `vscode.Position`-compatible character for the given column.
+   * Reverses the diff added by `column`.
+   */
+  export function character(
+    line: number,
+    character: number,
+    editor?: Pick<vscode.TextEditor, "document" | "options">,
+  ): number;
+
+  export function character(
+    line: number | vscode.Position,
+    character?: number | Pick<vscode.TextEditor, "document" | "options">,
+    editor?: Pick<vscode.TextEditor, "document" | "options">,
+  ) {
+    if (typeof line === "number") {
+      editor ??= Context.current.editor;
+
+      const text = editor.document.lineAt(line).text.slice(0, character as number);
+
+      return text.length - diffAddedByTabs(text, editor);
+    }
+
+    editor ??= Context.current.editor;
+
+    const text = editor.document.lineAt(line.line).text.slice(0, line.character);
+
+    return new vscode.Position(line.line, text.length - diffAddedByTabs(text, editor));
+  }
+}
+
+/**
+ * Same as `Lines.length`, but also increases the count according to tab
+ * characters so that the result matches the rendered view.
+ *
+ * @see Lines.length
+ */
+export function columns(
+  line: number | vscode.Position,
+  editor: Pick<vscode.TextEditor, "document" | "options"> = Context.current.editor,
+): number {
+  if (typeof line !== "number") {
+    line = line.line;
+  }
+
+  const text = editor.document.lineAt(line).text;
+
+  return text.length + diffAddedByTabs(text, editor);
 }

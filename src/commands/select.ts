@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import * as api from "../api";
 
 import { Argument } from ".";
-import { Context, Direction, Lines, Positions, Selections, Shift, showMenu, todo } from "../api";
+import { column, columns, Context, Direction, Lines, Positions, Selections, Shift, showMenu, todo } from "../api";
 import { SelectionBehavior } from "../state/modes";
 import { PerEditorState } from "../state/editors";
 
@@ -73,16 +73,17 @@ export function vertically(
   const document = _.document,
         isCharacterMode = _.selectionBehavior === SelectionBehavior.Character;
 
+  // TODO: test logic with tabs
   const activeEnd = (selection: vscode.Selection) => {
     const active = selection.active;
 
     if (active === selection.end && Selections.endsWithEntireLine(selection)) {
-      return Lines.length(active.line - 1, document) + 1;
+      return columns(active.line - 1, _.editor) + 1;
     } else if (active === selection.start && isCharacterMode) {
-      return active.character + 1;
+      return column(active.line, active.character, _.editor) + 1;
     }
 
-    return active.character;
+    return column(active.line, active.character, _.editor);
   };
 
   // Get or create the `PreferredColumnsState` for this editor.
@@ -123,9 +124,10 @@ export function vertically(
   }
 
   Selections.update.byIndex((i, selection) => {
+    // TODO: handle tab characters
     const activeLine = Selections.activeLine(selection),
           targetLine = Lines.clamp(activeLine + repetitions * direction, document),
-          targetLineLength = Lines.length(targetLine, document);
+          targetLineLength = columns(targetLine, _.editor);
 
     if (targetLineLength === 0) {
       let targetPosition = Positions.lineStart(targetLine);
@@ -152,7 +154,8 @@ export function vertically(
       targetColumn = targetLineLength;
     }
 
-    let newPosition = new vscode.Position(targetLine, targetColumn);
+    let newPosition = new vscode.Position(
+      targetLine, column.character(targetLine, targetColumn, _.editor));
 
     if (isCharacterMode && shift !== Shift.Jump) {
       const edge = shift === Shift.Extend ? selection.anchor : selection.active;

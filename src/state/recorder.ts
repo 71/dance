@@ -8,15 +8,20 @@ import { Positions } from "../api/positions";
 
 type RecordValue = Recording.ActionType | CommandDescriptor | object | vscode.Uri | number | string;
 
+const enum Constants {
+  NextMask = 0xff,
+  PrevShift = 8,
+}
+
 /**
  * A class used to record actions as they happen.
  */
 export class Recorder implements vscode.Disposable {
-  private readonly _previousBuffers: (readonly RecordValue[])[] = [];
+  private readonly _previousBuffers: Recorder.Buffer[] = [];
   private readonly _subscriptions: vscode.Disposable[] = [];
 
   private _activeDocument: vscode.TextDocument | undefined;
-  private _buffer: RecordValue[] = [];
+  private _buffer: RecordValue[] = [0];
   private _lastActiveSelections: readonly vscode.Selection[] | undefined;
   private _activeRecordingTokens: vscode.Disposable[] = [];
 
@@ -40,6 +45,93 @@ export class Recorder implements vscode.Disposable {
   public dispose() {
     this._activeRecordingTokens.splice(0).forEach((d) => d.dispose());
     this._subscriptions.splice(0).forEach((d) => d.dispose());
+  }
+
+  /**
+   * Starts a record, saving its identifier to the current buffer.
+   */
+  private _startRecord(type: Recording.ActionType) {
+    (this._buffer[this._buffer.length - 1] as Recording.ActionType) |= type;
+  }
+
+  /**
+   * Ends a record, saving its identifier to the current buffer.
+   */
+  private _endRecord(type: Recording.ActionType) {
+    this._buffer.push(type << Constants.PrevShift);
+    this._archiveBufferIfNeeded();
+  }
+
+  /**
+   * Archives the current buffer to `_previousBuffers` if its size exceeded a
+   * threshold and if no recording is currently ongoing.
+   */
+  private _archiveBufferIfNeeded() {
+    if (this._activeRecordingTokens.length > 0 || this._buffer.length < 8192) {
+      return;
+    }
+
+    this._previousBuffers.push(this._buffer);
+    this._buffer = [];
+  }
+
+  /**
+   * Returns the number of available buffers.
+   */
+  public get bufferCount() {
+    return this._previousBuffers.length + 1;
+  }
+
+  /**
+   * Returns the buffer at the given index, if any.
+   */
+  public getBuffer(index: number) {
+    return index === this._previousBuffers.length ? this._buffer : this._previousBuffers[index];
+  }
+
+  /**
+   * Returns a `Cursor` starting at the start of the recorder.
+   */
+  public cursorFromStart() {
+    return new Recorder.Cursor(this, 0, 0);
+  }
+
+  /**
+   * Returns a `Cursor` starting at the end of the recorder at the time of the
+   * call.
+   */
+  public cursorFromEnd() {
+    return new Recorder.Cursor(this, this._previousBuffers.length, this._buffer.length - 1);
+  }
+
+  /**
+   * Returns a `Cursor` starting at the start of the specified recording.
+   */
+  public fromRecordingStart(recording: Recording) {
+    let bufferIdx = this._previousBuffers.indexOf(recording.buffer);
+
+    if (bufferIdx === -1) {
+      assert(recording.buffer === this._buffer);
+
+      bufferIdx = this._previousBuffers.length;
+    }
+
+    return new Recorder.Cursor(this, bufferIdx, recording.offset);
+  }
+
+  /**
+   * Returns a `Cursor` starting at the end of the specified recording.
+   */
+  public fromRecordingEnd(recording: Recording) {
+    let bufferIdx = this._previousBuffers.indexOf(recording.buffer);
+
+    if (bufferIdx === -1) {
+      assert(recording.buffer === this._buffer);
+
+      bufferIdx = this._previousBuffers.length;
+    }
+
+    return new Recorder.Cursor(this, bufferIdx, recording.offset + recording.length);
   }
 
   /**
@@ -72,7 +164,7 @@ export class Recorder implements vscode.Disposable {
       return new Recording(buffer, offset, buffer.length - offset);
     };
 
-    const offset = this._buffer.length,
+    const offset = this._buffer.length - 1,
           cancellationTokenSource = new vscode.CancellationTokenSource(),
           recording = new ActiveRecording(onRecordingCompleted, cancellationTokenSource.token),
           activeRecordingsCount = this._activeRecordingTokens.push(cancellationTokenSource);
@@ -91,12 +183,15 @@ export class Recorder implements vscode.Disposable {
    * action. This index may be equal to the `length` of the buffer.
    */
   public replay(buffer: Recorder.Buffer, index: number, context: Context.WithoutActiveEditor) {
-    switch (buffer[index]) {
+    switch ((buffer[index] as number) & Constants.NextMask) {
     case Recording.ActionType.Break:
       return Promise.resolve(index + 1);
 
     case Recording.ActionType.Command:
       return this.replayCommand(buffer, index, context);
+
+    case Recording.ActionType.ExternalCommand:
+      return this.replayExternalCommand(buffer, index);
 
     case Recording.ActionType.TextEditorChange:
       return this.replayTextEditorChange(buffer, index);
@@ -120,12 +215,16 @@ export class Recorder implements vscode.Disposable {
    * Returns the record at the given index in the given buffer.
    */
   public readRecord(buffer: Recorder.Buffer, index: number) {
-    switch (buffer[index]) {
+    switch ((buffer[index] as number) & Constants.NextMask) {
     case Recording.ActionType.Break:
       return buffer.slice(index, index + 1) as Recording.Entry<Recording.ActionType.Break>;
 
     case Recording.ActionType.Command:
       return buffer.slice(index, index + 3) as Recording.Entry<Recording.ActionType.Command>;
+
+    case Recording.ActionType.ExternalCommand:
+      return buffer.slice(index, index + 3) as
+        Recording.Entry<Recording.ActionType.ExternalCommand>;
 
     case Recording.ActionType.TextEditorChange:
       return buffer.slice(index, index + 2) as
@@ -152,7 +251,9 @@ export class Recorder implements vscode.Disposable {
    * Records the invocation of a command.
    */
   public recordCommand(descriptor: CommandDescriptor, argument: Record<string, any>) {
-    this._buffer.push(Recording.ActionType.Command, descriptor, argument);
+    this._startRecord(Recording.ActionType.Command);
+    this._buffer.push(descriptor, argument);
+    this._endRecord(Recording.ActionType.Command);
   }
 
   /**
@@ -164,14 +265,39 @@ export class Recorder implements vscode.Disposable {
     index: number,
     context = Context.WithoutActiveEditor.current,
   ) {
-    assert(buffer[index] === Recording.ActionType.Command);
+    assert(((buffer[index] as number) & Constants.NextMask) === Recording.ActionType.Command);
 
     const descriptor = buffer[index + 1] as CommandDescriptor,
           argument = buffer[index + 2] as object;
 
-    await descriptor.replay(context, argument);
+    if ((descriptor.flags & CommandDescriptor.Flags.DoNotReplay) === 0) {
+      await descriptor.replay(context, argument);
+    }
 
     return index + 3;
+  }
+
+  /**
+   * Records the invocation of an external (non-Dance) command.
+   */
+  public recordExternalCommand(identifier: string, argument: Record<string, any>) {
+    this._startRecord(Recording.ActionType.ExternalCommand);
+    this._buffer.push(identifier, argument);
+    this._endRecord(Recording.ActionType.ExternalCommand);
+  }
+
+  /**
+   * Replays the command at the given index, and returns the index of the next
+   * record in the given buffer.
+   */
+  public replayExternalCommand(buffer: Recorder.Buffer, index: number) {
+    assert(
+      ((buffer[index] as number) & Constants.NextMask) === Recording.ActionType.ExternalCommand);
+
+    const descriptor = buffer[index + 1] as string,
+          argument = buffer[index + 2] as object;
+
+    return vscode.commands.executeCommand(descriptor, argument).then(() => index + 3);
   }
 
   /**
@@ -186,8 +312,9 @@ export class Recorder implements vscode.Disposable {
       } else {
         this._activeDocument = e.document;
         this._lastActiveSelections = e.selections;
-        this._buffer.push(Recording.ActionType.TextEditorChange, e.document.uri);
-        this._archiveBufferIfNeeded();
+        this._startRecord(Recording.ActionType.TextEditorChange);
+        this._buffer.push(e.document.uri);
+        this._endRecord(Recording.ActionType.TextEditorChange);
       }
     }
   }
@@ -197,7 +324,8 @@ export class Recorder implements vscode.Disposable {
    * the given buffer.
    */
   public replayTextEditorChange(buffer: Recorder.Buffer, index: number) {
-    assert(buffer[index] === Recording.ActionType.TextEditorChange);
+    assert(
+      ((buffer[index] as number) & Constants.NextMask) === Recording.ActionType.TextEditorChange);
 
     const documentUri = buffer[index + 1] as vscode.Uri;
 
@@ -216,6 +344,7 @@ export class Recorder implements vscode.Disposable {
           selections = e.selections;
     this._lastActiveSelections = selections;
 
+    // Issue: Command is executing but not in a context, so we log selection changes which is bad
     if (Context.WithoutActiveEditor.currentOrUndefined !== undefined
         || lastSelections === undefined) {
       return;
@@ -256,12 +385,9 @@ export class Recorder implements vscode.Disposable {
       }
     }
 
-    this._buffer.push(
-      Recording.ActionType.SelectionTranslation,
-      commonAnchorOffsetDiff,
-      commonActiveOffsetDiff,
-    );
-    this._archiveBufferIfNeeded();
+    this._startRecord(Recording.ActionType.SelectionTranslation);
+    this._buffer.push(commonAnchorOffsetDiff, commonActiveOffsetDiff);
+    this._endRecord(Recording.ActionType.SelectionTranslation);
   }
 
   private _tryRecordSelectionTranslationToLineEnd() {
@@ -274,7 +400,8 @@ export class Recorder implements vscode.Disposable {
    * of the next record in the given buffer.
    */
   public replaySelectionTranslation(buffer: Recorder.Buffer, index: number) {
-    assert(buffer[index] === Recording.ActionType.SelectionTranslation);
+    assert(((buffer[index] as number) & Constants.NextMask)
+           === Recording.ActionType.SelectionTranslation);
 
     const anchorOffsetDiff = buffer[index + 1] as number,
           activeOffsetDiff = buffer[index + 2] as number;
@@ -344,13 +471,9 @@ export class Recorder implements vscode.Disposable {
     }
 
     // TODO: merge consecutive events
-    this._buffer.push(
-      Recording.ActionType.TextReplacement,
-      commonInsertedText,
-      commonDeletionLength,
-      commonOffsetFromActive,
-    );
-    this._archiveBufferIfNeeded();
+    this._startRecord(Recording.ActionType.TextReplacement);
+    this._buffer.push(commonInsertedText, commonDeletionLength, commonOffsetFromActive);
+    this._endRecord(Recording.ActionType.TextReplacement);
   }
 
   /**
@@ -358,7 +481,8 @@ export class Recorder implements vscode.Disposable {
    * the next record in the given buffer.
    */
   public replayTextReplacement(buffer: Recorder.Buffer, index: number) {
-    assert(buffer[index] === Recording.ActionType.TextReplacement);
+    assert(
+      ((buffer[index] as number) & Constants.NextMask) === Recording.ActionType.TextReplacement);
 
     const insertedText = buffer[index + 1] as string,
           deletionLength = buffer[index + 2] as number,
@@ -390,42 +514,157 @@ export class Recorder implements vscode.Disposable {
     const buffer = this._buffer;
 
     if (buffer.length > 0 && buffer[buffer.length - 1] !== Recording.ActionType.Break) {
-      buffer.push(Recording.ActionType.Break);
-      this._archiveBufferIfNeeded();
+      this._startRecord(Recording.ActionType.Break);
+      this._endRecord(Recording.ActionType.Break);
       this._activeRecordingTokens.splice(0).forEach((t) => t.dispose());
     }
-  }
-
-  /**
-   * Archives the current buffer to `_previousBuffers` if its size exceeded a
-   * threshold and if no recording is currently ongoing.
-   */
-  private _archiveBufferIfNeeded() {
-    if (this._activeRecordingTokens.length > 0 || this._buffer.length < 8192) {
-      return;
-    }
-
-    this._previousBuffers.push(this._buffer);
-    this._buffer = [];
   }
 }
 
 export namespace Recorder {
+  /**
+   * A buffer of `Recorder` values.
+   */
   export type Buffer = readonly RecordValue[];
 
-  export class Cursor {
-    private _buffer: number;
+  /**
+   * The mutable version of `Buffer`.
+   */
+  export type MutableBuffer = RecordValue[];
+
+  /**
+   * A cursor used to enumerate records in a `Recorder` or `Recording`.
+   */
+  export class Cursor<T extends Recording.ActionType = Recording.ActionType> {
+    private _buffer: Recorder.Buffer;
+    private _bufferIdx: number;
     private _offset: number;
 
     public constructor(
+      /**
+       * The recorder from which records are read.
+       */
       public readonly recorder: Recorder,
+
+      buffer: number,
+      offset: number,
     ) {
-      this._buffer = 0;
-      this._offset = 0;
+      this._buffer = recorder.getBuffer(buffer);
+      this._bufferIdx = buffer;
+      this._offset = offset;
     }
 
-    public next() {
+    /**
+     * Returns a different instance of a `Cursor` that points to the same
+     * record.
+     */
+    public clone() {
+      return new Cursor(this.recorder, this._bufferIdx, this._offset);
+    }
 
+    /**
+     * Returns whether the current cursor is before or equal to the given
+     * cursor.
+     */
+    public isBeforeOrEqual(other: Cursor) {
+      return this._bufferIdx < other._bufferIdx
+          || (this._bufferIdx === other._bufferIdx && this._offset <= other._offset);
+    }
+
+    /**
+     * Returns whether the current cursor is after or equal to the given
+     * cursor.
+     */
+    public isAfterOrEqual(other: Cursor) {
+      return this._bufferIdx > other._bufferIdx
+          || (this._bufferIdx === other._bufferIdx && this._offset >= other._offset);
+    }
+
+    /**
+     * Replays the record pointed at by the cursor.
+     */
+    public replay(context: Context.WithoutActiveEditor) {
+      return this.recorder.replay(this._buffer, this._offset, context);
+    }
+
+    /**
+     * Returns the type of the current record.
+     */
+    public type() {
+      return ((this._buffer[this._offset] as number) & Constants.NextMask) as Recording.ActionType;
+    }
+
+    /**
+     * Returns the type of the previous record.
+     */
+    public previousType() {
+      return (this._buffer[this._offset] as number >> Constants.PrevShift) as Recording.ActionType;
+    }
+
+    /**
+     * Returns whether the cursor points to a record of the given type.
+     */
+    public is<T extends Recording.ActionType>(type: T): this is Cursor<T> {
+      return this.type() === type;
+    }
+
+    public commandDescriptor(): T extends Recording.ActionType.Command ? CommandDescriptor : never {
+      return this._buffer[this._offset + 1] as CommandDescriptor as any;
+    }
+
+    public commandArgument(): T extends Recording.ActionType.Command ? Record<string, any> : never {
+      return this._buffer[this._offset + 2] as object as any;
+    }
+
+    /**
+     * Switches to the next record, and returns `true` if the operation
+     * succeeded or `false` if the current record is the last one available.
+     */
+    public next() {
+      if (this._offset === this._buffer.length - 1) {
+        if (this._bufferIdx === this.recorder.bufferCount) {
+          return false;
+        }
+
+        this._bufferIdx++;
+        this._buffer = this.recorder.getBuffer(this._bufferIdx);
+        this._offset = 0;
+
+        return true;
+      }
+
+      this._offset += Recording.entrySize[this.type()] + 1;
+      return true;
+    }
+
+    /**
+     * Switches to the previous record, and returns `true` if the operation
+     * succeeded or `false` if the current record is the first one available.
+     */
+    public previous() {
+      if (this._offset === 0) {
+        if (this._bufferIdx === 0) {
+          return false;
+        }
+
+        this._bufferIdx--;
+        this._buffer = this.recorder.getBuffer(this._bufferIdx);
+        this._offset = this._buffer.length - 1;
+
+        return true;
+      }
+
+      this._offset -= Recording.entrySize[this.previousType()] + 1;
+      return true;
+    }
+
+    /**
+     * Returns whether the record pointed at by the cursor is included in the
+     * specified recording.
+     */
+    public isInRecording(recording: Recording) {
+      return recording.offset <= this._offset && this._offset < recording.offset + recording.length
+          && recording.buffer === this._buffer;
     }
   }
 }
@@ -454,28 +693,24 @@ export class ActiveRecording {
 /**
  * A recording of actions performed in VS Code.
  */
-export class Recording implements Iterable<Recording.Entry> {
-  private readonly _buffer: Recorder.Buffer;
-  private readonly _offset: number;
-  private readonly _length: number;
+export class Recording {
+  public readonly buffer: Recorder.Buffer;
+  public readonly offset: number;
+  public readonly length: number;
 
   public constructor(buffer: Recorder.Buffer, offset: number, length: number) {
-    this._buffer = buffer;
-    this._offset = offset;
-    this._length = length;
-  }
-
-  public [Symbol.iterator]() {
-    return new Recording.Iterator(this._buffer, this._offset + this._length, this._offset);
+    this.buffer = buffer;
+    this.offset = offset;
+    this.length = length;
   }
 
   /**
    * Replays the recording in the given context.
    */
   public async replay(context = Context.WithoutActiveEditor.current) {
-    let offset = this._offset;
-    const buffer = this._buffer,
-          end = offset + this._length,
+    let offset = this.offset;
+    const buffer = this.buffer,
+          end = offset + this.length,
           recorder = context.extension.recorder;
 
     while (offset < end) {
@@ -501,9 +736,9 @@ export namespace Recording {
     Command,
 
     /**
-     * An active text editor change.
+     * An external command invocation.
      */
-    TextEditorChange,
+    ExternalCommand,
 
     /**
      * A translation of all selections.
@@ -514,6 +749,11 @@ export namespace Recording {
      * A translation of all selections to the end of a line.
      */
     SelectionTranslationToLineEnd,
+
+    /**
+     * An active text editor change.
+     */
+    TextEditorChange,
 
     /**
      * A replacement of text near all selections.
@@ -532,6 +772,7 @@ export namespace Recording {
   export interface EntryMap {
     readonly [ActionType.Break]: readonly [];
     readonly [ActionType.Command]: readonly [command: CommandDescriptor, argument: object];
+    readonly [ActionType.ExternalCommand]: readonly [identifier: string, argument: object];
     readonly [ActionType.SelectionTranslation]: readonly [anchorDiff: number, activeDiff: number];
     readonly [ActionType.SelectionTranslationToLineEnd]: readonly [];
     readonly [ActionType.TextEditorChange]: readonly [uri: vscode.Uri];
@@ -540,61 +781,9 @@ export namespace Recording {
   }
 
   /**
-   * An iterator over the actions in a `Recording`.
+   * Maps an entry type to the size of its tuple in `EntryMap`.
    */
-  export class Iterator implements IterableIterator<Entry> {
-    private readonly _buffer: readonly RecordValue[];
-    private readonly _end: number;
-    private _offset: number;
-
-    public constructor(buffer: readonly RecordValue[], end: number, offset: number) {
-      this._buffer = buffer;
-      this._end = end;
-      this._offset = offset;
-    }
-
-    public next() {
-      const offset = this._offset,
-            end = this._end;
-
-      if (offset === end) {
-        return { done: true } as IteratorReturnResult<void>;
-      }
-
-      const buffer = this._buffer,
-            type = buffer[offset] as unknown as Recording.ActionType;
-
-      if (type === Recording.ActionType.Command) {
-        const command = buffer[offset + 1] as CommandDescriptor,
-              argument = buffer[offset + 2] as object,
-              value = [Recording.ActionType.Command, command, argument] as const;
-
-        this._offset = offset + 3;
-
-        return { done: false, value } as IteratorYieldResult<Entry>;
-      }
-
-      if (type === Recording.ActionType.SelectionTranslation) {
-        const value = [Recording.ActionType.SelectionTranslation] as const;
-
-        this._offset = offset + 1;
-
-        return { done: false, value } as IteratorYieldResult<Entry>;
-      }
-
-      if (type === todo()) {
-        const value = [todo()] as const;
-
-        this._offset = offset + 1;
-
-        return { done: false, value } as IteratorYieldResult<Entry>;
-      }
-
-      assert(false);
-    }
-
-    public [Symbol.iterator]() {
-      return new Iterator(this._buffer, this._end, this._offset);
-    }
-  }
+  export const entrySize: {
+    readonly [K in keyof EntryMap]: EntryMap[K]["length"];
+  } = [0, 2, 2, 2, 0, 1, 3];
 }

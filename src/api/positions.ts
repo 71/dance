@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { Direction } from ".";
 import { Context } from "./context";
 

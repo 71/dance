@@ -520,6 +520,8 @@ export namespace skipEmptyLines {
   export declare const reachedDocumentEdge: boolean;
 
   /**
+   * Same as `skipEmptyLines` with a `Backward` direction.
+   *
    * @see skipEmptyLines
    */
   export function backward(origin: vscode.Position, document?: vscode.TextDocument) {
@@ -527,6 +529,8 @@ export namespace skipEmptyLines {
   }
 
   /**
+   * Same as `skipEmptyLines` with a `Forward` direction.
+   *
    * @see skipEmptyLines
    */
   export function forward(origin: vscode.Position, document?: vscode.TextDocument) {

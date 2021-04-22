@@ -39,8 +39,8 @@
     <tr><td><a href="#editnewLineabove"><code>edit.newLine.above</code></a></td><td>Insert new line above each selection</td><td><code>Shift+Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editnewLinebelow"><code>edit.newLine.below</code></a></td><td>Insert new line below each selection</td><td><code>Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editreplaceCharacters"><code>edit.replaceCharacters</code></a></td><td>Replace characters</td><td><code>R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=11><a href="#history"><code>history</code></a></td><td><a href="./history.ts#L55"><code>history.repeat.objectSelection</code></a></td><td>Repeat last object selection</td><td><code>Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./history.ts#L54"><code>history.repeat.selection</code></a></td><td>Repeat last selection change</td><td></td></tr>
+    <tr><td rowspan=11><a href="#history"><code>history</code></a></td><td><a href="./history.ts#L57"><code>history.repeat.objectSelection</code></a></td><td>Repeat last object selection</td><td><code>Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./history.ts#L56"><code>history.repeat.selection</code></a></td><td>Repeat last selection change</td><td></td></tr>
     <tr><td><a href="#historyrecordingplay"><code>history.recording.play</code></a></td><td>Replay recording</td><td><code>Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyrecordingstart"><code>history.recording.start</code></a></td><td>Start recording</td><td><code>Shift+Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyrecordingstop"><code>history.recording.stop</code></a></td><td>Stop recording</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'normal' && dance.isRecording</code>)</td></tr>
@@ -201,6 +201,7 @@ A `where` argument may be specified to state where the text should be
 inserted relative to each selection. If unspecified, each selection will be
 replaced by the text.
 
+
 #### Additional commands
 
 | Title                              | Identifier              | Keybinding                     | Commands                                                                                                 |
@@ -227,12 +228,14 @@ This command:
 
 Join lines.
 
+
 This command:
 - takes an argument `separator` of type `string`.
 
 ### [`edit.join.select`](./edit.ts#L131-L136)
 
 Join lines and select inserted separators.
+
 
 This command:
 - takes an argument `separator` of type `string`.
@@ -241,12 +244,14 @@ This command:
 
 Indent selected lines.
 
+
 This command:
 - may be repeated with a given number of repetitions.
 
 ### [`edit.indent.withEmpty`](./edit.ts#L149-L154)
 
 Indent selected lines (including empty lines).
+
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -255,12 +260,14 @@ This command:
 
 Deindent selected lines.
 
+
 This command:
 - may be repeated with a given number of repetitions.
 
 ### [`edit.deindent.withIncomplete`](./edit.ts#L167-L172)
 
 Deindent selected lines (including incomplete indent).
+
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -281,6 +288,7 @@ Swap case.
 
 Replace characters.
 
+
 This command:
 - may be repeated with a given number of repetitions.
 - takes an input of type `string`.
@@ -292,6 +300,7 @@ Align selections.
 Align selections, aligning the cursor of each selection by inserting spaces
 before the first character of each selection.
 
+
 This command:
 - takes an argument `fill` of type `string`.
 
@@ -302,12 +311,14 @@ Copy indentation.
 Copy the indentation of the main selection (or the count one if a count is
 given) to all other ones.
 
+
 This command:
 - may be repeated with a given number of repetitions.
 
 ### [`edit.newLine.above`](./edit.ts#L336-L347)
 
 Insert new line above each selection.
+
 
 #### Additional keybindings
 
@@ -321,6 +332,7 @@ This command:
 ### [`edit.newLine.below`](./edit.ts#L371-L382)
 
 Insert new line below each selection.
+
 
 #### Additional keybindings
 
@@ -339,12 +351,14 @@ Interact with history.
 
 Undo.
 
+
 This command:
 - does not require an active text editor.
 
 ### [`history.redo`](./history.ts#L22-L27)
 
 Redo.
+
 
 This command:
 - does not require an active text editor.
@@ -353,6 +367,7 @@ This command:
 
 Undo a change of selections.
 
+
 This command:
 - does not require an active text editor.
 
@@ -360,51 +375,54 @@ This command:
 
 Redo a change of selections.
 
+
 This command:
 - does not require an active text editor.
 
-### [`history.repeat`](./history.ts#L49-L62)
+### [`history.repeat`](./history.ts#L49-L64)
 
 Repeat last change.
 
-| Title                        | Identifier               | Keybinding     | Commands                                                        |
-| ---------------------------- | ------------------------ | -------------- | --------------------------------------------------------------- |
-| Repeat last selection change | `repeat.selection`       |                | `[".history.repeat", { "include": "dance.selections.+" }]`        |
-| Repeat last object selection | `repeat.objectSelection` | `a-.` (normal) | `[".history.repeat", { "include": "dance.selections.object.+" }]` |
+
+| Title                        | Identifier               | Keybinding     | Commands                                                                      |
+| ---------------------------- | ------------------------ | -------------- | ----------------------------------------------------------------------------- |
+| Repeat last selection change | `repeat.selection`       |                | `[".history.repeat", { "include": "dance\\.(seek|select|selections)\\..+" }]` |
+| Repeat last object selection | `repeat.objectSelection` | `a-.` (normal) | `[".history.repeat", { "include": "dance\\.seek\\..+" }]`                     |
 
 This command:
-- does not require an active text editor.
 - may be repeated with a given number of repetitions.
-- takes an argument `exclude` of type `string`.
-- takes an argument `include` of type `string`.
+- takes an argument `include` of type `string | RegExp`.
 
-### [`history.repeat.edit`](./history.ts#L68-L73)
+### [`history.repeat.edit`](./history.ts#L92-L98)
 
 Repeat last edit without a command.
 
+
 This command:
-- does not require an active text editor.
 - may be repeated with a given number of repetitions.
 
-### [`history.recording.play`](./history.ts#L79-L89)
+### [`history.recording.play`](./history.ts#L118-L129)
 
 Replay recording.
 
+
 This command:
 - accepts a register (by default, it uses `arobase`).
 - does not require an active text editor.
 - may be repeated with a given number of repetitions.
 
-### [`history.recording.start`](./history.ts#L105-L113)
+### [`history.recording.start`](./history.ts#L145-L154)
 
 Start recording.
+
 
 This command:
 - accepts a register (by default, it uses `arobase`).
 
-### [`history.recording.stop`](./history.ts#L125-L133)
+### [`history.recording.stop`](./history.ts#L166-L175)
 
 Stop recording.
+
 
 This command:
 - accepts a register (by default, it uses `arobase`).
@@ -434,6 +452,7 @@ commands:
 ### [`cancel`](./misc.ts#L20-L25)
 
 Cancel Dance operation.
+
 
 This command:
 - does not require an active text editor.
@@ -556,6 +575,7 @@ Search for patterns and replace or add selections.
 
 Search.
 
+
 | Title                 | Identifier     | Keybinding     | Command                                         |
 | --------------------- | -------------- | -------------- | ----------------------------------------------- |
 | Search (add)          | `add`          | `?` (normal)   | `[".search", { "add": true }]`                  |
@@ -573,6 +593,7 @@ This command:
 
 Search current selection.
 
+
 | Title                            | Identifier        | Keybinding   | Command                                    |
 | -------------------------------- | ----------------- | ------------ | ------------------------------------------ |
 | Search current selection (smart) | `selection.smart` | `*` (normal) | `[".search.selection", { "smart": true }]` |
@@ -584,6 +605,7 @@ This command:
 ### [`search.next`](./search.ts#L125-L144)
 
 Select next match.
+
 
 | Title                 | Identifier     | Keybinding       | Command                                              |
 | --------------------- | -------------- | ---------------- | ---------------------------------------------------- |
@@ -603,6 +625,7 @@ Update selections based on the text surrounding them.
 ### [`seek.character`](./seek.ts#L12-L37)
 
 Select to character (excluded).
+
 
 #### Variants
 
@@ -625,6 +648,7 @@ This command:
 
 Select to next enclosing character.
 
+
 #### Variants
 
 | Title                                  | Identifier                  | Keybinding       | Command                                                       |
@@ -642,6 +666,7 @@ This command:
 Select to next word start.
 
 Select the word and following whitespaces on the right of the end of each selection.
+
 
 #### Variants
 
@@ -664,6 +689,7 @@ This command:
 Select to next word end.
 
 Select preceding whitespaces and the word on the right of the end of each selection.
+
 
 #### Variants
 
@@ -749,12 +775,14 @@ This command:
 
 Select line below.
 
+
 This command:
 - may be repeated with a given number of repetitions.
 
 ### [`select.line.below.extend`](./select.ts#L274-L279)
 
 Extend to line below.
+
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -777,6 +805,7 @@ This command:
 
 Select to line start.
 
+
 #### Variants
 
 | Title                             | Identifier                   | Keybinding                          | Command                                                           |
@@ -795,6 +824,7 @@ This command:
 ### [`select.lineEnd`](./select.ts#L431-L449)
 
 Select to line end.
+
 
 #### Variants
 
@@ -870,12 +900,14 @@ Interacting with selections.
 
 Copy selections text.
 
+
 This command:
 - accepts a register (by default, it uses `dquote`).
 
 ### [`selections.save`](./selections.ts#L31-L44)
 
 Save selections.
+
 
 This command:
 - accepts a register (by default, it uses `caret`).
@@ -886,12 +918,14 @@ This command:
 
 Restore selections.
 
+
 This command:
 - accepts a register (by default, it uses `caret`).
 
 ### [`selections.restore.withCurrent`](./selections.ts#L90-L109)
 
 Combine register selections with current ones.
+
 
 The following keybinding is also available:
 
@@ -912,6 +946,7 @@ Pipe selections.
 Run the specified command or code with the contents of each selection, and
 save the result to a register.
 
+
 See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes-through-external-programs
 
 #### Additional commands
@@ -929,6 +964,7 @@ This command:
 ### [`selections.filter`](./selections.ts#L285-L307)
 
 Filter selections.
+
 
 #### Variants
 
@@ -949,6 +985,7 @@ This command:
 
 Select within selections.
 
+
 This command:
 - takes an argument `interactive` of type `boolean`.
 - takes an input of type `Input<string | RegExp>`.
@@ -956,6 +993,7 @@ This command:
 ### [`selections.split`](./selections.ts#L372-L384)
 
 Split selections.
+
 
 This command:
 - takes an argument `excludeEmpty` of type `boolean`.
@@ -965,6 +1003,7 @@ This command:
 ### [`selections.splitLines`](./selections.ts#L407-L417)
 
 Split selections at line boundaries.
+
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -991,6 +1030,8 @@ Trim whitespace at beginning and end of selections.
 
 Reduce selections to their cursor.
 
+
+
 #### Variant
 
 | Title                           | Identifier     | Keybinding       | Command                                       |
@@ -1004,6 +1045,8 @@ This command:
 
 Change direction of selections.
 
+
+
 #### Variants
 
 | Title               | Identifier     | Keybinding     | Command                                                |
@@ -1014,6 +1057,7 @@ Change direction of selections.
 ### [`selections.copy`](./selections.ts#L649-L667)
 
 Copy selections below.
+
 
 #### Variant
 
@@ -1028,6 +1072,7 @@ This command:
 
 Merge contiguous selections.
 
+
 This command:
 - does not require an active text editor.
 
@@ -1038,6 +1083,7 @@ Open selected file.
 ### [`selections.toggleIndices`](./selections.ts#L728-L745)
 
 Toggle selection indices.
+
 
 #### Variants
 
@@ -1057,6 +1103,7 @@ Rotate selection indices and contents.
 ### [`selections.rotate.both`](./selections.rotate.ts#L9-L20)
 
 Rotate selections clockwise.
+
 
 The following keybinding is also available:
 
@@ -1085,6 +1132,7 @@ This command:
 ### [`selections.rotate.selections`](./selections.rotate.ts#L45-L56)
 
 Rotate selections clockwise (selections only).
+
 
 The following keybinding is also available:
 

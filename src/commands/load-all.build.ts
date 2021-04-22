@@ -33,7 +33,7 @@ export async function build(builder: Builder) {
                 new CommandDescriptor(
                   "dance.${x.qualifiedIdentifier}",
                   ${buildCommandsExpression(x)},
-                  CommandDescriptor.Flags.RequiresActiveEditor,
+                  CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
                 ),`)
               .sort()
               .join("")}
@@ -64,8 +64,7 @@ function capitalize(text: string) {
 
 function determineFunctionExpression(f: Builder.ParsedFunction) {
   const givenParameters: string[] = [];
-  let inContext = false,
-      takeArgument = false;
+  let takeArgument = false;
 
   for (const [name, type] of f.parameters) {
     switch (name) {
@@ -103,7 +102,6 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
 
     // Implicit context.
     case "_":
-      inContext = true;
       givenParameters.push("_");
       break;
 
@@ -169,14 +167,10 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
     }
   }
 
-  const inputParameters = ["_", ...(takeArgument ? ["argument"] : [])];
-  let call = `${f.name}(${givenParameters.join(", ")})`;
+  const inputParameters = ["_", ...(takeArgument ? ["argument"] : [])],
+        call = `${f.name}(${givenParameters.join(", ")})`;
 
-  if (inContext) {
-    call = `_.runAsync((_) => ${call})`;
-  }
-
-  return `(${inputParameters.join(", ")}) => ${call}`;
+  return `(${inputParameters.join(", ")}) => _.runAsync((_) => ${call})`;
 }
 
 function determineFunctionFlags(f: Builder.ParsedFunction) {

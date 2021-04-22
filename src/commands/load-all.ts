@@ -240,62 +240,62 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.edit.delete",
       (_, argument) => _.runAsync(() => commands([".edit.insert", { "register": "_", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.delete-insert",
       (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "insert", ...argument }], [".edit.insert", { "register": "_", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above.insert",
       (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "insert", ...argument }], [".edit.newLine.above", { "select": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below.insert",
       (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "insert", ...argument }], [".edit.newLine.below", { "select": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.paste.after",
       (_, argument) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "end", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.paste.after.select",
       (_, argument) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "end", "select": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.paste.before",
       (_, argument) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "start", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.paste.before.select",
       (_, argument) => _.runAsync(() => commands([".edit.insert", { "handleNewLine": true, "where": "start", "select": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.selectRegister-insert",
       (_, argument) => _.runAsync(() => commands([".selectRegister"], [".edit.insert"])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.yank-delete",
       (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert", { "register": "_", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.yank-delete-insert",
       (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".modes.set", { "input": "insert", ...argument }], [".edit.insert", { "register": "_", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.yank-replace",
       (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert"])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }
@@ -320,57 +320,57 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.history.recording.play",
       (_, argument) => _.runAsync((_) => recording_play(_, getRepetitions(_, argument), getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros))),
-      CommandDescriptor.Flags.None,
+      CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.history.recording.start",
       (_, argument) => _.runAsync((_) => recording_start(_, getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros))),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.history.recording.stop",
       (_, argument) => _.runAsync((_) => recording_stop(_, getRegister(_, argument, "arobase", Register.Flags.CanReadWriteMacros))),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.history.redo",
-      (_) => redo(),
+      (_) => _.runAsync((_) => redo()),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
       "dance.history.redo.selections",
-      (_) => redo_selections(),
+      (_) => _.runAsync((_) => redo_selections()),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
       "dance.history.repeat",
-      (_, argument) => repeat(getRepetitions(_, argument), argument.include, argument.exclude),
-      CommandDescriptor.Flags.None,
+      (_, argument) => _.runAsync((_) => repeat(_, getRepetitions(_, argument), argument.include)),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.history.repeat.edit",
-      (_, argument) => repeat_edit(getRepetitions(_, argument)),
-      CommandDescriptor.Flags.None,
+      (_, argument) => _.runAsync((_) => repeat_edit(_, getRepetitions(_, argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.history.undo",
-      (_) => undo(),
+      (_) => _.runAsync((_) => undo()),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
       "dance.history.undo.selections",
-      (_) => undo_selections(),
+      (_) => _.runAsync((_) => undo_selections()),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
       "dance.history.repeat.objectSelection",
-      (_, argument) => _.runAsync(() => commands([".history.repeat", { "include": "dance.selections.object.+", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      (_, argument) => _.runAsync(() => commands([".history.repeat", { "include": "dance\\.seek\\..+", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.history.repeat.selection",
-      (_, argument) => _.runAsync(() => commands([".history.repeat", { "include": "dance.selections.+", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      (_, argument) => _.runAsync(() => commands([".history.repeat", { "include": "dance\\.(seek|select|selections)\\..+", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }
@@ -408,12 +408,12 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.cancel",
-      (_) => cancel(_.extension),
+      (_) => _.runAsync((_) => cancel(_.extension)),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
       "dance.ignore",
-      (_) => ignore(),
+      (_) => _.runAsync((_) => ignore()),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
@@ -462,42 +462,42 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.modes.insert.after",
       (_, argument) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "end", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.insert.before",
       (_, argument) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "start", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineEnd",
       (_, argument) => _.runAsync(() => commands([".select.lineEnd" , { "shift": "jump", ...argument }] , [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "end", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineStart",
       (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump", "skipBlank": true, ...argument }], [".modes.set", { "input": "insert", ...argument }], [".selections.reduce", { "where": "start", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.set.insert",
       (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "insert", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.set.normal",
       (_, argument) => _.runAsync(() => commands([".modes.set", { "input": "normal", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.set.temporarily.insert",
       (_, argument) => _.runAsync(() => commands([".modes.set.temporarily", { "input": "insert", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.set.temporarily.normal",
       (_, argument) => _.runAsync(() => commands([".modes.set.temporarily", { "input": "normal", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }
@@ -525,43 +525,43 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.search.selection",
-      (_, argument) => selection(_.document, _.selections, getRegister(_, argument, "slash", Register.Flags.CanWrite), argument.smart),
+      (_, argument) => _.runAsync((_) => selection(_.document, _.selections, getRegister(_, argument, "slash", Register.Flags.CanWrite), argument.smart)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.add",
       (_, argument) => _.runAsync(() => commands([".search", { "add": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.search.backward",
       (_, argument) => _.runAsync(() => commands([".search", { "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.search.backward.add",
       (_, argument) => _.runAsync(() => commands([".search", { "direction": -1, "add": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.search.next.add",
       (_, argument) => _.runAsync(() => commands([".search.next", { "add": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.search.previous",
       (_, argument) => _.runAsync(() => commands([".search.next", { "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.search.previous.add",
       (_, argument) => _.runAsync(() => commands([".search.next", { "direction": -1, "add": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.search.selection.smart",
       (_, argument) => _.runAsync(() => commands([".search.selection", { "smart": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }
@@ -590,113 +590,113 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd",
-      (_, argument) => wordEnd(argument.ws, getShift(argument)),
+      (_, argument) => _.runAsync((_) => wordEnd(argument.ws, getShift(argument))),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart",
-      (_, argument) => wordStart(argument.ws, getDirection(argument), getShift(argument)),
+      (_, argument) => _.runAsync((_) => wordStart(argument.ws, getDirection(argument), getShift(argument))),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
       "dance.seek.character.backward",
       (_, argument) => _.runAsync(() => commands([".seek.character", { "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.character.extend",
       (_, argument) => _.runAsync(() => commands([".seek.character", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.character.extend.backward",
       (_, argument) => _.runAsync(() => commands([".seek.character", { "shift": "extend", "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.character.included",
       (_, argument) => _.runAsync(() => commands([".seek.character", { "include": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.character.included.backward",
       (_, argument) => _.runAsync(() => commands([".seek.character", { "include": true, "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.character.included.extend",
       (_, argument) => _.runAsync(() => commands([".seek.character", { "include": true, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.character.included.extend.backward",
       (_, argument) => _.runAsync(() => commands([".seek.character", { "include": true, "shift": "extend", "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.enclosing.backward",
       (_, argument) => _.runAsync(() => commands([".seek.enclosing", { "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.enclosing.extend",
       (_, argument) => _.runAsync(() => commands([".seek.enclosing", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.enclosing.extend.backward",
       (_, argument) => _.runAsync(() => commands([".seek.enclosing", { "shift": "extend", "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd.extend",
       (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd.ws",
       (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "ws": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd.ws.extend",
       (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "ws": true, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.backward",
       (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.extend",
       (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.extend.backward",
       (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "shift": "extend", "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.ws",
       (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.ws.backward",
       (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.ws.extend",
       (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart.ws.extend.backward",
       (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "shift": "extend", "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }
@@ -802,147 +802,147 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.select.documentEnd.extend",
       (_, argument) => _.runAsync(() => commands([".select.lineEnd", { "count": 2147483647, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.documentEnd.jump",
       (_, argument) => _.runAsync(() => commands([".select.lineEnd", { "count": 2147483647, "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.down.extend",
       (_, argument) => _.runAsync(() => commands([".select.vertically", { "direction": 1, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.down.jump",
       (_, argument) => _.runAsync(() => commands([".select.vertically", { "direction": 1, "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.firstLine.extend",
       (_, argument) => _.runAsync(() => commands([".select.lineStart", { "count": 0, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.firstLine.jump",
       (_, argument) => _.runAsync(() => commands([".select.lineStart", { "count": 0, "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.firstVisibleLine.extend",
       (_, argument) => _.runAsync(() => commands([".select.firstVisibleLine", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.firstVisibleLine.jump",
       (_, argument) => _.runAsync(() => commands([".select.firstVisibleLine", { "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lastLine.extend",
       (_, argument) => _.runAsync(() => commands([".select.lastLine", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lastLine.jump",
       (_, argument) => _.runAsync(() => commands([".select.lastLine", { "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lastModification.extend",
       (_, argument) => _.runAsync(() => commands([".select.lastModification", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lastModification.jump",
       (_, argument) => _.runAsync(() => commands([".select.lastModification", { "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lastVisibleLine.extend",
       (_, argument) => _.runAsync(() => commands([".select.lastVisibleLine", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lastVisibleLine.jump",
       (_, argument) => _.runAsync(() => commands([".select.lastVisibleLine", { "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.left.extend",
       (_, argument) => _.runAsync(() => commands([".select.horizontally", { "direction": -1, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.left.jump",
       (_, argument) => _.runAsync(() => commands([".select.horizontally", { "direction": -1, "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lineEnd.extend",
       (_, argument) => _.runAsync(() => commands([".select.lineEnd", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lineStart.extend",
       (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lineStart.jump",
       (_, argument) => _.runAsync(() => commands([".select.lineStart", { "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lineStart.skipBlank.extend",
       (_, argument) => _.runAsync(() => commands([".select.lineStart", { "skipBlank": true, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.lineStart.skipBlank.jump",
       (_, argument) => _.runAsync(() => commands([".select.lineStart", { "skipBlank": true, "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.middleVisibleLine.extend",
       (_, argument) => _.runAsync(() => commands([".select.middleVisibleLine", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.middleVisibleLine.jump",
       (_, argument) => _.runAsync(() => commands([".select.middleVisibleLine", { "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.right.extend",
       (_, argument) => _.runAsync(() => commands([".select.horizontally", { "direction": 1, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.right.jump",
       (_, argument) => _.runAsync(() => commands([".select.horizontally", { "direction": 1, "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.to.extend",
       (_, argument) => _.runAsync(() => commands([".select.to", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.to.jump",
       (_, argument) => _.runAsync(() => commands([".select.to", { "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.up.extend",
       (_, argument) => _.runAsync(() => commands([".select.vertically", { "direction": -1, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.select.up.jump",
       (_, argument) => _.runAsync(() => commands([".select.vertically", { "direction": -1, "shift": "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }
@@ -995,7 +995,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.merge",
-      (_) => merge(),
+      (_) => _.runAsync((_) => merge()),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
@@ -1030,7 +1030,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.saveText",
-      (_, argument) => saveText(_.document, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanWrite)),
+      (_, argument) => _.runAsync((_) => saveText(_.document, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanWrite))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1066,67 +1066,67 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.selections.clear.main",
       (_, argument) => _.runAsync(() => commands([".selections.filter", { "input": "i !== 0", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.clear.secondary",
       (_, argument) => _.runAsync(() => commands([".selections.filter", { "input": "i === 0", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.copy.above",
       (_, argument) => _.runAsync(() => commands([".selections.copy", { "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.faceBackward",
       (_, argument) => _.runAsync(() => commands([".selections.changeDirection", { "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.faceForward",
       (_, argument) => _.runAsync(() => commands([".selections.changeDirection", { "direction": 1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.filter.regexp",
       (_, argument) => _.runAsync(() => commands([".selections.filter", { "defaultInput": "/", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.filter.regexp.inverse",
       (_, argument) => _.runAsync(() => commands([".selections.filter", { "defaultInput": "/", "inverse": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.hideIndices",
       (_, argument) => _.runAsync(() => commands([".selections.toggleIndices", { "display": false, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.pipe.append",
       (_, argument) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|", "where": "end", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.pipe.prepend",
       (_, argument) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|", "where": "start", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.pipe.replace",
       (_, argument) => _.runAsync(() => commands([".selections.pipe"], [".edit.insert", { "register": "|", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.reduce.edges",
       (_, argument) => _.runAsync(() => commands([".selections.reduce", { "where": "both", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.showIndices",
       (_, argument) => _.runAsync(() => commands([".selections.toggleIndices", { "display": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }
@@ -1160,17 +1160,17 @@ async function loadSelectionsRotateModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.selections.rotate.both.reverse",
       (_, argument) => _.runAsync(() => commands([".selections.rotate", { "reverse": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.rotate.contents.reverse",
       (_, argument) => _.runAsync(() => commands([".selections.rotate.contents", { "reverse": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.rotate.selections.reverse",
       (_, argument) => _.runAsync(() => commands([".selections.rotate.selections", { "reverse": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }
