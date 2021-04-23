@@ -1652,15 +1652,20 @@ export function splitRange(text: string, re: RegExp) {
  */
 export function execRange(text: string, re: RegExp) {
   const sections: [start: number, end: number][] = [];
+  let diff = 0;
 
   for (let match = re.exec(text); match !== null && text.length > 0; match = re.exec(text)) {
     const start = match.index,
           end = start + match[0].length;
 
-    sections.push([start, end]);
+    sections.push([diff + start, diff + end]);
+
+    text = text.slice(end);
+    diff += end;
 
     if (start === end) {
-      re.lastIndex++;
+      text = text.slice(1);
+      diff++;
     }
   }
 

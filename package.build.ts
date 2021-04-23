@@ -310,37 +310,37 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               items: ((command = "dance.seek.object") => ({
                 "b()": {
                   command,
-                  args: [{ object: "parens" }],
+                  args: [{ input: "\\((?#inner)\\)" }],
                   text: "parenthesis block",
                 },
                 "B{}": {
                   command,
-                  args: [{ object: "braces" }],
+                  args: [{ input: "\\{(?#inner)\\}" }],
                   text: "braces block",
                 },
                 "r[]": {
                   command,
-                  args: [{ object: "brackets" }],
+                  args: [{ input: "\\[(?#inner)\\]" }],
                   text: "brackets block",
                 },
                 "a<>": {
                   command,
-                  args: [{ object: "angleBrackets" }],
+                  args: [{ input: "<(?#inner)>" }],
                   text: "angle block",
                 },
                 'Q"': {
                   command,
-                  args: [{ object: "doubleQuoteString" }],
+                  args: [{ input: "(?#noescape)\"(?#inner)(?#noescape)\"" }],
                   text: "double quote string",
                 },
                 "q'": {
                   command,
-                  args: [{ object: "singleQuoteString" }],
+                  args: [{ input: "(?#noescape)'(?#inner)(?#noescape)'" }],
                   text: "single quote string",
                 },
                 "g`": {
                   command,
-                  args: [{ object: "graveQuoteString" }],
+                  args: [{ input: "(?#noescape)`(?#inner)(?#noescape)`" }],
                   text: "grave quote string",
                 },
                 "w": {
@@ -375,7 +375,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 },
                 "n": {
                   command,
-                  args: [{ object: "number" }],
+                  args: [{ input: "(?#singleline)-?[\\d_]+(\\.[0-9]+)?([eE]\\d+)?" }],
                   text: "number",
                 },
                 "u": {
@@ -385,7 +385,6 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 },
                 "c": {
                   command,
-                  args: [{ object: "custom" }],
                   text: "custom object desc",
                 },
               }))(),

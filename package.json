@@ -362,7 +362,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "parens"
+                      "input": "\\((?#inner)\\)"
                     }
                   ],
                   "text": "parenthesis block"
@@ -371,7 +371,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "braces"
+                      "input": "\\{(?#inner)\\}"
                     }
                   ],
                   "text": "braces block"
@@ -380,7 +380,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "brackets"
+                      "input": "\\[(?#inner)\\]"
                     }
                   ],
                   "text": "brackets block"
@@ -389,7 +389,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "angleBrackets"
+                      "input": "<(?#inner)>"
                     }
                   ],
                   "text": "angle block"
@@ -398,7 +398,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "doubleQuoteString"
+                      "input": "(?#noescape)\"(?#inner)(?#noescape)\""
                     }
                   ],
                   "text": "double quote string"
@@ -407,7 +407,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "singleQuoteString"
+                      "input": "(?#noescape)'(?#inner)(?#noescape)'"
                     }
                   ],
                   "text": "single quote string"
@@ -416,7 +416,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "graveQuoteString"
+                      "input": "(?#noescape)`(?#inner)(?#noescape)`"
                     }
                   ],
                   "text": "grave quote string"
@@ -479,7 +479,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "number"
+                      "input": "(?#singleline)-?[\\d_]+(\\.[0-9]+)?([eE]\\d+)?"
                     }
                   ],
                   "text": "number"
@@ -495,11 +495,6 @@
                 },
                 "c": {
                   "command": "dance.seek.object",
-                  "args": [
-                    {
-                      "object": "custom"
-                    }
-                  ],
                   "text": "custom object desc"
                 }
               }
@@ -1025,6 +1020,56 @@
         "category": "Dance"
       },
       {
+        "command": "dance.seek.askObject",
+        "title": "Select whole object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.end",
+        "title": "Select to whole object end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.end",
+        "title": "Extend to whole object end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.inner",
+        "title": "Select inner object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.inner.end",
+        "title": "Select to inner object end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.inner.end.extend",
+        "title": "Extend to inner object end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.inner.start",
+        "title": "Select to inner object start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.inner.start.extend",
+        "title": "Extend to inner object start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.start",
+        "title": "Select to whole object start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.askObject.start",
+        "title": "Extend to whole object start",
+        "category": "Dance"
+      },
+      {
         "command": "dance.seek.character",
         "title": "Select to character (excluded)",
         "category": "Dance"
@@ -1085,6 +1130,51 @@
         "category": "Dance"
       },
       {
+        "command": "dance.seek.object",
+        "title": "Select object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word",
+        "title": "Select to next word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.backward",
+        "title": "Select to previous word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.extend",
+        "title": "Extend to next word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.extend.backward",
+        "title": "Extend to previous word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.ws",
+        "title": "Select to next non-whitespace word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.ws.backward",
+        "title": "Select to previous non-whitespace word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.ws.extend",
+        "title": "Extend to next non-whitespace word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.ws.extend.backward",
+        "title": "Extend to previous non-whitespace word start",
+        "category": "Dance"
+      },
+      {
         "command": "dance.seek.wordEnd",
         "title": "Select to next word end",
         "category": "Dance"
@@ -1102,46 +1192,6 @@
       {
         "command": "dance.seek.wordEnd.ws.extend",
         "title": "Extend to next non-whitespace word end",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.wordStart",
-        "title": "Select to next word start",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.wordStart.backward",
-        "title": "Select to previous word start",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.wordStart.extend",
-        "title": "Extend to next word start",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.wordStart.extend.backward",
-        "title": "Extend to previous word start",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.wordStart.ws",
-        "title": "Select to next non-whitespace word start",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.wordStart.ws.backward",
-        "title": "Select to previous non-whitespace word start",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.wordStart.ws.extend",
-        "title": "Extend to next non-whitespace word start",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.wordStart.ws.extend.backward",
-        "title": "Extend to previous non-whitespace word start",
         "category": "Dance"
       },
       {
@@ -1813,6 +1863,46 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.seek.askObject",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.end",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.end",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner.end",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner.end.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner.start",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner.start.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.start",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.start",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.seek.character",
           "when": "dance.mode == 'normal'"
         },
@@ -1861,6 +1951,42 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.seek.object",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.ws",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.ws.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.ws.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.ws.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.seek.wordEnd",
           "when": "dance.mode == 'normal'"
         },
@@ -1874,38 +2000,6 @@
         },
         {
           "command": "dance.seek.wordEnd.ws.extend",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.wordStart",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.wordStart.backward",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.wordStart.extend",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.wordStart.extend.backward",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.wordStart.ws",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.wordStart.ws.backward",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.wordStart.ws.extend",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.wordStart.ws.extend.backward",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -2673,6 +2767,78 @@
         "command": "dance.search.selection.smart"
       },
       {
+        "key": "Alt+A",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select whole object",
+        "command": "dance.seek.askObject"
+      },
+      {
+        "key": "Alt+A",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "title": "Select whole object",
+        "command": "dance.seek.askObject"
+      },
+      {
+        "key": "]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to whole object end",
+        "command": "dance.seek.askObject.end"
+      },
+      {
+        "key": "Shift+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to whole object end",
+        "command": "dance.seek.askObject.end"
+      },
+      {
+        "key": "Alt+I",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select inner object",
+        "command": "dance.seek.askObject.inner"
+      },
+      {
+        "key": "Alt+I",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "title": "Select inner object",
+        "command": "dance.seek.askObject.inner"
+      },
+      {
+        "key": "Alt+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to inner object end",
+        "command": "dance.seek.askObject.inner.end"
+      },
+      {
+        "key": "Shift+Alt+]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to inner object end",
+        "command": "dance.seek.askObject.inner.end.extend"
+      },
+      {
+        "key": "Alt+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to inner object start",
+        "command": "dance.seek.askObject.inner.start"
+      },
+      {
+        "key": "Shift+Alt+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to inner object start",
+        "command": "dance.seek.askObject.inner.start.extend"
+      },
+      {
+        "key": "[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to whole object start",
+        "command": "dance.seek.askObject.start"
+      },
+      {
+        "key": "Shift+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to whole object start",
+        "command": "dance.seek.askObject.start"
+      },
+      {
         "key": "T",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Select to character (excluded)",
@@ -2745,6 +2911,54 @@
         "command": "dance.seek.enclosing.extend.backward"
       },
       {
+        "key": "W",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to next word start",
+        "command": "dance.seek.word"
+      },
+      {
+        "key": "B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to previous word start",
+        "command": "dance.seek.word.backward"
+      },
+      {
+        "key": "Shift+W",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to next word start",
+        "command": "dance.seek.word.extend"
+      },
+      {
+        "key": "Shift+B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to previous word start",
+        "command": "dance.seek.word.extend.backward"
+      },
+      {
+        "key": "Alt+W",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to next non-whitespace word start",
+        "command": "dance.seek.word.ws"
+      },
+      {
+        "key": "Alt+B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to previous non-whitespace word start",
+        "command": "dance.seek.word.ws.backward"
+      },
+      {
+        "key": "Shift+Alt+W",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to next non-whitespace word start",
+        "command": "dance.seek.word.ws.extend"
+      },
+      {
+        "key": "Shift+Alt+B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to previous non-whitespace word start",
+        "command": "dance.seek.word.ws.extend.backward"
+      },
+      {
         "key": "E",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Select to next word end",
@@ -2767,54 +2981,6 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Extend to next non-whitespace word end",
         "command": "dance.seek.wordEnd.ws.extend"
-      },
-      {
-        "key": "W",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select to next word start",
-        "command": "dance.seek.wordStart"
-      },
-      {
-        "key": "B",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select to previous word start",
-        "command": "dance.seek.wordStart.backward"
-      },
-      {
-        "key": "Shift+W",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to next word start",
-        "command": "dance.seek.wordStart.extend"
-      },
-      {
-        "key": "Shift+B",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to previous word start",
-        "command": "dance.seek.wordStart.extend.backward"
-      },
-      {
-        "key": "Alt+W",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select to next non-whitespace word start",
-        "command": "dance.seek.wordStart.ws"
-      },
-      {
-        "key": "Alt+B",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select to previous non-whitespace word start",
-        "command": "dance.seek.wordStart.ws.backward"
-      },
-      {
-        "key": "Shift+Alt+W",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to next non-whitespace word start",
-        "command": "dance.seek.wordStart.ws.extend"
-      },
-      {
-        "key": "Shift+Alt+B",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to previous non-whitespace word start",
-        "command": "dance.seek.wordStart.ws.extend.backward"
       },
       {
         "key": "Shift+5",

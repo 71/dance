@@ -573,8 +573,8 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
   const {
     character,
     enclosing,
-    wordEnd,
-    wordStart,
+    object,
+    word,
   } = await import("./seek");
 
   return [
@@ -589,14 +589,64 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
-      "dance.seek.wordEnd",
-      (_, argument) => _.runAsync((_) => wordEnd(_, getRepetitions(_, argument), argument.ws, getDirection(argument), getShift(argument))),
+      "dance.seek.object",
+      (_, argument) => _.runAsync((_) => object(_, getInputOr(argument), argument.inner, argument.where, getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
-      "dance.seek.wordStart",
-      (_, argument) => _.runAsync((_) => wordStart(_, getRepetitions(_, argument), argument.ws, getDirection(argument), getShift(argument))),
+      "dance.seek.word",
+      (_, argument) => _.runAsync((_) => word(_, getRepetitions(_, argument), argument.stopAtEnd, argument.ws, getDirection(argument), getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.end",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "where": "end" , "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.end",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "where": "end", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.inner",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "inner": true, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.inner.end",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "inner": true, "where": "end", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.inner.end.extend",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "inner": true, "where": "end" , "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.inner.start",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "inner": true, "where": "start", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.inner.start.extend",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "inner": true, "where": "start", "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.start",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "where": "start", "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.askObject.start",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { "input": "object", "where": "start", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.character.backward",
@@ -649,53 +699,58 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
+      "dance.seek.word.backward",
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "direction": -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.word.extend",
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.word.extend.backward",
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "shift": "extend", "direction": -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.word.ws",
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "ws": true, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.word.ws.backward",
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "ws": true, "direction": -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.word.ws.extend",
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "ws": true, "shift": "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.word.ws.extend.backward",
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "ws": true, "shift": "extend", "direction": -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.wordEnd",
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "stopAtEnd": true, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
       "dance.seek.wordEnd.extend",
-      (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "shift": "extend", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "stopAtEnd": true , "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd.ws",
-      (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "ws": true, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "stopAtEnd": true , "ws": true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd.ws.extend",
-      (_, argument) => _.runAsync(() => commands([".seek.wordEnd", { "ws": true, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.wordStart.backward",
-      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.wordStart.extend",
-      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.wordStart.extend.backward",
-      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "shift": "extend", "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.wordStart.ws",
-      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.wordStart.ws.backward",
-      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "direction": -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.wordStart.ws.extend",
-      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "shift": "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.wordStart.ws.extend.backward",
-      (_, argument) => _.runAsync(() => commands([".seek.wordStart", { "ws": true, "shift": "extend", "direction": -1, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".seek.word", { "stopAtEnd": true , "ws": true, "shift": "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];

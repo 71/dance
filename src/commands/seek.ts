@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
 
 import { Argument, InputOr } from ".";
-import { ArgumentError, Context, Direction, keypress, moveTo, Pair, pair, Positions, Selections, Shift, surroundedBy, todo } from "../api";
+import { ArgumentError, Context, Direction, keypress, moveTo, moveWhile, Pair, pair, Positions, prompt, Selections, Shift, surroundedBy, todo } from "../api";
 import { wordBoundary } from "../api/search/word";
 import { SelectionBehavior } from "../state/modes";
 import { CharSet } from "../utils/charset";
+import { execRange } from "../utils/regexp";
 
 /**
  * Update selections based on the text surrounding them.
@@ -213,5 +214,161 @@ export function word(
     }
 
     return selection;
+  });
+}
+
+let lastObjectInput: string | undefined;
+
+/**
+ * Select object.
+ *
+ * @param input The pattern of object to select; see
+ *   [object patterns](#object-patterns) below for more information.
+ * @param inner If `true`, only the "inner" part of the object will be selected.
+ *   The definition of the "inner" part depends on the object.
+ * @param where What end of the object should be sought. If `undefined`, the
+ *   object will be selected from start to end regardless of the `shift`.
+ *
+ * #### Object patterns
+ * - Pairs: `<regexp>(?#inner)<regexp>`.
+ * - Character sets: `[<characters>]`.
+ * - Matches that may only span a single line: `(?#singleline)<regexp>`.
+ *
+ * #### Variants
+ *
+ * | Title                        | Identifier                     | Keybinding                     | Command                                                                                    |
+ * | ---------------------------- | ------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------ |
+ * | Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { "input": "object"                                                     }]` |
+ * | Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { "input": "object", "inner": true                                      }]` |
+ * | Select to whole object start | `askObject.start`              | `[` (normal)                   | `[".openMenu", { "input": "object",                "where": "start"                    }]` |
+ * | Extend to whole object start | `askObject.start`              | `{` (normal)                   | `[".openMenu", { "input": "object",                "where": "start", "shift": "extend" }]` |
+ * | Select to inner object start | `askObject.inner.start`        | `a-[` (normal)                 | `[".openMenu", { "input": "object", "inner": true, "where": "start"                    }]` |
+ * | Extend to inner object start | `askObject.inner.start.extend` | `a-{` (normal)                 | `[".openMenu", { "input": "object", "inner": true, "where": "start", "shift": "extend" }]` |
+ * | Select to whole object end   | `askObject.end`                | `]` (normal)                   | `[".openMenu", { "input": "object",                "where": "end"                      }]` |
+ * | Extend to whole object end   | `askObject.end`                | `}` (normal)                   | `[".openMenu", { "input": "object",                "where": "end"  , "shift": "extend" }]` |
+ * | Select to inner object end   | `askObject.inner.end`          | `a-]` (normal)                 | `[".openMenu", { "input": "object", "inner": true, "where": "end"                      }]` |
+ * | Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (normal)                 | `[".openMenu", { "input": "object", "inner": true, "where": "end"  , "shift": "extend" }]` |
+ */
+export async function object(
+  _: Context,
+
+  inputOr: InputOr<string>,
+  inner: Argument<boolean> = false,
+  where?: Argument<"start" | "end" | "active" | "anchor">,
+  shift = Shift.Select,
+) {
+  const input = await inputOr(() => prompt({
+    prompt: "Object description",
+    value: lastObjectInput,
+  }));
+
+  let match: RegExpExecArray | null;
+
+  if (match = /^(.+)\(\?#inner\)(.+)$/s.exec(input)) {
+    const openRe = new RegExp(preprocessRegExp(match[1]), "u"),
+          closeRe = new RegExp(preprocessRegExp(match[2]), "u"),
+          p = pair(openRe, closeRe);
+
+    return shiftWhere(
+      _,
+      (selection, _) => {
+        const startResult = p.searchOpening(selection.active);
+
+        if (startResult === undefined) {
+          return undefined;
+        }
+
+        const endResult = p.searchClosing(selection.active);
+
+        if (endResult === undefined) {
+          return undefined;
+        }
+
+        let start = startResult[0],
+            end = endResult[0];
+
+        if (inner) {
+          start = Positions.offset(start, startResult[1][0].length, _.document)!;
+        } else {
+          end = Positions.offset(end, endResult[1][0].length, _.document)!;
+        }
+
+        return new vscode.Selection(start, end);
+      },
+      shift,
+      where,
+    );
+  }
+
+  if (match = /^\[(.+)\]$/.exec(input)) {
+    const re = new RegExp(match[1], "u");
+
+    return shiftWhere(
+      _,
+      (selection, _) => {
+        const start = moveWhile.backward((c) => re.test(c), selection.active),
+              end = moveWhile.forward((c) => re.test(c), selection.active);
+
+        return new vscode.Selection(start, end);
+      },
+      shift,
+      where,
+    );
+  }
+
+  if (match = /^\(\?#singleline\)(.+)$/.exec(input)) {
+    const re = new RegExp(preprocessRegExp(match[1]), "u");
+
+    return shiftWhere(
+      _,
+      (selection, _) => {
+        const line = Selections.activeLine(selection),
+              lineText = _.document.lineAt(line).text,
+              matches = execRange(lineText, re);
+
+        // Find match at text position.
+        const character = Selections.activeCharacter(selection, _.document);
+
+        for (const [start, end] of matches) {
+          if (start <= character && character <= end) {
+            return new vscode.Selection(
+              new vscode.Position(line, start),
+              new vscode.Position(line, end),
+            );
+          }
+        }
+
+        return undefined;
+      },
+      shift,
+      where,
+    );
+  }
+
+  throw new Error("unknown object " + JSON.stringify(input));
+}
+
+function preprocessRegExp(re: string) {
+  return re.replace(/\(\?#noescape\)/g, "(?<!\\)(?:\\{2})*");
+}
+
+function shiftWhere(
+  context: Context,
+  f: (selection: vscode.Selection, context: Context) => vscode.Selection | undefined,
+  shift: Shift,
+  where: "start" | "end" | "active" | "anchor" | undefined,
+) {
+  Selections.update.byIndex((_, selection) => {
+    const result = f(selection, context);
+
+    if (result === undefined) {
+      return undefined;
+    }
+
+    if (where === undefined) {
+      return result;
+    }
+
+    return Selections.shift(selection, result[where], shift, context);
   });
 }

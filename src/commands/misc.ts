@@ -204,7 +204,6 @@ export async function openMenu(
     },
     placeHolder: [...menus.keys()].sort().join(", ") || "no menu defined",
     value: lastPickedMenu,
-    valueSelection: lastPickedMenu === undefined ? undefined : [0, lastPickedMenu.length],
   }, _));
 
   return showMenu.byName(input, additionalArgs, prefix);

@@ -77,30 +77,41 @@
     <tr><td><a href="./search.ts#L134"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L88"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#searchselection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Shift+Alt+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=24><a href="#seek"><code>seek</code></a></td><td><a href="#seekcharacter"><code>seek.character</code></a></td><td>Select to character (excluded)</td><td><code>T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=35><a href="#seek"><code>seek</code></a></td><td><a href="#seekcharacter"><code>seek.character</code></a></td><td>Select to character (excluded)</td><td><code>T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#seekenclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L24"><code>seek.character.backward</code></a></td><td>Select to character (excluded, backward)</td><td><code>Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L23"><code>seek.character.extend</code></a></td><td>Extend to character (excluded)</td><td><code>Shift+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L25"><code>seek.character.extend.backward</code></a></td><td>Extend to character (excluded, backward)</td><td><code>Shift+Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L26"><code>seek.character.included</code></a></td><td>Select to character (included)</td><td><code>F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L28"><code>seek.character.included.backward</code></a></td><td>Select to character (included, backward)</td><td><code>Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L27"><code>seek.character.included.extend</code></a></td><td>Extend to character (included)</td><td><code>Shift+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L29"><code>seek.character.included.extend.backward</code></a></td><td>Extend to character (included, backward)</td><td><code>Shift+Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L89"><code>seek.enclosing.backward</code></a></td><td>Select to previous enclosing character</td><td><code>Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L88"><code>seek.enclosing.extend</code></a></td><td>Extend to next enclosing character</td><td><code>Shift+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L90"><code>seek.enclosing.extend.backward</code></a></td><td>Extend to previous enclosing character</td><td><code>Shift+Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L217"><code>seek.wordEnd.extend</code></a></td><td>Extend to next word end</td><td><code>Shift+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L218"><code>seek.wordEnd.ws</code></a></td><td>Select to next non-whitespace word end</td><td><code>Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L219"><code>seek.wordEnd.ws.extend</code></a></td><td>Extend to next non-whitespace word end</td><td><code>Shift+Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L168"><code>seek.wordStart.backward</code></a></td><td>Select to previous word start</td><td><code>B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L167"><code>seek.wordStart.extend</code></a></td><td>Extend to next word start</td><td><code>Shift+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L169"><code>seek.wordStart.extend.backward</code></a></td><td>Extend to previous word start</td><td><code>Shift+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L170"><code>seek.wordStart.ws</code></a></td><td>Select to next non-whitespace word start</td><td><code>Alt+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L172"><code>seek.wordStart.ws.backward</code></a></td><td>Select to previous non-whitespace word start</td><td><code>Alt+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L171"><code>seek.wordStart.ws.extend</code></a></td><td>Extend to next non-whitespace word start</td><td><code>Shift+Alt+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./seek.ts#L173"><code>seek.wordStart.ws.extend.backward</code></a></td><td>Extend to previous non-whitespace word start</td><td><code>Shift+Alt+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#seekwordEnd"><code>seek.wordEnd</code></a></td><td>Select to next word end</td><td><code>E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#seekwordStart"><code>seek.wordStart</code></a></td><td>Select to next word start</td><td><code>W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#seekobject"><code>seek.object</code></a></td><td>Select object</td><td></td></tr>
+    <tr><td><a href="./seek.ts#L241"><code>seek.askObject</code></a></td><td>Select whole object</td><td><code>Alt+A</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+A</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L247"><code>seek.askObject.end</code></a></td><td>Select to whole object end</td><td><code>]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L248"><code>seek.askObject.end</code></a></td><td>Extend to whole object end</td><td><code>Shift+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L242"><code>seek.askObject.inner</code></a></td><td>Select inner object</td><td><code>Alt+I</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+I</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L249"><code>seek.askObject.inner.end</code></a></td><td>Select to inner object end</td><td><code>Alt+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L250"><code>seek.askObject.inner.end.extend</code></a></td><td>Extend to inner object end</td><td><code>Shift+Alt+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L245"><code>seek.askObject.inner.start</code></a></td><td>Select to inner object start</td><td><code>Alt+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L246"><code>seek.askObject.inner.start.extend</code></a></td><td>Extend to inner object start</td><td><code>Shift+Alt+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L243"><code>seek.askObject.start</code></a></td><td>Select to whole object start</td><td><code>[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L244"><code>seek.askObject.start</code></a></td><td>Extend to whole object start</td><td><code>Shift+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L25"><code>seek.character.backward</code></a></td><td>Select to character (excluded, backward)</td><td><code>Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L24"><code>seek.character.extend</code></a></td><td>Extend to character (excluded)</td><td><code>Shift+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L26"><code>seek.character.extend.backward</code></a></td><td>Extend to character (excluded, backward)</td><td><code>Shift+Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L27"><code>seek.character.included</code></a></td><td>Select to character (included)</td><td><code>F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L29"><code>seek.character.included.backward</code></a></td><td>Select to character (included, backward)</td><td><code>Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L28"><code>seek.character.included.extend</code></a></td><td>Extend to character (included)</td><td><code>Shift+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L30"><code>seek.character.included.extend.backward</code></a></td><td>Extend to character (included, backward)</td><td><code>Shift+Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L90"><code>seek.enclosing.backward</code></a></td><td>Select to previous enclosing character</td><td><code>Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L89"><code>seek.enclosing.extend</code></a></td><td>Extend to next enclosing character</td><td><code>Shift+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L91"><code>seek.enclosing.extend.backward</code></a></td><td>Extend to previous enclosing character</td><td><code>Shift+Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L169"><code>seek.word.backward</code></a></td><td>Select to previous word start</td><td><code>B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L168"><code>seek.word.extend</code></a></td><td>Extend to next word start</td><td><code>Shift+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L170"><code>seek.word.extend.backward</code></a></td><td>Extend to previous word start</td><td><code>Shift+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L171"><code>seek.word.ws</code></a></td><td>Select to next non-whitespace word start</td><td><code>Alt+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L173"><code>seek.word.ws.backward</code></a></td><td>Select to previous non-whitespace word start</td><td><code>Alt+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L172"><code>seek.word.ws.extend</code></a></td><td>Extend to next non-whitespace word start</td><td><code>Shift+Alt+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L174"><code>seek.word.ws.extend.backward</code></a></td><td>Extend to previous non-whitespace word start</td><td><code>Shift+Alt+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L175"><code>seek.wordEnd</code></a></td><td>Select to next word end</td><td><code>E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L176"><code>seek.wordEnd.extend</code></a></td><td>Extend to next word end</td><td><code>Shift+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L177"><code>seek.wordEnd.ws</code></a></td><td>Select to next non-whitespace word end</td><td><code>Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./seek.ts#L178"><code>seek.wordEnd.ws.extend</code></a></td><td>Extend to next non-whitespace word end</td><td><code>Shift+Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#seekword"><code>seek.word</code></a></td><td>Select to next word start</td><td><code>W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=44><a href="#select"><code>select</code></a></td><td><a href="#selectbuffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectfirstVisibleLine"><code>select.firstVisibleLine</code></a></td><td>Select to first visible line</td><td></td></tr>
     <tr><td><a href="#selecthorizontally"><code>select.horizontally</code></a></td><td>Select horizontally</td><td></td></tr>
@@ -622,7 +633,7 @@ This command:
 
 Update selections based on the text surrounding them.
 
-### [`seek.character`](./seek.ts#L14-L39)
+### [`seek.character`](./seek.ts#L15-L40)
 
 Select to character (excluded).
 
@@ -631,12 +642,12 @@ Select to character (excluded).
 
 | Title                                    | Identifier                           | Keybinding       | Command                                                                        |
 | ---------------------------------------- | ------------------------------------ | ---------------- | ------------------------------------------------------------------------------ |
-| Extend to character (excluded)           | `character.extend`                   | `s-t` (normal)   | `[".seek.character", { "shift": "extend" }]`                                   |
-| Select to character (excluded, backward) | `character.backward`                 | `a-t` (normal)   | `[".seek.character", { "direction": -1 }]`                                     |
-| Extend to character (excluded, backward) | `character.extend.backward`          | `s-a-t` (normal) | `[".seek.character", { "shift": "extend", "direction": -1 }]`                  |
-| Select to character (included)           | `character.included`                 | `f` (normal)     | `[".seek.character", { "include": true }]`                                     |
-| Extend to character (included)           | `character.included.extend`          | `s-f` (normal)   | `[".seek.character", { "include": true, "shift": "extend" }]`                  |
-| Select to character (included, backward) | `character.included.backward`        | `a-f` (normal)   | `[".seek.character", { "include": true, "direction": -1 }]`                    |
+| Extend to character (excluded)           | `character.extend`                   | `s-t` (normal)   | `[".seek.character", {                  "shift": "extend"                  }]` |
+| Select to character (excluded, backward) | `character.backward`                 | `a-t` (normal)   | `[".seek.character", {                                     "direction": -1 }]` |
+| Extend to character (excluded, backward) | `character.extend.backward`          | `s-a-t` (normal) | `[".seek.character", {                  "shift": "extend", "direction": -1 }]` |
+| Select to character (included)           | `character.included`                 | `f` (normal)     | `[".seek.character", { "include": true                                     }]` |
+| Extend to character (included)           | `character.included.extend`          | `s-f` (normal)   | `[".seek.character", { "include": true, "shift": "extend"                  }]` |
+| Select to character (included, backward) | `character.included.backward`        | `a-f` (normal)   | `[".seek.character", { "include": true,                    "direction": -1 }]` |
 | Extend to character (included, backward) | `character.included.extend.backward` | `s-a-f` (normal) | `[".seek.character", { "include": true, "shift": "extend", "direction": -1 }]` |
 
 This command:
@@ -644,7 +655,7 @@ This command:
 - takes an argument `include` of type `boolean`.
 - takes an input of type `string`.
 
-### [`seek.enclosing`](./seek.ts#L79-L99)
+### [`seek.enclosing`](./seek.ts#L80-L100)
 
 Select to next enclosing character.
 
@@ -653,15 +664,15 @@ Select to next enclosing character.
 
 | Title                                  | Identifier                  | Keybinding       | Command                                                       |
 | -------------------------------------- | --------------------------- | ---------------- | ------------------------------------------------------------- |
-| Extend to next enclosing character     | `enclosing.extend`          | `s-m` (normal)   | `[".seek.enclosing", { "shift": "extend" }]`                  |
-| Select to previous enclosing character | `enclosing.backward`        | `a-m` (normal)   | `[".seek.enclosing", { "direction": -1 }]`                    |
+| Extend to next enclosing character     | `enclosing.extend`          | `s-m` (normal)   | `[".seek.enclosing", { "shift": "extend"                  }]` |
+| Select to previous enclosing character | `enclosing.backward`        | `a-m` (normal)   | `[".seek.enclosing", {                    "direction": -1 }]` |
 | Extend to previous enclosing character | `enclosing.extend.backward` | `s-a-m` (normal) | `[".seek.enclosing", { "shift": "extend", "direction": -1 }]` |
 
 This command:
 - takes an argument `open` of type `boolean`.
 - takes an argument `pairs` of type `readonly string[]`.
 
-### [`seek.wordStart`](./seek.ts#L156-L182)
+### [`seek.word`](./seek.ts#L157-L188)
 
 Select to next word start.
 
@@ -670,38 +681,54 @@ Select the word and following whitespaces on the right of the end of each select
 
 #### Variants
 
-| Title                                        | Identifier                     | Keybinding       | Command                                                                   |
-| -------------------------------------------- | ------------------------------ | ---------------- | ------------------------------------------------------------------------- |
-| Extend to next word start                    | `wordStart.extend`             | `s-w` (normal)   | `[".seek.wordStart", { "shift": "extend" }]`                              |
-| Select to previous word start                | `wordStart.backward`           | `b` (normal)     | `[".seek.wordStart", { "direction": -1 }]`                                |
-| Extend to previous word start                | `wordStart.extend.backward`    | `s-b` (normal)   | `[".seek.wordStart", { "shift": "extend", "direction": -1 }]`             |
-| Select to next non-whitespace word start     | `wordStart.ws`                 | `a-w` (normal)   | `[".seek.wordStart", { "ws": true }]`                                     |
-| Extend to next non-whitespace word start     | `wordStart.ws.extend`          | `s-a-w` (normal) | `[".seek.wordStart", { "ws": true, "shift": "extend" }]`                  |
-| Select to previous non-whitespace word start | `wordStart.ws.backward`        | `a-b` (normal)   | `[".seek.wordStart", { "ws": true, "direction": -1 }]`                    |
-| Extend to previous non-whitespace word start | `wordStart.ws.extend.backward` | `s-a-b` (normal) | `[".seek.wordStart", { "ws": true, "shift": "extend", "direction": -1 }]` |
+| Title                                        | Identifier                | Keybinding       | Command                                                                                  |
+| -------------------------------------------- | ------------------------- | ---------------- | ---------------------------------------------------------------------------------------- |
+| Extend to next word start                    | `word.extend`             | `s-w` (normal)   | `[".seek.word", {                                 "shift": "extend"                  }]` |
+| Select to previous word start                | `word.backward`           | `b` (normal)     | `[".seek.word", {                                                    "direction": -1 }]` |
+| Extend to previous word start                | `word.extend.backward`    | `s-b` (normal)   | `[".seek.word", {                                 "shift": "extend", "direction": -1 }]` |
+| Select to next non-whitespace word start     | `word.ws`                 | `a-w` (normal)   | `[".seek.word", {                     "ws": true                                     }]` |
+| Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (normal) | `[".seek.word", {                     "ws": true, "shift": "extend"                  }]` |
+| Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (normal)   | `[".seek.word", {                     "ws": true,                    "direction": -1 }]` |
+| Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (normal) | `[".seek.word", {                     "ws": true, "shift": "extend", "direction": -1 }]` |
+| Select to next word end                      | `wordEnd`                 | `e` (normal)     | `[".seek.word", { "stopAtEnd": true                                                  }]` |
+| Extend to next word end                      | `wordEnd.extend`          | `s-e` (normal)   | `[".seek.word", { "stopAtEnd": true ,             "shift": "extend"                  }]` |
+| Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (normal)   | `[".seek.word", { "stopAtEnd": true , "ws": true                                     }]` |
+| Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (normal) | `[".seek.word", { "stopAtEnd": true , "ws": true, "shift": "extend"                  }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
+- takes an argument `stopAtEnd` of type `boolean`.
 - takes an argument `ws` of type `boolean`.
 
-### [`seek.wordEnd`](./seek.ts#L206-L228)
+### [`seek.object`](./seek.ts#L222-L259)
 
-Select to next word end.
+Select object.
 
-Select preceding whitespaces and the word on the right of the end of each selection.
 
+#### Object patterns
+- Pairs: `<regexp>(?#inner)<regexp>`.
+- Character sets: `[<characters>]`.
+- Matches that may only span a single line: `(?#singleline)<regexp>`.
 
 #### Variants
 
-| Title                                  | Identifier          | Keybinding       | Command                                                |
-| -------------------------------------- | ------------------- | ---------------- | ------------------------------------------------------ |
-| Extend to next word end                | `wordEnd.extend`    | `s-e` (normal)   | `[".seek.wordEnd", { "shift": "extend" }]`             |
-| Select to next non-whitespace word end | `wordEnd.ws`        | `a-e` (normal)   | `[".seek.wordEnd", { "ws": true }]`                    |
-| Extend to next non-whitespace word end | `wordEnd.ws.extend` | `s-a-e` (normal) | `[".seek.wordEnd", { "ws": true, "shift": "extend" }]` |
+| Title                        | Identifier                     | Keybinding                     | Command                                                                                    |
+| ---------------------------- | ------------------------------ | ------------------------------ | ------------------------------------------------------------------------------------------ |
+| Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { "input": "object"                                                     }]` |
+| Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { "input": "object", "inner": true                                      }]` |
+| Select to whole object start | `askObject.start`              | `[` (normal)                   | `[".openMenu", { "input": "object",                "where": "start"                    }]` |
+| Extend to whole object start | `askObject.start`              | `{` (normal)                   | `[".openMenu", { "input": "object",                "where": "start", "shift": "extend" }]` |
+| Select to inner object start | `askObject.inner.start`        | `a-[` (normal)                 | `[".openMenu", { "input": "object", "inner": true, "where": "start"                    }]` |
+| Extend to inner object start | `askObject.inner.start.extend` | `a-{` (normal)                 | `[".openMenu", { "input": "object", "inner": true, "where": "start", "shift": "extend" }]` |
+| Select to whole object end   | `askObject.end`                | `]` (normal)                   | `[".openMenu", { "input": "object",                "where": "end"                      }]` |
+| Extend to whole object end   | `askObject.end`                | `}` (normal)                   | `[".openMenu", { "input": "object",                "where": "end"  , "shift": "extend" }]` |
+| Select to inner object end   | `askObject.inner.end`          | `a-]` (normal)                 | `[".openMenu", { "input": "object", "inner": true, "where": "end"                      }]` |
+| Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (normal)                 | `[".openMenu", { "input": "object", "inner": true, "where": "end"  , "shift": "extend" }]` |
 
 This command:
-- may be repeated with a given number of repetitions.
-- takes an argument `ws` of type `boolean`.
+- takes an argument `inner` of type `boolean`.
+- takes an argument `where` of type `"start" | "end" | "active" | "anchor"`.
+- takes an input of type `string`.
 
 ## [`select`](./select.ts)
 
@@ -764,7 +791,7 @@ line. If no count is specified, this command will shift open the `goto` menu.
 
 | Title     | Identifier  | Keybinding     | Command                                 |
 | --------- | ----------- | -------------- | --------------------------------------- |
-| Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { "shift": "jump" }]`   |
+| Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { "shift": "jump"   }]` |
 | Extend to | `to.extend` | `s-g` (normal) | `[".select.to", { "shift": "extend" }]` |
 
 This command:
@@ -810,12 +837,12 @@ Select to line start.
 
 | Title                             | Identifier                   | Keybinding                          | Command                                                           |
 | --------------------              | ------------------           | ----------------------------------- | ----------------------------------------------------------------- |
-| Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", { "shift": "jump" }]`                      |
-| Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", { "shift": "extend" }]`                    |
-| Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { "skipBlank": true, "shift": "jump" }]`   |
+| Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", {                    "shift": "jump"   }]` |
+| Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", {                    "shift": "extend" }]` |
+| Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { "skipBlank": true, "shift": "jump"   }]` |
 | Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                     | `[".select.lineStart", { "skipBlank": true, "shift": "extend" }]` |
-| Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { "count": 0, "shift": "jump" }]`          |
-| Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { "count": 0, "shift": "extend" }]`        |
+| Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { "count": 0,        "shift": "jump"   }]` |
+| Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { "count": 0,        "shift": "extend" }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -830,8 +857,8 @@ Select to line end.
 
 | Title                    | Identifier           | Keybinding                         | Command                                                        |
 | ------------------------ | -------------------- | ---------------------------------- | -------------------------------------------------------------- |
-| Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", { "shift": "extend" }]`                   |
-| Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { "count": MAX_INT, "shift": "jump" }]`   |
+| Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", {                   "shift": "extend" }]` |
+| Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { "count": MAX_INT, "shift": "jump"   }]` |
 | Extend to last character | `documentEnd.extend` |                                    | `[".select.lineEnd", { "count": MAX_INT, "shift": "extend" }]` |
 
 This command:
@@ -845,7 +872,7 @@ Select to last line.
 
 | Title               | Identifier        | Command                                       |
 | ------------------- | ----------------- | --------------------------------------------- |
-| Jump to last line   | `lastLine.jump`   | `[".select.lastLine", { "shift": "jump" }]`   |
+| Jump to last line   | `lastLine.jump`   | `[".select.lastLine", { "shift": "jump"   }]` |
 | Extend to last line | `lastLine.extend` | `[".select.lastLine", { "shift": "extend" }]` |
 
 ### [`select.firstVisibleLine`](./select.ts#L490-L500)
@@ -856,7 +883,7 @@ Select to first visible line.
 
 | Title                        | Identifier                | Command                                               |
 | ---------------------------- | ------------------------- | ----------------------------------------------------- |
-| Jump to first visible line   | `firstVisibleLine.jump`   | `[".select.firstVisibleLine", { "shift": "jump" }]`   |
+| Jump to first visible line   | `firstVisibleLine.jump`   | `[".select.firstVisibleLine", { "shift": "jump"   }]` |
 | Extend to first visible line | `firstVisibleLine.extend` | `[".select.firstVisibleLine", { "shift": "extend" }]` |
 
 ### [`select.middleVisibleLine`](./select.ts#L507-L517)
@@ -867,7 +894,7 @@ Select to middle visible line.
 
 | Title                         | Identifier                 | Command                                                |
 | ----------------------------- | -------------------------- | ------------------------------------------------------ |
-| Jump to middle visible line   | `middleVisibleLine.jump`   | `[".select.middleVisibleLine", { "shift": "jump" }]`   |
+| Jump to middle visible line   | `middleVisibleLine.jump`   | `[".select.middleVisibleLine", { "shift": "jump"   }]` |
 | Extend to middle visible line | `middleVisibleLine.extend` | `[".select.middleVisibleLine", { "shift": "extend" }]` |
 
 ### [`select.lastVisibleLine`](./select.ts#L524-L534)
@@ -878,7 +905,7 @@ Select to last visible line.
 
 | Title                       | Identifier               | Command                                              |
 | --------------------------- | ------------------------ | ---------------------------------------------------- |
-| Jump to last visible line   | `lastVisibleLine.jump`   | `[".select.lastVisibleLine", { "shift": "jump" }]`   |
+| Jump to last visible line   | `lastVisibleLine.jump`   | `[".select.lastVisibleLine", { "shift": "jump"   }]` |
 | Extend to last visible line | `lastVisibleLine.extend` | `[".select.lastVisibleLine", { "shift": "extend" }]` |
 
 ### [`select.lastModification`](./select.ts#L541-L551)
@@ -889,7 +916,7 @@ Select to last modification.
 
 | Title                       | Identifier                | Command                                               |
 | --------------------------- | ------------------------- | ----------------------------------------------------- |
-| Jump to last modification   | `lastModification.jump`   | `[".select.lastModification", { "shift": "jump" }]`   |
+| Jump to last modification   | `lastModification.jump`   | `[".select.lastModification", { "shift": "jump"   }]` |
 | Extend to last modification | `lastModification.extend` | `[".select.lastModification", { "shift": "extend" }]` |
 
 ## [`selections`](./selections.ts)
@@ -1051,7 +1078,7 @@ Change direction of selections.
 
 | Title               | Identifier     | Keybinding     | Command                                                |
 | ------------------- | -------------- | -------------- | ------------------------------------------------------ |
-| Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { "direction": 1 }]`  |
+| Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { "direction":  1 }]` |
 | Backward selections | `faceBackward` |                | `[".selections.changeDirection", { "direction": -1 }]` |
 
 ### [`selections.copy`](./selections.ts#L649-L667)
