@@ -20,12 +20,12 @@ declare module "./seek";
  *
  * | Title                                    | Identifier                           | Keybinding       | Command                                                                        |
  * | ---------------------------------------- | ------------------------------------ | ---------------- | ------------------------------------------------------------------------------ |
- * | Extend to character (excluded)           | `character.extend`                   | `s-t` (normal)   | `[".seek.character", { "shift": "extend" }]`                                   |
- * | Select to character (excluded, backward) | `character.backward`                 | `a-t` (normal)   | `[".seek.character", { "direction": -1 }]`                                     |
- * | Extend to character (excluded, backward) | `character.extend.backward`          | `s-a-t` (normal) | `[".seek.character", { "shift": "extend", "direction": -1 }]`                  |
- * | Select to character (included)           | `character.included`                 | `f` (normal)     | `[".seek.character", { "include": true }]`                                     |
- * | Extend to character (included)           | `character.included.extend`          | `s-f` (normal)   | `[".seek.character", { "include": true, "shift": "extend" }]`                  |
- * | Select to character (included, backward) | `character.included.backward`        | `a-f` (normal)   | `[".seek.character", { "include": true, "direction": -1 }]`                    |
+ * | Extend to character (excluded)           | `character.extend`                   | `s-t` (normal)   | `[".seek.character", {                  "shift": "extend"                  }]` |
+ * | Select to character (excluded, backward) | `character.backward`                 | `a-t` (normal)   | `[".seek.character", {                                     "direction": -1 }]` |
+ * | Extend to character (excluded, backward) | `character.extend.backward`          | `s-a-t` (normal) | `[".seek.character", {                  "shift": "extend", "direction": -1 }]` |
+ * | Select to character (included)           | `character.included`                 | `f` (normal)     | `[".seek.character", { "include": true                                     }]` |
+ * | Extend to character (included)           | `character.included.extend`          | `s-f` (normal)   | `[".seek.character", { "include": true, "shift": "extend"                  }]` |
+ * | Select to character (included, backward) | `character.included.backward`        | `a-f` (normal)   | `[".seek.character", { "include": true,                    "direction": -1 }]` |
  * | Extend to character (included, backward) | `character.included.extend.backward` | `s-a-f` (normal) | `[".seek.character", { "include": true, "shift": "extend", "direction": -1 }]` |
  */
 export async function character(
@@ -85,8 +85,8 @@ const defaultEnclosingPatterns = [
  *
  * | Title                                  | Identifier                  | Keybinding       | Command                                                       |
  * | -------------------------------------- | --------------------------- | ---------------- | ------------------------------------------------------------- |
- * | Extend to next enclosing character     | `enclosing.extend`          | `s-m` (normal)   | `[".seek.enclosing", { "shift": "extend" }]`                  |
- * | Select to previous enclosing character | `enclosing.backward`        | `a-m` (normal)   | `[".seek.enclosing", { "direction": -1 }]`                    |
+ * | Extend to next enclosing character     | `enclosing.extend`          | `s-m` (normal)   | `[".seek.enclosing", { "shift": "extend"                  }]` |
+ * | Select to previous enclosing character | `enclosing.backward`        | `a-m` (normal)   | `[".seek.enclosing", {                    "direction": -1 }]` |
  * | Extend to previous enclosing character | `enclosing.extend.backward` | `s-a-m` (normal) | `[".seek.enclosing", { "shift": "extend", "direction": -1 }]` |
  */
 export function enclosing(
@@ -162,20 +162,25 @@ export function enclosing(
  *
  * #### Variants
  *
- * | Title                                        | Identifier                     | Keybinding       | Command                                                                   |
- * | -------------------------------------------- | ------------------------------ | ---------------- | ------------------------------------------------------------------------- |
- * | Extend to next word start                    | `wordStart.extend`             | `s-w` (normal)   | `[".seek.wordStart", { "shift": "extend" }]`                              |
- * | Select to previous word start                | `wordStart.backward`           | `b` (normal)     | `[".seek.wordStart", { "direction": -1 }]`                                |
- * | Extend to previous word start                | `wordStart.extend.backward`    | `s-b` (normal)   | `[".seek.wordStart", { "shift": "extend", "direction": -1 }]`             |
- * | Select to next non-whitespace word start     | `wordStart.ws`                 | `a-w` (normal)   | `[".seek.wordStart", { "ws": true }]`                                     |
- * | Extend to next non-whitespace word start     | `wordStart.ws.extend`          | `s-a-w` (normal) | `[".seek.wordStart", { "ws": true, "shift": "extend" }]`                  |
- * | Select to previous non-whitespace word start | `wordStart.ws.backward`        | `a-b` (normal)   | `[".seek.wordStart", { "ws": true, "direction": -1 }]`                    |
- * | Extend to previous non-whitespace word start | `wordStart.ws.extend.backward` | `s-a-b` (normal) | `[".seek.wordStart", { "ws": true, "shift": "extend", "direction": -1 }]` |
+ * | Title                                        | Identifier                | Keybinding       | Command                                                                                  |
+ * | -------------------------------------------- | ------------------------- | ---------------- | ---------------------------------------------------------------------------------------- |
+ * | Extend to next word start                    | `word.extend`             | `s-w` (normal)   | `[".seek.word", {                                 "shift": "extend"                  }]` |
+ * | Select to previous word start                | `word.backward`           | `b` (normal)     | `[".seek.word", {                                                    "direction": -1 }]` |
+ * | Extend to previous word start                | `word.extend.backward`    | `s-b` (normal)   | `[".seek.word", {                                 "shift": "extend", "direction": -1 }]` |
+ * | Select to next non-whitespace word start     | `word.ws`                 | `a-w` (normal)   | `[".seek.word", {                     "ws": true                                     }]` |
+ * | Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (normal) | `[".seek.word", {                     "ws": true, "shift": "extend"                  }]` |
+ * | Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (normal)   | `[".seek.word", {                     "ws": true,                    "direction": -1 }]` |
+ * | Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (normal) | `[".seek.word", {                     "ws": true, "shift": "extend", "direction": -1 }]` |
+ * | Select to next word end                      | `wordEnd`                 | `e` (normal)     | `[".seek.word", { "stopAtEnd": true                                                  }]` |
+ * | Extend to next word end                      | `wordEnd.extend`          | `s-e` (normal)   | `[".seek.word", { "stopAtEnd": true ,             "shift": "extend"                  }]` |
+ * | Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (normal)   | `[".seek.word", { "stopAtEnd": true , "ws": true                                     }]` |
+ * | Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (normal) | `[".seek.word", { "stopAtEnd": true , "ws": true, "shift": "extend"                  }]` |
  */
-export function wordStart(
+export function word(
   _: Context,
 
   repetitions: number,
+  stopAtEnd: Argument<boolean> = false,
   ws: Argument<boolean> = false,
   direction = Direction.Forward,
   shift = Shift.Select,
@@ -186,53 +191,7 @@ export function wordStart(
     const anchor = selection.anchor;
 
     for (let i = 0; i < repetitions; i++) {
-      const mapped = wordBoundary(direction, selection.active, false, charset, _);
-
-      if (mapped === undefined) {
-        return undefined;
-      }
-
-      selection = mapped;
-    }
-
-    if (shift === Shift.Extend) {
-      return new vscode.Selection(anchor, selection.active);
-    }
-
-    return selection;
-  });
-}
-
-/**
- * Select to next word end.
- *
- * Select preceding whitespaces and the word on the right of the end of each selection.
- *
- * @keys `e` (normal)
- *
- * #### Variants
- *
- * | Title                                  | Identifier          | Keybinding       | Command                                                |
- * | -------------------------------------- | ------------------- | ---------------- | ------------------------------------------------------ |
- * | Extend to next word end                | `wordEnd.extend`    | `s-e` (normal)   | `[".seek.wordEnd", { "shift": "extend" }]`             |
- * | Select to next non-whitespace word end | `wordEnd.ws`        | `a-e` (normal)   | `[".seek.wordEnd", { "ws": true }]`                    |
- * | Extend to next non-whitespace word end | `wordEnd.ws.extend` | `s-a-e` (normal) | `[".seek.wordEnd", { "ws": true, "shift": "extend" }]` |
- */
-export function wordEnd(
-  _: Context,
-
-  repetitions: number,
-  ws: Argument<boolean> = false,
-  direction = Direction.Forward,
-  shift = Shift.Select,
-) {
-  const charset = ws ? CharSet.NonBlank : CharSet.Word;
-
-  Selections.update.byIndex((_i, selection) => {
-    const anchor = selection.anchor;
-
-    for (let i = 0; i < repetitions; i++) {
-      const mapped = wordBoundary(direction, selection.active, true, charset, _);
+      const mapped = wordBoundary(direction, selection.active, stopAtEnd, charset, _);
 
       if (mapped === undefined) {
         if (direction === Direction.Backward && selection.active.line > 0) {

@@ -618,7 +618,7 @@ export function reduce(
  *
  * | Title               | Identifier     | Keybinding     | Command                                                |
  * | ------------------- | -------------- | -------------- | ------------------------------------------------------ |
- * | Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { "direction": 1 }]`  |
+ * | Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { "direction":  1 }]` |
  * | Backward selections | `faceBackward` |                | `[".selections.changeDirection", { "direction": -1 }]` |
  */
 export function changeDirection(_: Context, direction?: Direction) {

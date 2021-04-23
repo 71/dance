@@ -226,7 +226,7 @@ export function horizontally(
  *
  * | Title     | Identifier  | Keybinding     | Command                                 |
  * | --------- | ----------- | -------------- | --------------------------------------- |
- * | Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { "shift": "jump" }]`   |
+ * | Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { "shift": "jump"   }]` |
  * | Extend to | `to.extend` | `s-g` (normal) | `[".select.to", { "shift": "extend" }]` |
  */
 export function to(
@@ -391,12 +391,12 @@ export function line_above_extend(_: Context, count: number) {
  *
  * | Title                             | Identifier                   | Keybinding                          | Command                                                           |
  * | --------------------              | ------------------           | ----------------------------------- | ----------------------------------------------------------------- |
- * | Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", { "shift": "jump" }]`                      |
- * | Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", { "shift": "extend" }]`                    |
- * | Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { "skipBlank": true, "shift": "jump" }]`   |
+ * | Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", {                    "shift": "jump"   }]` |
+ * | Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", {                    "shift": "extend" }]` |
+ * | Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { "skipBlank": true, "shift": "jump"   }]` |
  * | Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                     | `[".select.lineStart", { "skipBlank": true, "shift": "extend" }]` |
- * | Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { "count": 0, "shift": "jump" }]`          |
- * | Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { "count": 0, "shift": "extend" }]`        |
+ * | Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { "count": 0,        "shift": "jump"   }]` |
+ * | Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { "count": 0,        "shift": "extend" }]` |
  */
 export function lineStart(
   _: Context,
@@ -440,8 +440,8 @@ export function lineStart(
  *
  * | Title                    | Identifier           | Keybinding                         | Command                                                        |
  * | ------------------------ | -------------------- | ---------------------------------- | -------------------------------------------------------------- |
- * | Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", { "shift": "extend" }]`                   |
- * | Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { "count": MAX_INT, "shift": "jump" }]`   |
+ * | Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", {                   "shift": "extend" }]` |
+ * | Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { "count": MAX_INT, "shift": "jump"   }]` |
  * | Extend to last character | `documentEnd.extend` |                                    | `[".select.lineEnd", { "count": MAX_INT, "shift": "extend" }]` |
  */
 export function lineEnd(
@@ -473,7 +473,7 @@ export function lineEnd(
  *
  * | Title               | Identifier        | Command                                       |
  * | ------------------- | ----------------- | --------------------------------------------- |
- * | Jump to last line   | `lastLine.jump`   | `[".select.lastLine", { "shift": "jump" }]`   |
+ * | Jump to last line   | `lastLine.jump`   | `[".select.lastLine", { "shift": "jump"   }]` |
  * | Extend to last line | `lastLine.extend` | `[".select.lastLine", { "shift": "extend" }]` |
  */
 export function lastLine(_: Context, document: vscode.TextDocument, shift = Shift.Select) {
@@ -494,7 +494,7 @@ export function lastLine(_: Context, document: vscode.TextDocument, shift = Shif
  *
  * | Title                        | Identifier                | Command                                               |
  * | ---------------------------- | ------------------------- | ----------------------------------------------------- |
- * | Jump to first visible line   | `firstVisibleLine.jump`   | `[".select.firstVisibleLine", { "shift": "jump" }]`   |
+ * | Jump to first visible line   | `firstVisibleLine.jump`   | `[".select.firstVisibleLine", { "shift": "jump"   }]` |
  * | Extend to first visible line | `firstVisibleLine.extend` | `[".select.firstVisibleLine", { "shift": "extend" }]` |
  */
 export function firstVisibleLine(_: Context, shift = Shift.Select) {
@@ -511,7 +511,7 @@ export function firstVisibleLine(_: Context, shift = Shift.Select) {
  *
  * | Title                         | Identifier                 | Command                                                |
  * | ----------------------------- | -------------------------- | ------------------------------------------------------ |
- * | Jump to middle visible line   | `middleVisibleLine.jump`   | `[".select.middleVisibleLine", { "shift": "jump" }]`   |
+ * | Jump to middle visible line   | `middleVisibleLine.jump`   | `[".select.middleVisibleLine", { "shift": "jump"   }]` |
  * | Extend to middle visible line | `middleVisibleLine.extend` | `[".select.middleVisibleLine", { "shift": "extend" }]` |
  */
 export function middleVisibleLine(_: Context, shift = Shift.Select) {
@@ -528,7 +528,7 @@ export function middleVisibleLine(_: Context, shift = Shift.Select) {
  *
  * | Title                       | Identifier               | Command                                              |
  * | --------------------------- | ------------------------ | ---------------------------------------------------- |
- * | Jump to last visible line   | `lastVisibleLine.jump`   | `[".select.lastVisibleLine", { "shift": "jump" }]`   |
+ * | Jump to last visible line   | `lastVisibleLine.jump`   | `[".select.lastVisibleLine", { "shift": "jump"   }]` |
  * | Extend to last visible line | `lastVisibleLine.extend` | `[".select.lastVisibleLine", { "shift": "extend" }]` |
  */
 export function lastVisibleLine(_: Context, shift = Shift.Select) {
@@ -545,7 +545,7 @@ export function lastVisibleLine(_: Context, shift = Shift.Select) {
  *
  * | Title                       | Identifier                | Command                                               |
  * | --------------------------- | ------------------------- | ----------------------------------------------------- |
- * | Jump to last modification   | `lastModification.jump`   | `[".select.lastModification", { "shift": "jump" }]`   |
+ * | Jump to last modification   | `lastModification.jump`   | `[".select.lastModification", { "shift": "jump"   }]` |
  * | Extend to last modification | `lastModification.extend` | `[".select.lastModification", { "shift": "extend" }]` |
  */
 export function lastModification(_: Context, shift = Shift.Select) {
