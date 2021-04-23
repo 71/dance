@@ -1,11 +1,16 @@
 import * as vscode from "vscode";
+
 import { Context } from "../context";
 import { Positions } from "../positions";
 import { lineByLine } from "./move";
 
+/**
+ * Returns the range of lines matching the given `RegExp` before and after
+ * the given origin position.
+ */
 export function matchingLines(
   re: RegExp,
-  origin: vscode.Position,
+  origin: number | vscode.Position,
   document = Context.current.document,
 ) {
   const start = matchingLines.backward(re, origin, document),
@@ -15,26 +20,34 @@ export function matchingLines(
 }
 
 export namespace matchingLines {
+  /**
+   * Returns the position of the first line matching the given `RegExp`,
+   * starting at the `origin` line (included).
+   */
   export function backward(
     re: RegExp,
-    origin: vscode.Position,
+    origin: number | vscode.Position,
     document = Context.current.document,
   ) {
     return lineByLine.backward(
       (text, position) => re.test(text) ? position : undefined,
-      origin,
+      typeof origin === "number" ? Positions.lineStart(origin) : origin,
       document,
     ) ?? Positions.zero;
   }
 
+  /**
+   * Returns the position of the last line matching the given `RegExp`, starting
+   * at the `origin` line (included).
+   */
   export function forward(
     re: RegExp,
-    origin: vscode.Position,
+    origin: number | vscode.Position,
     document = Context.current.document,
   ) {
     return lineByLine.forward(
       (text, position) => re.test(text) ? position : undefined,
-      origin,
+      typeof origin === "number" ? Positions.lineStart(origin) : origin,
       document,
     ) ?? Positions.lineStart(document.lineCount - 1);
   }

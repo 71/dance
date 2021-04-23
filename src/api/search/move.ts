@@ -487,12 +487,12 @@ export namespace lineByLine {
  */
 export function skipEmptyLines(
   direction: Direction,
-  origin: vscode.Position,
+  origin: number | vscode.Position,
   document = Context.current.document,
 ) {
   didReachDocumentEdge = false;
 
-  let line = origin.line;
+  let line = typeof origin === "number" ? origin : origin.line;
 
   while (line >= 0 && line < document.lineCount) {
     const lineLength = document.lineAt(line).text.length;
@@ -524,7 +524,7 @@ export namespace skipEmptyLines {
    *
    * @see skipEmptyLines
    */
-  export function backward(origin: vscode.Position, document?: vscode.TextDocument) {
+  export function backward(origin: number | vscode.Position, document?: vscode.TextDocument) {
     return skipEmptyLines(Direction.Backward, origin, document);
   }
 
@@ -533,7 +533,7 @@ export namespace skipEmptyLines {
    *
    * @see skipEmptyLines
    */
-  export function forward(origin: vscode.Position, document?: vscode.TextDocument) {
+  export function forward(origin: number | vscode.Position, document?: vscode.TextDocument) {
     return skipEmptyLines(Direction.Forward, origin, document);
   }
 }

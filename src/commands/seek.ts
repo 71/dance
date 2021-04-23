@@ -2,7 +2,9 @@ import * as vscode from "vscode";
 
 import { Argument, InputOr } from ".";
 import { ArgumentError, Context, Direction, keypress, moveTo, Pair, pair, Positions, Selections, Shift, surroundedBy, todo } from "../api";
+import { wordBoundary } from "../api/search/word";
 import { SelectionBehavior } from "../state/modes";
+import { CharSet } from "../utils/charset";
 
 /**
  * Update selections based on the text surrounding them.
@@ -171,11 +173,34 @@ export function enclosing(
  * | Extend to previous non-whitespace word start | `wordStart.ws.extend.backward` | `s-a-b` (normal) | `[".seek.wordStart", { "ws": true, "shift": "extend", "direction": -1 }]` |
  */
 export function wordStart(
+  _: Context,
+
+  repetitions: number,
   ws: Argument<boolean> = false,
   direction = Direction.Forward,
   shift = Shift.Select,
 ) {
-  todo();
+  const charset = ws ? CharSet.NonBlank : CharSet.Word;
+
+  Selections.update.byIndex((_i, selection) => {
+    const anchor = selection.anchor;
+
+    for (let i = 0; i < repetitions; i++) {
+      const mapped = wordBoundary(direction, selection.active, false, charset, _);
+
+      if (mapped === undefined) {
+        return undefined;
+      }
+
+      selection = mapped;
+    }
+
+    if (shift === Shift.Extend) {
+      return new vscode.Selection(anchor, selection.active);
+    }
+
+    return selection;
+  });
 }
 
 /**
@@ -194,8 +219,40 @@ export function wordStart(
  * | Extend to next non-whitespace word end | `wordEnd.ws.extend` | `s-a-e` (normal) | `[".seek.wordEnd", { "ws": true, "shift": "extend" }]` |
  */
 export function wordEnd(
+  _: Context,
+
+  repetitions: number,
   ws: Argument<boolean> = false,
+  direction = Direction.Forward,
   shift = Shift.Select,
 ) {
-  todo();
+  const charset = ws ? CharSet.NonBlank : CharSet.Word;
+
+  Selections.update.byIndex((_i, selection) => {
+    const anchor = selection.anchor;
+
+    for (let i = 0; i < repetitions; i++) {
+      const mapped = wordBoundary(direction, selection.active, true, charset, _);
+
+      if (mapped === undefined) {
+        if (direction === Direction.Backward && selection.active.line > 0) {
+          // This is a special case in Kakoune and we try to mimic it
+          // here.
+          // Instead of overflowing, put anchor at document start and
+          // active always on the first character on the second line.
+          return new vscode.Selection(Positions.lineStart(0), Positions.lineStart(1));
+        }
+
+        return undefined;
+      }
+
+      selection = mapped;
+    }
+
+    if (shift === Shift.Extend) {
+      return new vscode.Selection(anchor, selection.active);
+    }
+
+    return selection;
+  });
 }

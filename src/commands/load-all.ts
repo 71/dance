@@ -590,13 +590,13 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.seek.wordEnd",
-      (_, argument) => _.runAsync((_) => wordEnd(argument.ws, getShift(argument))),
-      CommandDescriptor.Flags.None,
+      (_, argument) => _.runAsync((_) => wordEnd(_, getRepetitions(_, argument), argument.ws, getDirection(argument), getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.wordStart",
-      (_, argument) => _.runAsync((_) => wordStart(argument.ws, getDirection(argument), getShift(argument))),
-      CommandDescriptor.Flags.None,
+      (_, argument) => _.runAsync((_) => wordStart(_, getRepetitions(_, argument), argument.ws, getDirection(argument), getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.character.backward",
