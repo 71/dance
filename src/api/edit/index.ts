@@ -1,24 +1,25 @@
 import * as vscode from "vscode";
+
 import { TrackedSelection } from "../../utils/tracked-selection";
 import { Context, edit } from "../context";
+import { Positions } from "../positions";
 import { rotateSelections, Selections } from "../selections";
 
 function mapResults(
   where: "start" | "end" | "active" | "anchor" | undefined,
-  flags: TrackedSelection.Flags,
+  mapping: insert.SelectionMapping,
   editor: vscode.TextEditor,
   selections: readonly vscode.Selection[],
   replacements: readonly replace.Result[],
 ) {
-  // TODO: honor mapping.
-  let savedSelections: TrackedSelection.Array | undefined;
-  const discardedSelections = new Uint8Array(selections.length);
+  let flags = TrackedSelection.Flags.Inclusive;
 
-  if (editor.selections !== selections) {
-    // We can avoid all the book keeping below if the selections we are
-    // modifying are the editor's.
-    savedSelections = TrackedSelection.fromArray(selections, editor.document);
+  if (where !== undefined && mapping === insert.SelectionMapping.Keep) {
+    flags = TrackedSelection.Flags.Strict;
   }
+
+  const savedSelections = TrackedSelection.fromArray(selections, editor.document),
+        discardedSelections = new Uint8Array(selections.length);
 
   const promise = edit((editBuilder) => {
     for (let i = 0, len = replacements.length; i < len; i++) {
@@ -31,8 +32,7 @@ function mapResults(
       } else if (where === undefined) {
         editBuilder.replace(selection, result);
 
-        if (savedSelections !== undefined
-            && TrackedSelection.length(savedSelections, i) !== result.length) {
+        if (TrackedSelection.length(savedSelections, i) !== result.length) {
           const documentChangedEvent: vscode.TextDocumentContentChangeEvent[] = [{
             range: selection,
             rangeOffset: TrackedSelection.offset(savedSelections, i),
@@ -47,28 +47,22 @@ function mapResults(
 
         editBuilder.replace(position, result);
 
-        if (savedSelections !== undefined) {
-          const selectionOffset = TrackedSelection.offset(savedSelections, i),
-                selectionLength = TrackedSelection.length(savedSelections, i);
+        const selectionOffset = TrackedSelection.offset(savedSelections, i),
+              selectionLength = TrackedSelection.length(savedSelections, i);
 
-          const documentChangedEvent: vscode.TextDocumentContentChangeEvent[] = [{
-            range: new vscode.Range(position, position),
-            rangeOffset: position === selection.start
-              ? selectionOffset
-              : selectionOffset + selectionLength,
-            rangeLength: 0,
-            text: result,
-          }];
+        const documentChangedEvent: vscode.TextDocumentContentChangeEvent[] = [{
+          range: new vscode.Range(position, position),
+          rangeOffset: position === selection.start
+            ? selectionOffset
+            : selectionOffset + selectionLength,
+          rangeLength: 0,
+          text: result,
+        }];
 
-          TrackedSelection.updateAfterDocumentChanged(savedSelections, documentChangedEvent, flags);
-        }
+        TrackedSelection.updateAfterDocumentChanged(savedSelections, documentChangedEvent, flags);
       }
     }
   }).then(() => {
-    if (savedSelections === undefined) {
-      return editor.selections;
-    }
-
     const results: vscode.Selection[] = [],
           document = editor.document;
 
@@ -77,7 +71,27 @@ function mapResults(
         continue;
       }
 
-      results.push(TrackedSelection.restore(savedSelections, i, document));
+      let restoredSelection = TrackedSelection.restore(savedSelections, i, document);
+
+      if (where !== undefined && mapping === insert.SelectionMapping.Inserted) {
+        const insertedLength = replacements[i]!.length;
+
+        if (restoredSelection[where] === restoredSelection.start) {
+          restoredSelection = Selections.fromStartEnd(
+            Positions.offset(restoredSelection.start, insertedLength)!,
+            restoredSelection.end,
+            restoredSelection.isReversed,
+          );
+        } else {
+          restoredSelection = Selections.fromStartEnd(
+            restoredSelection.start,
+            Positions.offset(restoredSelection.end, -insertedLength)!,
+            restoredSelection.isReversed,
+          );
+        }
+      }
+
+      results.push(restoredSelection);
     }
 
     return results;
@@ -234,7 +248,6 @@ export namespace insert {
 
     const document = Context.current.document,
           editor = Context.current.editor as vscode.TextEditor,
-          flags = TrackedSelection.Flags.Inclusive,
           firstResult = f(0, selections[0], document);
 
     if (typeof firstResult === "object") {
@@ -248,7 +261,7 @@ export namespace insert {
       return Context.wrap(
         Promise
           .all(promises)
-          .then((results) => mapResults(where, flags, editor, selections, results)),
+          .then((results) => mapResults(where, mapping, editor, selections, results)),
       );
     }
 
@@ -259,7 +272,7 @@ export namespace insert {
       allResults.push(f(i, selections[i], document) as Result);
     }
 
-    return mapResults(where, flags, editor, selections, allResults);
+    return mapResults(where, mapping, editor, selections, allResults);
   }
 }
 
