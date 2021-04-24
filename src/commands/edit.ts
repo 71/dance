@@ -36,18 +36,18 @@ declare module "./edit";
  *
  * #### Additional commands
  *
- * | Title                              | Identifier              | Keybinding                     | Commands                                                                                                 |
- * | ---------------------------------- | ----------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------- |
- * | Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert) | `[".selectRegister"], [".edit.insert"]`                                                                  |
- * | Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { "handleNewLine": true, "where": "start" }]`                                          |
- * | Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { "handleNewLine": true, "where": "end" }]`                                            |
- * | Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { "handleNewLine": true, "where": "start", "select": true }]`                          |
- * | Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { "handleNewLine": true, "where": "end", "select": true }]`                            |
- * | Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { "register": "_" }]`                                                                  |
- * | Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".modes.set", { "input": "insert" }], [".edit.insert", { "register": "_" }]`                           |
- * | Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText"], [".edit.insert", { "register": "_" }]`                                        |
- * | Copy and replace                   | `yank-replace`          | `s-r` (normal)                 | `[".selections.saveText"], [".edit.insert"]`                                                             |
- * | Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal)                   | `[".selections.saveText"], [".modes.set", { "input": "insert" }], [".edit.insert", { "register": "_" }]` |
+ * | Title                              | Identifier              | Keybinding                     | Commands                                                                                             |
+ * | ---------------------------------- | ----------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+ * | Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert) | `[".selectRegister"], [".edit.insert"]`                                                              |
+ * | Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "start"               }]`                            |
+ * | Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { handleNewLine: true, where: "end"                 }]`                            |
+ * | Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { handleNewLine: true, where: "start", select: true }]`                            |
+ * | Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "end"  , select: true }]`                            |
+ * | Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { register: "_" }]`                                                                |
+ * | Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".modes.set", { input: "insert" }], [".edit.insert", { register: "_" }]`                           |
+ * | Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText"],                                      [".edit.insert", { register: "_" }]` |
+ * | Copy and replace                   | `yank-replace`          | `s-r` (normal)                 | `[".selections.saveText"],                                      [".edit.insert"]`                    |
+ * | Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal)                   | `[".selections.saveText"], [".modes.set", { input: "insert" }], [".edit.insert", { register: "_" }]` |
  */
 export async function insert(
   _: Context,
@@ -340,9 +340,9 @@ export function copyIndentation(
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding     | Commands                                                                             |
- * | ------------------------------------------ | ---------------------- | -------------- | ------------------------------------------------------------------------------------ |
- * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".modes.set", { "input": "insert" }], [".edit.newLine.above", { "select": true }]` |
+ * | Title                                      | Identifier             | Keybinding     | Commands                                                                         |
+ * | ------------------------------------------ | ---------------------- | -------------- | -------------------------------------------------------------------------------- |
+ * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".modes.set", { input: "insert" }], [".edit.newLine.above", { select: true }]` |
  */
 export function newLine_above(_: Context, select: Argument<boolean> = false) {
   if (select) {
@@ -375,9 +375,9 @@ export function newLine_above(_: Context, select: Argument<boolean> = false) {
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding   | Commands                                                                             |
- * | ------------------------------------------ | ---------------------- | ------------ | ------------------------------------------------------------------------------------ |
- * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".modes.set", { "input": "insert" }], [".edit.newLine.below", { "select": true }]` |
+ * | Title                                      | Identifier             | Keybinding   | Commands                                                                         |
+ * | ------------------------------------------ | ---------------------- | ------------ | -------------------------------------------------------------------------------- |
+ * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".modes.set", { input: "insert" }], [".edit.newLine.below", { select: true }]` |
  */
 export function newLine_below(_: Context, select: Argument<boolean> = false) {
   if (select) {

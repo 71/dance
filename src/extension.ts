@@ -35,7 +35,7 @@ export function activate() {
 
   return loadCommands().then((commands) => {
     if (isActivated) {
-      return extensionState = new Extension(commands);
+      return { api, extension: (extensionState = new Extension(commands)) };
     }
     return;
   });

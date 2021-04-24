@@ -114,18 +114,18 @@ export async function selectRegister(_: Context, inputOr: InputOr<string | Regis
  *
  * #### Additional keybindings
  *
- * | Title                          | Keybinding   | Command                                |
- * | ------------------------------ | ------------ | -------------------------------------- |
- * | Add the digit 0 to the counter | `0` (normal) | `[".updateCount", { "addDigits": 0 }]` |
- * | Add the digit 1 to the counter | `1` (normal) | `[".updateCount", { "addDigits": 1 }]` |
- * | Add the digit 2 to the counter | `2` (normal) | `[".updateCount", { "addDigits": 2 }]` |
- * | Add the digit 3 to the counter | `3` (normal) | `[".updateCount", { "addDigits": 3 }]` |
- * | Add the digit 4 to the counter | `4` (normal) | `[".updateCount", { "addDigits": 4 }]` |
- * | Add the digit 5 to the counter | `5` (normal) | `[".updateCount", { "addDigits": 5 }]` |
- * | Add the digit 6 to the counter | `6` (normal) | `[".updateCount", { "addDigits": 6 }]` |
- * | Add the digit 7 to the counter | `7` (normal) | `[".updateCount", { "addDigits": 7 }]` |
- * | Add the digit 8 to the counter | `8` (normal) | `[".updateCount", { "addDigits": 8 }]` |
- * | Add the digit 9 to the counter | `9` (normal) | `[".updateCount", { "addDigits": 9 }]` |
+ * | Title                          | Keybinding   | Command                              |
+ * | ------------------------------ | ------------ | ------------------------------------ |
+ * | Add the digit 0 to the counter | `0` (normal) | `[".updateCount", { addDigits: 0 }]` |
+ * | Add the digit 1 to the counter | `1` (normal) | `[".updateCount", { addDigits: 1 }]` |
+ * | Add the digit 2 to the counter | `2` (normal) | `[".updateCount", { addDigits: 2 }]` |
+ * | Add the digit 3 to the counter | `3` (normal) | `[".updateCount", { addDigits: 3 }]` |
+ * | Add the digit 4 to the counter | `4` (normal) | `[".updateCount", { addDigits: 4 }]` |
+ * | Add the digit 5 to the counter | `5` (normal) | `[".updateCount", { addDigits: 5 }]` |
+ * | Add the digit 6 to the counter | `6` (normal) | `[".updateCount", { addDigits: 6 }]` |
+ * | Add the digit 7 to the counter | `7` (normal) | `[".updateCount", { addDigits: 7 }]` |
+ * | Add the digit 8 to the counter | `8` (normal) | `[".updateCount", { addDigits: 8 }]` |
+ * | Add the digit 9 to the counter | `9` (normal) | `[".updateCount", { addDigits: 9 }]` |
  */
 export async function updateCount(
   _: Context,
@@ -175,11 +175,11 @@ let lastPickedMenu: string | undefined;
  */
 export async function openMenu(
   _: Context.WithoutActiveEditor,
-  inputOr: InputOr<string>,
 
+  inputOr: InputOr<string>,
   menu?: Argument<Menu>,
   prefix?: Argument<string>,
-  additionalArgs: Argument<any[]> = [],
+  pass: Argument<any[]> = [],
 ) {
   if (typeof menu === "object") {
     const errors = validateMenu(menu);
@@ -188,7 +188,7 @@ export async function openMenu(
       throw new Error(`invalid menu: ${errors.join(", ")}`);
     }
 
-    return showMenu(menu, [], prefix);
+    return showMenu(menu, pass, prefix);
   }
 
   const menus = _.extension.menus;
@@ -206,5 +206,5 @@ export async function openMenu(
     value: lastPickedMenu,
   }, _));
 
-  return showMenu.byName(input, additionalArgs, prefix);
+  return showMenu.byName(input, pass, prefix);
 }

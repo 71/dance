@@ -89,7 +89,7 @@ suite("API tests", function () {
   this.beforeAll(async () => {
     document = await vscode.workspace.openTextDocument();
     editor = await vscode.window.showTextDocument(document);
-    extension = await vscode.extensions.getExtension("gregoire.dance")!.activate();
+    extension = (await vscode.extensions.getExtension("gregoire.dance")!.activate()).extension;
   });
 
   //

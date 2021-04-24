@@ -1040,34 +1040,35 @@ export class Expression extends Disjunction<Expression> {
   }
 }
 
+export const enum CharCodes {
+  LF = 10,
+  Bang = 33,
+  Dollar = 36,
+  LParen = 40,
+  RParen = 41,
+  Star = 42,
+  Plus = 43,
+  Comma = 44,
+  Minus = 45,
+  Dot = 46,
+  Colon = 58,
+  LAngle = 60,
+  Eq = 61,
+  RAngle = 62,
+  Question = 63,
+  LBracket = 91,
+  Backslash = 92,
+  RBracket = 93,
+  Caret = 94,
+  LCurly = 123,
+  Pipe = 124,
+  RCurly = 125,
+}
+
 /**
  * Returns the AST of the given `RegExp`.
  */
 export function parse(re: RegExp) {
-  const enum CharCodes {
-    Bang = 33,
-    Dollar = 36,
-    LParen = 40,
-    RParen = 41,
-    Star = 42,
-    Plus = 43,
-    Comma = 44,
-    Minus = 45,
-    Dot = 46,
-    Colon = 58,
-    LAngle = 60,
-    Eq = 61,
-    RAngle = 62,
-    Question = 63,
-    LBracket = 91,
-    Backslash = 92,
-    RBracket = 93,
-    Caret = 94,
-    LCurly = 123,
-    Pipe = 124,
-    RCurly = 125,
-  }
-
   const dummyGroup = new Group([], undefined);
 
   const src = re.source,
@@ -1446,6 +1447,35 @@ export function parse(re: RegExp) {
  * Returns the last `RegExp` match in the given text.
  */
 export function execLast(re: RegExp, text: string) {
+  if (text.length > 10_000) {
+    // Execute reversed text on reversed regular expression.
+    const reverseRe = parse(re).reverse().re,
+          match = reverseRe.exec([...text].reverse().join(""));
+
+    if (match === null) {
+      return null;
+    }
+
+    // Update match index and input.
+    match.index = text.length - match.index - match[0].length;
+    match.input = text;
+
+    // Reverse all matched groups so that they go back to their original text.
+    match[0] = text.substr(match.index, match[0].length);
+
+    for (let i = 1; i < match.length; i++) {
+      match[i] = [...match[i]].reverse().join("");
+    }
+
+    if (match.groups !== undefined) {
+      for (const name in match.groups) {
+        match.groups[name] = [...match.groups[name]].reverse().join("");
+      }
+    }
+
+    return match;
+  }
+
   let lastMatch: RegExpExecArray | undefined,
       lastMatchIndex = 0;
 
@@ -1651,14 +1681,14 @@ export function splitRange(text: string, re: RegExp) {
  * indices corresponding to each matched result.
  */
 export function execRange(text: string, re: RegExp) {
-  const sections: [start: number, end: number][] = [];
+  const sections: [start: number, end: number, match: RegExpExecArray][] = [];
   let diff = 0;
 
   for (let match = re.exec(text); match !== null && text.length > 0; match = re.exec(text)) {
     const start = match.index,
           end = start + match[0].length;
 
-    sections.push([diff + start, diff + end]);
+    sections.push([diff + start, diff + end, match]);
 
     text = text.slice(end);
     diff += end;

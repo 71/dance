@@ -14,10 +14,11 @@ export function moveWith<T>(
   reduce: moveWith.Reduce<T>,
   startState: T,
   origin: vscode.Position,
+  document?: vscode.TextDocument,
 ): vscode.Position {
   return direction === Direction.Backward
-    ? moveWith.backward(reduce, startState, origin)
-    : moveWith.forward(reduce, startState, origin);
+    ? moveWith.backward(reduce, startState, origin, document)
+    : moveWith.forward(reduce, startState, origin, document);
 }
 
 export namespace moveWith {
@@ -53,11 +54,15 @@ export namespace moveWith {
    * 1234578
    * ```
    */
-  export function backward<T>(reduce: Reduce<T>, startState: T, origin: vscode.Position) {
+  export function backward<T>(
+    reduce: Reduce<T>,
+    startState: T,
+    origin: vscode.Position,
+    document = Context.current.document,
+  ) {
     didReachDocumentEdge = false;
 
-    const document = Context.current.document,
-          currentLineText = document.lineAt(origin).text;
+    const currentLineText = document.lineAt(origin).text;
     let state: T | undefined = startState;
 
     for (let i = origin.character - 1; i >= 0; i--) {
@@ -70,19 +75,18 @@ export namespace moveWith {
       const lineText = document.lineAt(line).text;
 
       if ((state = reduce("\n", state)) === undefined) {
-        return new vscode.Position(line, 0);
+        return new vscode.Position(line + 1, 0);
       }
 
       for (let i = lineText.length - 1; i >= 0; i--) {
         if ((state = reduce(lineText[i], state)) === undefined) {
-          return i === lineText.length - 1
-            ? new vscode.Position(line + 1, 0)
-            : new vscode.Position(line, i + 1);
+          return new vscode.Position(line, i + 1);
         }
       }
     }
 
     didReachDocumentEdge = true;
+
     return new vscode.Position(0, 0);
   }
 
@@ -105,11 +109,15 @@ export namespace moveWith {
    * 1234578
    * ```
    */
-  export function forward<T>(reduce: Reduce<T>, startState: T, origin: vscode.Position) {
+  export function forward<T>(
+    reduce: Reduce<T>,
+    startState: T,
+    origin: vscode.Position,
+    document = Context.current.document,
+  ) {
     didReachDocumentEdge = false;
 
-    const document = Context.current.document,
-          currentLineText = document.lineAt(origin).text;
+    const currentLineText = document.lineAt(origin).text;
     let state: T | undefined = startState;
 
     for (let i = origin.character; i < currentLineText.length; i++) {
@@ -137,6 +145,7 @@ export namespace moveWith {
     }
 
     didReachDocumentEdge = true;
+
     return document.lineAt(document.lineCount - 1).range.end;
   }
 
@@ -150,10 +159,11 @@ export namespace moveWith {
     reduce: byCharCode.Reduce<T>,
     startState: T,
     origin: vscode.Position,
+    document?: vscode.TextDocument,
   ): vscode.Position {
     return direction === Direction.Backward
-      ? byCharCode.backward(reduce, startState, origin)
-      : byCharCode.forward(reduce, startState, origin);
+      ? byCharCode.backward(reduce, startState, origin, document)
+      : byCharCode.forward(reduce, startState, origin, document);
   }
 
   export namespace byCharCode {
@@ -169,11 +179,15 @@ export namespace moveWith {
      *
      * @see moveWith.backward
      */
-    export function backward<T>(reduce: Reduce<T>, startState: T, origin: vscode.Position) {
+    export function backward<T>(
+      reduce: Reduce<T>,
+      startState: T,
+      origin: vscode.Position,
+      document = Context.current.document,
+    ) {
       didReachDocumentEdge = false;
 
-      const document = Context.current.document,
-            currentLineText = document.lineAt(origin).text;
+      const currentLineText = document.lineAt(origin).text;
       let state: T | undefined = startState;
 
       for (let i = origin.character - 1; i >= 0; i--) {
@@ -186,14 +200,12 @@ export namespace moveWith {
         const lineText = document.lineAt(line).text;
 
         if ((state = reduce(10 /* \n */, state)) === undefined) {
-          return new vscode.Position(line, 0);
+          return new vscode.Position(line + 1, 0);
         }
 
         for (let i = lineText.length - 1; i >= 0; i--) {
           if ((state = reduce(lineText.charCodeAt(i), state)) === undefined) {
-            return i === lineText.length - 1
-              ? new vscode.Position(line + 1, 0)
-              : new vscode.Position(line, i + 1);
+            return new vscode.Position(line, i + 1);
           }
         }
       }
@@ -207,11 +219,15 @@ export namespace moveWith {
      *
      * @see moveWith.forward
      */
-    export function forward<T>(reduce: Reduce<T>, startState: T, origin: vscode.Position) {
+    export function forward<T>(
+      reduce: Reduce<T>,
+      startState: T,
+      origin: vscode.Position,
+      document = Context.current.document,
+    ) {
       didReachDocumentEdge = false;
 
-      const document = Context.current.document,
-            currentLineText = document.lineAt(origin).text;
+      const currentLineText = document.lineAt(origin).text;
       let state: T | undefined = startState;
 
       for (let i = origin.character; i < currentLineText.length; i++) {
@@ -254,10 +270,11 @@ export function moveWhile(
   direction: Direction,
   predicate: moveWhile.Predicate,
   origin: vscode.Position,
+  document?: vscode.TextDocument,
 ): vscode.Position {
   return direction === Direction.Backward
-    ? moveWhile.backward(predicate, origin)
-    : moveWhile.forward(predicate, origin);
+    ? moveWhile.backward(predicate, origin, document)
+    : moveWhile.forward(predicate, origin, document);
 }
 
 export namespace moveWhile {
@@ -301,8 +318,12 @@ export namespace moveWhile {
    * abc
    * ```
    */
-  export function backward(predicate: Predicate, origin: vscode.Position): vscode.Position {
-    return moveWith.backward((ch) => predicate(ch) ? null : undefined, null, origin);
+  export function backward(
+    predicate: Predicate,
+    origin: vscode.Position,
+    document?: vscode.TextDocument,
+  ): vscode.Position {
+    return moveWith.backward((ch) => predicate(ch) ? null : undefined, null, origin, document);
   }
 
   /**
@@ -332,8 +353,12 @@ export namespace moveWhile {
    * abc
    * ```
    */
-  export function forward(predicate: Predicate, origin: vscode.Position): vscode.Position {
-    return moveWith.forward((ch) => predicate(ch) ? null : undefined, null, origin);
+  export function forward(
+    predicate: Predicate,
+    origin: vscode.Position,
+    document?: vscode.TextDocument,
+  ): vscode.Position {
+    return moveWith.forward((ch) => predicate(ch) ? null : undefined, null, origin, document);
   }
 
   /**
@@ -345,10 +370,11 @@ export namespace moveWhile {
     direction: Direction,
     predicate: byCharCode.Predicate,
     origin: vscode.Position,
+    document?: vscode.TextDocument,
   ): vscode.Position {
     return direction === Direction.Backward
-      ? byCharCode.backward(predicate, origin)
-      : byCharCode.forward(predicate, origin);
+      ? byCharCode.backward(predicate, origin, document)
+      : byCharCode.forward(predicate, origin, document);
   }
 
   export namespace byCharCode {
@@ -364,8 +390,17 @@ export namespace moveWhile {
      *
      * @see moveWhile.backward
      */
-    export function backward(predicate: Predicate, origin: vscode.Position): vscode.Position {
-      return moveWith.byCharCode.backward((ch) => predicate(ch) ? null : undefined, null, origin);
+    export function backward(
+      predicate: Predicate,
+      origin: vscode.Position,
+      document?: vscode.TextDocument,
+    ): vscode.Position {
+      return moveWith.byCharCode.backward(
+        (ch) => predicate(ch) ? null : undefined,
+        null,
+        origin,
+        document,
+      );
     }
 
     /**
@@ -373,8 +408,17 @@ export namespace moveWhile {
      *
      * @see moveWhile.forward
      */
-    export function forward(predicate: Predicate, origin: vscode.Position): vscode.Position {
-      return moveWith.byCharCode.forward((ch) => predicate(ch) ? null : undefined, null, origin);
+    export function forward(
+      predicate: Predicate,
+      origin: vscode.Position,
+      document?: vscode.TextDocument,
+    ): vscode.Position {
+      return moveWith.byCharCode.forward(
+        (ch) => predicate(ch) ? null : undefined,
+        null,
+        origin,
+        document,
+      );
     }
   }
 }

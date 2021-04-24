@@ -9,6 +9,8 @@ For more examples, please see the [test suite](../test) and the [Dance API](
 examples.
 
 ## Generating code using commented JavaScript code
+
+The following script can be used:
 ```js
 await run(Selections.map((text) => text.replace(/^\/\/ |START$[\s\S]+?END$/gm, "")));
 ```
@@ -67,3 +69,30 @@ const alphabet = [
 // END
      ^ 0
 ```
+
+## Using `jj` to escape `insert` mode
+
+Using the `prefix` argument of the [`dance.openMenu`](../src/commands#openmenu)
+command:
+
+```json
+{
+  "key": "j",
+  "command": "dance.openMenu",
+  "args": {
+    "menu": {
+      "items": {
+        "j": {
+          "text": "escape to Normal",
+          "command": "dance.modes.set.normal",
+        },
+      },
+    },
+    "prefix": "j",
+  },
+  "when": "editorTextFocus && dance.mode == 'insert'",
+}
+```
+
+For more information, please refer to [this issue](
+https://github.com/71/dance/issues/74#issuecomment-819557435).

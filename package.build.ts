@@ -345,32 +345,32 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 },
                 "w": {
                   command,
-                  args: [{ object: "word" }],
+                  args: [{ input: "[\\p{L}]+(?<after>[^\\S\\n]+)" }],
                   text: "word",
                 },
                 "W": {
                   command,
-                  args: [{ object: "WORD" }],
+                  args: [{ input: "[\\S]+(?<after>[^\\S\\n]+)" }],
                   text: "WORD",
                 },
                 "s": {
                   command,
-                  args: [{ object: "sentence" }],
+                  args: [{ input: "(?#predefined=sentence)" }],
                   text: "sentence",
                 },
                 "p": {
                   command,
-                  args: [{ object: "paragraph" }],
+                  args: [{ input: "(?#predefined=paragraph)" }],
                   text: "paragraph",
                 },
                 " ": {
                   command,
-                  args: [{ object: "whitespaces" }],
+                  args: [{ input: "(?<before>[\\s]+)[^\\S\\n]+(?<after>[\\s]+)" }],
                   text: "whitespaces",
                 },
                 "i": {
                   command,
-                  args: [{ object: "indent" }],
+                  args: [{ input: "(?#predefined=indent)" }],
                   text: "indent",
                 },
                 "n": {
@@ -380,7 +380,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 },
                 "u": {
                   command,
-                  args: [{ object: "argument" }],
+                  args: [{ input: "(?#predefined=argument)" }],
                   text: "argument",
                 },
                 "c": {
@@ -417,7 +417,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 "e": {
                   text: "to last char of last line",
                   command: "dance.select.lineEnd",
-                  args: [{ count: 2_147_483_647 }],
+                  args: [{ count: 2 ** 31 - 1 }],
                 },
                 "t": {
                   text: "to first displayed line",

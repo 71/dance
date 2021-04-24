@@ -425,7 +425,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "word"
+                      "input": "[\\p{L}]+(?<after>[^\\S\\n]+)"
                     }
                   ],
                   "text": "word"
@@ -434,7 +434,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "WORD"
+                      "input": "[\\S]+(?<after>[^\\S\\n]+)"
                     }
                   ],
                   "text": "WORD"
@@ -443,7 +443,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "sentence"
+                      "input": "(?#predefined=sentence)"
                     }
                   ],
                   "text": "sentence"
@@ -452,7 +452,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "paragraph"
+                      "input": "(?#predefined=paragraph)"
                     }
                   ],
                   "text": "paragraph"
@@ -461,7 +461,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "whitespaces"
+                      "input": "(?<before>[\\s]+)[^\\S\\n]+(?<after>[\\s]+)"
                     }
                   ],
                   "text": "whitespaces"
@@ -470,7 +470,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "indent"
+                      "input": "(?#predefined=indent)"
                     }
                   ],
                   "text": "indent"
@@ -488,7 +488,7 @@
                   "command": "dance.seek.object",
                   "args": [
                     {
-                      "object": "argument"
+                      "input": "(?#predefined=argument)"
                     }
                   ],
                   "text": "argument"

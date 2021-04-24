@@ -94,9 +94,9 @@ export function restore(
  *
  * The following keybinding is also available:
  *
- * | Keybinding       | Command                                                    |
- * | ---------------- | ---------------------------------------------------------- |
- * | `s-a-z` (normal) | `[".selections.restore.withCurrent", { "reverse": true }]` |
+ * | Keybinding       | Command                                                  |
+ * | ---------------- | -------------------------------------------------------- |
+ * | `s-a-z` (normal) | `[".selections.restore.withCurrent", { reverse: true }]` |
  *
  * See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
  */
@@ -225,11 +225,11 @@ let lastPipeInput: string | undefined;
  *
  * #### Additional commands
  *
- * | Title               | Identifier     | Keybinding     | Commands                                                                        |
- * | ------------------- | -------------- | -------------- | ------------------------------------------------------------------------------- |
- * | Pipe and replace    | `pipe.replace` | `|` (normal)   | `[".selections.pipe"], [".edit.insert", { "register": "|" }]`                   |
- * | Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe"], [".edit.insert", { "register": "|", "where": "end" }]`   |
- * | Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe"], [".edit.insert", { "register": "|", "where": "start" }]` |
+ * | Title               | Identifier     | Keybinding     | Commands                                                                    |
+ * | ------------------- | -------------- | -------------- | --------------------------------------------------------------------------- |
+ * | Pipe and replace    | `pipe.replace` | `|` (normal)   | `[".selections.pipe"], [".edit.insert", { register: "|"                 }]` |
+ * | Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe"], [".edit.insert", { register: "|", where: "end"   }]` |
+ * | Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe"], [".edit.insert", { register: "|", where: "start" }]` |
  */
 export async function pipe(
   _: Context,
@@ -289,12 +289,12 @@ let lastFilterInput: string | undefined;
  *
  * #### Variants
  *
- * | Title                      | Identifier              | Keybinding         | Commands                                                           |
- * | -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------ |
- * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { "defaultInput": "/" }]`                  |
- * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { "defaultInput": "/", "inverse": true }]` |
- * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { "input": "i === 0" }]`                   |
- * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { "input": "i !== 0" }]`                   |
+ * | Title                      | Identifier              | Keybinding         | Commands                                                       |
+ * | -------------------------- | ----------------------- | ------------------ | -------------------------------------------------------------- |
+ * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"                }]` |
+ * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true }]` |
+ * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === 0" }]`                 |
+ * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== 0" }]`                 |
  */
 export function filter(
   _: Context,
@@ -561,9 +561,9 @@ export function trimWhitespace(_: Context) {
  *
  * #### Variant
  *
- * | Title                           | Identifier     | Keybinding       | Command                                       |
- * | ------------------------------- | -------------- | ---------------- | --------------------------------------------- |
- * | Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { "where": "both" }]` |
+ * | Title                           | Identifier     | Keybinding       | Command                                     |
+ * | ------------------------------- | -------------- | ---------------- | ------------------------------------------- |
+ * | Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both" }]` |
  */
 export function reduce(
   _: Context,
@@ -616,10 +616,10 @@ export function reduce(
  *
  * #### Variants
  *
- * | Title               | Identifier     | Keybinding     | Command                                                |
- * | ------------------- | -------------- | -------------- | ------------------------------------------------------ |
- * | Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { "direction":  1 }]` |
- * | Backward selections | `faceBackward` |                | `[".selections.changeDirection", { "direction": -1 }]` |
+ * | Title               | Identifier     | Keybinding     | Command                                              |
+ * | ------------------- | -------------- | -------------- | ---------------------------------------------------- |
+ * | Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { direction:  1 }]` |
+ * | Backward selections | `faceBackward` |                | `[".selections.changeDirection", { direction: -1 }]` |
  */
 export function changeDirection(_: Context, direction?: Direction) {
   switch (direction) {
@@ -653,9 +653,9 @@ export function changeDirection(_: Context, direction?: Direction) {
  *
  * #### Variant
  *
- * | Title                 | Identifier   | Keybinding       | Command                                     |
- * | --------------------- | ------------ | ---------------- | ------------------------------------------- |
- * | Copy selections above | `copy.above` | `s-a-c` (normal) | `[".selections.copy", { "direction": -1 }]` |
+ * | Title                 | Identifier   | Keybinding       | Command                                   |
+ * | --------------------- | ------------ | ---------------- | ----------------------------------------- |
+ * | Copy selections above | `copy.above` | `s-a-c` (normal) | `[".selections.copy", { direction: -1 }]` |
  */
 export function copy(
   _: Context,
@@ -732,10 +732,10 @@ const indicesToken = PerEditorState.registerState<AutoDisposable>(/* isDisposabl
  *
  * #### Variants
  *
- * | Title                  | Identifier    | Command                                               |
- * | ---------------------- | ------------- | ----------------------------------------------------- |
- * | Show selection indices | `showIndices` | `[".selections.toggleIndices", { "display": true  }]` |
- * | Hide selection indices | `hideIndices` | `[".selections.toggleIndices", { "display": false }]` |
+ * | Title                  | Identifier    | Command                                             |
+ * | ---------------------- | ------------- | --------------------------------------------------- |
+ * | Show selection indices | `showIndices` | `[".selections.toggleIndices", { display: true  }]` |
+ * | Hide selection indices | `hideIndices` | `[".selections.toggleIndices", { display: false }]` |
  */
 export function toggleIndices(
   _: Context,

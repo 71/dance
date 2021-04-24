@@ -50,7 +50,9 @@ const keyMapping: Record<string, keyof Builder.AdditionalCommand> = {
 
 const valueConverter: Record<keyof Builder.AdditionalCommand, (x: string) => string> = {
   commands(commands) {
-    return commands.replace(/^`+|`+$/g, "").replace("MAX_INT", `${2_147_483_647}`);
+    return commands
+      .replace(/^`+|`+$/g, "")
+      .replace(/MAX_INT/g, `${2 ** 31 - 1}`);  // Max integer supported in JSON.
   },
   identifier(identifier) {
     return identifier.replace(/^`+|`+$/g, "");
@@ -524,7 +526,8 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
           }));
         }
 
-        const parsedCommands = JSON.parse("[" + commands! + "]") as any[];
+        const parsedCommands =
+          JSON.parse("[" + commands!.replace(/(\w+):/g, "\"$1\":") + "]") as any[];
 
         if (parsedCommands.length === 1) {
           let [command]: [string] = parsedCommands[0];

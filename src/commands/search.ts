@@ -20,11 +20,11 @@ let lastSearchInput: RegExp | undefined;
  *
  * @keys `/` (normal)
  *
- * | Title                 | Identifier     | Keybinding     | Command                                         |
- * | --------------------- | -------------- | -------------- | ----------------------------------------------- |
- * | Search (add)          | `add`          | `?` (normal)   | `[".search", { "add": true }]`                  |
- * | Search backward       | `backward`     | `a-/` (normal) | `[".search", { "direction": -1 }]`              |
- * | Search backward (add) | `backward.add` | `a-?` (normal) | `[".search", { "direction": -1, "add": true }]` |
+ * | Title                 | Identifier     | Keybinding     | Command                                     |
+ * | --------------------- | -------------- | -------------- | ------------------------------------------- |
+ * | Search (add)          | `add`          | `?` (normal)   | `[".search", {                add: true }]` |
+ * | Search backward       | `backward`     | `a-/` (normal) | `[".search", { direction: -1            }]` |
+ * | Search backward (add) | `backward.add` | `a-?` (normal) | `[".search", { direction: -1, add: true }]` |
  */
 export function search(
   _: Context,
@@ -83,9 +83,9 @@ export function search(
  *
  * @keys `a-*` (normal)
  *
- * | Title                            | Identifier        | Keybinding   | Command                                    |
- * | -------------------------------- | ----------------- | ------------ | ------------------------------------------ |
- * | Search current selection (smart) | `selection.smart` | `*` (normal) | `[".search.selection", { "smart": true }]` |
+ * | Title                            | Identifier        | Keybinding   | Command                                  |
+ * | -------------------------------- | ----------------- | ------------ | ---------------------------------------- |
+ * | Search current selection (smart) | `selection.smart` | `*` (normal) | `[".search.selection", { smart: true }]` |
  */
 export function selection(
   document: vscode.TextDocument,
@@ -127,11 +127,11 @@ export function selection(
  *
  * @keys `n` (normal)
  *
- * | Title                 | Identifier     | Keybinding       | Command                                              |
- * | --------------------- | -------------- | ---------------- | ---------------------------------------------------- |
- * | Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", { "add": true }]`                  |
- * | Select previous match | `previous`     | `a-n` (normal)   | `[".search.next", { "direction": -1 }]`              |
- * | Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search.next", { "direction": -1, "add": true }]` |
+ * | Title                 | Identifier     | Keybinding       | Command                                          |
+ * | --------------------- | -------------- | ---------------- | ------------------------------------------------ |
+ * | Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", {                add: true }]` |
+ * | Select previous match | `previous`     | `a-n` (normal)   | `[".search.next", { direction: -1            }]` |
+ * | Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search.next", { direction: -1, add: true }]` |
  */
 export async function next(
   _: Context,

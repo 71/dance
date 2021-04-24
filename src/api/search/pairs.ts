@@ -90,7 +90,7 @@ export class Pair {
 
   public searchClosing(
     searchOrigin: vscode.Position,
-    balance = 1,
+    balance = this.open.source === this.close.source ? -1 : 1,
   ): search.Result {
     return this.searchMatching(Direction.Forward, searchOrigin, balance);
   }

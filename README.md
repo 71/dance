@@ -66,7 +66,7 @@ created, though. These modes are configured with `dance.modes`.
 
 ### Selection behaviors
 
-Dance by default uses caret-based selections just like VSCode. This means a
+Dance by default uses caret-based selections just like VS Code. This means a
 selection is anchored between two carets (i.e. positions between characters),
 and may be empty.
 
@@ -77,14 +77,14 @@ block-style cursors, so your configuration would typically look like:
 
 ```json
 "dance.modes": {
-    "insert": {
-      // ...
-    },
-    "normal": {
-        "cursorStyle": "block",
-        "selectionBehavior": "character",
-        // ...
-    }
+  "insert": {
+    // ...
+  },
+  "normal": {
+    "cursorStyle": "block",
+    "selectionBehavior": "character",
+    // ...
+  }
 },
 ```
 
@@ -107,6 +107,16 @@ commands. Where Dance commands in the `dance.selections` namespace operate the
 same way on all selections at once, `dance.run` can be used to individually
 manipulate selections.
 
+Finally, the [Dance API][API] is exported by Dance. Other VS Code extensions
+can specify that they depend on Dance (with the [`extensionDependencies`
+property](https://code.visualstudio.com/api/references/extension-manifest#fields)),
+and then access the API by calling [`activate`](
+https://code.visualstudio.com/api/references/vscode-api#Extension.activate):
+
+```js
+const { api } = await vscode.extensions.getExtension("gregoire.dance").activate();
+```
+
 ### Pipes
 
 Pipes no longer accept shell commands, but instead accept "expressions", those
@@ -117,7 +127,8 @@ being:
   [defined in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
   Do note the addition of a `replacement`, for commands that add or replace
   text.
-- `<JS expression>`: A JavaScript expression in which the following variables are available:
+- `<JS expression>`: A JavaScript expression in which the following variables
+  are available:
   - `$`: Text of the current selection.
   - `$$`: Array of the text of all the selections.
   - `i`: Index of the current selection.
@@ -140,17 +151,18 @@ being:
 
 ### Miscellaneous changes
 
-A few changes were made from Kakoune, mostly out of personal preference, and to make the
-extension integrate better in VS Code. If you disagree with any of these changes,
-you're welcome to open an issue to discuss it, or to add an option for it by submitting a PR.
+A few changes were made from Kakoune, mostly out of personal preference, and to
+make the extension integrate better with VS Code.
 
 - The default yank register `"` maps to the system clipboard.
-- When using the default configuration:
-  - The cursor is not a block, but a line: Dance focuses on selections, and using a line instead of
-    a block makes it obvious whether zero or one characters are selected. Besides, the line-shaped
-    cursor is the default in VS Code.
-  - Changing the mode will also change the `editor.lineNumbers` configuration value to `on` in `insert`
-    mode, and `relative` in normal mode.
+- When using the default configuration (that is to say, these settings can be
+  modified):
+  - The cursor is not a block, but a line: Dance focuses on selections, and
+    using a line instead of a block makes it obvious whether zero or one
+    characters are selected. Besides, the line-shaped cursor is the default in
+    VS Code.
+  - Changing the mode will also change the `editor.lineNumbers` configuration
+    value to `on` in `insert` mode, and `relative` in normal mode.
 
 ### Troubleshooting
 
@@ -166,81 +178,28 @@ you're welcome to open an issue to discuss it, or to add an option for it by sub
   TL;DR: adding `"keyboard.dispatch": "keyCode"` to your VS Code settings will
   likely fix it.
 
-## Progress
-
-This project is still a WIP. It has gotten better over the years, but may have annoying bugs
-and lack some features, especially for Kakoune users. Despite this, several users use Dance
-daily.
-
-In the following list, if a command is implemented, then its extending equivalent
-(activated while pressing `Shift`) then likely is implemented as well.
-
-Most (but not all) commands defined in [`commands`][commands] are implemented.
-
-- [x] Basic movements:
-  - [x] Arrows, hjkl.
-  - [x] Move to character, move until character.
-  - [x] Move to next word, move to previous word.
-- [x] Insert mode:
-  - [x] Enter insert mode with `a`, `i`, `o`, and their `Alt` / `Shift` equivalents.
-  - [x] Exit insert mode with `Escape`.
-- [x] Basic selections:
-  - [x] Search in selections.
-  - [x] Split in selections.
-  - [x] Split selections by lines.
-  - [x] Extend selections by taking lines.
-  - [x] Trim selections.
-- [x] Pipes.
-- [x] Object selection.
-- [x] Yanking:
-  - [x] Yank.
-  - [x] Paste.
-- [x] Rotate:
-  - [x] Rotate selections only.
-  - [x] Rotate selections content only.
-  - [x] Rotate selections and content.
-- [x] Changes:
-  - [x] Join.
-  - [x] Replace.
-  - [x] Delete.
-  - [x] Indent.
-  - [x] Dedent.
-  - [x] Change case.
-- [x] Search.
-- [ ] History:
-  - [x] Undo / redo.
-  - [ ] Forward / backward.
-  - [x] Repeat command.
-  - [-] Repeat insertion.
-- [x] Macros.
-- [x] Registers.
-
 ## Contributing
 
-### Plugins
+### Bugs
 
-Dance was designed to nicely interopate with other extensions: it does not
-override the `type` command, and allows any extension to execute its commands.  
-It should therefore be possible to create other extensions that work with Dance.
-If you'd like to add new features to Dance directly, please file an issue.
+There are unfortunately still bugs lurking around. If you find one, please
+ensure that it has not been reported yet and submit a [test](./test/README.md)
+that does not pass and can be used to reliably reproduce the bug.
 
-### Bugs and features
+### Features
 
-There are unfortunately still bugs lurking around features missing. If you'd
-like to fix bugs or add features, please look at the [issues] and file one if no
-other issue matches your request. This will ensure that no two people work on
-the same feature at the same time, and will be a good place to ask for help in
-case you want to tackle this yourself.
+If you'd like to add or improve a feature, please make sure that no similar
+feature has been requested in the [issues] and file a new issue for it. This
+will ensure that no two people work on the same feature at the same time, and
+will be a good place to ask for help in case you want to tackle this yourself.  
+Since some features are not general enough, it may be requested of you to make a
+plugin that uses the Dance API or to simply use scripts in the meantime.
 
 When contributing, please be mindful of the existing coding conventions and
 naming.
 
 Your PR will be rebased on top of `master` in order to keep a clean commit
 history. Please avoid unnecessary commits (`git commit --amend` is your friend).
-
-### Tests
-
-Refer to the [`test`](./test/README.md) directory.
 
 [api]: ./src/api
 [commands]: ./src/commands
