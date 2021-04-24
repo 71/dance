@@ -32,7 +32,6 @@ suite("search.md", function () {
           "search": new Promise((resolve) => notifyDependents["search"] = resolve),
         };
 
-
   test("transition initial > search", async function () {
     const beforeDocument = await documents["initial"];
 

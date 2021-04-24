@@ -49,7 +49,6 @@ export async function build() {
                   `"${title}": new Promise((resolve) => notifyDependents["${title}"] = resolve),`,
                 ).join("\n" + " ".repeat(16))}
               };
-
         ${tests.map((test) => {
           const paddedComesAfter = test.comesAfter.padEnd(comesAfterPadding),
                 paddedTitle = test.title.padEnd(testNamePadding);
@@ -70,7 +69,7 @@ export async function build() {
                 await beforeDocument.apply(editor);
 
                 // Perform all operations.${"\n"
-                  + stringifyOperations(test).replace(/^/g, " ".repeat(16))}
+                  + stringifyOperations(test).replace(/^/gm, " ".repeat(16))}
                 // Ensure document is as expected.
                 afterDocument.assertEquals(editor);
 

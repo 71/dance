@@ -35,7 +35,6 @@ suite("edit-paste.md", function () {
           "b-1": new Promise((resolve) => notifyDependents["b-1"] = resolve),
         };
 
-
   test("transition initial > a-1", async function () {
     const beforeDocument = await documents["initial"];
 
@@ -57,7 +56,7 @@ suite("edit-paste.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.selections.saveText");
-await executeCommand("dance.edit.paste.after");
+      await executeCommand("dance.edit.paste.after");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -126,8 +125,8 @@ await executeCommand("dance.edit.paste.after");
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.select.left");
-await executeCommand("dance.edit.paste.after");
+      await executeCommand("dance.select.left.jump");
+      await executeCommand("dance.edit.paste.after");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);

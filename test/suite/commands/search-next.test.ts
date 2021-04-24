@@ -44,7 +44,6 @@ suite("search-next.md", function () {
           "search-a-previous-with-2-add": new Promise((resolve) => notifyDependents["search-a-previous-with-2-add"] = resolve),
         };
 
-
   test("transition initial  > search-a                    ", async function () {
     const beforeDocument = await documents["initial"];
 

@@ -42,7 +42,6 @@ suite("selections-trim.md", function () {
           "1": new Promise((resolve) => notifyDependents["1"] = resolve),
         };
 
-
   test("transition initial > 1", async function () {
     const beforeDocument = await documents["initial"];
 

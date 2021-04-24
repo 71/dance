@@ -37,7 +37,6 @@ suite("edit-deindent.md", function () {
           "1.alt": new Promise((resolve) => notifyDependents["1.alt"] = resolve),
         };
 
-
   test("transition 0 > 1    ", async function () {
     const beforeDocument = await documents["0"];
 
