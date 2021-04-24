@@ -33,6 +33,10 @@ export async function build() {
           editor = await vscode.window.showTextDocument(document);
         });
 
+        this.afterAll(async () => {
+          await executeCommand("workbench.action.closeActiveEditor");
+        });
+
         // Each test sets up using its previous document, and notifies its
         // dependents that it is done by writing its document to \`documents\`.
         // This ensures that tests are executed in the right order, and that we skip

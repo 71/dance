@@ -12,7 +12,7 @@ foo
 # 1
 [up](#0)
 
-- .deindent.further
+- .edit.deindent.withIncomplete
 
 ```
 foo
@@ -26,7 +26,7 @@ baz
 # 1.alt
 [up](#0)
 
-- .deindent
+- .edit.deindent
 
 ```
 foo

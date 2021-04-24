@@ -199,5 +199,12 @@ active position).
       baz
     ^^^^ 0
     ```
+11. Equivalent to [0:0 → 1:4]:
+    ```
+
+    ^ 0
+    abcd
+       ^ 0
+    ```
 
 </details>

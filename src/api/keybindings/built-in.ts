@@ -383,7 +383,7 @@ const builtinKeybindings = [
     key: "/",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Search",
-    command: "dance.search.",
+    command: "dance.search",
   },
   {
     key: "Shift+/",

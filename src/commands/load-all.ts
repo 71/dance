@@ -514,7 +514,7 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
 
   return [
     new CommandDescriptor(
-      "dance.search.",
+      "dance.search",
       (_, argument) => _.runAsync((_) => search(_, getRegister(_, argument, "slash", Register.Flags.CanWrite), getRepetitions(_, argument), argument.add, getDirection(argument), argument.interactive, getInput(argument), getSetInput(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),

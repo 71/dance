@@ -240,7 +240,9 @@ function parseDocComments(code: string, modulePath: string) {
       qualifiedName += namespace + ".";
     }
 
-    if (nameWithDot !== moduleName) {
+    if (nameWithDot === moduleName) {
+      qualifiedName = qualifiedName.replace(/\.$/, "");
+    } else {
       qualifiedName += nameWithDot;
     }
 

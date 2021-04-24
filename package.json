@@ -970,7 +970,7 @@
         "category": "Dance"
       },
       {
-        "command": "dance.search.",
+        "command": "dance.search",
         "title": "Search",
         "category": "Dance"
       },
@@ -1823,7 +1823,7 @@
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.search.",
+          "command": "dance.search",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -2710,7 +2710,7 @@
         "key": "/",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Search",
-        "command": "dance.search."
+        "command": "dance.search"
       },
       {
         "key": "Shift+/",

@@ -534,14 +534,10 @@ export function trimWhitespace(_: Context) {
 
   return Selections.update.byIndex((_, selection, document) => {
     const firstCharacter = selection.start,
-          lastCharacter = Positions.previous(selection.end, document);
+          lastCharacter = selection.end;
 
-    if (lastCharacter === undefined) {
-      return selection;
-    }
-
-    const start = moveWhile.forward(isBlank, firstCharacter),
-          end = moveWhile.backward(isBlank, lastCharacter);
+    const start = moveWhile.forward(isBlank, firstCharacter, document),
+          end = moveWhile.backward(isBlank, lastCharacter, document);
 
     if (start.isAfter(end)) {
       return undefined;

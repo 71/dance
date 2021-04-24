@@ -8,7 +8,7 @@ foo bar
 # search
 [up](#initial)
 
-- .search { "input": "b" }
+- .search { input: "b" }
 
 ```
 foo bar

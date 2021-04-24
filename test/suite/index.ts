@@ -26,6 +26,8 @@ export function run(testsRoot: string, cb: (error: any, failures?: number) => vo
       mocha.grep(currentFile.slice(8));
 
       files = ["api.test.js"];
+    } else if (currentFile.startsWith("src/commands")) {
+      files = files.filter((f) => f.startsWith("commands/"));
     } else if (currentFile.length > 0) {
       files = [];
     }
