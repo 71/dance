@@ -656,5 +656,37 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().then((success) => process.exit(success ? 0 : 1));
+  main().then((success) => {
+    if (!process.argv.includes("--watch")) {
+      process.exit(success ? 0 : 1);
+    }
+
+    import("chokidar").then((chokidar) => {
+      const watcher = chokidar.watch([
+        "**/*.build.ts",
+        "src/api/*.ts",
+        "src/commands/*.ts",
+        "test/suite/commands/*.md",
+      ], {
+        ignored: "src/commands/load-all.ts",
+      });
+
+      let isGenerating = false;
+
+      watcher.on("change", async (path) => {
+        if (isGenerating) {
+          return;
+        }
+
+        console.log("Change detected at " + path + ", updating generated files...");
+        isGenerating = true;
+
+        try {
+          await main();
+        } finally {
+          isGenerating = false;
+        }
+      });
+    });
+  });
 }

@@ -36,7 +36,7 @@ suite("edit-deindent.md", function () {
           `)),
 
           "1": new Promise((resolve) => notifyDependents["1"] = resolve),
-          "1.alt": new Promise((resolve) => notifyDependents["1.alt"] = resolve),
+          "1-alt": new Promise((resolve) => notifyDependents["1-alt"] = resolve),
         };
 
   test("transition 0 > 1    ", async function () {
@@ -75,11 +75,11 @@ suite("edit-deindent.md", function () {
     }
   });
 
-  test("transition 0 > 1.alt", async function () {
+  test("transition 0 > 1-alt", async function () {
     const beforeDocument = await documents["0"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["1.alt"](undefined);
+      notifyDependents["1-alt"](undefined);
       this.skip();
     }
 
@@ -103,9 +103,9 @@ suite("edit-deindent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["1.alt"](afterDocument);
+      notifyDependents["1-alt"](afterDocument);
     } catch (e) {
-      notifyDependents["1.alt"](undefined);
+      notifyDependents["1-alt"](undefined);
 
       throw e;
     }

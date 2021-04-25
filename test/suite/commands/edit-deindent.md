@@ -23,7 +23,7 @@ baz
    ^ 0
 ```
 
-# 1.alt
+# 1-alt
 [up](#0)
 
 - .edit.deindent
