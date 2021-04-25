@@ -182,7 +182,7 @@ function searchNaiveBackward(
     return;
   }
 
-  return [document.positionAt(match.index), match] as search.Result;
+  return [Positions.offset(end, match.index), match] as search.Result;
 }
 
 function searchNaiveForward(

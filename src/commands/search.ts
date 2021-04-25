@@ -168,16 +168,18 @@ export async function next(
     return;
   }
 
-  const selections = _.selections,
+  const selections = _.selections.slice(),
         allSelections = selections.slice();
 
   for (let i = 0; i < repetitions; i++) {
     const newSelections = [] as vscode.Selection[];
 
-    for (const selection of selections) {
-      const next = nextImpl(re, direction, selection, undefined, undefined, document, false);
+    for (let j = 0; j < selections.length; j++) {
+      const selection = selections[j],
+            next = nextImpl(re, direction, selection, undefined, undefined, document, true);
 
       if (next !== undefined) {
+        selections[j] = next;
         newSelections.push(next);
       }
     }
@@ -220,7 +222,7 @@ function nextImpl(
         searchEnd = selection.start;
       }
 
-      return nextImpl(re, -direction, selection, searchStart, searchEnd, document, false);
+      return nextImpl(re, direction, selection, searchStart, searchEnd, document, false);
     }
 
     return;

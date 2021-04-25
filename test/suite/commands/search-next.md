@@ -94,11 +94,12 @@ kiwi orange kiwi
 - .search.next.add { count: 4 }
 
 Main selection search will wrap around and hit the second "apple" again, and VS
-Code will merge the selections 0 and 4 automatically:
+Code will then merge the selections 0 and 4 automatically:
 
 ```
 apple pineapple pear
 ^^^^^ 1   ^^^^^ 0
+          ^^^^^ 4
 pear pineapple apple
          ^^^^^ 3
                ^^^^^ 2

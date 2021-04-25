@@ -264,6 +264,7 @@ suite("search-next.md", function () {
     const afterDocument = ExpectedDocument.parseIndented(6, `\
       apple pineapple pear
       ^^^^^ 1   ^^^^^ 0
+                ^^^^^ 4
       pear pineapple apple
                ^^^^^ 3
                      ^^^^^ 2
