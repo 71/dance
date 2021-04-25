@@ -75,8 +75,7 @@ function position(line: number, character: number) {
 }
 
 function setSelectionBehavior(selectionBehavior: SelectionBehavior) {
-  // @ts-expect-error
-  Context.current._selectionBehavior = selectionBehavior;
+  Context.current.mode.update("_selectionBehavior", selectionBehavior);
 }
 
 suite("API tests", function () {

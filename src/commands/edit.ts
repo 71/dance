@@ -16,7 +16,6 @@ import {
 } from "../api";
 import { Register } from "../state/registers";
 import { Argument, InputOr, RegisterOr } from ".";
-import { TrackedSelection } from "../utils/tracked-selection";
 
 /**
  * Perform changes on the text content of the document.
@@ -79,44 +78,13 @@ export async function insert(
     throw new Error(`"where" must be one of "active", "anchor", "start", "end", or undefined`);
   }
 
-  if (!handleNewLine) {
-    return api.insert.byIndex(
-      where,
-      select ? api.insert.SelectionMapping.Inserted : api.insert.SelectionMapping.Keep,
-      (i) => contents![i],
-      selections,
-    );
-  }
+  const flags = api.insert.flagsAtEdge(where) | (select ? api.insert.Select : api.insert.Keep);
 
-  return edit((editBuilder) => {
-    const trackedSelections = select
-      ? new TrackedSelection.Set(TrackedSelection.fromArray(selections, _.document), _.document)
-      : undefined;
-
-    for (let i = 0; i < selections.length; i++) {
-      // TODO: handle select parameter better.
-      const selection = selections[i],
-            position = selection[where],
-            content = contents![i];
-
-      if (content.endsWith("\n")) {
-        const insertionLine = position === selection.start
-          ? position.line
-          : Selections.endLine(selection) + 1;
-
-        editBuilder.insert(new vscode.Position(insertionLine, 0), content);
-      } else {
-        editBuilder.insert(position, content);
-      }
-    }
-
-    if (trackedSelections === undefined) {
-      return;
-    }
-
-    Selections.set(trackedSelections.restore());
-    trackedSelections.dispose();
-  });
+  Selections.set(
+    handleNewLine
+      ? await api.insert.byIndex.withFullLines(flags, (i) => contents![i], selections)
+      : await api.insert.byIndex(flags, (i) => contents![i], selections),
+  );
 }
 
 /**

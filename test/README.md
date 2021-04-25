@@ -206,5 +206,11 @@ active position).
     abcd
        ^ 0
     ```
+12. Equivalent to [0:3 → 0:3]:
+    ```
+    foo
+       | 0
+    bar
+    ```
 
 </details>

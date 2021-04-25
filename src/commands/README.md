@@ -19,18 +19,18 @@
     <tr><td><a href="#editcopyIndentation"><code>edit.copyIndentation</code></a></td><td>Copy indentation</td><td><code>Shift+Alt+7</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editdeindent"><code>edit.deindent</code></a></td><td>Deindent selected lines</td><td><code>Shift+Alt+,</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editdeindentwithIncomplete"><code>edit.deindent.withIncomplete</code></a></td><td>Deindent selected lines (including incomplete indent)</td><td><code>Shift+,</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L46"><code>edit.delete</code></a></td><td>Delete</td><td><code>Alt+D</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L47"><code>edit.delete-insert</code></a></td><td>Delete and switch to Insert</td><td><code>Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L345"><code>edit.newLine.above.insert</code></a></td><td>Insert new line above and switch to insert</td><td><code>Shift+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L380"><code>edit.newLine.below.insert</code></a></td><td>Insert new line below and switch to insert</td><td><code>O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L43"><code>edit.paste.after</code></a></td><td>Paste after</td><td><code>P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L45"><code>edit.paste.after.select</code></a></td><td>Paste after and select</td><td><code>Alt+P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L42"><code>edit.paste.before</code></a></td><td>Paste before</td><td><code>Shift+P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L44"><code>edit.paste.before.select</code></a></td><td>Paste before and select</td><td><code>Shift+Alt+P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L41"><code>edit.selectRegister-insert</code></a></td><td>Pick register and replace</td><td><code>Ctrl+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Ctrl+R</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L48"><code>edit.yank-delete</code></a></td><td>Copy and delete</td><td><code>D</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L50"><code>edit.yank-delete-insert</code></a></td><td>Copy, delete and switch to Insert</td><td><code>C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L49"><code>edit.yank-replace</code></a></td><td>Copy and replace</td><td><code>Shift+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L45"><code>edit.delete</code></a></td><td>Delete</td><td><code>Alt+D</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L46"><code>edit.delete-insert</code></a></td><td>Delete and switch to Insert</td><td><code>Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L313"><code>edit.newLine.above.insert</code></a></td><td>Insert new line above and switch to insert</td><td><code>Shift+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L348"><code>edit.newLine.below.insert</code></a></td><td>Insert new line below and switch to insert</td><td><code>O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L42"><code>edit.paste.after</code></a></td><td>Paste after</td><td><code>P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L44"><code>edit.paste.after.select</code></a></td><td>Paste after and select</td><td><code>Alt+P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L41"><code>edit.paste.before</code></a></td><td>Paste before</td><td><code>Shift+P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L43"><code>edit.paste.before.select</code></a></td><td>Paste before and select</td><td><code>Shift+Alt+P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L40"><code>edit.selectRegister-insert</code></a></td><td>Pick register and replace</td><td><code>Ctrl+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Ctrl+R</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L47"><code>edit.yank-delete</code></a></td><td>Copy and delete</td><td><code>D</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L49"><code>edit.yank-delete-insert</code></a></td><td>Copy, delete and switch to Insert</td><td><code>C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L48"><code>edit.yank-replace</code></a></td><td>Copy and replace</td><td><code>Shift+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editindent"><code>edit.indent</code></a></td><td>Indent selected lines</td><td><code>Shift+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editindentwithEmpty"><code>edit.indent.withEmpty</code></a></td><td>Indent selected lines (including empty lines)</td><td><code>Shift+Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editinsert"><code>edit.insert</code></a></td><td>Insert contents of register</td><td><code>Shift+Alt+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -204,7 +204,7 @@ Perform changes on the text content of the document.
 
 See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes.
 
-### [`edit.insert`](./edit.ts#L28-L61)
+### [`edit.insert`](./edit.ts#L27-L60)
 
 Insert contents of register.
 
@@ -235,7 +235,7 @@ This command:
 - takes an argument `select` of type `boolean`.
 - takes an argument `where` of type `"active" | "anchor" | "start" | "end" | undefined`.
 
-### [`edit.join`](./edit.ts#L122-L127)
+### [`edit.join`](./edit.ts#L90-L95)
 
 Join lines.
 
@@ -243,7 +243,7 @@ Join lines.
 This command:
 - takes an argument `separator` of type `string`.
 
-### [`edit.join.select`](./edit.ts#L131-L136)
+### [`edit.join.select`](./edit.ts#L99-L104)
 
 Join lines and select inserted separators.
 
@@ -251,7 +251,7 @@ Join lines and select inserted separators.
 This command:
 - takes an argument `separator` of type `string`.
 
-### [`edit.indent`](./edit.ts#L140-L145)
+### [`edit.indent`](./edit.ts#L108-L113)
 
 Indent selected lines.
 
@@ -259,7 +259,7 @@ Indent selected lines.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.indent.withEmpty`](./edit.ts#L149-L154)
+### [`edit.indent.withEmpty`](./edit.ts#L117-L122)
 
 Indent selected lines (including empty lines).
 
@@ -267,7 +267,7 @@ Indent selected lines (including empty lines).
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.deindent`](./edit.ts#L158-L163)
+### [`edit.deindent`](./edit.ts#L126-L131)
 
 Deindent selected lines.
 
@@ -275,7 +275,7 @@ Deindent selected lines.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.deindent.withIncomplete`](./edit.ts#L167-L172)
+### [`edit.deindent.withIncomplete`](./edit.ts#L135-L140)
 
 Deindent selected lines (including incomplete indent).
 
@@ -283,19 +283,19 @@ Deindent selected lines (including incomplete indent).
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.case.toLower`](./edit.ts#L176-L181)
+### [`edit.case.toLower`](./edit.ts#L144-L149)
 
 Transform to lower case.
 
-### [`edit.case.toUpper`](./edit.ts#L185-L190)
+### [`edit.case.toUpper`](./edit.ts#L153-L158)
 
 Transform to upper case.
 
-### [`edit.case.swap`](./edit.ts#L194-L199)
+### [`edit.case.swap`](./edit.ts#L162-L167)
 
 Swap case.
 
-### [`edit.replaceCharacters`](./edit.ts#L214-L223)
+### [`edit.replaceCharacters`](./edit.ts#L182-L191)
 
 Replace characters.
 
@@ -304,7 +304,7 @@ This command:
 - may be repeated with a given number of repetitions.
 - takes an input of type `string`.
 
-### [`edit.align`](./edit.ts#L266-L279)
+### [`edit.align`](./edit.ts#L234-L247)
 
 Align selections.
 
@@ -315,7 +315,7 @@ before the first character of each selection.
 This command:
 - takes an argument `fill` of type `string`.
 
-### [`edit.copyIndentation`](./edit.ts#L294-L307)
+### [`edit.copyIndentation`](./edit.ts#L262-L275)
 
 Copy indentation.
 
@@ -326,7 +326,7 @@ given) to all other ones.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.newLine.above`](./edit.ts#L336-L347)
+### [`edit.newLine.above`](./edit.ts#L304-L315)
 
 Insert new line above each selection.
 
@@ -340,7 +340,7 @@ Insert new line above each selection.
 This command:
 - takes an argument `select` of type `boolean`.
 
-### [`edit.newLine.below`](./edit.ts#L371-L382)
+### [`edit.newLine.below`](./edit.ts#L339-L350)
 
 Insert new line below each selection.
 

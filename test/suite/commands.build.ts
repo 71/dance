@@ -149,6 +149,16 @@ function stringifyOperations(test: Test) {
       command = `dance${command}`;
     }
 
+    let match: RegExpExecArray | null;
+
+    if (match = /^~(\w+)\.(behavior) <- (caret|character)$/.exec(command)) {
+      const key = "selectionBehavior",
+            value = match[3] === "caret" ? 1 : 2;
+
+      text += `extension.modes.get("${match[1]}").update("_${key}", ${value})\n;`;
+      continue;
+    }
+
     const promises = [
       `executeCommand(${JSON.stringify(command)}${argsString})`,
     ];

@@ -57,22 +57,63 @@ export namespace TrackedSelection {
     return new vscode.Selection(anchor, active);
   }
 
-  export function length(array: Array, index: number) {
-    index <<= 1;
-
-    const anchorOffset = array[index << 1],
-          activeOffset = array[(index << 1) | 1];
-
-    return Math.abs(anchorOffset - activeOffset);
+  export function anchorOffset(array: Array, index: number) {
+    return array[index << 1];
   }
 
-  export function offset(array: Array, index: number) {
-    index <<= 1;
+  export function activeOffset(array: Array, index: number) {
+    return array[(index << 1) | 1];
+  }
 
-    const anchorOffset = array[index << 1],
-          activeOffset = array[(index << 1) | 1];
+  export function startOffset(array: Array, index: number) {
+    return Math.min(anchorOffset(array, index), activeOffset(array, index));
+  }
 
-    return Math.min(anchorOffset, activeOffset);
+  export function endOffset(array: Array, index: number) {
+    return Math.max(anchorOffset(array, index), activeOffset(array, index));
+  }
+
+  export function length(array: Array, index: number) {
+    return Math.abs(anchorOffset(array, index) - activeOffset(array, index));
+  }
+
+  export function setAnchorOffset(array: Array, index: number, offset: number) {
+    array[index << 1] = offset;
+  }
+
+  export function setActiveOffset(array: Array, index: number, offset: number) {
+    array[(index << 1) | 1] = offset;
+  }
+
+  export function activeIsStart(array: Array, index: number) {
+    return activeOffset(array, index) <= anchorOffset(array, index);
+  }
+
+  export function setLength(array: Array, index: number, length: number) {
+    const active = activeOffset(array, index),
+          anchor = anchorOffset(array, index);
+
+    if (active < anchor) {
+      setAnchorOffset(array, index, active + length);
+    } else {
+      setActiveOffset(array, index, anchor + length);
+    }
+  }
+
+  export function setStartEnd(
+    array: Array,
+    index: number,
+    startOffset: number,
+    endOffset: number,
+    startIsActive: boolean,
+  ) {
+    if (startIsActive) {
+      setActiveOffset(array, index, startOffset);
+      setAnchorOffset(array, index, endOffset);
+    } else {
+      setActiveOffset(array, index, endOffset);
+      setAnchorOffset(array, index, startOffset);
+    }
   }
 
   /**

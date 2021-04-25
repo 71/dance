@@ -115,7 +115,7 @@ suite("edit-paste.md", function () {
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
       foo
-        ^ 0
+         | 0
       foo
       bar
     `);

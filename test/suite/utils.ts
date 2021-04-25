@@ -202,7 +202,7 @@ export class ExpectedDocument {
               prevSelection = selections[selectionIndex],
               empty = carets === "|" && prevSelection === undefined,
               start = new vscode.Position(lines.length - 1, offset),
-              end = offset + carets.length === lines[lines.length - 1].length + 1
+              end = offset + carets.length === lines[lines.length - 1].length + 1 && !empty
                 ? new vscode.Position(lines.length, 0)  // Select end of line character.
                 : new vscode.Position(lines.length - 1, offset + (empty ? 0 : carets.length));
 

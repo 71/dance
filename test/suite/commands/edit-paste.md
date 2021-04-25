@@ -35,12 +35,13 @@ bar
 # b-1
 [up](#initial)
 
+- ~normal.behavior <- caret
 - .select.left.jump
 - .edit.paste.after
 
 ```
 foo
-  ^ 0
+   | 0
 foo
 bar
 ```
