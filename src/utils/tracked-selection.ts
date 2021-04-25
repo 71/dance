@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { ArgumentError } from "../api";
+import { PerEditorState } from "../state/editors";
 
 export namespace TrackedSelection {
   /**
@@ -196,7 +197,7 @@ export namespace TrackedSelection {
   export class Set implements vscode.Disposable {
     private readonly _onDisposed = new vscode.EventEmitter<this>();
     private readonly _selections: Array;
-    private readonly _subscription: vscode.Disposable;
+    private readonly _onDidChangeTextDocumentSubscription: vscode.Disposable;
 
     public get onDisposed() {
       return this._onDisposed.event;
@@ -210,7 +211,7 @@ export namespace TrackedSelection {
       ArgumentError.validate("selections", selections.length > 0, "selections cannot be empty");
 
       this._selections = selections;
-      this._subscription =
+      this._onDidChangeTextDocumentSubscription =
         vscode.workspace.onDidChangeTextDocument(this.updateAfterDocumentChanged, this);
     }
 
@@ -252,7 +253,7 @@ export namespace TrackedSelection {
     }
 
     public dispose() {
-      this._subscription.dispose();
+      this._onDidChangeTextDocumentSubscription.dispose();
     }
   }
 
@@ -262,16 +263,20 @@ export namespace TrackedSelection {
    */
   export class StyledSet extends Set {
     private readonly _decorationType: vscode.TextEditorDecorationType;
+    private readonly _onDidEditorVisibilityChangeSubscription: vscode.Disposable;
 
     public constructor(
       selections: Array,
-      public readonly editor: Pick<vscode.TextEditor, "setDecorations" | "document">,
+      public readonly editorState: PerEditorState,
       renderOptions: vscode.DecorationRenderOptions,
     ) {
-      super(selections, editor.document, rangeBehaviorToFlags(renderOptions.rangeBehavior));
+      super(
+        selections, editorState.editor.document, rangeBehaviorToFlags(renderOptions.rangeBehavior));
 
       this._decorationType = vscode.window.createTextEditorDecorationType(renderOptions);
-      this.updateDecorations();
+      this._onDidEditorVisibilityChangeSubscription = editorState.onVisibilityDidChange((e) =>
+        e.isVisible && this._updateDecorations());
+      this._updateDecorations();
     }
 
     public addArray(selections: Array) {
@@ -279,7 +284,7 @@ export namespace TrackedSelection {
 
       for (let i = 0, len = selections.length; i < len; i += 2) {
         if (selections[i] !== selections[i + 1]) {
-          this.updateDecorations();
+          this._updateDecorations();
           break;
         }
       }
@@ -292,7 +297,7 @@ export namespace TrackedSelection {
         return false;
       }
 
-      this.updateDecorations();
+      this._updateDecorations();
 
       return true;
     }
@@ -303,8 +308,8 @@ export namespace TrackedSelection {
       this._decorationType.dispose();
     }
 
-    private updateDecorations() {
-      this.editor.setDecorations(this._decorationType, this.restoreNonEmpty());
+    private _updateDecorations() {
+      this.editorState.editor.setDecorations(this._decorationType, this.restoreNonEmpty());
     }
   }
 }

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
 import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun, todo } from "../api";
 import { PerEditorState } from "../state/editors";
@@ -52,7 +53,7 @@ export function save(
     validator.throwErrorIfNeeded();
 
     trackedSelectionSet =
-      new TrackedSelection.StyledSet(trackedSelections, _.editor, renderOptions);
+      new TrackedSelection.StyledSet(trackedSelections, _.getState(), renderOptions);
   } else {
     trackedSelectionSet = new TrackedSelection.Set(trackedSelections, document);
   }
@@ -814,9 +815,12 @@ export function toggleIndices(
   disposable = _.extension
     .createAutoDisposable()
     .addDisposable(indicesDecorationType)
-    .addDisposable(vscode.window.onDidChangeTextEditorSelection((e) => {
-      onDidChangeSelection(e.textEditor);
-    }));
+    .addDisposable(vscode.window.onDidChangeTextEditorSelection((e) =>
+      e.textEditor === editorState.editor && onDidChangeSelection(e.textEditor),
+    ))
+    .addDisposable(editorState.onVisibilityDidChange((e) =>
+      e.isVisible && onDidChangeSelection(e.editor),
+    ));
 
   editorState.store(indicesToken, disposable);
 
