@@ -8,7 +8,6 @@
       "runtimeExecutable": "${execPath}",
       "args": ["--extensionDevelopmentPath=${workspaceFolder}"],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch",
     },
     {
       "name": "Run all tests",
@@ -20,7 +19,6 @@
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch",
     },
     {
       "name": "Run tests in this file",
@@ -32,7 +30,6 @@
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
-      "preLaunchTask": "npm: watch",
       "env": {
         "CURRENT_FILE": "${relativeFile}",
       },

@@ -120,6 +120,13 @@ export namespace Positions {
   }
 
   /**
+   * Returns the position at the given line and character.
+   */
+  export function at(line: number, character: number) {
+    return new vscode.Position(line, character);
+  }
+
+  /**
    * Returns the position at the start of the given line.
    */
   export function lineStart(line: number) {

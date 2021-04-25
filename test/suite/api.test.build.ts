@@ -7,7 +7,7 @@ export async function build(builder: Builder) {
   const modules = await builder.getApiModules();
 
   return modules.map((module) => {
-    const examples = module.functions.flatMap((f) => f.examples.map((example, i) => {
+    const examples = module.functions.flatMap((f) => f.examples.map((example) => {
       const match = exampleRe.exec(example);
 
       assert(match !== null, "Example does not have valid format");
@@ -16,7 +16,6 @@ export async function build(builder: Builder) {
 
       return {
         functionName: f.name,
-        i,
         flags,
         code,
         before,
@@ -28,13 +27,19 @@ export async function build(builder: Builder) {
       return "";
     }
 
+    const examplesPerFunction = new Map<string, number>();
+
     return unindent(4, `
       suite(${JSON.stringify(module.path)}, function () {
         ${examples.map((example) => {
           let testName = `function ${example.functionName}`;
+          const examplesForFunction = examplesPerFunction.get(example.functionName);
 
-          if (example.i > 0) {
-            testName += `#${example.i}`;
+          if (examplesForFunction === undefined) {
+            examplesPerFunction.set(example.functionName, 1);
+          } else {
+            testName += `#${examplesForFunction}`;
+            examplesPerFunction.set(example.functionName, examplesForFunction + 1);
           }
 
           const decls = [
@@ -54,13 +59,17 @@ export async function build(builder: Builder) {
             test("${testName}", async function () {
               const ${decls.join(",\n                    ")};
 
-              ${example.before ? "await before.apply(editor);" : "// No setup needed."}
+              ${example.before !== undefined
+                ? "await before.apply(editor);"
+                : "// No setup needed."}
 
               await context.runAsync(async () => {${"\n"
                 + example.code.replace(/^/gm, " ".repeat(16)).trimEnd()}
               });
 
-              ${example.after ? "after.assertEquals(editor);" : "// No expected end document."}
+              ${example.after !== undefined
+                ? "after.assertEquals(editor);"
+                : "// No expected end document."}
             });
           `);
         }).join("")}
@@ -72,7 +81,6 @@ export async function build(builder: Builder) {
 interface Example {
   functionName: string;
   flags: string;
-  i: number;
   code: string;
   before?: string;
   after?: string;

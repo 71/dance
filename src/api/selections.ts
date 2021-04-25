@@ -747,8 +747,20 @@ export namespace Selections {
   /**
    * Returns a new empty selection starting and ending at the given position.
    */
-  export function empty(position: vscode.Position) {
-    return new vscode.Selection(position, position);
+  export function empty(position: vscode.Position): vscode.Selection;
+
+  /**
+   * Returns a new empty selection starting and ending at the given line and
+   * character.
+   */
+  export function empty(line: number, character: number): vscode.Selection;
+
+  export function empty(positionOrLine: vscode.Position | number, character?: number) {
+    if (typeof positionOrLine === "number") {
+      positionOrLine = new vscode.Position(positionOrLine, character!);
+    }
+
+    return new vscode.Selection(positionOrLine, positionOrLine);
   }
 
   /**
@@ -969,10 +981,10 @@ export namespace Selections {
    * ### Example
    *
    * ```js
-   * const s1 = selection().empty(0, 0),
-   *       shifted1 = Selections.shift(s1, position(0, 4), Select);
+   * const s1 = Selections.empty(0, 0),
+   *       shifted1 = Selections.shift(s1, Positions.at(0, 4), Select);
    *
-   * expect(shifted1, "to be ");
+   * expect(shifted1, "to have anchor at coords", 0, 0).and("to have cursor at coords", 0, 4);
    * ```
    *
    * With
@@ -1045,6 +1057,7 @@ export namespace Selections {
    * ```
    * abc
    * ^^^^ 0
+   *
    * def
    * ^^^ 1
    * ```
@@ -1062,6 +1075,7 @@ export namespace Selections {
    * ^^^^ 0
    * def
    * ^^^^ 0
+   *
    * ```
    */
   export function isEntireLine(selection: vscode.Selection | vscode.Range) {
@@ -1256,6 +1270,88 @@ export namespace Selections {
   }
 
   /**
+   * Returns the selection with the given anchor and active positions.
+   */
+  export function fromAnchorActive(
+    anchor: vscode.Position,
+    active: vscode.Position,
+  ): vscode.Selection;
+
+  /**
+   * Returns the selection with the given anchor and active positions.
+   */
+  export function fromAnchorActive(
+    anchorLine: number,
+    anchorCharacter: number,
+    active: vscode.Position,
+  ): vscode.Selection;
+
+  /**
+   * Returns the selection with the given anchor and active positions.
+   */
+  export function fromAnchorActive(
+    anchor: vscode.Position,
+    activeLine: number,
+    activeCharacter: number,
+  ): vscode.Selection;
+
+  /**
+   * Returns the selection with the given anchor and active position
+   * coordinates.
+   */
+  export function fromAnchorActive(
+    anchorLine: number,
+    anchorCharacter: number,
+    activeLine: number,
+    activeCharacter: number,
+  ): vscode.Selection;
+
+  export function fromAnchorActive(
+    anchorOrAnchorLine: number | vscode.Position,
+    activeOrAnchorCharacterOrActiveLine: number | vscode.Position,
+    activeOrActiveLineOrActiveCharacter?: number | vscode.Position,
+    activeCharacter?: number,
+  ) {
+    if (activeCharacter !== undefined) {
+      // Four arguments: this is the last overload.
+      const anchorLine = anchorOrAnchorLine as number,
+            anchorCharacter = activeOrAnchorCharacterOrActiveLine as number,
+            activeLine = activeOrActiveLineOrActiveCharacter as number;
+
+      return new vscode.Selection(anchorLine, anchorCharacter, activeLine, activeCharacter);
+    }
+
+    if (activeOrActiveLineOrActiveCharacter === undefined) {
+      // Two arguments: this is the first overload.
+      const anchor = anchorOrAnchorLine as vscode.Position,
+            active = activeOrAnchorCharacterOrActiveLine as vscode.Position;
+
+      return new vscode.Selection(anchor, active);
+    }
+
+    if (typeof activeOrActiveLineOrActiveCharacter === "number") {
+      // Third argument is a number: this is the third overload.
+      const anchor = anchorOrAnchorLine as vscode.Position,
+            activeLine = activeOrAnchorCharacterOrActiveLine as number,
+            activeCharacter = activeOrActiveLineOrActiveCharacter as number;
+
+      return new vscode.Selection(anchor, new vscode.Position(activeLine, activeCharacter));
+    }
+
+    // Third argument is a position: this is the second overload.
+    const anchorLine = anchorOrAnchorLine as number,
+          anchorCharacter = activeOrAnchorCharacterOrActiveLine as number,
+          active = activeOrActiveLineOrActiveCharacter as vscode.Position;
+
+    return new vscode.Selection(new vscode.Position(anchorLine, anchorCharacter), active);
+  }
+
+  /**
+   * Shorthand for `fromAnchorActive`.
+   */
+  export const from = fromAnchorActive;
+
+  /**
    * Transforms a list of caret-mode selections (that is, regular selections as
    * manipulated internally) into a list of character-mode selections (that is,
    * selections modified to include a block character in them).
@@ -1267,29 +1363,34 @@ export namespace Selections {
    * Forward-facing, non-empty selections are reduced by one character.
    *
    * ```js
-   * expect(Selections.toCharacterMode([selection().anchor(0, 0).active(0, 1)]), "to satisfy", [
+   * // One-character selection becomes empty.
+   * expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 0, 0, 1)]), "to satisfy", [
    *   expect.it("to be empty at coords", 0, 0),
    * ]);
    *
-   * expect(Selections.toCharacterMode([selection().anchor(0, 1).active(1, 0)]), "to satisfy", [
+   * // One-character selection becomes empty (at line break).
+   * expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 1, 1, 0)]), "to satisfy", [
    *   expect.it("to be empty at coords", 0, 1),
    * ]);
    *
-   * expect(Selections.toCharacterMode([selection().anchor(0, 0).active(1, 1)]), "to satisfy", [
+   * // Forward-facing selection becomes shorter.
+   * expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 0, 1, 1)]), "to satisfy", [
    *   expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 1, 0),
    * ]);
    *
-   * // Same lines as above, but with anchor and active reversed: nothing changes.
-   * expect(Selections.toCharacterMode([selection().active(0, 0).anchor(0, 1)]), "to satisfy", [
-   *   selection().active(0, 0).anchor(0, 1),
+   * // One-character selection becomes empty (reversed).
+   * expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 1, 0, 0)]), "to satisfy", [
+   *   expect.it("to be empty at coords", 0, 0),
    * ]);
    *
-   * expect(Selections.toCharacterMode([selection().active(0, 1).anchor(1, 0)]), "to satisfy", [
-   *   selection().active(0, 1).anchor(1, 0),
+   * // One-character selection becomes empty (reversed, at line break).
+   * expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 0, 0, 1)]), "to satisfy", [
+   *   expect.it("to be empty at coords", 0, 1),
    * ]);
    *
-   * expect(Selections.toCharacterMode([selection().active(0, 0).anchor(1, 1)]), "to satisfy", [
-   *   selection().active(0, 0).anchor(1, 1),
+   * // Reversed selection stays as-is.
+   * expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 1, 0, 0)]), "to satisfy", [
+   *   expect.it("to have anchor at coords", 1, 1).and("to have cursor at coords", 0, 0),
    * ]);
    * ```
    *
@@ -1381,7 +1482,7 @@ export namespace Selections {
    * Selections remain empty in empty documents.
    *
    * ```js
-   * expect(Selections.fromCharacterMode([selection().empty(0, 0)]), "to satisfy", [
+   * expect(Selections.fromCharacterMode([Selections.empty(0, 0)]), "to satisfy", [
    *   expect.it("to be empty at coords", 0, 0),
    * ]);
    * ```
@@ -1394,17 +1495,17 @@ export namespace Selections {
    * Empty selections automatically become 1-character selections.
    *
    * ```js
-   * expect(Selections.fromCharacterMode([selection().empty(0, 0)]), "to satisfy", [
+   * expect(Selections.fromCharacterMode([Selections.empty(0, 0)]), "to satisfy", [
    *   expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 0, 1),
    * ]);
    *
    * // At the end of the line, it selects the line ending:
-   * expect(Selections.fromCharacterMode([selection().empty(0, 1)]), "to satisfy", [
+   * expect(Selections.fromCharacterMode([Selections.empty(0, 1)]), "to satisfy", [
    *   expect.it("to have anchor at coords", 0, 1).and("to have cursor at coords", 1, 0),
    * ]);
    *
    * // But it does nothing at the end of the document:
-   * expect(Selections.fromCharacterMode([selection().empty(2, 0)]), "to satisfy", [
+   * expect(Selections.fromCharacterMode([Selections.empty(2, 0)]), "to satisfy", [
    *   expect.it("to be empty at coords", 2, 0),
    * ]);
    * ```

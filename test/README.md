@@ -212,5 +212,12 @@ active position).
        | 0
     bar
     ```
+13. Equivalent to [0:0 → 1:0, 1:0 → 1:3]:
+    ```
+    abc
+    ^^^^ 0
+    def
+    ^^^ 1
+    ```
 
 </details>

@@ -3,79 +3,16 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 
 import { expect, ExpectedDocument } from "./utils";
-import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, moveWhile, NotASelectionError, replace, rotate, rotateSelections, search, Select, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
+import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, moveWhile, NotASelectionError, Positions, replace, rotate, rotateSelections, search, Select, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
 import { Extension } from "../../src/state/extension";
 import { SelectionBehavior } from "../../src/state/modes";
 
-function selection(): {
-  empty(line: number | vscode.Position, character?: number): vscode.Selection;
-
-  anchor(line: number | vscode.Position, character?: number): {
-    active(line: number | vscode.Position, character?: number): vscode.Selection;
-  };
-
-  active(line: number | vscode.Position, character?: number): {
-    anchor(line: number | vscode.Position, character?: number): vscode.Selection;
-  };
-}
-
-function selection(anchorLine: number, anchorChar: number, activeLine: number, activeChar: number):
-  vscode.Selection;
-
-function selection(
-  anchorLine?: number, anchorChar?: number, activeLine?: number, activeChar?: number,
-) {
-  if (activeChar !== undefined) {
-    return new vscode.Selection(anchorLine!, anchorChar!, activeLine!, activeChar);
-  }
-
-  return {
-    empty(line: number | vscode.Position, character?: number) {
-      if (typeof line === "number") {
-        line = new vscode.Position(line, character!);
-      }
-
-      return new vscode.Selection(line, line);
-    },
-    anchor(line: number | vscode.Position, character?: number) {
-      const anchorPosition = typeof line === "number"
-        ? new vscode.Position(line, character!)
-        : line;
-
-      return {
-        active(line: number | vscode.Position, character?: number) {
-          const activePosition = typeof line === "number"
-            ? new vscode.Position(line, character!)
-            : line;
-
-          return new vscode.Selection(anchorPosition, activePosition);
-        },
-      };
-    },
-    active(line: number | vscode.Position, character?: number) {
-      const activePosition = typeof line === "number"
-        ? new vscode.Position(line, character!)
-        : line;
-
-      return {
-        anchor(line: number | vscode.Position, character?: number) {
-          const anchorPosition = typeof line === "number"
-            ? new vscode.Position(line, character!)
-            : line;
-
-          return new vscode.Selection(anchorPosition, activePosition);
-        },
-      };
-    },
-  };
-}
-
-function position(line: number, character: number) {
-  return new vscode.Position(line, character);
-}
-
 function setSelectionBehavior(selectionBehavior: SelectionBehavior) {
   Context.current.mode.update("_selectionBehavior", selectionBehavior);
+}
+
+function resetNormalMode(extension: Extension) {
+  extension.modes.get("normal")?.update("_selectionBehavior", SelectionBehavior.Caret);
 }
 
 suite("API tests", function () {
@@ -89,9 +26,9 @@ suite("API tests", function () {
     document = await vscode.workspace.openTextDocument();
     editor = await vscode.window.showTextDocument(document);
     extension = (await vscode.extensions.getExtension("gregoire.dance")!.activate()).extension;
-
-    extension.modes.get("normal")?.update("_selectionBehavior", SelectionBehavior.Caret);
   });
+
+  this.beforeEach(() => resetNormalMode(extension));
 
   this.afterAll(async () => {
     await vscode.commands.executeCommand("workbench.action.closeActiveEditor");
@@ -124,7 +61,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function text", async function () {
+    test("function text#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
@@ -413,7 +350,7 @@ suite("API tests", function () {
       after.assertEquals(editor);
     });
 
-    test("function byIndex", async function () {
+    test("function byIndex#6", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
@@ -901,7 +838,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function filterSelections", async function () {
+    test("function filterSelections#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
@@ -966,7 +903,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function updateSelections", async function () {
+    test("function updateSelections#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, `\
@@ -1074,10 +1011,10 @@ suite("API tests", function () {
       // No setup needed.
 
       await context.runAsync(async () => {
-        const s1 = selection().empty(0, 0),
-              shifted1 = Selections.shift(s1, position(0, 4), Select);
+        const s1 = Selections.empty(0, 0),
+              shifted1 = Selections.shift(s1, Positions.at(0, 4), Select);
 
-        expect(shifted1, "to be ");
+        expect(shifted1, "to have anchor at coords", 0, 0).and("to have cursor at coords", 0, 4);
       });
 
       // No expected end document.
@@ -1102,6 +1039,7 @@ suite("API tests", function () {
             before = ExpectedDocument.parseIndented(14, `\
               abc
               ^^^^ 0
+
               def
               ^^^ 1
             `);
@@ -1124,6 +1062,7 @@ suite("API tests", function () {
               ^^^^ 0
               def
               ^^^^ 0
+
             `);
 
       await before.apply(editor);
@@ -1227,29 +1166,34 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.toCharacterMode([selection().anchor(0, 0).active(0, 1)]), "to satisfy", [
+        // One-character selection becomes empty.
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 0, 0, 1)]), "to satisfy", [
           expect.it("to be empty at coords", 0, 0),
         ]);
 
-        expect(Selections.toCharacterMode([selection().anchor(0, 1).active(1, 0)]), "to satisfy", [
+        // One-character selection becomes empty (at line break).
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 1, 1, 0)]), "to satisfy", [
           expect.it("to be empty at coords", 0, 1),
         ]);
 
-        expect(Selections.toCharacterMode([selection().anchor(0, 0).active(1, 1)]), "to satisfy", [
+        // Forward-facing selection becomes shorter.
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 0, 1, 1)]), "to satisfy", [
           expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 1, 0),
         ]);
 
-        // Same lines as above, but with anchor and active reversed: nothing changes.
-        expect(Selections.toCharacterMode([selection().active(0, 0).anchor(0, 1)]), "to satisfy", [
-          selection().active(0, 0).anchor(0, 1),
+        // One-character selection becomes empty (reversed).
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 1, 0, 0)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 0),
         ]);
 
-        expect(Selections.toCharacterMode([selection().active(0, 1).anchor(1, 0)]), "to satisfy", [
-          selection().active(0, 1).anchor(1, 0),
+        // One-character selection becomes empty (reversed, at line break).
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 0, 0, 1)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 1),
         ]);
 
-        expect(Selections.toCharacterMode([selection().active(0, 0).anchor(1, 1)]), "to satisfy", [
-          selection().active(0, 0).anchor(1, 1),
+        // Reversed selection stays as-is.
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 1, 0, 0)]), "to satisfy", [
+          expect.it("to have anchor at coords", 1, 1).and("to have cursor at coords", 0, 0),
         ]);
       });
 
@@ -1262,10 +1206,10 @@ suite("API tests", function () {
             before = ExpectedDocument.parseIndented(14, `\
             `);
 
-      // No setup needed.
+      await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.fromCharacterMode([selection().empty(0, 0)]), "to satisfy", [
+        expect(Selections.fromCharacterMode([Selections.empty(0, 0)]), "to satisfy", [
           expect.it("to be empty at coords", 0, 0),
         ]);
       });
@@ -1284,17 +1228,17 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.fromCharacterMode([selection().empty(0, 0)]), "to satisfy", [
+        expect(Selections.fromCharacterMode([Selections.empty(0, 0)]), "to satisfy", [
           expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 0, 1),
         ]);
 
         // At the end of the line, it selects the line ending:
-        expect(Selections.fromCharacterMode([selection().empty(0, 1)]), "to satisfy", [
+        expect(Selections.fromCharacterMode([Selections.empty(0, 1)]), "to satisfy", [
           expect.it("to have anchor at coords", 0, 1).and("to have cursor at coords", 1, 0),
         ]);
 
         // But it does nothing at the end of the document:
-        expect(Selections.fromCharacterMode([selection().empty(2, 0)]), "to satisfy", [
+        expect(Selections.fromCharacterMode([Selections.empty(2, 0)]), "to satisfy", [
           expect.it("to be empty at coords", 2, 0),
         ]);
       });
