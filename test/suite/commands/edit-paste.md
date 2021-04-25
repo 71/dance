@@ -44,3 +44,17 @@ foo
 foo
 bar
 ```
+
+# b-2
+[up](#b-1)
+
+- .select.left.extend { count: 2 }
+- .selections.saveText
+- .edit.paste.after
+
+```
+foooo
+ ^^ 0
+foo
+bar
+```

@@ -38,7 +38,9 @@ function mapResults(
   }
 
   if (where !== undefined && (insertFlags & Constants.BehaviorMask) === insert.Flags.Keep) {
-    flags = TrackedSelection.Flags.Strict;
+    flags = (insertFlags & Constants.PositionMask) === insert.Flags.Start
+      ? TrackedSelection.Flags.StrictStart
+      : TrackedSelection.Flags.StrictEnd;
   }
 
   const savedSelections = TrackedSelection.fromArray(selections, document),
@@ -477,6 +479,10 @@ export namespace insert {
           resultsSelections.push(selections[i]);
           isFullLines.push(false);
         }
+      }
+
+      if (fullLineResults.length === 0) {
+        return await mapResults(flags, document, resultsSelections, results);
       }
 
       let savedSelections = new TrackedSelection.Set(

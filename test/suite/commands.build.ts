@@ -12,7 +12,7 @@ export async function build() {
   for (const file of fileNames.filter((f) => f.endsWith(".md"))) {
     const filePath = path.resolve(commandsDir, file),
           contents = await fs.readFile(filePath, "utf-8"),
-          { headerTitle, initialCode, tests } = parseMarkdownTests(contents),
+          { setups, tests } = parseMarkdownTests(contents),
           testNamePadding = longestStringLength((x) => x.title, tests),
           comesAfterPadding = longestStringLength((x) => x.comesAfter, tests);
 
@@ -45,7 +45,9 @@ export async function build() {
         // tests whose dependencies failed.
         const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
               documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-                "${headerTitle}": Promise.resolve(${stringifyExpectedDocument(initialCode, 18, 12)}),
+                ${setups.map(({ title, code }) =>
+                  `"${title}": Promise.resolve(${stringifyExpectedDocument(code, 18, 12)}),`,
+                ).join("\n" + " ".repeat(16))}
 
                 ${tests.map(({ title }) =>
                   `"${title}": new Promise((resolve) => notifyDependents["${title}"] = resolve),`,
@@ -102,24 +104,29 @@ interface Test {
   code: string;
 }
 
+interface InitialDocument {
+  title: string;
+  flags: string[];
+  code: string;
+}
+
 function parseMarkdownTests(contents: string) {
-  const header = /^# (.+)\n([\s\S]+?)^```\n([\s\S]+?)^```\n/m.exec(contents);
-
-  assert(header);
-
-  const [_, badHeaderTitle, headerFlagsString, initialCode] = header,
-        headerTitle = badHeaderTitle.replace(/\s/g, "-"),
-        headerFlags = execAll(/^> *(.+)$/gm, headerFlagsString).map(([_, flag]) => flag);
-
-  contents = contents.slice(header[0].length);
-
-  const re = /^# (.+)\n\[.+?\]\(#(.+?)\)\n([\s\S]+?)^```\n([\s\S]+?)^```\n/gm,
+  const re = /^# (.+)\n(?:\[.+?\]\(#(.+?)\)\n)?([\s\S]+?)^```\n([\s\S]+?)^```\n/gm,
         opre = /^- *([\w.:]+)( +.+)?$|^> *(.+)$/gm,
+        initial = [] as InitialDocument[],
         tests = [] as Test[];
 
   for (const [_, badTitle, comesAfter, operationsText, after] of execAll(re, contents)) {
-    const title = badTitle.replace(/\s/g, "-"),
-          operations = [] as TestOperation[],
+    const title = badTitle.replace(/\s/g, "-");
+
+    if (comesAfter === undefined) {
+      const flags = execAll(/^> *(.+)$/gm, operationsText).map(([_, flag]) => flag);
+
+      initial.push({ title, flags, code: after });
+      continue;
+    }
+
+    const operations = [] as TestOperation[],
           flags = [] as string[];
 
     for (const [_, command, args, flag] of execAll(opre, operationsText)) {
@@ -133,9 +140,29 @@ function parseMarkdownTests(contents: string) {
     tests.push({ title, comesAfter, code: after, operations, flags });
   }
 
-  assert.strictEqual(execAll(/^# /gm, contents).length, tests.length);
+  assert.strictEqual(
+    execAll(/^# /gm, contents).length,
+    tests.length + initial.length,
+    "not all tests were parsed",
+  );
 
-  return { headerTitle, headerFlags, initialCode, tests };
+  // Check dependencies. Note: dependencies must be defined in order; this makes
+  // it easier to read and ensures that there can be no cycles.
+  const exists = new Set<string>();
+
+  for (const { title } of initial) {
+    assert(!exists.has(title), `initial document state "${title}" is defined multiple times`);
+
+    exists.add(title);
+  }
+
+  for (const { title, comesAfter } of tests) {
+    assert(exists.has(comesAfter), `test "${title}" depends on unknown test "${comesAfter}"`);
+
+    exists.add(title);
+  }
+
+  return { setups: initial, tests };
 }
 
 function stringifyOperations(test: Test) {
