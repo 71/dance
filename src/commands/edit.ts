@@ -71,7 +71,8 @@ export async function insert(
   }
 
   if (where === undefined) {
-    return replace.byIndex((i) => contents![i], selections);
+    Selections.set(await replace.byIndex((i) => contents![i], selections));
+    return;
   }
 
   if (!["active", "anchor", "start", "end"].includes(where)) {

@@ -31,6 +31,8 @@ export async function build() {
         this.beforeAll(async () => {
           document = await vscode.workspace.openTextDocument();
           editor = await vscode.window.showTextDocument(document);
+
+          await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
         });
 
         this.afterAll(async () => {
@@ -96,7 +98,7 @@ interface Test {
   title: string;
   comesAfter: string;
   operations: TestOperation[];
-  flags: TestOperation[];
+  flags: string[];
   code: string;
 }
 
@@ -112,17 +114,17 @@ function parseMarkdownTests(contents: string) {
   contents = contents.slice(header[0].length);
 
   const re = /^# (.+)\n\[.+?\]\(#(.+?)\)\n([\s\S]+?)^```\n([\s\S]+?)^```\n/gm,
-        opre = /^([->]) *([\w.:]+)( +.+)?$/gm,
+        opre = /^- *([\w.:]+)( +.+)?$|^> *(.+)$/gm,
         tests = [] as Test[];
 
   for (const [_, badTitle, comesAfter, operationsText, after] of execAll(re, contents)) {
     const title = badTitle.replace(/\s/g, "-"),
           operations = [] as TestOperation[],
-          flags = [] as TestOperation[];
+          flags = [] as string[];
 
-    for (const [_, pre, command, args] of execAll(opre, operationsText)) {
-      if (pre === ">") {
-        flags.push({ command, args });
+    for (const [_, command, args, flag] of execAll(opre, operationsText)) {
+      if (flag) {
+        flags.push(flag);
       } else {
         operations.push({ command, args });
       }
@@ -140,6 +142,17 @@ function stringifyOperations(test: Test) {
   const operations = test.operations;
   let text = "";
 
+  for (const flag of test.flags) {
+    let match: RegExpExecArray | null;
+
+    if (match = /^(\w+)\.(behavior) <- (caret|character)$/.exec(flag)) {
+      text += `await executeCommand("dance.dev.setSelectionBehavior", `
+            + `{ mode: "${match[1]}", value: "${match[3]}" });\n`;
+    } else {
+      throw new Error("unrecognized flag " + JSON.stringify(flag));
+    }
+  }
+
   for (let i = 0; i < operations.length; i++) {
     const operation = operations[i],
           argsString = operation.args ? `, ${operation.args}` : "";
@@ -147,16 +160,6 @@ function stringifyOperations(test: Test) {
 
     if (command[0] === ".") {
       command = `dance${command}`;
-    }
-
-    let match: RegExpExecArray | null;
-
-    if (match = /^~(\w+)\.(behavior) <- (caret|character)$/.exec(command)) {
-      const key = "selectionBehavior",
-            value = match[3] === "caret" ? 1 : 2;
-
-      text += `extension.modes.get("${match[1]}").update("_${key}", ${value})\n;`;
-      continue;
     }
 
     const promises = [

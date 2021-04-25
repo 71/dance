@@ -12,7 +12,18 @@
       "group": {
         "kind": "build",
         "isDefault": true
-      }
+      },
     },
-  ]
+    {
+      "type": "npm",
+      "script": "generate",
+      "problemMatcher": [],
+      "isBackground": false,
+      "presentation": {
+        "reveal": "never"
+      },
+      "label": "npm: generate",
+      "detail": "ts-node ./meta.ts",
+    },
+  ],
 }

@@ -89,6 +89,8 @@ suite("API tests", function () {
     document = await vscode.workspace.openTextDocument();
     editor = await vscode.window.showTextDocument(document);
     extension = (await vscode.extensions.getExtension("gregoire.dance")!.activate()).extension;
+
+    extension.modes.get("normal")?.update("_selectionBehavior", SelectionBehavior.Caret);
   });
 
   this.afterAll(async () => {
@@ -230,7 +232,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        await insert(undefined, (x) => `${+x * 2}`);
+        Selections.set(await insert(insert.Replace, (x) => `${+x * 2}`));
       });
 
       after.assertEquals(editor);
@@ -246,16 +248,141 @@ suite("API tests", function () {
                   ^ 2
             `),
             after = ExpectedDocument.parseIndented(14, `\
-              1 2 3
-              ^ 0
-                ^ 1
-                  ^ 2
+              1a 2b 3c
+               ^ 0
+                  ^ 1
+                     ^ 2
             `);
 
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        await insert.byIndex("start", (i) => `${i + 1}`);
+        Selections.set(await insert.byIndex(insert.Start, (i) => `${i + 1}`));
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function byIndex#1", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              1a 2b 3c
+              ^ 0
+                 ^ 1
+                    ^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        Selections.set(await insert.byIndex(insert.Start | insert.Select, (i) => `${i + 1}`));
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function byIndex#2", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              1a 2b 3c
+              ^^ 0
+                 ^^ 1
+                    ^^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        Selections.set(await insert.byIndex(insert.Start | insert.Extend, (i) => `${i + 1}`));
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function byIndex#3", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a1 b2 c3
+              ^ 0
+                 ^ 1
+                    ^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        Selections.set(await insert.byIndex(insert.End, (i) => `${i + 1}`));
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function byIndex#4", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a1 b2 c3
+               ^ 0
+                  ^ 1
+                     ^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        Selections.set(await insert.byIndex(insert.End | insert.Select, (i) => `${i + 1}`));
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function byIndex#5", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, `\
+              a1 b2 c3
+              ^^ 0
+                 ^^ 1
+                    ^^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        Selections.set(await insert.byIndex(insert.End | insert.Extend, (i) => `${i + 1}`));
       });
 
       after.assertEquals(editor);

@@ -35,7 +35,6 @@ bar
 # b-1
 [up](#initial)
 
-- ~normal.behavior <- caret
 - .select.left.jump
 - .edit.paste.after
 

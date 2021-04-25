@@ -29,13 +29,13 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceFolder}",
-        "--extensionTestsPath=${workspaceFolder}/out/test/suite"
+        "--extensionTestsPath=${workspaceFolder}/out/test/suite",
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "preLaunchTask": "npm: watch",
       "env": {
-        "CURRENT_FILE": "${relativeFile}"
-      }
-    }
-  ]
+        "CURRENT_FILE": "${relativeFile}",
+      },
+    },
+  ],
 }

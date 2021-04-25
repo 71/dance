@@ -824,13 +824,11 @@ export class CharacterClass implements Node<CharacterClass> {
   }
 }
 
-export namespace Anchor {
-  export const enum Kind {
-    Start,
-    End,
-    Boundary,
-    NotBoundary,
-  }
+const enum AnchorKind {
+  Start,
+  End,
+  Boundary,
+  NotBoundary,
 }
 
 export class Anchor implements Node<Anchor> {
@@ -851,10 +849,10 @@ export class Anchor implements Node<Anchor> {
     return undefined;
   }
 
-  public static readonly start = new Anchor(Anchor.Kind.Start, "^");
-  public static readonly end = new Anchor(Anchor.Kind.End, "$");
-  public static readonly boundary = new Anchor(Anchor.Kind.Boundary, "\\b");
-  public static readonly notBoundary = new Anchor(Anchor.Kind.NotBoundary, "\\B");
+  public static readonly start = new Anchor(AnchorKind.Start, "^");
+  public static readonly end = new Anchor(AnchorKind.End, "$");
+  public static readonly boundary = new Anchor(AnchorKind.Boundary, "\\b");
+  public static readonly notBoundary = new Anchor(AnchorKind.NotBoundary, "\\B");
 }
 
 export class Lookaround extends Disjunction<Lookaround> {
@@ -877,6 +875,10 @@ export class Lookaround extends Disjunction<Lookaround> {
       this.isLookbehind,
     );
   }
+}
+
+export namespace Anchor {
+  export type Kind = AnchorKind;
 }
 
 export class Repeat<T extends Repeat.Node = Repeat.Node> implements Node<Repeat> {

@@ -168,8 +168,8 @@ export namespace TrackedSelection {
             anchorIsStart = activeOffset >= anchorOffset,
             inclusiveStart = (flags & Flags.StrictStart) === 0,
             inclusiveEnd = (flags & Flags.StrictEnd) === 0,
-            inclusiveActive = activeIsStart ? inclusiveStart : inclusiveEnd,
-            inclusiveAnchor = anchorIsStart ? inclusiveStart : inclusiveEnd;
+            inclusiveActive = activeIsStart ? !inclusiveStart : inclusiveEnd,
+            inclusiveAnchor = anchorIsStart ? !inclusiveStart : inclusiveEnd;
 
       for (let i = 0, len = changes.length; i < len; i++) {
         const change = changes[i],

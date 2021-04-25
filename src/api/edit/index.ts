@@ -5,6 +5,11 @@ import { Context, edit } from "../context";
 import { Positions } from "../positions";
 import { rotateSelections, Selections } from "../selections";
 
+const enum Constants {
+  PositionMask = 0b00_11_1,
+  BehaviorMask = 0b11_00_1,
+}
+
 function mapResults(
   insertFlags: insert.Flags,
   document: vscode.TextDocument,
@@ -14,17 +19,25 @@ function mapResults(
   let flags = TrackedSelection.Flags.Inclusive,
       where = undefined as "start" | "end" | "active" | "anchor" | undefined;
 
-  if ((insertFlags & insert.Flags.Active) === insert.Flags.Active) {
+  switch (insertFlags & Constants.PositionMask) {
+  case insert.Flags.Active:
     where = "active";
-  } else if ((insertFlags & insert.Flags.Anchor) === insert.Flags.Anchor) {
+    break;
+
+  case insert.Flags.Anchor:
     where = "anchor";
-  } else if ((insertFlags & insert.Flags.Start) === insert.Flags.Start) {
+    break;
+
+  case insert.Flags.Start:
     where = "start";
-  } else if ((insertFlags & insert.Flags.End) === insert.Flags.End) {
+    break;
+
+  case insert.Flags.End:
     where = "end";
+    break;
   }
 
-  if (where !== undefined && (insertFlags & insert.Flags.Keep) === insert.Flags.Keep) {
+  if (where !== undefined && (insertFlags & Constants.BehaviorMask) === insert.Flags.Keep) {
     flags = TrackedSelection.Flags.Strict;
   }
 
@@ -82,19 +95,23 @@ function mapResults(
 
       let restoredSelection = TrackedSelection.restore(savedSelections, i, document);
 
-      if (where !== undefined && (insertFlags & insert.Flags.Select) === insert.Flags.Select) {
-        const insertedLength = replacements[i]!.length;
+      if (where !== undefined && (insertFlags & Constants.BehaviorMask) === insert.Flags.Select) {
+        // Selections were extended; we now unselect the previously selected
+        // text.
+        const totalLength = TrackedSelection.length(savedSelections, i),
+              insertedLength = replacements[i]!.length,
+              previousLength = totalLength - insertedLength;
 
         if (restoredSelection[where] === restoredSelection.start) {
           restoredSelection = Selections.fromStartEnd(
-            Positions.offset(restoredSelection.start, insertedLength)!,
-            restoredSelection.end,
+            restoredSelection.start,
+            Positions.offset(restoredSelection.end, -previousLength)!,
             restoredSelection.isReversed,
           );
         } else {
           restoredSelection = Selections.fromStartEnd(
-            restoredSelection.start,
-            Positions.offset(restoredSelection.end, -insertedLength)!,
+            Positions.offset(restoredSelection.start, previousLength)!,
+            restoredSelection.end,
             restoredSelection.isReversed,
           );
         }
@@ -123,7 +140,7 @@ function mapResults(
  *
  * ### Example
  * ```js
- * await insert(undefined, (x) => `${+x * 2}`);
+ * Selections.set(await insert(insert.Replace, (x) => `${+x * 2}`));
  * ```
  *
  * Before:
@@ -170,11 +187,6 @@ export namespace insert {
     Active = 0b00_00_1,
 
     /**
-     * Insert at anchor of selection.
-     */
-    Anchor = 0b00_11_1,
-
-    /**
      * Insert at start of selection.
      */
     Start = 0b00_01_1,
@@ -183,6 +195,11 @@ export namespace insert {
      * Insert at end of selection.
      */
     End = 0b00_10_1,
+
+    /**
+     * Insert at anchor of selection.
+     */
+    Anchor = 0b00_11_1,
 
     /**
      * Keep current selections.
@@ -263,7 +280,7 @@ export namespace insert {
    *
    * ### Example
    * ```js
-   * await insert.byIndex("start", (i) => `${i + 1}`);
+   * Selections.set(await insert.byIndex(insert.Start, (i) => `${i + 1}`));
    * ```
    *
    * Before:
@@ -276,10 +293,115 @@ export namespace insert {
    *
    * After:
    * ```
-   * 1 2 3
+   * 1a 2b 3c
+   *  ^ 0
+   *     ^ 1
+   *        ^ 2
+   * ```
+   *
+   * ### Example
+   * ```js
+   * Selections.set(await insert.byIndex(insert.Start | insert.Select, (i) => `${i + 1}`));
+   * ```
+   *
+   * Before:
+   * ```
+   * a b c
    * ^ 0
    *   ^ 1
    *     ^ 2
+   * ```
+   *
+   * After:
+   * ```
+   * 1a 2b 3c
+   * ^ 0
+   *    ^ 1
+   *       ^ 2
+   * ```
+   *
+   * ### Example
+   * ```js
+   * Selections.set(await insert.byIndex(insert.Start | insert.Extend, (i) => `${i + 1}`));
+   * ```
+   *
+   * Before:
+   * ```
+   * a b c
+   * ^ 0
+   *   ^ 1
+   *     ^ 2
+   * ```
+   *
+   * After:
+   * ```
+   * 1a 2b 3c
+   * ^^ 0
+   *    ^^ 1
+   *       ^^ 2
+   * ```
+   *
+   * ### Example
+   * ```js
+   * Selections.set(await insert.byIndex(insert.End, (i) => `${i + 1}`));
+   * ```
+   *
+   * Before:
+   * ```
+   * a b c
+   * ^ 0
+   *   ^ 1
+   *     ^ 2
+   * ```
+   *
+   * After:
+   * ```
+   * a1 b2 c3
+   * ^ 0
+   *    ^ 1
+   *       ^ 2
+   * ```
+   *
+   * ### Example
+   * ```js
+   * Selections.set(await insert.byIndex(insert.End | insert.Select, (i) => `${i + 1}`));
+   * ```
+   *
+   * Before:
+   * ```
+   * a b c
+   * ^ 0
+   *   ^ 1
+   *     ^ 2
+   * ```
+   *
+   * After:
+   * ```
+   * a1 b2 c3
+   *  ^ 0
+   *     ^ 1
+   *        ^ 2
+   * ```
+   *
+   * ### Example
+   * ```js
+   * Selections.set(await insert.byIndex(insert.End | insert.Extend, (i) => `${i + 1}`));
+   * ```
+   *
+   * Before:
+   * ```
+   * a b c
+   * ^ 0
+   *   ^ 1
+   *     ^ 2
+   * ```
+   *
+   * After:
+   * ```
+   * a1 b2 c3
+   * ^^ 0
+   *    ^^ 1
+   *       ^^ 2
    * ```
    */
   export function byIndex(
@@ -373,18 +495,18 @@ export namespace insert {
       const nextFullLineSelections: vscode.Selection[] = [],
             insertionPositions: vscode.Position[] = [];
 
-      if ((flags & Flags.Start) === Flags.Start) {
+      if ((flags & Constants.PositionMask) === Flags.Start) {
         for (const selection of fullLineSelections) {
           const insertionPosition = Positions.lineStart(selection.start.line);
 
           insertionPositions.push(insertionPosition);
 
-          if ((flags & Flags.Extend) === Flags.Extend) {
+          if ((flags & Constants.BehaviorMask) === Flags.Extend) {
             nextFullLineSelections.push(
               Selections.fromStartEnd(
                 insertionPosition, selection.end, selection.isReversed, document),
             );
-          } else if ((flags & Flags.Select) === Flags.Select) {
+          } else if ((flags & Constants.BehaviorMask) === Flags.Select) {
             nextFullLineSelections.push(Selections.empty(insertionPosition));
           } else {
             // Keep selection as is.
@@ -397,12 +519,12 @@ export namespace insert {
 
           insertionPositions.push(insertionPosition);
 
-          if ((flags & Flags.Extend) === Flags.Extend) {
+          if ((flags & Constants.BehaviorMask) === Flags.Extend) {
             nextFullLineSelections.push(
               Selections.fromStartEnd(
                 selection.start, insertionPosition, selection.isReversed, document),
             );
-          } else if ((flags & Flags.Select) === Flags.Select) {
+          } else if ((flags & Constants.BehaviorMask) === Flags.Select) {
             nextFullLineSelections.push(Selections.empty(insertionPosition));
           } else {
             // Keep selection as is.
@@ -414,7 +536,7 @@ export namespace insert {
       savedSelections = new TrackedSelection.Set(
         TrackedSelection.fromArray(nextFullLineSelections, document),
         document,
-        (flags & Flags.Keep) === Flags.Keep
+        (flags & Constants.BehaviorMask) === Flags.Keep
           ? TrackedSelection.Flags.Strict
           : TrackedSelection.Flags.Inclusive,
       );

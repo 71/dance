@@ -12,6 +12,8 @@ suite("edit-deindent.md", function () {
   this.beforeAll(async () => {
     document = await vscode.workspace.openTextDocument();
     editor = await vscode.window.showTextDocument(document);
+
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
   });
 
   this.afterAll(async () => {

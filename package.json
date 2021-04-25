@@ -695,6 +695,11 @@
     },
     "commands": [
       {
+        "command": "dance.dev.setSelectionBehavior",
+        "title": "Set the selection behavior of the specified mode",
+        "category": "Dance"
+      },
+      {
         "command": "dance.edit.align",
         "title": "Align selections",
         "category": "Dance"
@@ -1602,6 +1607,10 @@
     ],
     "menus": {
       "commandPalette": [
+        {
+          "command": "dance.dev.setSelectionBehavior",
+          "when": "dance.mode == 'normal'"
+        },
         {
           "command": "dance.edit.align",
           "when": "dance.mode == 'normal'"

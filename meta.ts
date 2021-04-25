@@ -596,7 +596,9 @@ async function main() {
   let success = true;
 
   const ensureUpToDate = process.argv.includes("--ensure-up-to-date"),
-        check = process.argv.includes("--check");
+        check = process.argv.includes("--check"),
+        buildIndex = process.argv.indexOf("--build"),
+        build = buildIndex === -1 ? "**/*.build.ts" : process.argv[buildIndex + 1];
 
   const contentsBefore: string[] = [],
         fileNames = [
@@ -610,7 +612,7 @@ async function main() {
   }
 
   const builder = new Builder(),
-        filesToBuild = await glob(`${__dirname}/**/*.build.ts`),
+        filesToBuild = await glob(__dirname + "/" + build),
         buildErrors: unknown[] = [];
 
   await Promise.all(
