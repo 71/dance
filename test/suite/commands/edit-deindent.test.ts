@@ -26,7 +26,7 @@ suite("edit-deindent.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "0": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo
             |^^ 0
              bar
@@ -35,15 +35,15 @@ suite("edit-deindent.md", function () {
                  ^ 0
           `)),
 
-          "1": new Promise((resolve) => notifyDependents["1"] = resolve),
-          "1-alt": new Promise((resolve) => notifyDependents["1-alt"] = resolve),
+          "deindent": new Promise((resolve) => notifyDependents["deindent"] = resolve),
+          "deindent-alt": new Promise((resolve) => notifyDependents["deindent-alt"] = resolve),
         };
 
-  test("transition 0 > 1    ", async function () {
-    const beforeDocument = await documents["0"];
+  test("transition initial > deindent    ", async function () {
+    const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["1"](undefined);
+      notifyDependents["deindent"](undefined);
       this.skip();
     }
 
@@ -67,19 +67,19 @@ suite("edit-deindent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["1"](afterDocument);
+      notifyDependents["deindent"](afterDocument);
     } catch (e) {
-      notifyDependents["1"](undefined);
+      notifyDependents["deindent"](undefined);
 
       throw e;
     }
   });
 
-  test("transition 0 > 1-alt", async function () {
-    const beforeDocument = await documents["0"];
+  test("transition initial > deindent-alt", async function () {
+    const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["1-alt"](undefined);
+      notifyDependents["deindent-alt"](undefined);
       this.skip();
     }
 
@@ -103,9 +103,9 @@ suite("edit-deindent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["1-alt"](afterDocument);
+      notifyDependents["deindent-alt"](afterDocument);
     } catch (e) {
-      notifyDependents["1-alt"](undefined);
+      notifyDependents["deindent-alt"](undefined);
 
       throw e;
     }

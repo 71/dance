@@ -14,7 +14,7 @@ export async function build() {
           contents = await fs.readFile(filePath, "utf-8"),
           { setups, tests } = parseMarkdownTests(contents),
           testNamePadding = longestStringLength((x) => x.title, tests),
-          comesAfterPadding = longestStringLength((x) => x.comesAfter, tests);
+          comesAfterPadding = longestStringLength((x) => x.comesAfter.title, tests);
 
     await fs.writeFile(filePath.replace(/\.md$/, ".test.ts"), unindent(6, `\
       import * as vscode from "vscode";
@@ -54,12 +54,12 @@ export async function build() {
                 ).join("\n" + " ".repeat(16))}
               };
         ${tests.map((test) => {
-          const paddedComesAfter = test.comesAfter.padEnd(comesAfterPadding),
+          const paddedComesAfter = test.comesAfter.title.padEnd(comesAfterPadding),
                 paddedTitle = test.title.padEnd(testNamePadding);
 
           return unindent(4, `
             test("transition ${paddedComesAfter} > ${paddedTitle}", async function () {
-              const beforeDocument = await documents["${test.comesAfter}"];
+              const beforeDocument = await documents["${test.comesAfter.title}"];
 
               if (beforeDocument === undefined) {
                 notifyDependents["${test.title}"](undefined);
@@ -98,31 +98,39 @@ interface TestOperation {
 
 interface Test {
   title: string;
-  comesAfter: string;
+  comesAfter: Test | InitialDocument;
   operations: TestOperation[];
   flags: string[];
   code: string;
+  behavior: "caret" | "character";
 }
 
 interface InitialDocument {
   title: string;
   flags: string[];
   code: string;
+  behavior: "caret" | "character";
 }
 
 function parseMarkdownTests(contents: string) {
   const re = /^# (.+)\n(?:\[.+?\]\(#(.+?)\)\n)?([\s\S]+?)^```\n([\s\S]+?)^```\n/gm,
         opre = /^- *([\w.:]+)( +.+)?$|^> *(.+)$/gm,
         initial = [] as InitialDocument[],
-        tests = [] as Test[];
+        tests = [] as Test[],
+        all = new Map<string, Test | InitialDocument>();
 
-  for (const [_, badTitle, comesAfter, operationsText, after] of execAll(re, contents)) {
+  for (const [_, badTitle, comesAfterTitle, operationsText, after] of execAll(re, contents)) {
     const title = badTitle.replace(/\s/g, "-");
 
-    if (comesAfter === undefined) {
-      const flags = execAll(/^> *(.+)$/gm, operationsText).map(([_, flag]) => flag);
+    assert(!all.has(title), `document state "${title}" is defined multiple times`);
 
-      initial.push({ title, flags, code: after });
+    if (comesAfterTitle === undefined) {
+      const flags = execAll(/^> *(.+)$/gm, operationsText).map(([_, flag]) => flag),
+            behavior = getBehavior(flags) ?? "caret",
+            data: InitialDocument = { title, flags, code: after, behavior };
+
+      initial.push(data);
+      all.set(title, data);
       continue;
     }
 
@@ -137,7 +145,15 @@ function parseMarkdownTests(contents: string) {
       }
     }
 
-    tests.push({ title, comesAfter, code: after, operations, flags });
+    const comesAfter = all.get(comesAfterTitle);
+
+    assert(comesAfter !== undefined, `test "${title}" depends on unknown test "${comesAfterTitle}"`);
+
+    const behavior = getBehavior(flags) ?? comesAfter.behavior,
+          data: Test = { title, comesAfter, code: after, operations, flags, behavior };
+
+    tests.push(data);
+    all.set(title, data);
   }
 
   assert.strictEqual(
@@ -146,43 +162,55 @@ function parseMarkdownTests(contents: string) {
     "not all tests were parsed",
   );
 
-  // Check dependencies. Note: dependencies must be defined in order; this makes
-  // it easier to read and ensures that there can be no cycles.
-  const exists = new Set<string>();
-
-  for (const { title } of initial) {
-    assert(!exists.has(title), `initial document state "${title}" is defined multiple times`);
-
-    exists.add(title);
-  }
-
-  for (const { title, comesAfter } of tests) {
-    assert(exists.has(comesAfter), `test "${title}" depends on unknown test "${comesAfter}"`);
-
-    exists.add(title);
-  }
-
   return { setups: initial, tests };
+}
+
+function getBehavior(flags: string[]) {
+  const indexOfCharacter = flags.indexOf("behavior <- character");
+
+  if (indexOfCharacter !== -1) {
+    flags.splice(indexOfCharacter, 1);
+
+    return "character";
+  }
+
+  const indexOfCaret = flags.indexOf("behavior <- caret");
+
+  if (indexOfCaret !== -1) {
+    flags.splice(indexOfCaret, 1);
+
+    return "caret";
+  }
+
+  return undefined;
 }
 
 function stringifyOperations(test: Test) {
   const operations = test.operations;
-  let text = "";
+  let text = "",
+      textEnd = "";
 
   for (const flag of test.flags) {
-    let match: RegExpExecArray | null;
+    switch (flag) {
+    case "debug":
+      text += "debugger;\n";
+      break;
 
-    if (match = /^(\w+)\.(behavior) <- (caret|character)$/.exec(flag)) {
-      text += `await executeCommand("dance.dev.setSelectionBehavior", `
-            + `{ mode: "${match[1]}", value: "${match[3]}" });\n`;
-    } else {
+    default:
       throw new Error("unrecognized flag " + JSON.stringify(flag));
     }
   }
 
+  if (test.behavior === "character") {
+    text += `await executeCommand("dance.dev.setSelectionBehavior", `
+          + `{ mode: "normal", value: "character" });\n`;
+    textEnd += `await executeCommand("dance.dev.setSelectionBehavior", `
+             + `{ mode: "normal", value: "caret" });\n`;
+  }
+
   for (let i = 0; i < operations.length; i++) {
     const operation = operations[i],
-          argsString = operation.args ? `, ${operation.args}` : "";
+          argsString = operation.args ? `,${operation.args}` : "";
     let command = operation.command;
 
     if (command[0] === ".") {
@@ -205,9 +233,9 @@ function stringifyOperations(test: Test) {
     if (promises.length === 1) {
       text += `await ${promises[0]};\n`;
     } else {
-      text += `await Promise.all([${promises.map((x) => `\n  ${x},`)}]);`;
+      text += `await Promise.all([${promises.map((x) => `\n  ${x},`)}]);\n`;
     }
   }
 
-  return text;
+  return text + textEnd;
 }

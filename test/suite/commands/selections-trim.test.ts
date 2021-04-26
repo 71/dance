@@ -41,14 +41,14 @@ suite("selections-trim.md", function () {
             ^^^| 3
           `)),
 
-          "1": new Promise((resolve) => notifyDependents["1"] = resolve),
+          "trim": new Promise((resolve) => notifyDependents["trim"] = resolve),
         };
 
-  test("transition initial > 1", async function () {
+  test("transition initial > trim", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["1"](undefined);
+      notifyDependents["trim"](undefined);
       this.skip();
     }
 
@@ -75,9 +75,9 @@ suite("selections-trim.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["1"](afterDocument);
+      notifyDependents["trim"](afterDocument);
     } catch (e) {
-      notifyDependents["1"](undefined);
+      notifyDependents["trim"](undefined);
 
       throw e;
     }

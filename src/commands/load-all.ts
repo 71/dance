@@ -532,7 +532,7 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.search",
-      (_, argument) => _.runAsync((_) => search(_, getRegister(_, argument, "slash", Register.Flags.CanWrite), getRepetitions(_, argument), argument.add, getDirection(argument), argument.interactive, getInput(argument), getSetInput(argument))),
+      (_, argument) => _.runAsync((_) => search(_, getRegister(_, argument, "slash", Register.Flags.CanWrite), getRepetitions(_, argument), argument.add, getDirection(argument), argument.interactive, getShift(argument), getInput(argument), getSetInput(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -546,18 +546,18 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
-      "dance.search.add",
-      (_, argument) => _.runAsync(() => commands([".search", { add: true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
       "dance.search.backward",
       (_, argument) => _.runAsync(() => commands([".search", { direction: -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
-      "dance.search.backward.add",
-      (_, argument) => _.runAsync(() => commands([".search", { direction: -1, add: true, ...argument }])),
+      "dance.search.backward.extend",
+      (_, argument) => _.runAsync(() => commands([".search", { direction: -1, shift: "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.search.extend",
+      (_, argument) => _.runAsync(() => commands([".search", { shift: "extend", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -808,7 +808,7 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.horizontally",
-      (_, argument) => _.runAsync((_) => horizontally(_, getRepetitions(_, argument), getDirection(argument), getShift(argument))),
+      (_, argument) => _.runAsync((_) => horizontally(_, argument.skipEol, getRepetitions(_, argument), getDirection(argument), getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -868,7 +868,7 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.vertically",
-      (_, argument) => _.runAsync((_) => vertically(_, _.selections, getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.by)),
+      (_, argument) => _.runAsync((_) => vertically(_, _.selections, argument.skipEol, getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.by)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

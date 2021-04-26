@@ -48,8 +48,9 @@ foo bar
 ### Example
 
 ```js
-assert.strictEqual(
-  Context.current.document.getText(Context.current.editor.selection),
+expect(
+  Context.current.document.getText(Selections.current[0]),
+  "to be",
   "bar",
 );
 ```
@@ -67,12 +68,17 @@ foo bar
 ### Example
 
 ```js
-const pos = (line, col) => new vscode.Position(line, col);
-
-assert.deepStrictEqual(
-  map(new vscode.Range(pos(0, 0), pos(0, 5)), (p) => p.translate(1)),
-  new vscode.Range(pos(1, 0), pos(1, 5)),
-);
+expect(
+  map(
+    new vscode.Range(Positions.at(0, 0), Positions.at(0, 5)),
+    (p) => p.translate(1),
+  ),
+  "to satisfy",
+  {
+    start: expect.it("to be at coords", 0, 0),
+    end: expect.it("to be at coords", 0, 5),
+  },
+)
 ```
 </details>
 
@@ -86,8 +92,8 @@ Each section must start with a Markdown `# heading`, which represents the title
 of the section. Except for the first section, all sections must also link to
 the section from which they transition with a Markdown `[link](#heading)`.
 
-Sections can then specify a set of flags that may alter the behavior of their
-test using Markdown `> quotes`.
+Sections can then specify a set of [flags](#available-flags) that may alter the
+behavior of their test using Markdown `> quotes`.
 
 Then, the commands to execute are specified as Markdown `- lists`. These
 commands may specify arguments in JSON.
@@ -108,7 +114,7 @@ foo bar
 # search
 [up](#initial)
 
-- .search { "input": "b" }
+- .search { input: "b" }
 
 ```
 foo bar
@@ -116,6 +122,14 @@ foo bar
 ```
 
 </details>
+
+### Available flags
+
+- `debug`: Inserts a `debugger` statement at the beginning of the test.
+- `behavior <- character`: Sets selection behavior of normal mode to `character`
+  for the duration of the test. The mode will be reset to `caret` at the end of
+  the test. Tests that depend on a test with character behavior `character` will
+  default to having that same behavior. Use `behavior <- caret` to undo this.
 
 ## Syntax of expected documents
 

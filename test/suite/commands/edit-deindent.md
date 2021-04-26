@@ -1,4 +1,4 @@
-# 0
+# initial
 
 ```
 foo
@@ -9,8 +9,8 @@ foo
      ^ 0
 ```
 
-# 1
-[up](#0)
+# deindent
+[up](#initial)
 
 - .edit.deindent.withIncomplete
 
@@ -23,8 +23,8 @@ baz
    ^ 0
 ```
 
-# 1-alt
-[up](#0)
+# deindent-alt
+[up](#initial)
 
 - .edit.deindent
 

@@ -20,11 +20,11 @@ let lastSearchInput: RegExp | undefined;
  *
  * @keys `/` (normal)
  *
- * | Title                 | Identifier     | Keybinding     | Command                                     |
- * | --------------------- | -------------- | -------------- | ------------------------------------------- |
- * | Search (add)          | `add`          | `?` (normal)   | `[".search", {                add: true }]` |
- * | Search backward       | `backward`     | `a-/` (normal) | `[".search", { direction: -1            }]` |
- * | Search backward (add) | `backward.add` | `a-?` (normal) | `[".search", { direction: -1, add: true }]` |
+ * | Title                    | Identifier        | Keybinding     | Command                                           |
+ * | ------------------------ | ----------------- | -------------- | ------------------------------------------------- |
+ * | Search (extend)          | `extend`          | `?` (normal)   | `[".search", {                shift: "extend" }]` |
+ * | Search backward          | `backward`        | `a-/` (normal) | `[".search", { direction: -1                  }]` |
+ * | Search backward (extend) | `backward.extend` | `a-?` (normal) | `[".search", { direction: -1, shift: "extend" }]` |
  */
 export function search(
   _: Context,
@@ -34,10 +34,12 @@ export function search(
   add: Argument<boolean> = false,
   direction: Direction = Direction.Forward,
   interactive: Argument<boolean> = true,
+  shift: api.Shift = api.Shift.Jump,
 
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
+  // TODO: handle shift
   return manipulateSelectionsInteractively(_, input, setInput, interactive, {
     ...prompt.regexpOpts("mug"),
     value: lastSearchInput?.source,
@@ -52,23 +54,28 @@ export function search(
     const newSelections = add ? selections.slice() : [],
           regexpMatches = [] as RegExpMatchArray[];
 
-    newSelections.push(...Selections.map.byIndex((_, selection, document) => {
+    newSelections.push(...Selections.map.byIndex((i, selection, document) => {
       let newSelection = selection;
 
-      for (let i = 0; i < repetitions; i++) {
-        const searchOrigin = Selections.seekFrom(selection, direction),
-              searchResult = api.search(direction, input as RegExp, searchOrigin);
+      for (let j = 0; j < repetitions; j++) {
+        const searchResult = nextImpl(
+          input as RegExp, direction, newSelection, undefined, undefined, document,
+          /* allowWrapping= */ shift !== api.Shift.Extend, regexpMatches, i);
 
         if (searchResult === undefined) {
           return undefined;
         }
 
-        newSelection = Selections.fromLength(searchResult[0], searchResult[1][0].length,
-                                             false /* isReversed */, document);
-        regexpMatches.push(searchResult[1]);
+        newSelection = searchResult;
       }
 
-      return newSelection;
+      if (shift === api.Shift.Jump) {
+        return newSelection;
+      }
+
+      const position = direction === Direction.Forward ? newSelection.end : newSelection.start;
+
+      return Selections.shift(selection, position, shift, _);
     }, selections));
 
     Selections.set(newSelections);
@@ -148,12 +155,15 @@ export async function next(
     return;
   }
 
-  const re = new RegExp(reStrs[0], "mu");
+  const re = new RegExp(reStrs[0], "mu"),
+        allRegexpMatches = [] as RegExpMatchArray[];
 
   if (!add) {
-    Selections.update.byIndex((_, selection) => {
-      for (let i = 0; i < repetitions; i++) {
-        const next = nextImpl(re, direction, selection, undefined, undefined, document, true);
+    Selections.update.byIndex((i, selection) => {
+      for (let j = 0; j < repetitions; j++) {
+        const next = nextImpl(
+          re, direction, selection, undefined, undefined, document, /* allowWrapping= */ true,
+          allRegexpMatches, i);
 
         if (next === undefined) {
           return undefined;
@@ -165,6 +175,7 @@ export async function next(
       return selection;
     });
 
+    _.extension.registers.updateRegExpMatches(allRegexpMatches);
     return;
   }
 
@@ -172,11 +183,14 @@ export async function next(
         allSelections = selections.slice();
 
   for (let i = 0; i < repetitions; i++) {
-    const newSelections = [] as vscode.Selection[];
+    const newSelections = [] as vscode.Selection[],
+          regexpMatches = [] as RegExpMatchArray[];
 
     for (let j = 0; j < selections.length; j++) {
       const selection = selections[j],
-            next = nextImpl(re, direction, selection, undefined, undefined, document, true);
+            next = nextImpl(
+              re, direction, selection, undefined, undefined, document, /* allowWrapping= */ true,
+              regexpMatches, i);
 
       if (next !== undefined) {
         selections[j] = next;
@@ -194,9 +208,11 @@ export async function next(
     }
 
     allSelections.unshift(...newSelections);
+    allRegexpMatches.unshift(...regexpMatches);
   }
 
   Selections.set(allSelections);
+  _.extension.registers.updateRegExpMatches(allRegexpMatches);
 }
 
 function nextImpl(
@@ -207,6 +223,8 @@ function nextImpl(
   searchEnd: vscode.Position | undefined,
   document: vscode.TextDocument,
   allowWrapping: boolean,
+  matches: RegExpMatchArray[] | undefined,
+  matchesIndex: number,
 ): vscode.Selection | undefined {
   searchStart ??= direction === Direction.Backward ? selection.start : selection.end;
 
@@ -216,18 +234,23 @@ function nextImpl(
     if (allowWrapping) {
       if (direction === Direction.Backward) {
         searchStart = Positions.last(document);
-        searchEnd = selection.end;
+        searchEnd = Positions.zero;
       } else {
         searchStart = Positions.zero;
-        searchEnd = selection.start;
+        searchEnd = Positions.last(document);
       }
 
-      return nextImpl(re, direction, selection, searchStart, searchEnd, document, false);
+      return nextImpl(
+        re, direction, selection, searchStart, searchEnd, document, false, matches, matchesIndex);
     }
 
     return;
   }
 
-  return Selections.fromLength(searchResult[0], searchResult[1][0].length,
-                               false /* isReversed */, document);
+  if (matches !== undefined) {
+    matches[matchesIndex] = searchResult[1];
+  }
+
+  return Selections.fromLength(
+    searchResult[0], searchResult[1][0].length, /* isReversed= */ false, document);
 }

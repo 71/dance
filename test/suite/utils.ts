@@ -7,6 +7,8 @@ import * as path   from "path";
 // @ts-expect-error
 import * as unexpected from "unexpected";
 import * as vscode from "vscode";
+import { Context, Selections } from "../../src/api";
+import { SelectionBehavior } from "../../src/state/modes";
 
 interface Expect<T = any> {
   <T>(subject: T, assertion: string, ...args: readonly any[]): {
@@ -263,20 +265,26 @@ export class ExpectedDocument {
       return;
     }
 
+    let actualSelections = editor.selections;
+
+    if (Context.currentOrUndefined?.selectionBehavior === SelectionBehavior.Character) {
+      actualSelections = Selections.toCharacterMode(actualSelections, document);
+    }
+
     // Ensure resulting selections are right.
     assert.strictEqual(
-      editor.selections.length,
+      actualSelections.length,
       expectedSelections.length,
-      `Expected ${expectedSelections.length} selection(s), but had ${editor.selections.length}.`,
+      `Expected ${expectedSelections.length} selection(s), but had ${actualSelections.length}.`,
     );
 
     for (let i = 0; i < expectedSelections.length; i++) {
-      if (editor.selections[i].isEqual(expectedSelections[i])) {
+      if (actualSelections[i].isEqual(expectedSelections[i])) {
         continue;
       }
 
       const expected = stringifySelection(document, expectedSelections[i]);
-      const actual = stringifySelection(document, editor.selections[i]);
+      const actual = stringifySelection(document, actualSelections[i]);
 
       assert.strictEqual(
         actual,
@@ -285,7 +293,7 @@ export class ExpectedDocument {
       );
       // If stringified results are the same, throw message using strict equal.
       assert.deepStrictEqual(
-        editor.selections[i],
+        actualSelections[i],
         expectedSelections[i],
         `(Actual Selection #${i} is at same spots in document as expected, `
         + `but with different numbers)`,

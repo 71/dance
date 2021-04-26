@@ -15,7 +15,7 @@ finally a selection
 ^^^| 3
 ```
 
-# 1
+# trim
 [up](#initial)
 
 - .selections.trimWhitespace

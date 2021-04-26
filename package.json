@@ -982,18 +982,18 @@
         "category": "Dance"
       },
       {
-        "command": "dance.search.add",
-        "title": "Search (add)",
-        "category": "Dance"
-      },
-      {
         "command": "dance.search.backward",
         "title": "Search backward",
         "category": "Dance"
       },
       {
-        "command": "dance.search.backward.add",
-        "title": "Search backward (add)",
+        "command": "dance.search.backward.extend",
+        "title": "Search backward (extend)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.search.extend",
+        "title": "Search (extend)",
         "category": "Dance"
       },
       {
@@ -1838,15 +1838,15 @@
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.search.add",
-          "when": "dance.mode == 'normal'"
-        },
-        {
           "command": "dance.search.backward",
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.search.backward.add",
+          "command": "dance.search.backward.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.extend",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -2724,12 +2724,6 @@
         "command": "dance.search"
       },
       {
-        "key": "Shift+/",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Search (add)",
-        "command": "dance.search.add"
-      },
-      {
         "key": "Alt+/",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Search backward",
@@ -2738,8 +2732,14 @@
       {
         "key": "Shift+Alt+/",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Search backward (add)",
-        "command": "dance.search.backward.add"
+        "title": "Search backward (extend)",
+        "command": "dance.search.backward.extend"
+      },
+      {
+        "key": "Shift+/",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Search (extend)",
+        "command": "dance.search.extend"
       },
       {
         "key": "N",
@@ -3172,8 +3172,8 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "command": "dance.select.vertically",
         "args": {
-          "by": "page",
-          "direction": 1
+          "direction": 1,
+          "by": "page"
         }
       },
       {
@@ -3181,8 +3181,8 @@
         "when": "editorTextFocus && dance.mode == 'insert'",
         "command": "dance.select.vertically",
         "args": {
-          "by": "page",
-          "direction": 1
+          "direction": 1,
+          "by": "page"
         }
       },
       {
@@ -3190,8 +3190,8 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "command": "dance.select.vertically",
         "args": {
-          "by": "halfPage",
-          "direction": 1
+          "direction": 1,
+          "by": "halfPage"
         }
       },
       {
@@ -3199,8 +3199,8 @@
         "when": "editorTextFocus && dance.mode == 'insert'",
         "command": "dance.select.vertically",
         "args": {
-          "by": "halfPage",
-          "direction": 1
+          "direction": 1,
+          "by": "halfPage"
         }
       },
       {
@@ -3208,8 +3208,8 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "command": "dance.select.vertically",
         "args": {
-          "by": "page",
-          "direction": -1
+          "direction": -1,
+          "by": "page"
         }
       },
       {
@@ -3217,8 +3217,8 @@
         "when": "editorTextFocus && dance.mode == 'insert'",
         "command": "dance.select.vertically",
         "args": {
-          "by": "page",
-          "direction": -1
+          "direction": -1,
+          "by": "page"
         }
       },
       {
@@ -3226,8 +3226,8 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "command": "dance.select.vertically",
         "args": {
-          "by": "halfPage",
-          "direction": -1
+          "direction": -1,
+          "by": "halfPage"
         }
       },
       {
@@ -3235,8 +3235,8 @@
         "when": "editorTextFocus && dance.mode == 'insert'",
         "command": "dance.select.vertically",
         "args": {
-          "by": "halfPage",
-          "direction": -1
+          "direction": -1,
+          "by": "halfPage"
         }
       },
       {

@@ -45,15 +45,16 @@ const preferredColumnsToken =
  *
  * | Keybinding                     | Command                                                     |
  * | ------------------------------ | ----------------------------------------------------------- |
- * | `c-f` (normal), `c-f` (insert) | `[".select.vertically", { by: "page"    , direction:  1 }]` |
- * | `c-d` (normal), `c-d` (insert) | `[".select.vertically", { by: "halfPage", direction:  1 }]` |
- * | `c-b` (normal), `c-b` (insert) | `[".select.vertically", { by: "page"    , direction: -1 }]` |
- * | `c-u` (normal), `c-u` (insert) | `[".select.vertically", { by: "halfPage", direction: -1 }]` |
+ * | `c-f` (normal), `c-f` (insert) | `[".select.vertically", { direction:  1, by: "page"     }]` |
+ * | `c-d` (normal), `c-d` (insert) | `[".select.vertically", { direction:  1, by: "halfPage" }]` |
+ * | `c-b` (normal), `c-b` (insert) | `[".select.vertically", { direction: -1, by: "page"     }]` |
+ * | `c-u` (normal), `c-u` (insert) | `[".select.vertically", { direction: -1, by: "halfPage" }]` |
  */
 export function vertically(
   _: Context,
   selections: readonly vscode.Selection[],
 
+  skipEol: Argument<boolean> = false,
   repetitions: number,
   direction = Direction.Forward,
   shift = Shift.Select,
@@ -114,7 +115,7 @@ export function vertically(
       }));
 
     editorState.store(
-      editorState,
+      preferredColumnsToken,
       preferredColumnsState = {
         disposable,
         expectedSelections: [],
@@ -148,7 +149,7 @@ export function vertically(
 
     if (preferredColumn <= targetLineLength) {
       targetColumn = preferredColumn;
-    } else if (isCharacterMode && targetLine + 1 < document.lineCount) {
+    } else if (isCharacterMode && targetLine + 1 < document.lineCount && !skipEol) {
       return Selections.shift(selection, new vscode.Position(targetLine + 1, 0), shift);
     } else {
       targetColumn = targetLineLength;
@@ -188,6 +189,7 @@ export function vertically(
 export function horizontally(
   _: Context,
 
+  skipEol: Argument<boolean> = false,
   repetitions: number,
   direction = Direction.Forward,
   shift = Shift.Select,
@@ -195,7 +197,7 @@ export function horizontally(
   const mayNeedAdjustment = direction === Direction.Backward
                          && _.selectionBehavior === SelectionBehavior.Character;
 
-  Selections.update.byIndex((_i, selection) => {
+  Selections.update.byIndex((_i, selection, document) => {
     let active = selection.active === selection.start
       ? Selections.activeStart(selection, _)
       : Selections.activeEnd(selection, _);
@@ -208,11 +210,27 @@ export function horizontally(
       }
     }
 
-    return Selections.shift(
-      selection,
-      Positions.offset(active, direction * repetitions, _.document) ?? active,
-      shift,
-    );
+    let target = Positions.offset(active, direction * repetitions, document) ?? active;
+
+    if (skipEol) {
+      switch (_.selectionBehavior) {
+      case SelectionBehavior.Caret:
+        if (target.character === Lines.length(target.line, document) && target.character > 0) {
+          target = Positions.offset(target, direction, document) ?? target;
+        }
+        break;
+
+      case SelectionBehavior.Character:
+        if (target.character === 0
+            && (direction === Direction.Forward || target.line === 0
+                || !Lines.isEmpty(target.line - 1, document))) {
+          target = Positions.offset(target, direction, document) ?? target;
+        }
+        break;
+      }
+    }
+
+    return Selections.shift(selection, target, shift);
   });
 }
 

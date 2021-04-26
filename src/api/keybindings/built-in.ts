@@ -386,12 +386,6 @@ const builtinKeybindings = [
     command: "dance.search",
   },
   {
-    key: "Shift+/",
-    when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Search (add)",
-    command: "dance.search.add",
-  },
-  {
     key: "Alt+/",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Search backward",
@@ -400,8 +394,14 @@ const builtinKeybindings = [
   {
     key: "Shift+Alt+/",
     when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Search backward (add)",
-    command: "dance.search.backward.add",
+    title: "Search backward (extend)",
+    command: "dance.search.backward.extend",
+  },
+  {
+    key: "Shift+/",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Search (extend)",
+    command: "dance.search.extend",
   },
   {
     key: "N",
@@ -834,8 +834,8 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'normal'",
     command: "dance.select.vertically",
     args: {
-      by: "page",
       direction: 1,
+      by: "page",
     },
   },
   {
@@ -843,8 +843,8 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'insert'",
     command: "dance.select.vertically",
     args: {
-      by: "page",
       direction: 1,
+      by: "page",
     },
   },
   {
@@ -852,8 +852,8 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'normal'",
     command: "dance.select.vertically",
     args: {
-      by: "halfPage",
       direction: 1,
+      by: "halfPage",
     },
   },
   {
@@ -861,8 +861,8 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'insert'",
     command: "dance.select.vertically",
     args: {
-      by: "halfPage",
       direction: 1,
+      by: "halfPage",
     },
   },
   {
@@ -870,8 +870,8 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'normal'",
     command: "dance.select.vertically",
     args: {
-      by: "page",
       direction: -1,
+      by: "page",
     },
   },
   {
@@ -879,8 +879,8 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'insert'",
     command: "dance.select.vertically",
     args: {
-      by: "page",
       direction: -1,
+      by: "page",
     },
   },
   {
@@ -888,8 +888,8 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'normal'",
     command: "dance.select.vertically",
     args: {
-      by: "halfPage",
       direction: -1,
+      by: "halfPage",
     },
   },
   {
@@ -897,8 +897,8 @@ const builtinKeybindings = [
     when: "editorTextFocus && dance.mode == 'insert'",
     command: "dance.select.vertically",
     args: {
-      by: "halfPage",
       direction: -1,
+      by: "halfPage",
     },
   },
   {

@@ -13,6 +13,7 @@ export class PerEditorState implements vscode.Disposable {
   private readonly _onVisibilityDidChange = new vscode.EventEmitter<this>();
   private _isVisible = true;
   private _mode!: Mode;
+  private _modeChangeSubscription!: vscode.Disposable;
 
   /**
    * The corresponding visible `vscode.TextEditor`.
@@ -87,6 +88,8 @@ export class PerEditorState implements vscode.Disposable {
     this._onEditorWasClosed.dispose();
     this._onVisibilityDidChange.dispose();
 
+    this._modeChangeSubscription.dispose();
+
     for (let i = 0; i < this._storage.length; i++) {
       if (PerEditorState._registeredStates[i]) {
         (this._storage[i] as vscode.Disposable | undefined)?.dispose();
@@ -103,7 +106,7 @@ export class PerEditorState implements vscode.Disposable {
    * Returns a `Token` that can later be used to store editor-specific data.
    */
   public static registerState<T>(isDisposable: T extends vscode.Disposable ? true : false) {
-    return this._registeredStates.push(isDisposable) - 1 as PerEditorState.Token<T>;
+    return this._registeredStates.push(isDisposable) - 1 as unknown as PerEditorState.Token<T>;
   }
 
   private readonly _storage: unknown[] = [];
@@ -112,16 +115,16 @@ export class PerEditorState implements vscode.Disposable {
    * Returns the object assigned to the given token.
    */
   public get<T>(token: PerEditorState.Token<T>) {
-    return this._storage[token as number] as T | undefined;
+    return this._storage[token as unknown as number] as T | undefined;
   }
 
   /**
    * Stores a value that is related to the editor for which the state is kept.
    */
   public store<T>(token: PerEditorState.Token<T>, value: T | undefined) {
-    const previousValue = this._storage[token as number];
+    const previousValue = this._storage[token as unknown as number];
 
-    this._storage[token as number] = value;
+    this._storage[token as unknown as number] = value;
 
     return previousValue as T | undefined;
   }
@@ -151,6 +154,7 @@ export class PerEditorState implements vscode.Disposable {
     const previousMode = this._mode;
 
     if (previousMode !== undefined) {
+      this._modeChangeSubscription.dispose();
       this._clearDecorations(previousMode);
 
       await this._runCommands(previousMode.onLeaveMode, (e) =>
@@ -159,17 +163,34 @@ export class PerEditorState implements vscode.Disposable {
       );
 
       if (previousMode.selectionBehavior !== mode.selectionBehavior) {
-        const editor = this._editor,
-              document = editor.document,
-              selections = editor.selections;
-
-        editor.selections = mode.selectionBehavior === SelectionBehavior.Character
-          ? Selections.toCharacterMode(selections, document)
-          : Selections.fromCharacterMode(selections, document);
+        this._updateSelectionsAfterBehaviorChange(mode);
       }
     }
 
     this._mode = mode;
+    this._modeChangeSubscription = mode.onChanged(([mode, props]) => {
+      for (const prop of props) {
+        switch (prop) {
+        case "cursorStyle":
+          this._editor.options.cursorStyle = mode.cursorStyle;
+          break;
+
+        case "lineNumbers":
+          this._editor.options.lineNumbers = mode.lineNumbers;
+          break;
+
+        case "decorations":
+        case "lineHighlight":
+        case "selectionDecorationType":
+          this._updateDecorations(mode);
+          break;
+
+        case "selectionBehavior":
+          this._updateSelectionsAfterBehaviorChange(mode);
+          break;
+        }
+      }
+    });
     this._updateDecorations(mode);
 
     await this._runCommands(mode.onEnterMode, (e) =>
@@ -347,10 +368,22 @@ export class PerEditorState implements vscode.Disposable {
     editor.options.cursorStyle = mode.cursorStyle;
     editor.options.lineNumbers = mode.lineNumbers;
   }
+
+  private _updateSelectionsAfterBehaviorChange(mode: Mode) {
+    const editor = this._editor,
+          document = editor.document,
+          selections = editor.selections;
+
+    editor.selections = mode.selectionBehavior === SelectionBehavior.Character
+      ? Selections.toCharacterMode(selections, document)
+      : Selections.fromCharacterMode(selections, document);
+  }
 }
 
 export namespace PerEditorState {
-  export declare class Token<T> {}
+  export declare class Token<T> {
+    private can_never_implement_this: never;
+  }
 }
 
 /**

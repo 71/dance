@@ -66,7 +66,7 @@ suite("search-next.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.search",  { input: "apple" });
+      await executeCommand("dance.search", { input: "apple" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -169,7 +169,7 @@ suite("search-next.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.search.next",  { count: 3 });
+      await executeCommand("dance.search.next", { count: 3 });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -205,7 +205,7 @@ suite("search-next.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.search.next.add",  { count: 3 });
+      await executeCommand("dance.search.next.add", { count: 3 });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -239,7 +239,7 @@ suite("search-next.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.search.next",  { count: 4 });
+      await executeCommand("dance.search.next", { count: 4 });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -276,7 +276,7 @@ suite("search-next.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.search.next.add",  { count: 4 });
+      await executeCommand("dance.search.next.add", { count: 4 });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -378,7 +378,7 @@ suite("search-next.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.search.previous",  { count: 2 });
+      await executeCommand("dance.search.previous", { count: 2 });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -413,7 +413,7 @@ suite("search-next.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.search.previous.add",  { count: 2 });
+      await executeCommand("dance.search.previous.add", { count: 2 });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
