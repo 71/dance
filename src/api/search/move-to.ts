@@ -29,8 +29,8 @@ export function moveTo(
     }
 
     const idx = direction === Direction.Backward
-      ? text.lastIndexOf(string, character - 1)
-      : text.indexOf(string, character + 1);
+      ? text.lastIndexOf(string, character)
+      : text.indexOf(string, character);
 
     if (idx !== -1) {
       return new vscode.Position(line, idx);

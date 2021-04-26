@@ -1027,6 +1027,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.seek",
+        "title": "Select to character (excluded)",
+        "category": "Dance"
+      },
+      {
         "command": "dance.seek.askObject",
         "title": "Select whole object",
         "category": "Dance"
@@ -1077,43 +1082,8 @@
         "category": "Dance"
       },
       {
-        "command": "dance.seek.character",
-        "title": "Select to character (excluded)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.character.backward",
+        "command": "dance.seek.backward",
         "title": "Select to character (excluded, backward)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.character.extend",
-        "title": "Extend to character (excluded)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.character.extend.backward",
-        "title": "Extend to character (excluded, backward)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.character.included",
-        "title": "Select to character (included)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.character.included.backward",
-        "title": "Select to character (included, backward)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.character.included.extend",
-        "title": "Extend to character (included)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.seek.character.included.extend.backward",
-        "title": "Extend to character (included, backward)",
         "category": "Dance"
       },
       {
@@ -1134,6 +1104,36 @@
       {
         "command": "dance.seek.enclosing.extend.backward",
         "title": "Extend to previous enclosing character",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.extend",
+        "title": "Extend to character (excluded)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.extend.backward",
+        "title": "Extend to character (excluded, backward)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.included",
+        "title": "Select to character (included)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.included.backward",
+        "title": "Select to character (included, backward)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.included.extend",
+        "title": "Extend to character (included)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.included.extend.backward",
+        "title": "Extend to character (included, backward)",
         "category": "Dance"
       },
       {
@@ -1874,6 +1874,10 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.seek",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.seek.askObject",
           "when": "dance.mode == 'normal'"
         },
@@ -1914,35 +1918,7 @@
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.seek.character",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.character.backward",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.character.extend",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.character.extend.backward",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.character.included",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.character.included.backward",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.character.included.extend",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.seek.character.included.extend.backward",
+          "command": "dance.seek.backward",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -1959,6 +1935,30 @@
         },
         {
           "command": "dance.seek.enclosing.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.included",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.included.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.included.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.included.extend.backward",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -2778,6 +2778,12 @@
         "command": "dance.search.selection.smart"
       },
       {
+        "key": "T",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to character (excluded)",
+        "command": "dance.seek"
+      },
+      {
         "key": "Alt+A",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Select whole object",
@@ -2850,52 +2856,10 @@
         "command": "dance.seek.askObject.start"
       },
       {
-        "key": "T",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select to character (excluded)",
-        "command": "dance.seek.character"
-      },
-      {
         "key": "Alt+T",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Select to character (excluded, backward)",
-        "command": "dance.seek.character.backward"
-      },
-      {
-        "key": "Shift+T",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to character (excluded)",
-        "command": "dance.seek.character.extend"
-      },
-      {
-        "key": "Shift+Alt+T",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to character (excluded, backward)",
-        "command": "dance.seek.character.extend.backward"
-      },
-      {
-        "key": "F",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select to character (included)",
-        "command": "dance.seek.character.included"
-      },
-      {
-        "key": "Alt+F",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select to character (included, backward)",
-        "command": "dance.seek.character.included.backward"
-      },
-      {
-        "key": "Shift+F",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to character (included)",
-        "command": "dance.seek.character.included.extend"
-      },
-      {
-        "key": "Shift+Alt+F",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to character (included, backward)",
-        "command": "dance.seek.character.included.extend.backward"
+        "command": "dance.seek.backward"
       },
       {
         "key": "M",
@@ -2920,6 +2884,42 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Extend to previous enclosing character",
         "command": "dance.seek.enclosing.extend.backward"
+      },
+      {
+        "key": "Shift+T",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to character (excluded)",
+        "command": "dance.seek.extend"
+      },
+      {
+        "key": "Shift+Alt+T",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to character (excluded, backward)",
+        "command": "dance.seek.extend.backward"
+      },
+      {
+        "key": "F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to character (included)",
+        "command": "dance.seek.included"
+      },
+      {
+        "key": "Alt+F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to character (included, backward)",
+        "command": "dance.seek.included.backward"
+      },
+      {
+        "key": "Shift+F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to character (included)",
+        "command": "dance.seek.included.extend"
+      },
+      {
+        "key": "Shift+Alt+F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to character (included, backward)",
+        "command": "dance.seek.included.extend.backward"
       },
       {
         "key": "W",

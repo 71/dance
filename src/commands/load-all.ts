@@ -588,16 +588,16 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
  */
 async function loadSeekModule(): Promise<CommandDescriptor[]> {
   const {
-    character,
     enclosing,
     object,
+    seek,
     word,
   } = await import("./seek");
 
   return [
     new CommandDescriptor(
-      "dance.seek.character",
-      (_, argument) => _.runAsync((_) => character(_, getInputOr(argument), getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.include)),
+      "dance.seek",
+      (_, argument) => _.runAsync((_) => seek(_, getInputOr(argument), getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.include)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -666,38 +666,8 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
-      "dance.seek.character.backward",
-      (_, argument) => _.runAsync(() => commands([".seek.character", { direction: -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.character.extend",
-      (_, argument) => _.runAsync(() => commands([".seek.character", { shift: "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.character.extend.backward",
-      (_, argument) => _.runAsync(() => commands([".seek.character", { shift: "extend", direction: -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.character.included",
-      (_, argument) => _.runAsync(() => commands([".seek.character", { include: true, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.character.included.backward",
-      (_, argument) => _.runAsync(() => commands([".seek.character", { include: true, direction: -1, ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.character.included.extend",
-      (_, argument) => _.runAsync(() => commands([".seek.character", { include: true, shift: "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.seek.character.included.extend.backward",
-      (_, argument) => _.runAsync(() => commands([".seek.character", { include: true, shift: "extend", direction: -1, ...argument }])),
+      "dance.seek.backward",
+      (_, argument) => _.runAsync(() => commands([".seek", { direction: -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -713,6 +683,36 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.seek.enclosing.extend.backward",
       (_, argument) => _.runAsync(() => commands([".seek.enclosing", { shift: "extend", direction: -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.extend",
+      (_, argument) => _.runAsync(() => commands([".seek", { shift: "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.extend.backward",
+      (_, argument) => _.runAsync(() => commands([".seek", { shift: "extend", direction: -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.included",
+      (_, argument) => _.runAsync(() => commands([".seek", { include: true, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.included.backward",
+      (_, argument) => _.runAsync(() => commands([".seek", { include: true, direction: -1, ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.included.extend",
+      (_, argument) => _.runAsync(() => commands([".seek", { include: true, shift: "extend", ...argument }])),
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
+      "dance.seek.included.extend.backward",
+      (_, argument) => _.runAsync(() => commands([".seek", { include: true, shift: "extend", direction: -1, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(

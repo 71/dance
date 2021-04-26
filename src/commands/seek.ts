@@ -20,17 +20,17 @@ declare module "./seek";
  *
  * #### Variants
  *
- * | Title                                    | Identifier                           | Keybinding       | Command                                                                  |
- * | ---------------------------------------- | ------------------------------------ | ---------------- | ------------------------------------------------------------------------ |
- * | Extend to character (excluded)           | `character.extend`                   | `s-t` (normal)   | `[".seek.character", {                shift: "extend"                }]` |
- * | Select to character (excluded, backward) | `character.backward`                 | `a-t` (normal)   | `[".seek.character", {                                 direction: -1 }]` |
- * | Extend to character (excluded, backward) | `character.extend.backward`          | `s-a-t` (normal) | `[".seek.character", {                shift: "extend", direction: -1 }]` |
- * | Select to character (included)           | `character.included`                 | `f` (normal)     | `[".seek.character", { include: true                                 }]` |
- * | Extend to character (included)           | `character.included.extend`          | `s-f` (normal)   | `[".seek.character", { include: true, shift: "extend"                }]` |
- * | Select to character (included, backward) | `character.included.backward`        | `a-f` (normal)   | `[".seek.character", { include: true,                  direction: -1 }]` |
- * | Extend to character (included, backward) | `character.included.extend.backward` | `s-a-f` (normal) | `[".seek.character", { include: true, shift: "extend", direction: -1 }]` |
+ * | Title                                    | Identifier                 | Keybinding       | Command                                                        |
+ * | ---------------------------------------- | -------------------------- | ---------------- | -------------------------------------------------------------- |
+ * | Extend to character (excluded)           | `extend`                   | `s-t` (normal)   | `[".seek", {                shift: "extend"                }]` |
+ * | Select to character (excluded, backward) | `backward`                 | `a-t` (normal)   | `[".seek", {                                 direction: -1 }]` |
+ * | Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (normal) | `[".seek", {                shift: "extend", direction: -1 }]` |
+ * | Select to character (included)           | `included`                 | `f` (normal)     | `[".seek", { include: true                                 }]` |
+ * | Extend to character (included)           | `included.extend`          | `s-f` (normal)   | `[".seek", { include: true, shift: "extend"                }]` |
+ * | Select to character (included, backward) | `included.backward`        | `a-f` (normal)   | `[".seek", { include: true,                  direction: -1 }]` |
+ * | Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (normal) | `[".seek", { include: true, shift: "extend", direction: -1 }]` |
  */
-export async function character(
+export async function seek(
   _: Context,
   inputOr: InputOr<string>,
 
@@ -42,7 +42,7 @@ export async function character(
   const input = await inputOr(() => keypress(_));
 
   Selections.update.byIndex((_, selection, document) => {
-    let position: vscode.Position | undefined = Selections.seekFrom(selection, direction);
+    let position: vscode.Position | undefined = Selections.seekFrom(selection, -direction);
 
     for (let i = 0; i < repetitions; i++) {
       position = Positions.offset(position, direction, document);
@@ -58,7 +58,7 @@ export async function character(
       }
     }
 
-    if (include) {
+    if (include && !(shift === Shift.Extend && direction === Direction.Backward && position.isAfter(selection.anchor))) {
       position = Positions.offset(position, input.length * direction);
 
       if (position === undefined) {
