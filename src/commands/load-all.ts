@@ -1026,7 +1026,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
   const {
     changeDirection,
     copy,
-    extendToLines,
+    expandToLines,
     filter,
     merge,
     open,
@@ -1056,8 +1056,8 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
-      "dance.selections.extendToLines",
-      (_) => _.runAsync((_) => extendToLines(_)),
+      "dance.selections.expandToLines",
+      (_) => _.runAsync((_) => expandToLines(_)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

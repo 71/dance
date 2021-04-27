@@ -606,9 +606,9 @@ export class Modes implements Iterable<Mode> {
               defaultConfig = inspect.defaultValue?.[modeName];
 
         if (globalConfig !== undefined || defaultConfig !== undefined) {
-          // Mode is a global mode; make sure that the local workspace does
-          // not override its `on{Enter,Leave}Mode` hooks (to make sure
-          // loading a workspace will not execute arbitrary code).
+          // Mode is a global mode; make sure that the local workspace does not
+          // override its `on{Enter,Leave}Mode` hooks (to make sure loading a
+          // workspace will not execute arbitrary code).
           configuration.onEnterMode = globalConfig?.onEnterMode ?? defaultConfig?.onEnterMode;
           configuration.onLeaveMode = globalConfig?.onLeaveMode ?? defaultConfig?.onLeaveMode;
         }

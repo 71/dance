@@ -934,8 +934,8 @@ const builtinKeybindings = [
   {
     key: "Alt+X",
     when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Extend to lines",
-    command: "dance.selections.extendToLines",
+    title: "Expand to lines",
+    command: "dance.selections.expandToLines",
   },
   {
     key: "Shift+Alt+;",

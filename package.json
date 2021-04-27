@@ -1447,8 +1447,8 @@
         "category": "Dance"
       },
       {
-        "command": "dance.selections.extendToLines",
-        "title": "Extend to lines",
+        "command": "dance.selections.expandToLines",
+        "title": "Expand to lines",
         "category": "Dance"
       },
       {
@@ -2210,7 +2210,7 @@
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.selections.extendToLines",
+          "command": "dance.selections.expandToLines",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -3272,8 +3272,8 @@
       {
         "key": "Alt+X",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to lines",
-        "command": "dance.selections.extendToLines"
+        "title": "Expand to lines",
+        "command": "dance.selections.expandToLines"
       },
       {
         "key": "Shift+Alt+;",

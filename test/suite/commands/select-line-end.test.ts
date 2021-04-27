@@ -185,7 +185,7 @@ suite("select-line-end.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.up.jump", { skipEol: true });
+      await executeCommand("dance.select.up.jump", { avoidEol: true });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
@@ -259,7 +259,7 @@ suite("select-line-end.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.down.jump", { skipEol: true });
+      await executeCommand("dance.select.down.jump", { avoidEol: true });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
@@ -296,7 +296,7 @@ suite("select-line-end.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.down.jump", { count: 2, skipEol: true });
+      await executeCommand("dance.select.down.jump", { count: 2, avoidEol: true });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
@@ -370,7 +370,7 @@ suite("select-line-end.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.up.jump", { count: 2, skipEol: true });
+      await executeCommand("dance.select.up.jump", { count: 2, avoidEol: true });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.

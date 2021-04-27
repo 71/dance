@@ -52,7 +52,7 @@ quxxx
 # up-skip-eol
 [up](#initial)
 
-- .select.up.jump { skipEol: true }
+- .select.up.jump { avoidEol: true }
 
 When at line end, moving to a different line will always select the last
 character instead of line end. "Desired column" is set to `len + 1` (= 4)
@@ -82,7 +82,7 @@ quxxx
 # down-skip-eol-1
 [up](#initial)
 
-- .select.down.jump { skipEol: true }
+- .select.down.jump { avoidEol: true }
 
 Similarly to the [test case above](#up-skip-eol), "desired column" is 4 so we
 select the last character.
@@ -98,7 +98,7 @@ quxxx
 # down-skip-eol-2
 [up](#initial)
 
-- .select.down.jump { count: 2, skipEol: true }
+- .select.down.jump { count: 2, avoidEol: true }
 
 As explained above, the 4th character should be selected because it's on the
 desired column.
@@ -141,7 +141,7 @@ bar
 # blank-up-2
 [up](#blank-initial)
 
-- .select.up.jump { count: 2, skipEol: true }
+- .select.up.jump { count: 2, avoidEol: true }
 
 ```
 foo

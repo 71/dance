@@ -22,18 +22,8 @@
       "items": {
         "b": {
           "text": "toggle character selection behavior",
-          "command": "dance.run",
-          "args": [
-            {
-              "input": [
-                "const normalMode = Context.current.extensionState.modes.get('normal'),",
-                "      options = Context.current.editor.options,",
-                "      behavior = normalMode.selectionBehavior === 1 ? 2 : 1;",
-                "",
-                "normalMode._selectionBehavior = normalMode._cursorStyle = options.cursorStyle = behavior;",
-              ],
-            },
-          ],
+          "command": "dance.dev.setSelectionBehavior",
+          "args": [{ "mode": "normal" }],
         },
       },
     },

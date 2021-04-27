@@ -159,7 +159,7 @@
     <tr><td><a href="#selectvertically"><code>select.vertically</code></a></td><td>Select vertically</td><td></td></tr>
     <tr><td rowspan=31><a href="#selections"><code>selections</code></a></td><td><a href="#selectionschangeDirection"><code>selections.changeDirection</code></a></td><td>Change direction of selections</td><td><code>Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionscopy"><code>selections.copy</code></a></td><td>Copy selections below</td><td><code>Shift+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#selectionsextendToLines"><code>selections.extendToLines</code></a></td><td>Extend to lines</td><td><code>Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selectionsexpandToLines"><code>selections.expandToLines</code></a></td><td>Expand to lines</td><td><code>Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionsfilter"><code>selections.filter</code></a></td><td>Filter selections</td><td><code>Shift+4</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionsmerge"><code>selections.merge</code></a></td><td>Merge contiguous selections</td><td><code>Shift+Alt+-</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionsopen"><code>selections.open</code></a></td><td>Open selected file</td><td></td></tr>
@@ -1055,11 +1055,11 @@ Split selections at line boundaries.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`selections.extendToLines`](./selections.ts#L459-L466)
+### [`selections.expandToLines`](./selections.ts#L459-L466)
 
-Extend to lines.
+Expand to lines.
 
-Extend selections to contain full lines (including end-of-line characters).
+Expand selections to contain full lines (including end-of-line characters).
 
 ### [`selections.trimLines`](./selections.ts#L493-L500)
 

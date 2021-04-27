@@ -457,13 +457,13 @@ export function splitLines(
 }
 
 /**
- * Extend to lines.
+ * Expand to lines.
  *
- * Extend selections to contain full lines (including end-of-line characters).
+ * Expand selections to contain full lines (including end-of-line characters).
  *
  * @keys `a-x` (normal)
  */
-export function extendToLines(_: Context) {
+export function expandToLines(_: Context) {
   return Selections.update.byIndex((_, selection, document) => {
     const start = selection.start,
           end = selection.end;
