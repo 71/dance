@@ -126,35 +126,35 @@
     <tr><td><a href="#selectlineEnd"><code>select.lineEnd</code></a></td><td>Select to line end</td><td><code>Alt+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>End</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectlineStart"><code>select.lineStart</code></a></td><td>Select to line start</td><td><code>Alt+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Home</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectmiddleVisibleLine"><code>select.middleVisibleLine</code></a></td><td>Select to middle visible line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L463"><code>select.documentEnd.extend</code></a></td><td>Extend to last character</td><td></td></tr>
-    <tr><td><a href="./select.ts#L462"><code>select.documentEnd.jump</code></a></td><td>Jump to last character</td><td></td></tr>
-    <tr><td><a href="./select.ts#L40"><code>select.down.extend</code></a></td><td>Extend down</td><td><code>Shift+J</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Down</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L39"><code>select.down.jump</code></a></td><td>Jump down</td><td><code>J</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Down</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L417"><code>select.firstLine.extend</code></a></td><td>Extend to first line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L416"><code>select.firstLine.jump</code></a></td><td>Jump to first line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L516"><code>select.firstVisibleLine.extend</code></a></td><td>Extend to first visible line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L515"><code>select.firstVisibleLine.jump</code></a></td><td>Jump to first visible line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L495"><code>select.lastLine.extend</code></a></td><td>Extend to last line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L494"><code>select.lastLine.jump</code></a></td><td>Jump to last line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L567"><code>select.lastModification.extend</code></a></td><td>Extend to last modification</td><td></td></tr>
-    <tr><td><a href="./select.ts#L566"><code>select.lastModification.jump</code></a></td><td>Jump to last modification</td><td></td></tr>
-    <tr><td><a href="./select.ts#L550"><code>select.lastVisibleLine.extend</code></a></td><td>Extend to last visible line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L549"><code>select.lastVisibleLine.jump</code></a></td><td>Jump to last visible line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L187"><code>select.left.extend</code></a></td><td>Extend left</td><td><code>Shift+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Left</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L186"><code>select.left.jump</code></a></td><td>Jump left</td><td><code>H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Left</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L461"><code>select.lineEnd.extend</code></a></td><td>Extend to line end</td><td><code>Shift+Alt+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+End</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L413"><code>select.lineStart.extend</code></a></td><td>Extend to line start</td><td><code>Shift+Alt+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Home</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L412"><code>select.lineStart.jump</code></a></td><td>Jump to line start</td><td></td></tr>
-    <tr><td><a href="./select.ts#L415"><code>select.lineStart.skipBlank.extend</code></a></td><td>Extend to line start (skip blank)</td><td></td></tr>
-    <tr><td><a href="./select.ts#L414"><code>select.lineStart.skipBlank.jump</code></a></td><td>Jump to line start (skip blank)</td><td></td></tr>
-    <tr><td><a href="./select.ts#L533"><code>select.middleVisibleLine.extend</code></a></td><td>Extend to middle visible line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L532"><code>select.middleVisibleLine.jump</code></a></td><td>Jump to middle visible line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L185"><code>select.right.extend</code></a></td><td>Extend right</td><td><code>Shift+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Right</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L184"><code>select.right.jump</code></a></td><td>Jump right</td><td><code>L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Right</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L248"><code>select.to.extend</code></a></td><td>Extend to</td><td><code>Shift+G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L247"><code>select.to.jump</code></a></td><td>Go to</td><td><code>G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L42"><code>select.up.extend</code></a></td><td>Extend up</td><td><code>Shift+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Up</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./select.ts#L41"><code>select.up.jump</code></a></td><td>Jump up</td><td><code>K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Up</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L469"><code>select.documentEnd.extend</code></a></td><td>Extend to last character</td><td></td></tr>
+    <tr><td><a href="./select.ts#L468"><code>select.documentEnd.jump</code></a></td><td>Jump to last character</td><td></td></tr>
+    <tr><td><a href="./select.ts#L43"><code>select.down.extend</code></a></td><td>Extend down</td><td><code>Shift+J</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Down</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L42"><code>select.down.jump</code></a></td><td>Jump down</td><td><code>J</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Down</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L423"><code>select.firstLine.extend</code></a></td><td>Extend to first line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L422"><code>select.firstLine.jump</code></a></td><td>Jump to first line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L522"><code>select.firstVisibleLine.extend</code></a></td><td>Extend to first visible line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L521"><code>select.firstVisibleLine.jump</code></a></td><td>Jump to first visible line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L501"><code>select.lastLine.extend</code></a></td><td>Extend to last line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L500"><code>select.lastLine.jump</code></a></td><td>Jump to last line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L573"><code>select.lastModification.extend</code></a></td><td>Extend to last modification</td><td></td></tr>
+    <tr><td><a href="./select.ts#L572"><code>select.lastModification.jump</code></a></td><td>Jump to last modification</td><td></td></tr>
+    <tr><td><a href="./select.ts#L556"><code>select.lastVisibleLine.extend</code></a></td><td>Extend to last visible line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L555"><code>select.lastVisibleLine.jump</code></a></td><td>Jump to last visible line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L193"><code>select.left.extend</code></a></td><td>Extend left</td><td><code>Shift+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Left</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L192"><code>select.left.jump</code></a></td><td>Jump left</td><td><code>H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Left</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L467"><code>select.lineEnd.extend</code></a></td><td>Extend to line end</td><td><code>Shift+Alt+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+End</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L419"><code>select.lineStart.extend</code></a></td><td>Extend to line start</td><td><code>Shift+Alt+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Home</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L418"><code>select.lineStart.jump</code></a></td><td>Jump to line start</td><td></td></tr>
+    <tr><td><a href="./select.ts#L421"><code>select.lineStart.skipBlank.extend</code></a></td><td>Extend to line start (skip blank)</td><td></td></tr>
+    <tr><td><a href="./select.ts#L420"><code>select.lineStart.skipBlank.jump</code></a></td><td>Jump to line start (skip blank)</td><td></td></tr>
+    <tr><td><a href="./select.ts#L539"><code>select.middleVisibleLine.extend</code></a></td><td>Extend to middle visible line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L538"><code>select.middleVisibleLine.jump</code></a></td><td>Jump to middle visible line</td><td></td></tr>
+    <tr><td><a href="./select.ts#L191"><code>select.right.extend</code></a></td><td>Extend right</td><td><code>Shift+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Right</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L190"><code>select.right.jump</code></a></td><td>Jump right</td><td><code>L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Right</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L254"><code>select.to.extend</code></a></td><td>Extend to</td><td><code>Shift+G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L253"><code>select.to.jump</code></a></td><td>Go to</td><td><code>G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L45"><code>select.up.extend</code></a></td><td>Extend up</td><td><code>Shift+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Up</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./select.ts#L44"><code>select.up.jump</code></a></td><td>Jump up</td><td><code>K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Up</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectto"><code>select.to</code></a></td><td>Select to</td><td></td></tr>
     <tr><td><a href="#selectvertically"><code>select.vertically</code></a></td><td>Select vertically</td><td></td></tr>
     <tr><td rowspan=31><a href="#selections"><code>selections</code></a></td><td><a href="#selectionschangeDirection"><code>selections.changeDirection</code></a></td><td>Change direction of selections</td><td><code>Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -209,6 +209,7 @@ Set the selection behavior of the specified mode.
 
 This command:
 - does not require an active text editor.
+- takes an argument `value` of type `"caret" | "character"`.
 
 ## [`edit`](./edit.ts)
 
@@ -753,18 +754,19 @@ Update selections based on their position in the document.
 
 Select whole buffer.
 
-### [`select.vertically`](./select.ts#L32-L62)
+### [`select.vertically`](./select.ts#L32-L65)
 
 Select vertically.
 
+
 #### Variants
 
-| Title                | Identifier    | Keybinding                        | Command                                                      |
-| -----------          | ------------- | --------------------------------- | ------------------------------------------------------------ |
-| Jump down            | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"   }]` |
-| Extend down          | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend" }]` |
-| Jump up              | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"   }]` |
-| Extend up            | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend" }]` |
+| Title       | Identifier    | Keybinding                        | Command                                                      |
+| ----------- | ------------- | --------------------------------- | ------------------------------------------------------------ |
+| Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"   }]` |
+| Extend down | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend" }]` |
+| Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"   }]` |
+| Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend" }]` |
 
 The following keybindings are also defined:
 
@@ -777,12 +779,13 @@ The following keybindings are also defined:
 
 This command:
 - may be repeated with a given number of repetitions.
+- takes an argument `avoidEol` of type `boolean`.
 - takes an argument `by` of type `"page" | "halfPage"`.
-- takes an argument `skipEol` of type `boolean`.
 
-### [`select.horizontally`](./select.ts#L177-L196)
+### [`select.horizontally`](./select.ts#L180-L202)
 
 Select horizontally.
+
 
 #### Variants
 
@@ -795,9 +798,9 @@ Select horizontally.
 
 This command:
 - may be repeated with a given number of repetitions.
-- takes an argument `skipEol` of type `boolean`.
+- takes an argument `avoidEol` of type `boolean`.
 
-### [`select.to`](./select.ts#L237-L255)
+### [`select.to`](./select.ts#L243-L261)
 
 Select to.
 
@@ -815,7 +818,7 @@ This command:
 - accepts an argument of type `object`.
 - may be repeated with a given number of repetitions.
 
-### [`select.line.below`](./select.ts#L265-L270)
+### [`select.line.below`](./select.ts#L271-L276)
 
 Select line below.
 
@@ -823,7 +826,7 @@ Select line below.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`select.line.below.extend`](./select.ts#L295-L300)
+### [`select.line.below.extend`](./select.ts#L301-L306)
 
 Extend to line below.
 
@@ -831,21 +834,21 @@ Extend to line below.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`select.line.above`](./select.ts#L327-L330)
+### [`select.line.above`](./select.ts#L333-L336)
 
 Select line above.
 
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`select.line.above.extend`](./select.ts#L354-L357)
+### [`select.line.above.extend`](./select.ts#L360-L363)
 
 Extend to line above.
 
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`select.lineStart`](./select.ts#L403-L425)
+### [`select.lineStart`](./select.ts#L409-L431)
 
 Select to line start.
 
@@ -865,7 +868,7 @@ This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `skipBlank` of type `boolean`.
 
-### [`select.lineEnd`](./select.ts#L452-L470)
+### [`select.lineEnd`](./select.ts#L458-L476)
 
 Select to line end.
 
@@ -881,7 +884,7 @@ Select to line end.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`select.lastLine`](./select.ts#L487-L497)
+### [`select.lastLine`](./select.ts#L493-L503)
 
 Select to last line.
 
@@ -892,7 +895,7 @@ Select to last line.
 | Jump to last line   | `lastLine.jump`   | `[".select.lastLine", { shift: "jump"   }]` |
 | Extend to last line | `lastLine.extend` | `[".select.lastLine", { shift: "extend" }]` |
 
-### [`select.firstVisibleLine`](./select.ts#L508-L518)
+### [`select.firstVisibleLine`](./select.ts#L514-L524)
 
 Select to first visible line.
 
@@ -903,7 +906,7 @@ Select to first visible line.
 | Jump to first visible line   | `firstVisibleLine.jump`   | `[".select.firstVisibleLine", { shift: "jump"   }]` |
 | Extend to first visible line | `firstVisibleLine.extend` | `[".select.firstVisibleLine", { shift: "extend" }]` |
 
-### [`select.middleVisibleLine`](./select.ts#L525-L535)
+### [`select.middleVisibleLine`](./select.ts#L531-L541)
 
 Select to middle visible line.
 
@@ -914,7 +917,7 @@ Select to middle visible line.
 | Jump to middle visible line   | `middleVisibleLine.jump`   | `[".select.middleVisibleLine", { shift: "jump"   }]` |
 | Extend to middle visible line | `middleVisibleLine.extend` | `[".select.middleVisibleLine", { shift: "extend" }]` |
 
-### [`select.lastVisibleLine`](./select.ts#L542-L552)
+### [`select.lastVisibleLine`](./select.ts#L548-L558)
 
 Select to last visible line.
 
@@ -925,7 +928,7 @@ Select to last visible line.
 | Jump to last visible line   | `lastVisibleLine.jump`   | `[".select.lastVisibleLine", { shift: "jump"   }]` |
 | Extend to last visible line | `lastVisibleLine.extend` | `[".select.lastVisibleLine", { shift: "extend" }]` |
 
-### [`select.lastModification`](./select.ts#L559-L569)
+### [`select.lastModification`](./select.ts#L565-L575)
 
 Select to last modification.
 

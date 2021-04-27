@@ -3,6 +3,7 @@ import { command } from "../api";
 import { extensionName } from "../extension";
 import { Extension } from "./extension";
 import { SettingsValidator } from "../utils/settings-validator";
+import { workspaceSettingsPropertyNames } from "../utils/misc";
 
 export const enum SelectionBehavior {
   Caret = 1,
@@ -15,6 +16,7 @@ export const enum SelectionBehavior {
 export class Mode {
   private readonly _onChanged = new vscode.EventEmitter<readonly [Mode, readonly (keyof Mode)[]]>();
   private readonly _onDeleted = new vscode.EventEmitter<Mode>();
+  private _changeSubcription: vscode.Disposable | undefined;
 
   private _raw: Mode.Configuration = {};
   private _inheritsFrom: Mode;
@@ -83,16 +85,34 @@ export class Mode {
     if (rawConfiguration != null) {
       this.apply(rawConfiguration, new SettingsValidator());
     }
+
+    this._changeSubcription = this._inheritsFrom?.onChanged(this._onParentModeChanged, this);
   }
 
   /**
    * Disposes of the mode.
    */
   public dispose() {
+    this._changeSubcription?.dispose();
+
     this._onDeleted.fire(this);
 
     this._onChanged.dispose();
     this._onDeleted.dispose();
+  }
+
+  private _onParentModeChanged([inheritFrom, keys]: readonly [Mode, readonly (keyof Mode)[]]) {
+    const updated = [] as (keyof Mode)[];
+
+    for (const key of keys) {
+      if (inheritFrom[key] !== this[key] && key !== "inheritsFrom") {
+        updated.push(key);
+      }
+    }
+
+    if (updated.length > 0) {
+      this._onChanged.fire([this, updated]);
+    }
   }
 
   /**
@@ -118,7 +138,9 @@ export class Mode {
     const changedProperties: (keyof Mode)[] = [];
 
     if (willInheritFrom !== this._inheritsFrom) {
+      this._changeSubcription?.dispose();
       this._inheritsFrom = willInheritFrom;
+      this._changeSubcription = willInheritFrom.onChanged(this._onParentModeChanged, this);
       changedProperties.push("inheritsFrom");
     }
 
@@ -226,6 +248,8 @@ export class Mode {
     // don't add them to the `changedProperties`).
     this._onEnterMode = raw.onEnterMode ?? [];
     this._onLeaveMode = raw.onLeaveMode ?? [];
+
+    // Save raw JSON for future reference and notify subscribers of changes.
     this._raw = raw;
 
     if (changedProperties.length > 0) {
@@ -319,9 +343,7 @@ export class Mode {
       const value = object[name];
 
       if (value) {
-        validator.enter(name);
-        options[name] = this.stringToColor(value, validator, "#000");
-        validator.leave();
+        validator.forProperty(name, (v) => options[name] = this.stringToColor(value, v, "#000"));
       }
     }
 
@@ -416,14 +438,14 @@ export namespace Mode {
    * The configuration of a `Mode` as specified in the user preferences.
    */
   export interface Configuration {
-    readonly cursorStyle?: Configuration.CursorStyle;
-    readonly decorations?: Configuration.Decoration[] | Configuration.Decoration;
-    readonly inheritFrom?: string | null;
-    readonly lineHighlight?: string | null;
-    readonly lineNumbers?: Configuration.LineNumbers;
-    readonly onEnterMode?: readonly command.Any[];
-    readonly onLeaveMode?: readonly command.Any[];
-    readonly selectionBehavior?: Configuration.SelectionBehavior | null;
+    cursorStyle?: Configuration.CursorStyle;
+    decorations?: Configuration.Decoration[] | Configuration.Decoration;
+    inheritFrom?: string | null;
+    lineHighlight?: string | null;
+    lineNumbers?: Configuration.LineNumbers;
+    onEnterMode?: readonly command.Any[];
+    onLeaveMode?: readonly command.Any[];
+    selectionBehavior?: Configuration.SelectionBehavior | null;
   }
 
   /**
@@ -561,7 +583,7 @@ export class Modes implements Iterable<Mode> {
    */
   private _observePreferences(extension: Extension) {
     // Mode definitions.
-    extension.observePreference<Modes.Configuration>(".modes", (value, validator) => {
+    extension.observePreference<Modes.Configuration>(".modes", (value, validator, inspect) => {
       let isEmpty = true;
       const removeModes = new Set(this._modes.keys()),
             expectedDefaultModeName = vscode.workspace.getConfiguration(extensionName)
@@ -579,6 +601,17 @@ export class Modes implements Iterable<Mode> {
 
         let mode = this._modes.get(modeName);
         const configuration = value[modeName];
+
+        const globalConfig = inspect.globalValue?.[modeName],
+              defaultConfig = inspect.defaultValue?.[modeName];
+
+        if (globalConfig !== undefined || defaultConfig !== undefined) {
+          // Mode is a global mode; make sure that the local workspace does
+          // not override its `on{Enter,Leave}Mode` hooks (to make sure
+          // loading a workspace will not execute arbitrary code).
+          configuration.onEnterMode = globalConfig?.onEnterMode ?? defaultConfig?.onEnterMode;
+          configuration.onLeaveMode = globalConfig?.onLeaveMode ?? defaultConfig?.onLeaveMode;
+        }
 
         if (mode === undefined) {
           this._modes.set(modeName, mode = new Mode(this, modeName, configuration));

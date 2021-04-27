@@ -32,14 +32,17 @@ const preferredColumnsToken =
 /**
  * Select vertically.
  *
+ * @param avoidEol If `true`, selections will not select the line break
+ *   character but will instead move to the last character.
+ *
  * #### Variants
  *
- * | Title                | Identifier    | Keybinding                        | Command                                                      |
- * | -----------          | ------------- | --------------------------------- | ------------------------------------------------------------ |
- * | Jump down            | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"   }]` |
- * | Extend down          | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend" }]` |
- * | Jump up              | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"   }]` |
- * | Extend up            | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend" }]` |
+ * | Title       | Identifier    | Keybinding                        | Command                                                      |
+ * | ----------- | ------------- | --------------------------------- | ------------------------------------------------------------ |
+ * | Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"   }]` |
+ * | Extend down | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend" }]` |
+ * | Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"   }]` |
+ * | Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend" }]` |
  *
  * The following keybindings are also defined:
  *
@@ -54,7 +57,7 @@ export function vertically(
   _: Context,
   selections: readonly vscode.Selection[],
 
-  skipEol: Argument<boolean> = false,
+  avoidEol: Argument<boolean> = false,
   repetitions: number,
   direction = Direction.Forward,
   shift = Shift.Select,
@@ -149,7 +152,7 @@ export function vertically(
 
     if (preferredColumn <= targetLineLength) {
       targetColumn = preferredColumn;
-    } else if (isCharacterMode && targetLine + 1 < document.lineCount && !skipEol) {
+    } else if (isCharacterMode && targetLine + 1 < document.lineCount && !avoidEol) {
       return Selections.shift(selection, new vscode.Position(targetLine + 1, 0), shift);
     } else {
       targetColumn = targetLineLength;
@@ -177,6 +180,9 @@ export function vertically(
 /**
  * Select horizontally.
  *
+ * @param avoidEol If `true`, selections will automatically skip to the next
+ *   line instead of going after the last character. Does not skip empty lines.
+ *
  * #### Variants
  *
  * | Title        | Identifier     | Keybinding                         | Command                                                        |
@@ -189,7 +195,7 @@ export function vertically(
 export function horizontally(
   _: Context,
 
-  skipEol: Argument<boolean> = false,
+  avoidEol: Argument<boolean> = false,
   repetitions: number,
   direction = Direction.Forward,
   shift = Shift.Select,
@@ -212,7 +218,7 @@ export function horizontally(
 
     let target = Positions.offset(active, direction * repetitions, document) ?? active;
 
-    if (skipEol) {
+    if (avoidEol) {
       switch (_.selectionBehavior) {
       case SelectionBehavior.Caret:
         if (target.character === Lines.length(target.line, document) && target.character > 0) {

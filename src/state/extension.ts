@@ -104,7 +104,7 @@ export class Extension implements vscode.Disposable {
     // Configuration: menus.
     this.observePreference<Record<string, Menu>>(
       ".menus",
-      (value, validator) => {
+      (value, validator, inspect) => {
         this._gotoMenus.clear();
 
         if (typeof value !== "object" || value === null) {
@@ -117,6 +117,21 @@ export class Extension implements vscode.Disposable {
                 validationErrors = validateMenu(menu);
 
           if (validationErrors.length === 0) {
+            const globalConfig = inspect.globalValue?.[menuName],
+                  defaultConfig = inspect.defaultValue?.[menuName];
+
+            if (globalConfig !== undefined || defaultConfig !== undefined) {
+              // Menu is a global menu; make sure that the local workspace does
+              // not override its items.
+              for (const key in menu.items) {
+                if (globalConfig !== undefined && key in globalConfig.items) {
+                  menu.items[key] = globalConfig.items[key];
+                } else if (defaultConfig !== undefined && key in defaultConfig.items) {
+                  menu.items[key] = defaultConfig.items[key];
+                }
+              }
+            }
+
             this._gotoMenus.set(menuName, menu);
           } else {
             validator.enter(menuName);
@@ -174,7 +189,7 @@ export class Extension implements vscode.Disposable {
    */
   public observePreference<T>(
     section: string,
-    handler: (value: T, validator: SettingsValidator) => void,
+    handler: (value: T, validator: SettingsValidator, inspect: InspectType<T>) => void,
     triggerNow = false,
   ) {
     let configuration: vscode.WorkspaceConfiguration,
@@ -192,9 +207,14 @@ export class Extension implements vscode.Disposable {
     const defaultValue = configuration.inspect<T>(section)!.defaultValue!;
 
     this._configurationChangeHandlers.set(fullName, () => {
-      const validator = new SettingsValidator(fullName);
+      const validator = new SettingsValidator(fullName),
+            configuration = vscode.workspace.getConfiguration(extensionName);
 
-      handler(vscode.workspace.getConfiguration("dance").get(section, defaultValue), validator);
+      handler(
+        configuration.get<T>(section, defaultValue),
+        validator,
+        handler.length > 2 ? configuration.inspect<T>(section)! : undefined!,
+      );
 
       validator.displayErrorIfNeeded();
     });
@@ -202,7 +222,11 @@ export class Extension implements vscode.Disposable {
     if (triggerNow) {
       const validator = new SettingsValidator(fullName);
 
-      handler(configuration.get(section, defaultValue), validator);
+      handler(
+        configuration.get(section, defaultValue),
+        validator,
+        handler.length > 2 ? configuration.inspect<T>(section)! : undefined!,
+      );
 
       validator.displayErrorIfNeeded();
     }
@@ -296,4 +320,12 @@ export class Extension implements vscode.Disposable {
       return errorValue();
     }
   }
+}
+
+type InspectUnknown = Exclude<ReturnType<vscode.WorkspaceConfiguration["inspect"]>, undefined>;
+type InspectType<T> = {
+  // Replace all properties that are `unknown` by `T | undefined`.
+  readonly [K in keyof InspectUnknown]: (InspectUnknown[K] & null) extends never
+    ? InspectUnknown[K]
+    : T | undefined;
 }

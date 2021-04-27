@@ -33,3 +33,10 @@ export async function manipulateSelectionsInteractively<I, R>(
     await execute(input);
   }
 }
+
+export const workspaceSettingsPropertyNames = [
+  "workspaceFolderValue",
+  "workspaceFolderLanguageValue",
+  "workspaceValue",
+  "workspaceLanguageValue",
+] as const;

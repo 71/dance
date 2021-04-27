@@ -385,6 +385,18 @@ export class Recorder implements vscode.Disposable {
       }
     }
 
+    // Merge consecutive events, if any.
+    const cursor = this.cursorFromEnd();
+
+    if (cursor.previous() && cursor.is(Recording.ActionType.TextReplacement)) {
+      const insertedText = cursor.insertedText(),
+            deletionLength = cursor.deletionLength();
+
+      if (cursor.previous() && cursor.is(Recording.ActionType.SelectionTranslation)) {
+        // TODO
+      }
+    }
+
     this._startRecord(Recording.ActionType.SelectionTranslation);
     this._buffer.push(commonAnchorOffsetDiff, commonActiveOffsetDiff);
     this._endRecord(Recording.ActionType.SelectionTranslation);
@@ -470,7 +482,25 @@ export class Recorder implements vscode.Disposable {
       }
     }
 
-    // TODO: merge consecutive events
+    // Merge consecutive events, if any.
+    const cursor = this.cursorFromEnd();
+
+    if (cursor.previousType() === Recording.ActionType.TextReplacement) {
+      // If there has been no selection change in the meantime, the text we're
+      // inserting now is at the start of the text we previously inserted.
+      const offset = cursor.previousOffset!,
+            previousOffsetFromActive = this._buffer[offset + 3];
+
+      if (commonOffsetFromActive === previousOffsetFromActive) {
+        // TODO: replaying this after two deletions and an undo will lead to
+        // errors when computing where to perform the insertion. fix this.
+        this._buffer[offset + 1] = commonInsertedText + (this._buffer[offset + 1] as string);
+        this._buffer[offset + 2] = commonDeletionLength + (this._buffer[offset + 2] as number);
+
+        return;
+      }
+    }
+
     this._startRecord(Recording.ActionType.TextReplacement);
     this._buffer.push(commonInsertedText, commonDeletionLength, commonOffsetFromActive);
     this._endRecord(Recording.ActionType.TextReplacement);
@@ -555,6 +585,30 @@ export namespace Recorder {
     }
 
     /**
+     * Returns the buffer storing the current record.
+     */
+    public get buffer() {
+      return this._buffer;
+    }
+
+    /**
+     * Returns the offset of the current record in its buffer.
+     */
+    public get offset() {
+      return this._offset;
+    }
+
+    /**
+     * Returns the offset of the previous record in its buffer, or `undefined`
+     * if the current record is the first of its buffer.
+     */
+    public get previousOffset() {
+      return this._offset === 0
+        ? undefined
+        : this._offset - Recording.entrySize[this.previousType()] - 1;
+    }
+
+    /**
      * Returns a different instance of a `Cursor` that points to the same
      * record.
      */
@@ -614,6 +668,18 @@ export namespace Recorder {
 
     public commandArgument(): T extends Recording.ActionType.Command ? Record<string, any> : never {
       return this._buffer[this._offset + 2] as object as any;
+    }
+
+    public insertedText(): T extends Recording.ActionType.TextReplacement ? string : never {
+      return this._buffer[this._offset + 1] as string as any;
+    }
+
+    public deletionLength(): T extends Recording.ActionType.TextReplacement ? number : never {
+      return this._buffer[this._offset + 2] as number as any;
+    }
+
+    public offsetFromActive(): T extends Recording.ActionType.TextReplacement ? number : never {
+      return this._buffer[this._offset + 3] as number as any;
     }
 
     /**

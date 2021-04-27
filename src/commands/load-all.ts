@@ -808,7 +808,7 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.horizontally",
-      (_, argument) => _.runAsync((_) => horizontally(_, argument.skipEol, getRepetitions(_, argument), getDirection(argument), getShift(argument))),
+      (_, argument) => _.runAsync((_) => horizontally(_, argument.avoidEol, getRepetitions(_, argument), getDirection(argument), getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -868,7 +868,7 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.vertically",
-      (_, argument) => _.runAsync((_) => vertically(_, _.selections, argument.skipEol, getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.by)),
+      (_, argument) => _.runAsync((_) => vertically(_, _.selections, argument.avoidEol, getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.by)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

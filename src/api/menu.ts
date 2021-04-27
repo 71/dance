@@ -7,7 +7,7 @@ export interface Menu {
 
 export namespace Menu {
   export interface Items {
-    readonly [keys: string]: Item;
+    [keys: string]: Item;
   }
 
   export interface Item {

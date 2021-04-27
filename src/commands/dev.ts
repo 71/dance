@@ -14,10 +14,18 @@ export function setSelectionBehavior(
   extension: Extension,
 
   mode: Argument<string>,
-  value: Argument<"caret" | "character">,
+  value?: Argument<"caret" | "character">,
 ) {
-  extension.modes.get(mode)?.update(
-    "_selectionBehavior",
-    value === "character" ? SelectionBehavior.Character : SelectionBehavior.Caret,
-  );
+  const selectedMode = extension.modes.get(mode);
+
+  if (selectedMode !== undefined) {
+    if (value === undefined) {
+      value = selectedMode.selectionBehavior === SelectionBehavior.Caret ? "character" : "caret";
+    }
+
+    selectedMode.update(
+      "_selectionBehavior",
+      value === "character" ? SelectionBehavior.Character : SelectionBehavior.Caret,
+    );
+  }
 }
