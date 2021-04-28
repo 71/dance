@@ -6,7 +6,7 @@ import { CommandDescriptor } from "../commands";
 import { PerEditorState } from "../state/editors";
 import { Extension } from "../state/extension";
 import { Mode, SelectionBehavior } from "../state/modes";
-import { noUndoStops, undoStopBefore } from "../utils/misc";
+import { noUndoStops, performDummyEdit } from "../utils/misc";
 
 let currentContext: ContextWithoutActiveEditor | undefined;
 
@@ -351,9 +351,7 @@ export class Context extends ContextWithoutActiveEditor {
       return Promise.resolve();
     }
 
-    return this.wrap(
-      this.editor.edit(() => {}, undoStopBefore).then(() => {}),
-    );
+    return this.wrap(performDummyEdit(this._editor));
   }
 
   /**
@@ -519,7 +517,7 @@ export function edit<T>(
  */
 export function insertUndoStop(editor?: vscode.TextEditor) {
   if (editor !== undefined) {
-    return editor.edit(() => {}, undoStopBefore).then(() => {});
+    return performDummyEdit(editor);
   }
 
   return Context.current.insertUndoStop();
