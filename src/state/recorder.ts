@@ -386,20 +386,78 @@ export class Recorder implements vscode.Disposable {
     }
 
     // Merge consecutive events, if any.
-    const cursor = this.cursorFromEnd();
-
-    if (cursor.previous() && cursor.is(Recording.ActionType.TextReplacement)) {
-      const insertedText = cursor.insertedText(),
-            deletionLength = cursor.deletionLength();
-
-      if (cursor.previous() && cursor.is(Recording.ActionType.SelectionTranslation)) {
-        // TODO
-      }
+    if (this._tryMergeSelectionTranslations(commonAnchorOffsetDiff, commonActiveOffsetDiff)) {
+      return;
     }
 
     this._startRecord(Recording.ActionType.SelectionTranslation);
     this._buffer.push(commonAnchorOffsetDiff, commonActiveOffsetDiff);
     this._endRecord(Recording.ActionType.SelectionTranslation);
+  }
+
+  private _tryMergeSelectionTranslations(anchorOffsetDiff2: number, activeOffsetDiff2: number) {
+    if (anchorOffsetDiff2 !== activeOffsetDiff2) {
+      return false;
+    }
+
+    const cursor = this.cursorFromEnd();
+
+    // "Text change 1 -> selection change 1 -> text change 2 -> selection
+    // change 2" can be merged into "text change 3 -> selection change 3".
+    if (!cursor.previous()
+        || !cursor.is(Recording.ActionType.TextReplacement)
+        || cursor.offsetFromActive() !== 0) {
+      return false;
+    }
+
+    const insertedText2 = cursor.insertedText(),
+          deletionLength2 = cursor.deletionLength();
+
+    if (insertedText2.length !== activeOffsetDiff2 || deletionLength2 !== 0) {
+      return false;
+    }
+
+    if (!cursor.previous() || !cursor.is(Recording.ActionType.SelectionTranslation)) {
+      return false;
+    }
+
+    const anchorOffsetDiff1 = cursor.anchorOffsetDiff(),
+          activeOffsetDiff1 = cursor.activeOffsetDiff();
+
+    if (anchorOffsetDiff1 !== activeOffsetDiff1) {
+      return false;
+    }
+
+    if (!cursor.previous()
+        || !cursor.is(Recording.ActionType.TextReplacement)
+        || cursor.offsetFromActive() !== 0) {
+      return false;
+    }
+
+    const insertedText1 = cursor.insertedText();
+
+    if (insertedText1.length !== activeOffsetDiff1) {
+      return false;
+    }
+
+    // This is a match! Update "text change 1 -> selection change 1".
+    (cursor.buffer as Recorder.MutableBuffer)[cursor.offset + 1] = insertedText1 + insertedText2;
+
+    assert(cursor.next() && cursor.is(Recording.ActionType.SelectionTranslation));
+
+    const totalDiff = anchorOffsetDiff1 + anchorOffsetDiff2;
+
+    (cursor.buffer as Recorder.MutableBuffer)[cursor.offset + 1] = totalDiff;
+    (cursor.buffer as Recorder.MutableBuffer)[cursor.offset + 2] = totalDiff;
+
+    // Finally, delete the last entry corresponding to "text change 2" (since
+    // "selection change 2" hasn't been written yet).
+    assert(cursor.next() && cursor.is(Recording.ActionType.TextReplacement));
+
+    (cursor.buffer as Recorder.MutableBuffer).splice(cursor.offset);
+    this._endRecord(Recording.ActionType.SelectionTranslation);
+
+    return true;
   }
 
   private _tryRecordSelectionTranslationToLineEnd() {
@@ -492,8 +550,6 @@ export class Recorder implements vscode.Disposable {
             previousOffsetFromActive = this._buffer[offset + 3];
 
       if (commonOffsetFromActive === previousOffsetFromActive) {
-        // TODO: replaying this after two deletions and an undo will lead to
-        // errors when computing where to perform the insertion. fix this.
         this._buffer[offset + 1] = commonInsertedText + (this._buffer[offset + 1] as string);
         this._buffer[offset + 2] = commonDeletionLength + (this._buffer[offset + 2] as number);
 
@@ -566,7 +622,7 @@ export namespace Recorder {
    * A cursor used to enumerate records in a `Recorder` or `Recording`.
    */
   export class Cursor<T extends Recording.ActionType = Recording.ActionType> {
-    private _buffer: Recorder.Buffer;
+    private _buffer: Buffer;
     private _bufferIdx: number;
     private _offset: number;
 
@@ -613,7 +669,7 @@ export namespace Recorder {
      * record.
      */
     public clone() {
-      return new Cursor(this.recorder, this._bufferIdx, this._offset);
+      return new Cursor<T>(this.recorder, this._bufferIdx, this._offset);
     }
 
     /**
@@ -645,7 +701,7 @@ export namespace Recorder {
      * Returns the type of the current record.
      */
     public type() {
-      return ((this._buffer[this._offset] as number) & Constants.NextMask) as Recording.ActionType;
+      return ((this._buffer[this._offset] as number) & Constants.NextMask) as T;
     }
 
     /**
@@ -659,7 +715,7 @@ export namespace Recorder {
      * Returns whether the cursor points to a record of the given type.
      */
     public is<T extends Recording.ActionType>(type: T): this is Cursor<T> {
-      return this.type() === type;
+      return this.type() as Recording.ActionType === type;
     }
 
     public commandDescriptor(): T extends Recording.ActionType.Command ? CommandDescriptor : never {
@@ -682,11 +738,21 @@ export namespace Recorder {
       return this._buffer[this._offset + 3] as number as any;
     }
 
+    public anchorOffsetDiff(
+    ): T extends Recording.ActionType.SelectionTranslation ? number : never {
+      return this._buffer[this._offset + 1] as number as any;
+    }
+
+    public activeOffsetDiff(
+    ): T extends Recording.ActionType.SelectionTranslation ? number : never {
+      return this._buffer[this._offset + 2] as number as any;
+    }
+
     /**
      * Switches to the next record, and returns `true` if the operation
      * succeeded or `false` if the current record is the last one available.
      */
-    public next() {
+    public next(): this is Cursor<Recording.ActionType> {
       if (this._offset === this._buffer.length - 1) {
         if (this._bufferIdx === this.recorder.bufferCount) {
           return false;
@@ -707,7 +773,7 @@ export namespace Recorder {
      * Switches to the previous record, and returns `true` if the operation
      * succeeded or `false` if the current record is the first one available.
      */
-    public previous() {
+    public previous(): this is Cursor<Recording.ActionType> {
       if (this._offset === 0) {
         if (this._bufferIdx === 0) {
           return false;

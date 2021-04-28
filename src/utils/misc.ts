@@ -9,6 +9,13 @@ import { Input, SetInput } from "../commands";
 export const noUndoStops: Parameters<vscode.TextEditor["edit"]>[1] =
   Object.freeze({ undoStopBefore: false, undoStopAfter: false });
 
+/**
+ * An object passed to `vscode.TextEditor.edit` to indicate that an undo stop
+ * should be implicitly inserted before the current edit.
+ */
+export const undoStopBefore: Parameters<vscode.TextEditor["edit"]>[1] =
+  Object.freeze({ undoStopBefore: true, undoStopAfter: false });
+
 export async function manipulateSelectionsInteractively<I, R>(
   _: Context,
   input: Input<I>,

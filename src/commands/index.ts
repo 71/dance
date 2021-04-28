@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context, EditorRequiredError } from "../api";
+import { Context, EditorRequiredError, insertUndoStop } from "../api";
 import { Extension } from "../state/extension";
 import { Register, Registers } from "../state/registers";
 
@@ -120,6 +120,10 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
         // Record command *after* executing it, to ensure it did not encounter
         // an error.
         extension.recorder.recordCommand(this, ownedArgument);
+
+        if (this.requiresActiveEditor) {
+          await (context as Context).insertUndoStop();
+        }
 
         return result;
       },

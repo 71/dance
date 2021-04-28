@@ -6,7 +6,7 @@ import { CommandDescriptor } from "../commands";
 import { PerEditorState } from "../state/editors";
 import { Extension } from "../state/extension";
 import { Mode, SelectionBehavior } from "../state/modes";
-import { noUndoStops } from "../utils/misc";
+import { noUndoStops, undoStopBefore } from "../utils/misc";
 
 let currentContext: ContextWithoutActiveEditor | undefined;
 
@@ -166,6 +166,11 @@ class ContextWithoutActiveEditor {
   }
 }
 
+const enum ContextFlags {
+  None = 0,
+  ShouldInsertUndoStop = 1,
+}
+
 /**
  * The context of execution of a script.
  */
@@ -195,6 +200,8 @@ export class Context extends ContextWithoutActiveEditor {
 
     return currentContext;
   }
+
+  private _flags = ContextFlags.None;
 
   private _document: vscode.TextDocument;
   private _editor: vscode.TextEditor;
@@ -300,6 +307,53 @@ export class Context extends ContextWithoutActiveEditor {
    */
   public getState() {
     return this.extension.editors.getState(this._editor)!;
+  }
+
+  /**
+   * Performs changes on the editor of the context.
+   */
+  public edit<T>(
+    f: (editBuilder: vscode.TextEditorEdit, selections: readonly vscode.Selection[],
+        document: vscode.TextDocument) => T,
+  ) {
+    let value: T;
+
+    const document = this.document,
+          selections = f.length >= 2 ? this.selections : [];
+
+    return this.wrap(
+      this.editor.edit(
+        (editBuilder) => value = f(editBuilder, selections, document),
+        noUndoStops,
+      ).then((succeeded) => {
+        EditNotAppliedError.throwIfNotApplied(succeeded);
+
+        this._flags |= ContextFlags.ShouldInsertUndoStop;
+
+        return value;
+      }),
+    );
+  }
+
+  /**
+   * Returns whether edits have been performed in this context but not committed
+   * with `insertUndoStop`.
+   */
+  public hasEditsWithoutUndoStops() {
+    return (this._flags & ContextFlags.ShouldInsertUndoStop) === ContextFlags.ShouldInsertUndoStop;
+  }
+
+  /**
+   * Inserts an undo stop if needed.
+   */
+  public insertUndoStop() {
+    if (!this.hasEditsWithoutUndoStops()) {
+      return Promise.resolve();
+    }
+
+    return this.wrap(
+      this.editor.edit(() => {}, undoStopBefore).then(() => {}),
+    );
   }
 
   /**
@@ -444,9 +498,9 @@ export function edit<T>(
       document: vscode.TextDocument) => T,
   editor?: vscode.TextEditor,
 ) {
-  let value: T;
-
   if (editor !== undefined) {
+    let value: T;
+
     return editor.edit(
       (editBuilder) => value = f(editBuilder, editor!.selections, editor!.document),
       noUndoStops,
@@ -457,18 +511,16 @@ export function edit<T>(
     });
   }
 
-  const context = Context.current,
-        document = context.document,
-        selections = f.length >= 2 ? context.selections : [];
+  return Context.current.edit(f);
+}
 
-  return context.wrap(
-    context.editor.edit(
-      (editBuilder) => value = f(editBuilder, selections, document),
-      noUndoStops,
-    ).then((succeeded) => {
-      EditNotAppliedError.throwIfNotApplied(succeeded);
+/**
+ * Marks a change, inserting a history undo stop.
+ */
+export function insertUndoStop(editor?: vscode.TextEditor) {
+  if (editor !== undefined) {
+    return editor.edit(() => {}, undoStopBefore).then(() => {});
+  }
 
-      return value;
-    }),
-  );
+  return Context.current.insertUndoStop();
 }
