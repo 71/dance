@@ -109,7 +109,7 @@ export function enclosing(
         compiledPairs = [] as Pair[];
 
   for (let i = 0; i < pairs.length; i += 2) {
-    compiledPairs.push(pair(new RegExp(pairs[i], "mu"), new RegExp(pairs[i], "mu")));
+    compiledPairs.push(pair(new RegExp(pairs[i], "mu"), new RegExp(pairs[i + 1], "mu")));
   }
 
   // This command intentionally ignores repetitions to be consistent with
