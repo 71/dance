@@ -150,3 +150,109 @@ foo
 bar
 
 ```
+
+# initial-3
+
+> behavior <- character
+
+```
+foo
+
+^ 0
+bar
+baz
+```
+
+# left-3
+[up](#initial-3)
+
+- .select.left.jump
+
+```
+foo
+   ^ 0
+
+bar
+baz
+```
+
+# right-3
+[up](#initial-3)
+
+- .select.right.jump
+
+```
+foo
+
+bar
+^ 0
+baz
+```
+
+# up-3
+[up](#initial-3)
+
+- .select.up.jump
+
+```
+foo
+^ 0
+
+bar
+baz
+```
+
+# down-3
+[up](#initial-3)
+
+- .select.down.jump
+
+```
+foo
+
+bar
+^ 0
+baz
+```
+
+# down-3-up
+[up](#down-3)
+
+- .select.up.jump
+
+```
+foo
+
+^ 0
+bar
+baz
+```
+
+# down-3-up-extend-a
+[up](#down-3)
+
+- .select.up.extend
+
+```
+foo
+
+| 0
+bar
+^ 0
+baz
+```
+
+# down-3-up-extend-b
+[up](#down-3-up-extend-a)
+
+- .select.up.extend
+
+```
+foo
+| 0
+
+^ 0
+bar
+^ 0
+baz
+```

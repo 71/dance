@@ -40,6 +40,13 @@ suite("select-lateral.md", function () {
                ^ 0
 
           `)),
+          "initial-3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+            foo
+
+            ^ 0
+            bar
+            baz
+          `)),
 
           "left": new Promise((resolve) => notifyDependents["left"] = resolve),
           "right": new Promise((resolve) => notifyDependents["right"] = resolve),
@@ -50,9 +57,16 @@ suite("select-lateral.md", function () {
           "down-skip-eol-2": new Promise((resolve) => notifyDependents["down-skip-eol-2"] = resolve),
           "blank-up-1": new Promise((resolve) => notifyDependents["blank-up-1"] = resolve),
           "blank-up-2": new Promise((resolve) => notifyDependents["blank-up-2"] = resolve),
+          "left-3": new Promise((resolve) => notifyDependents["left-3"] = resolve),
+          "right-3": new Promise((resolve) => notifyDependents["right-3"] = resolve),
+          "up-3": new Promise((resolve) => notifyDependents["up-3"] = resolve),
+          "down-3": new Promise((resolve) => notifyDependents["down-3"] = resolve),
+          "down-3-up": new Promise((resolve) => notifyDependents["down-3-up"] = resolve),
+          "down-3-up-extend-a": new Promise((resolve) => notifyDependents["down-3-up-extend-a"] = resolve),
+          "down-3-up-extend-b": new Promise((resolve) => notifyDependents["down-3-up-extend-b"] = resolve),
         };
 
-  test("transition initial       > left           ", async function () {
+  test("transition initial            > left              ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -89,7 +103,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition initial       > right          ", async function () {
+  test("transition initial            > right             ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -126,7 +140,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition initial       > up             ", async function () {
+  test("transition initial            > up                ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -163,7 +177,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition initial       > up-skip-eol    ", async function () {
+  test("transition initial            > up-skip-eol       ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -200,7 +214,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition initial       > down           ", async function () {
+  test("transition initial            > down              ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -237,7 +251,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition initial       > down-skip-eol-1", async function () {
+  test("transition initial            > down-skip-eol-1   ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -274,7 +288,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition initial       > down-skip-eol-2", async function () {
+  test("transition initial            > down-skip-eol-2   ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -311,7 +325,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition blank-initial > blank-up-1     ", async function () {
+  test("transition blank-initial      > blank-up-1        ", async function () {
     const beforeDocument = await documents["blank-initial"];
 
     if (beforeDocument === undefined) {
@@ -348,7 +362,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition blank-initial > blank-up-2     ", async function () {
+  test("transition blank-initial      > blank-up-2        ", async function () {
     const beforeDocument = await documents["blank-initial"];
 
     if (beforeDocument === undefined) {
@@ -380,6 +394,268 @@ suite("select-lateral.md", function () {
       notifyDependents["blank-up-2"](afterDocument);
     } catch (e) {
       notifyDependents["blank-up-2"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition initial-3          > left-3            ", async function () {
+    const beforeDocument = await documents["initial-3"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["left-3"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      foo
+         ^ 0
+
+      bar
+      baz
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.select.left.jump");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["left-3"](afterDocument);
+    } catch (e) {
+      notifyDependents["left-3"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition initial-3          > right-3           ", async function () {
+    const beforeDocument = await documents["initial-3"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["right-3"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      foo
+
+      bar
+      ^ 0
+      baz
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.select.right.jump");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["right-3"](afterDocument);
+    } catch (e) {
+      notifyDependents["right-3"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition initial-3          > up-3              ", async function () {
+    const beforeDocument = await documents["initial-3"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["up-3"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      foo
+      ^ 0
+
+      bar
+      baz
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.select.up.jump");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["up-3"](afterDocument);
+    } catch (e) {
+      notifyDependents["up-3"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition initial-3          > down-3            ", async function () {
+    const beforeDocument = await documents["initial-3"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["down-3"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      foo
+
+      bar
+      ^ 0
+      baz
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.select.down.jump");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["down-3"](afterDocument);
+    } catch (e) {
+      notifyDependents["down-3"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition down-3             > down-3-up         ", async function () {
+    const beforeDocument = await documents["down-3"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["down-3-up"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      foo
+
+      ^ 0
+      bar
+      baz
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.select.up.jump");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["down-3-up"](afterDocument);
+    } catch (e) {
+      notifyDependents["down-3-up"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition down-3             > down-3-up-extend-a", async function () {
+    const beforeDocument = await documents["down-3"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["down-3-up-extend-a"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      foo
+
+      | 0
+      bar
+      ^ 0
+      baz
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.select.up.extend");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["down-3-up-extend-a"](afterDocument);
+    } catch (e) {
+      notifyDependents["down-3-up-extend-a"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition down-3-up-extend-a > down-3-up-extend-b", async function () {
+    const beforeDocument = await documents["down-3-up-extend-a"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["down-3-up-extend-b"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      foo
+      | 0
+
+      ^ 0
+      bar
+      ^ 0
+      baz
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.select.up.extend");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["down-3-up-extend-b"](afterDocument);
+    } catch (e) {
+      notifyDependents["down-3-up-extend-b"](undefined);
 
       throw e;
     }

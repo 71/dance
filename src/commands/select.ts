@@ -137,7 +137,15 @@ export function vertically(
       let targetPosition = Positions.lineStart(targetLine);
 
       if (isCharacterMode) {
-        targetPosition = Positions.next(targetPosition, document) ?? targetPosition;
+        if (direction === Direction.Forward || shift === Shift.Jump) {
+          targetPosition = Positions.next(targetPosition, document) ?? targetPosition;
+        }
+
+        if (direction === Direction.Backward && shift === Shift.Extend
+            && Selections.isSingleCharacter(selection, document)) {
+          selection = new vscode.Selection(
+            Positions.next(selection.anchor, document) ?? selection.anchor, selection.active);
+        }
       }
 
       return Selections.shift(selection, targetPosition, shift);
