@@ -700,8 +700,8 @@ export function copy(
  *
  * @keys `a-_` (normal)
  */
-export function merge() {
-  todo();
+export function merge(_: Context) {
+  Selections.set(Selections.mergeConsecutive(Selections.current));
 }
 
 /**

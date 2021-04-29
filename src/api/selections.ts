@@ -666,6 +666,200 @@ export function revealSelections(selection?: vscode.Selection) {
 }
 
 /**
+ * Given an array of selections, returns an array of selections where all
+ * overlapping selections have been merged.
+ *
+ * ### Example
+ *
+ * Equal selections.
+ *
+ * ```ts
+ * expect(mergeOverlappingSelections(Selections.current), "to equal", [Selections.current[0]]);
+ * ```
+ *
+ * With:
+ * ```
+ * abcd
+ *  ^^ 0
+ *  ^^ 1
+ * ```
+ *
+ * ### Example
+ *
+ * Equal empty selections.
+ *
+ * ```ts
+ * expect(mergeOverlappingSelections(Selections.current), "to equal", [Selections.current[0]]);
+ * ```
+ *
+ * With:
+ * ```
+ * abcd
+ *  | 0
+ *  | 1
+ * ```
+ *
+ * ### Example
+ *
+ * Overlapping selections.
+ *
+ * ```ts
+ * expect(mergeOverlappingSelections(Selections.current), "to satisfy", [
+ *   expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
+ * ]);
+ * ```
+ *
+ * With:
+ * ```
+ * abcd
+ * ^^^ 0
+ *  ^^^ 1
+ * ```
+ *
+ * ### Example
+ *
+ * Consecutive selections.
+ *
+ * ```ts
+ * expect(Selections.mergeOverlapping(Selections.current), "to equal", Selections.current);
+ *
+ * expect(Selections.mergeConsecutive(Selections.current), "to satisfy", [
+ *   expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
+ * ]);
+ * ```
+ *
+ * With:
+ * ```
+ * abcd
+ * ^^ 0
+ *   ^^ 1
+ * ```
+ *
+ * ### Example
+ *
+ * Consecutive selections (reversed).
+ *
+ * ```ts
+ * expect(Selections.mergeOverlapping(Selections.current), "to equal", Selections.current);
+ *
+ * expect(Selections.mergeConsecutive(Selections.current), "to satisfy", [
+ *   expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
+ * ]);
+ * ```
+ *
+ * With:
+ * ```
+ * abcd
+ * ^^ 1
+ *   ^^ 0
+ * ```
+ */
+export function mergeOverlappingSelections(
+  selections: readonly vscode.Selection[],
+  alsoMergeConsecutiveSelections = false,
+) {
+  const len = selections.length,
+        ignoreSelections = new Uint8Array(selections.length);
+  let newSelections: vscode.Selection[] | undefined;
+
+  for (let i = 0; i < len; i++) {
+    if (ignoreSelections[i] === 1) {
+      continue;
+    }
+
+    const a = selections[i];
+    let aStart = a.start,
+        aEnd = a.end,
+        aIsEmpty = aStart.isEqual(aEnd),
+        changed = false;
+
+    for (let j = i + 1; j < len; j++) {
+      const b = selections[j],
+            bStart = b.start,
+            bEnd = b.end;
+
+      if (aIsEmpty) {
+        if (bStart.isEqual(bEnd)) {
+          if (bStart.isEqual(aStart)) {
+            // A and B are two equal empty selections, and we can keep A.
+            ignoreSelections[j] = 1;
+            changed = true;
+          } else {
+            // A and B are two different empty selections, we don't change
+            // anything.
+          }
+
+          continue;
+        }
+
+        if (bStart.isBeforeOrEqual(aStart) && bEnd.isAfterOrEqual(bStart)) {
+          // The empty selection A is included in B.
+          aStart = bStart;
+          aEnd = bEnd;
+          aIsEmpty = false;
+          changed = true;
+          ignoreSelections[j] = 1;
+
+          continue;
+        }
+
+        // The empty selection A is strictly before or after B.
+        continue;
+      }
+
+      if (aStart.isAfterOrEqual(bStart)
+          && (aStart.isBefore(bEnd) || (alsoMergeConsecutiveSelections && aStart.isEqual(bEnd)))) {
+        // Selection A starts within selection B...
+        if (aEnd.isBeforeOrEqual(bEnd)) {
+          // ... and ends within selection B (it is included in selection B).
+          aStart = b.start;
+          aEnd = b.end;
+        } else {
+          // ... and ends after selection B.
+          if (aStart.isEqual(bStart)) {
+            // B is included in A: avoid creating a new selection needlessly.
+            ignoreSelections[j] = 1;
+            continue;
+          }
+          aStart = bStart;
+        }
+      } else if ((aEnd.isAfter(bStart) || (alsoMergeConsecutiveSelections && aEnd.isEqual(bStart)))
+                 && aEnd.isBefore(bEnd)) {
+        // Selection A ends within selection B. Furthermore, we know that
+        // selection A does not start within selection B, so it starts before
+        // selection B.
+        aEnd = bEnd;
+      } else {
+        // Selection A neither starts nor ends in selection B, so there is no
+        // overlap.
+        continue;
+      }
+
+      changed = true;
+      ignoreSelections[j] = 1;
+    }
+
+    if (changed) {
+      // Selections have changed: make sure the `newSelections` are initialized
+      // and push the new selection.
+      if (newSelections === undefined) {
+        newSelections = selections.slice(0, i);
+      }
+
+      newSelections.push(Selections.fromStartEnd(aStart, aEnd, a.isReversed));
+    } else if (newSelections !== undefined) {
+      // Selection did not change, but a previous selection did; push existing
+      // selection to new array.
+      newSelections.push(a);
+    } else {
+      // Selections have not changed. Just keep going.
+    }
+  }
+
+  return newSelections !== undefined ? newSelections : selections;
+}
+
+/**
  * Operations on `vscode.Selection`s.
  */
 export namespace Selections {
@@ -677,7 +871,10 @@ export namespace Selections {
                selectWithin = selectWithinSelections,
                set = setSelections,
                split = splitSelections,
-               update = updateSelections;
+               update = updateSelections,
+               mergeOverlapping = mergeOverlappingSelections,
+               mergeConsecutive = (selections: readonly vscode.Selection[]) =>
+                 mergeOverlappingSelections(selections, /* alsoMergeConsecutiveSelections= */ true);
 
   export declare const current: readonly vscode.Selection[];
 

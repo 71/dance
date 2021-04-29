@@ -18,6 +18,8 @@ export function run(testsRoot: string, cb: (error: any, failures?: number) => vo
       files = ["utils.test.js"];
     } else if (currentFile.startsWith("test/suite/commands/") && currentFile.endsWith(".md")) {
       files = [path.join("commands", path.basename(currentFile, ".md") + ".test.js")];
+    } else if (currentFile.startsWith("test/suite/commands/") && currentFile.endsWith(".test.ts")) {
+      files = [path.join("commands", path.basename(currentFile, ".ts") + ".js")];
     } else if (currentFile.includes(".test.")) {
       const currentFileAsJs = path.basename(currentFile).replace(/\.ts$/, ".js");
 

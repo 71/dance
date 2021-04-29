@@ -26,46 +26,30 @@ suite("select-line-end.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
-            foo
-            bar
-               ^ 0
-            baz
-            quxxx
-          `)),
-          "blank-initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
-            foo
-
-            bar
-               ^ 0
-
+          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+            the quick brown fox
+                      ^^^ 0
           `)),
 
-          "left": new Promise((resolve) => notifyDependents["left"] = resolve),
-          "right": new Promise((resolve) => notifyDependents["right"] = resolve),
-          "up": new Promise((resolve) => notifyDependents["up"] = resolve),
-          "up-skip-eol": new Promise((resolve) => notifyDependents["up-skip-eol"] = resolve),
-          "down": new Promise((resolve) => notifyDependents["down"] = resolve),
-          "down-skip-eol-1": new Promise((resolve) => notifyDependents["down-skip-eol-1"] = resolve),
-          "down-skip-eol-2": new Promise((resolve) => notifyDependents["down-skip-eol-2"] = resolve),
-          "blank-up-1": new Promise((resolve) => notifyDependents["blank-up-1"] = resolve),
-          "blank-up-2": new Promise((resolve) => notifyDependents["blank-up-2"] = resolve),
+          "line-start-1": new Promise((resolve) => notifyDependents["line-start-1"] = resolve),
+          "line-start-extend-1": new Promise((resolve) => notifyDependents["line-start-extend-1"] = resolve),
+          "line-start-extend-character-1": new Promise((resolve) => notifyDependents["line-start-extend-character-1"] = resolve),
+          "line-end-1": new Promise((resolve) => notifyDependents["line-end-1"] = resolve),
+          "line-end-character-1": new Promise((resolve) => notifyDependents["line-end-character-1"] = resolve),
+          "line-end-extend-1": new Promise((resolve) => notifyDependents["line-end-extend-1"] = resolve),
         };
 
-  test("transition initial       > left           ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition initial-1 > line-start-1                 ", async function () {
+    const beforeDocument = await documents["initial-1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["left"](undefined);
+      notifyDependents["line-start-1"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-      bar
-        ^ 0
-      baz
-      quxxx
+      the quick brown fox
+      |^^^^^^^^^^^^ 0
     `);
 
     try {
@@ -73,36 +57,31 @@ suite("select-line-end.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.left.jump");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+      await executeCommand("dance.select.lineStart");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["left"](afterDocument);
+      notifyDependents["line-start-1"](afterDocument);
     } catch (e) {
-      notifyDependents["left"](undefined);
+      notifyDependents["line-start-1"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial       > right          ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition initial-1 > line-start-extend-1          ", async function () {
+    const beforeDocument = await documents["initial-1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["right"](undefined);
+      notifyDependents["line-start-extend-1"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-      bar
-      baz
-      ^ 0
-      quxxx
+      the quick brown fox
+      |^^^^^^^^^ 0
     `);
 
     try {
@@ -110,36 +89,31 @@ suite("select-line-end.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.right.jump");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+      await executeCommand("dance.select.lineStart.extend");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["right"](afterDocument);
+      notifyDependents["line-start-extend-1"](afterDocument);
     } catch (e) {
-      notifyDependents["right"](undefined);
+      notifyDependents["line-start-extend-1"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial       > up             ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition initial-1 > line-start-extend-character-1", async function () {
+    const beforeDocument = await documents["initial-1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["up"](undefined);
+      notifyDependents["line-start-extend-character-1"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-         ^ 0
-      bar
-      baz
-      quxxx
+      the quick brown fox
+      |^^^^^^^^^^ 0
     `);
 
     try {
@@ -148,35 +122,32 @@ suite("select-line-end.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.up.jump");
+      await executeCommand("dance.select.lineStart.extend");
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["up"](afterDocument);
+      notifyDependents["line-start-extend-character-1"](afterDocument);
     } catch (e) {
-      notifyDependents["up"](undefined);
+      notifyDependents["line-start-extend-character-1"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial       > up-skip-eol    ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition initial-1 > line-end-1                   ", async function () {
+    const beforeDocument = await documents["initial-1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["up-skip-eol"](undefined);
+      notifyDependents["line-end-1"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-        ^ 0
-      bar
-      baz
-      quxxx
+      the quick brown fox
+                   ^^^^^^ 0
     `);
 
     try {
@@ -184,36 +155,31 @@ suite("select-line-end.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.up.jump", { avoidEol: true });
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+      await executeCommand("dance.select.lineEnd");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["up-skip-eol"](afterDocument);
+      notifyDependents["line-end-1"](afterDocument);
     } catch (e) {
-      notifyDependents["up-skip-eol"](undefined);
+      notifyDependents["line-end-1"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial       > down           ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition initial-1 > line-end-character-1         ", async function () {
+    const beforeDocument = await documents["initial-1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down"](undefined);
+      notifyDependents["line-end-character-1"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-      bar
-      baz
-         ^ 0
-      quxxx
+      the quick brown fox
+                  ^^^^^^^ 0
     `);
 
     try {
@@ -222,35 +188,32 @@ suite("select-line-end.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.down.jump");
+      await executeCommand("dance.select.lineEnd");
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down"](afterDocument);
+      notifyDependents["line-end-character-1"](afterDocument);
     } catch (e) {
-      notifyDependents["down"](undefined);
+      notifyDependents["line-end-character-1"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial       > down-skip-eol-1", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition initial-1 > line-end-extend-1            ", async function () {
+    const beforeDocument = await documents["initial-1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down-skip-eol-1"](undefined);
+      notifyDependents["line-end-extend-1"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-      bar
-      baz
-        ^ 0
-      quxxx
+      the quick brown fox
+                ^^^^^^^^^ 0
     `);
 
     try {
@@ -258,128 +221,15 @@ suite("select-line-end.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.down.jump", { avoidEol: true });
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+      await executeCommand("dance.select.lineEnd.extend");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down-skip-eol-1"](afterDocument);
+      notifyDependents["line-end-extend-1"](afterDocument);
     } catch (e) {
-      notifyDependents["down-skip-eol-1"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition initial       > down-skip-eol-2", async function () {
-    const beforeDocument = await documents["initial"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["down-skip-eol-2"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-      bar
-      baz
-      quxxx
-         ^ 0
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.down.jump", { count: 2, avoidEol: true });
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["down-skip-eol-2"](afterDocument);
-    } catch (e) {
-      notifyDependents["down-skip-eol-2"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition blank-initial > blank-up-1     ", async function () {
-    const beforeDocument = await documents["blank-initial"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["blank-up-1"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-
-      ^ 0
-      bar
-
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.up.jump");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["blank-up-1"](afterDocument);
-    } catch (e) {
-      notifyDependents["blank-up-1"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition blank-initial > blank-up-2     ", async function () {
-    const beforeDocument = await documents["blank-initial"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["blank-up-2"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      foo
-        ^ 0
-
-      bar
-
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.up.jump", { count: 2, avoidEol: true });
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["blank-up-2"](afterDocument);
-    } catch (e) {
-      notifyDependents["blank-up-2"](undefined);
+      notifyDependents["line-end-extend-1"](undefined);
 
       throw e;
     }

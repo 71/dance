@@ -3,7 +3,7 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 
 import { expect, ExpectedDocument } from "./utils";
-import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, moveWhile, NotASelectionError, Positions, replace, rotate, rotateSelections, search, Select, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
+import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, mergeOverlappingSelections, moveWhile, NotASelectionError, Positions, replace, rotate, rotateSelections, search, Select, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
 import { Extension } from "../../src/state/extension";
 import { SelectionBehavior } from "../../src/state/modes";
 
@@ -999,6 +999,106 @@ suite("API tests", function () {
 
       await context.runAsync(async () => {
         expect(selectionsLines(), "to only contain", 0, 1, 3, 4, 5, 6);
+      });
+
+      // No expected end document.
+    });
+
+    test("function mergeOverlappingSelections", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abcd
+               ^^ 0
+               ^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(mergeOverlappingSelections(Selections.current), "to equal", [Selections.current[0]]);
+      });
+
+      // No expected end document.
+    });
+
+    test("function mergeOverlappingSelections#1", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abcd
+               | 0
+               | 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(mergeOverlappingSelections(Selections.current), "to equal", [Selections.current[0]]);
+      });
+
+      // No expected end document.
+    });
+
+    test("function mergeOverlappingSelections#2", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abcd
+              ^^^ 0
+               ^^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(mergeOverlappingSelections(Selections.current), "to satisfy", [
+          expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
+        ]);
+      });
+
+      // No expected end document.
+    });
+
+    test("function mergeOverlappingSelections#3", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abcd
+              ^^ 0
+                ^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.mergeOverlapping(Selections.current), "to equal", Selections.current);
+
+        expect(Selections.mergeConsecutive(Selections.current), "to satisfy", [
+          expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
+        ]);
+      });
+
+      // No expected end document.
+    });
+
+    test("function mergeOverlappingSelections#4", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, `\
+              abcd
+              ^^ 1
+                ^^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.mergeOverlapping(Selections.current), "to equal", Selections.current);
+
+        expect(Selections.mergeConsecutive(Selections.current), "to satisfy", [
+          expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
+        ]);
       });
 
       // No expected end document.

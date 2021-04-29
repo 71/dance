@@ -240,33 +240,6 @@ hello
 world
 ```
 
-# line-extend-5a
-[up](#initial-5)
-
-- .select.line.below.extend
-
-Anchor is unchanged but active moved to the line break, thus selecting it.
-
-```
-hello
-     ^ 0
-world
-```
-
-# line-extend-5b
-[up](#line-extend-5a)
-
-- .select.line.below.extend
-
-Special case: anchor (instead of active) is moved to the line start, thus
-selecting the full line in forward direction.
-
-```
-hello
-^^^^^^ 0
-world
-```
-
 # initial-6
 
 ```
@@ -294,82 +267,84 @@ world
 
 - .select.line.below.extend
 
-So the selection will get stuck there with more `.select.line.below.extend`
-commands.
-
 ```
 hello
 world
-^ 0
+^^^^^^ 0
 ```
 
 # initial-7
 
 ```
-the quick brown fox
-          ^^^ 0
+foo
+ | 0
+bar
+baz
+quux
 ```
 
-# line-start-7
+# line-7a
 [up](#initial-7)
 
-- .select.lineStart
+- .select.line.below
 
 ```
-the quick brown fox
-|^^^^^^^^^^^^ 0
+foo
+^^^^ 0
+bar
+baz
+quux
 ```
 
-# line-start-extend-7
+# line-extend-7
 [up](#initial-7)
 
-- .select.lineStart.extend
+- .select.line.below.extend
 
 ```
-the quick brown fox
-|^^^^^^^^^ 0
+foo
+^^^^ 0
+bar
+baz
+quux
 ```
 
-# line-start-extend-character-7
-[up](#initial-7)
+# line-7b
+[up](#line-7a)
 
-> behavior <- character
-
-- .select.lineStart.extend
+- .select.line.below
 
 ```
-the quick brown fox
-|^^^^^^^^^^ 0
+foo
+bar
+^^^^ 0
+baz
+quux
 ```
 
-# line-end-7
-[up](#initial-7)
+# line-7b-extend
+[up](#line-7a)
 
-- .select.lineEnd
-
-```
-the quick brown fox
-             ^^^^^^ 0
-```
-
-# line-end-character-7
-[up](#initial-7)
-
-> behavior <- character
-
-- .select.lineEnd
+- .select.line.below.extend
 
 ```
-the quick brown fox
-            ^^^^^^^ 0
+foo
+^^^^ 0
+bar
+^^^^ 0
+baz
+quux
 ```
 
-# line-end-extend-7
-[up](#initial-7)
+# line-7c
+[up](#line-7b)
 
-- .select.lineEnd.extend
+- .select.line.below
 
 ```
-the quick brown fox
-          ^^^^^^^^^ 0
+foo
+bar
+baz
+^^^^ 0
+quux
 ```

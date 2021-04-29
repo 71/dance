@@ -278,7 +278,7 @@ export function line_below(_: Context, count: number) {
     Selections.update.byIndex((_, selection) => {
       let line = Selections.activeLine(selection);
 
-      if (Selections.isEntireLines(selection)) {
+      if (Selections.isEntireLines(selection) && !selection.isReversed) {
         line++;
       }
 
@@ -307,23 +307,23 @@ export function line_below_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {
     Selections.update.byIndex((_, selection) => {
       const isFullLine = Selections.isEntireLine(selection),
-            isFullLineDiff = isFullLine ? 1 : 0,
-            isSameLine = isFullLine || Selections.isSingleLine(selection);
+            isSameLine = Selections.isSingleLine(selection),
+            isFullLineDiff = isFullLine && !(isSameLine && selection.isReversed) ? 1 : 0,
+            activeLine = Selections.activeLine(selection);
 
-      const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor,
-            active = selection.active.character === 0 && !selection.isReversed && !isSameLine
-              ? selection.active.translate(1 + isFullLineDiff)
-              : new vscode.Position(Selections.activeLine(selection) + 1 + isFullLineDiff, 0);
+      const anchor = isSameLine ? Positions.lineStart(activeLine) : selection.anchor,
+            active = Positions.lineStart(activeLine + 1 + isFullLineDiff);
 
       return new vscode.Selection(anchor, active);
     });
   } else {
     Selections.update.byIndex((_, selection, document) => {
-      const line = Math.min(Selections.activeLine(selection) + count - 1, document.lineCount - 1),
+      const activeLine = Selections.activeLine(selection),
+            line = Math.min(activeLine + count - 1, document.lineCount - 1),
             isSameLine = Selections.isSingleLine(selection);
 
-      const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor,
-            active = new vscode.Position(line + 1, 0);
+      const anchor = isSameLine ? Positions.lineStart(activeLine) : selection.anchor,
+            active = Positions.lineStart(line + 1);
 
       return new vscode.Selection(anchor, active);
     });
@@ -435,22 +435,20 @@ export function lineStart(
           newPosition = skipBlank
             ? Positions.nonBlankLineStart(newLine, _.document)
             : Positions.lineStart(newLine),
-          newSelection = Selections.shiftTowards(selection, newPosition, shift, api.Backward);
+          newSelection = Selections.shift(selection, newPosition, shift);
 
     Selections.set([newSelection]);
-    Selections.reveal();
 
     return;
   }
 
   Selections.update.byIndex((_, selection) =>
-    Selections.shiftTowards(
+    Selections.shift(
       selection,
       skipBlank
         ? Positions.nonBlankLineStart(Selections.activeLine(selection))
         : Positions.lineStart(Selections.activeLine(selection)),
       shift,
-      api.Backward,
     ),
   );
 }
@@ -480,7 +478,6 @@ export function lineEnd(
           newSelection = Selections.shift(selection, Positions.lineEnd(newLine), shift);
 
     Selections.set([newSelection]);
-    Selections.reveal();
 
     return;
   }

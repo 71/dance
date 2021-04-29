@@ -99,7 +99,6 @@ Code will then merge the selections 0 and 4 automatically:
 ```
 apple pineapple pear
 ^^^^^ 1   ^^^^^ 0
-          ^^^^^ 4
 pear pineapple apple
          ^^^^^ 3
                ^^^^^ 2

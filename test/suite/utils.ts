@@ -71,10 +71,25 @@ expect.addType<vscode.Position>({
   },
 });
 
+expect.addType<vscode.Range>({
+  name: "range",
+  identify: (v) => v instanceof vscode.Range,
+  base: "object",
+
+  inspect: (value, _, output) => {
+    output
+      .text("Range(")
+      .text(shortPos(value.start))
+      .text(" -> ")
+      .text(shortPos(value.end))
+      .text(")");
+  },
+});
+
 expect.addType<vscode.Selection>({
   name: "selection",
   identify: (v) => v instanceof vscode.Selection,
-  base: "object",
+  base: "range",
 
   inspect: (value, _, output) => {
     output
@@ -93,18 +108,46 @@ expect.addAssertion<vscode.Position>(
   },
 );
 
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to be empty at coords <number> <number>",
+expect.addAssertion<vscode.Range>(
+  "<range> [not] to be empty at coords <number> <number>",
   (expect, subject, line: number, character: number) => {
     expect(subject, "[not] to start at", new vscode.Position(line, character))
       .and("[not] to be empty");
   },
 );
 
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to be empty",
+expect.addAssertion<vscode.Range>(
+  "<range> [not] to be empty",
   (expect, subject) => {
     expect(subject, "[not] to satisfy", { isEmpty: true });
+  },
+);
+
+expect.addAssertion<vscode.Range>(
+  "<range> [not] to start at <position>",
+  (expect, subject, position: vscode.Position) => {
+    expect(subject, "[not] to satisfy", { start: position });
+  },
+);
+
+expect.addAssertion<vscode.Range>(
+  "<range> [not] to end at <position>",
+  (expect, subject, position: vscode.Position) => {
+    expect(subject, "[not] to satisfy", { end: position });
+  },
+);
+
+expect.addAssertion<vscode.Range>(
+  "<range> [not] to start at coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to start at", new vscode.Position(line, character));
+  },
+);
+
+expect.addAssertion<vscode.Range>(
+  "<range> [not] to end at coords <number> <number>",
+  (expect, subject, line: number, character: number) => {
+    expect(subject, "[not] to end at", new vscode.Position(line, character));
   },
 );
 
@@ -112,20 +155,6 @@ expect.addAssertion<vscode.Selection>(
   "<selection> [not] to be reversed",
   (expect, subject) => {
     expect(subject, "[not] to satisfy", { isReversed: true });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to start at <position>",
-  (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { start: position });
-  },
-);
-
-expect.addAssertion<vscode.Selection>(
-  "<selection> [not] to end at <position>",
-  (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { end: position });
   },
 );
 
@@ -265,18 +294,29 @@ export class ExpectedDocument {
       return;
     }
 
-    let actualSelections = editor.selections;
+    let actualSelections = Selections.mergeOverlapping(editor.selections);
 
     if (Context.currentOrUndefined?.selectionBehavior === SelectionBehavior.Character) {
       actualSelections = Selections.toCharacterMode(actualSelections, document);
     }
 
     // Ensure resulting selections are right.
-    assert.strictEqual(
-      actualSelections.length,
-      expectedSelections.length,
-      `Expected ${expectedSelections.length} selection(s), but had ${actualSelections.length}.`,
-    );
+    if (actualSelections.length !== expectedSelections.length) {
+      let error =
+        `Expected ${expectedSelections.length} selection(s), but had ${actualSelections.length}.`;
+
+      for (let i = actualSelections.length; i < expectedSelections.length; i++) {
+        error += `\nMissing selection #${i} ('>' is anchor, '|' is cursor):\n`;
+        error += stringifySelection(document, expectedSelections[i]);
+      }
+
+      for (let i = expectedSelections.length; i < actualSelections.length; i++) {
+        error += `\nUnexpected selection #${i} ('>' is anchor, '|' is cursor):\n`;
+        error += stringifySelection(document, actualSelections[i]);
+      }
+
+      assert.fail(error);
+    }
 
     for (let i = 0; i < expectedSelections.length; i++) {
       if (actualSelections[i].isEqual(expectedSelections[i])) {

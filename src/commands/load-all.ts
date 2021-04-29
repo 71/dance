@@ -1067,8 +1067,8 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.merge",
-      (_) => _.runAsync((_) => merge()),
-      CommandDescriptor.Flags.None,
+      (_) => _.runAsync((_) => merge(_)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.open",

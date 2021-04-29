@@ -62,8 +62,11 @@ suite("select-lines.md", function () {
             ^ 0
           `)),
           "initial-7": Promise.resolve(ExpectedDocument.parseIndented(12, `\
-            the quick brown fox
-                      ^^^ 0
+            foo
+             | 0
+            bar
+            baz
+            quux
           `)),
 
           "whole-buffer": new Promise((resolve) => notifyDependents["whole-buffer"] = resolve),
@@ -80,19 +83,16 @@ suite("select-lines.md", function () {
           "line-with-count-4b": new Promise((resolve) => notifyDependents["line-with-count-4b"] = resolve),
           "line-with-count-4c": new Promise((resolve) => notifyDependents["line-with-count-4c"] = resolve),
           "line-5": new Promise((resolve) => notifyDependents["line-5"] = resolve),
-          "line-extend-5a": new Promise((resolve) => notifyDependents["line-extend-5a"] = resolve),
-          "line-extend-5b": new Promise((resolve) => notifyDependents["line-extend-5b"] = resolve),
           "line-extend-6a": new Promise((resolve) => notifyDependents["line-extend-6a"] = resolve),
           "line-extend-6b": new Promise((resolve) => notifyDependents["line-extend-6b"] = resolve),
-          "line-start-7": new Promise((resolve) => notifyDependents["line-start-7"] = resolve),
-          "line-start-extend-7": new Promise((resolve) => notifyDependents["line-start-extend-7"] = resolve),
-          "line-start-extend-character-7": new Promise((resolve) => notifyDependents["line-start-extend-character-7"] = resolve),
-          "line-end-7": new Promise((resolve) => notifyDependents["line-end-7"] = resolve),
-          "line-end-character-7": new Promise((resolve) => notifyDependents["line-end-character-7"] = resolve),
-          "line-end-extend-7": new Promise((resolve) => notifyDependents["line-end-extend-7"] = resolve),
+          "line-7a": new Promise((resolve) => notifyDependents["line-7a"] = resolve),
+          "line-extend-7": new Promise((resolve) => notifyDependents["line-extend-7"] = resolve),
+          "line-7b": new Promise((resolve) => notifyDependents["line-7b"] = resolve),
+          "line-7b-extend": new Promise((resolve) => notifyDependents["line-7b-extend"] = resolve),
+          "line-7c": new Promise((resolve) => notifyDependents["line-7c"] = resolve),
         };
 
-  test("transition initial            > whole-buffer                 ", async function () {
+  test("transition initial            > whole-buffer            ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -128,7 +128,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial            > line-1                       ", async function () {
+  test("transition initial            > line-1                  ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -162,7 +162,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial            > line-extend-1                ", async function () {
+  test("transition initial            > line-extend-1           ", async function () {
     const beforeDocument = await documents["initial"];
 
     if (beforeDocument === undefined) {
@@ -196,7 +196,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition line-1             > line-2                       ", async function () {
+  test("transition line-1             > line-2                  ", async function () {
     const beforeDocument = await documents["line-1"];
 
     if (beforeDocument === undefined) {
@@ -230,7 +230,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition line-extend-1      > line-extend-2                ", async function () {
+  test("transition line-extend-1      > line-extend-2           ", async function () {
     const beforeDocument = await documents["line-extend-1"];
 
     if (beforeDocument === undefined) {
@@ -265,7 +265,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-3          > line-3                       ", async function () {
+  test("transition initial-3          > line-3                  ", async function () {
     const beforeDocument = await documents["initial-3"];
 
     if (beforeDocument === undefined) {
@@ -301,7 +301,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-3          > line-extend-3                ", async function () {
+  test("transition initial-3          > line-extend-3           ", async function () {
     const beforeDocument = await documents["initial-3"];
 
     if (beforeDocument === undefined) {
@@ -339,7 +339,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-3          > line-with-count-3            ", async function () {
+  test("transition initial-3          > line-with-count-3       ", async function () {
     const beforeDocument = await documents["initial-3"];
 
     if (beforeDocument === undefined) {
@@ -375,7 +375,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-3          > line-extend-with-count-3     ", async function () {
+  test("transition initial-3          > line-extend-with-count-3", async function () {
     const beforeDocument = await documents["initial-3"];
 
     if (beforeDocument === undefined) {
@@ -414,7 +414,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-4          > line-4                       ", async function () {
+  test("transition initial-4          > line-4                  ", async function () {
     const beforeDocument = await documents["initial-4"];
 
     if (beforeDocument === undefined) {
@@ -450,7 +450,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-4          > line-with-count-4a           ", async function () {
+  test("transition initial-4          > line-with-count-4a      ", async function () {
     const beforeDocument = await documents["initial-4"];
 
     if (beforeDocument === undefined) {
@@ -486,7 +486,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition line-with-count-4a > line-with-count-4b           ", async function () {
+  test("transition line-with-count-4a > line-with-count-4b      ", async function () {
     const beforeDocument = await documents["line-with-count-4a"];
 
     if (beforeDocument === undefined) {
@@ -522,7 +522,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition line-with-count-4b > line-with-count-4c           ", async function () {
+  test("transition line-with-count-4b > line-with-count-4c      ", async function () {
     const beforeDocument = await documents["line-with-count-4b"];
 
     if (beforeDocument === undefined) {
@@ -558,7 +558,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-5          > line-5                       ", async function () {
+  test("transition initial-5          > line-5                  ", async function () {
     const beforeDocument = await documents["initial-5"];
 
     if (beforeDocument === undefined) {
@@ -591,73 +591,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-5          > line-extend-5a               ", async function () {
-    const beforeDocument = await documents["initial-5"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["line-extend-5a"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      hello
-           ^ 0
-      world
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.select.line.below.extend");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["line-extend-5a"](afterDocument);
-    } catch (e) {
-      notifyDependents["line-extend-5a"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition line-extend-5a     > line-extend-5b               ", async function () {
-    const beforeDocument = await documents["line-extend-5a"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["line-extend-5b"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      hello
-      ^^^^^^ 0
-      world
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.select.line.below.extend");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["line-extend-5b"](afterDocument);
-    } catch (e) {
-      notifyDependents["line-extend-5b"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition initial-6          > line-extend-6a               ", async function () {
+  test("transition initial-6          > line-extend-6a          ", async function () {
     const beforeDocument = await documents["initial-6"];
 
     if (beforeDocument === undefined) {
@@ -690,7 +624,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition line-extend-6a     > line-extend-6b               ", async function () {
+  test("transition line-extend-6a     > line-extend-6b          ", async function () {
     const beforeDocument = await documents["line-extend-6a"];
 
     if (beforeDocument === undefined) {
@@ -701,7 +635,7 @@ suite("select-lines.md", function () {
     const afterDocument = ExpectedDocument.parseIndented(6, `\
       hello
       world
-      ^ 0
+      ^^^^^^ 0
     `);
 
     try {
@@ -723,17 +657,20 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition initial-7          > line-start-7                 ", async function () {
+  test("transition initial-7          > line-7a                 ", async function () {
     const beforeDocument = await documents["initial-7"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-start-7"](undefined);
+      notifyDependents["line-7a"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      the quick brown fox
-      |^^^^^^^^^^^^ 0
+      foo
+      ^^^^ 0
+      bar
+      baz
+      quux
     `);
 
     try {
@@ -741,31 +678,34 @@ suite("select-lines.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.select.lineStart");
+      await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-start-7"](afterDocument);
+      notifyDependents["line-7a"](afterDocument);
     } catch (e) {
-      notifyDependents["line-start-7"](undefined);
+      notifyDependents["line-7a"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-7          > line-start-extend-7          ", async function () {
+  test("transition initial-7          > line-extend-7           ", async function () {
     const beforeDocument = await documents["initial-7"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-start-extend-7"](undefined);
+      notifyDependents["line-extend-7"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      the quick brown fox
-      |^^^^^^^^^ 0
+      foo
+      ^^^^ 0
+      bar
+      baz
+      quux
     `);
 
     try {
@@ -773,31 +713,34 @@ suite("select-lines.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.select.lineStart.extend");
+      await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-start-extend-7"](afterDocument);
+      notifyDependents["line-extend-7"](afterDocument);
     } catch (e) {
-      notifyDependents["line-start-extend-7"](undefined);
+      notifyDependents["line-extend-7"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-7          > line-start-extend-character-7", async function () {
-    const beforeDocument = await documents["initial-7"];
+  test("transition line-7a            > line-7b                 ", async function () {
+    const beforeDocument = await documents["line-7a"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-start-extend-character-7"](undefined);
+      notifyDependents["line-7b"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      the quick brown fox
-      |^^^^^^^^^^ 0
+      foo
+      bar
+      ^^^^ 0
+      baz
+      quux
     `);
 
     try {
@@ -805,33 +748,35 @@ suite("select-lines.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.lineStart.extend");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+      await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-start-extend-character-7"](afterDocument);
+      notifyDependents["line-7b"](afterDocument);
     } catch (e) {
-      notifyDependents["line-start-extend-character-7"](undefined);
+      notifyDependents["line-7b"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-7          > line-end-7                   ", async function () {
-    const beforeDocument = await documents["initial-7"];
+  test("transition line-7a            > line-7b-extend          ", async function () {
+    const beforeDocument = await documents["line-7a"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-end-7"](undefined);
+      notifyDependents["line-7b-extend"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      the quick brown fox
-                   ^^^^^^ 0
+      foo
+      ^^^^ 0
+      bar
+      ^^^^ 0
+      baz
+      quux
     `);
 
     try {
@@ -839,31 +784,34 @@ suite("select-lines.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.select.lineEnd");
+      await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-end-7"](afterDocument);
+      notifyDependents["line-7b-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["line-end-7"](undefined);
+      notifyDependents["line-7b-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-7          > line-end-character-7         ", async function () {
-    const beforeDocument = await documents["initial-7"];
+  test("transition line-7b            > line-7c                 ", async function () {
+    const beforeDocument = await documents["line-7b"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-end-character-7"](undefined);
+      notifyDependents["line-7c"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, `\
-      the quick brown fox
-                  ^^^^^^^ 0
+      foo
+      bar
+      baz
+      ^^^^ 0
+      quux
     `);
 
     try {
@@ -871,49 +819,15 @@ suite("select-lines.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.select.lineEnd");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+      await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-end-character-7"](afterDocument);
+      notifyDependents["line-7c"](afterDocument);
     } catch (e) {
-      notifyDependents["line-end-character-7"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition initial-7          > line-end-extend-7            ", async function () {
-    const beforeDocument = await documents["initial-7"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["line-end-extend-7"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      the quick brown fox
-                ^^^^^^^^^ 0
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.select.lineEnd.extend");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["line-end-extend-7"](afterDocument);
-    } catch (e) {
-      notifyDependents["line-end-extend-7"](undefined);
+      notifyDependents["line-7c"](undefined);
 
       throw e;
     }

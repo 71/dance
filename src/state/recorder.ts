@@ -567,6 +567,8 @@ export class Recorder implements vscode.Disposable {
    * the next record in the given buffer.
    */
   public replayTextReplacement(buffer: Recorder.Buffer, index: number) {
+    // FIXME: type "hello world", remove "ld", replay; it should type
+    // "hello wor"
     assert(
       ((buffer[index] as number) & Constants.NextMask) === Recording.ActionType.TextReplacement);
 
