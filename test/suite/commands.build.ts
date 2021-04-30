@@ -66,7 +66,8 @@ export async function build() {
                 this.skip();
               }
 
-              const afterDocument = ${stringifyExpectedDocument(test.code, 16, 6)};
+              const afterDocument = ${
+                replaceInTest(test, stringifyExpectedDocument(test.code, 16, 6))};
 
               try {
                 // Set-up document to be in expected initial state.
@@ -96,20 +97,20 @@ interface TestOperation {
   args?: string;
 }
 
-interface Test {
+interface Section {
   title: string;
-  comesAfter: Test | InitialDocument;
-  operations: TestOperation[];
-  flags: string[];
   code: string;
+  debug?: boolean;
+  replacements?: [RegExp, string][];
   behavior: "caret" | "character";
 }
 
-interface InitialDocument {
-  title: string;
-  flags: string[];
-  code: string;
-  behavior: "caret" | "character";
+interface Test extends Section {
+  comesAfter: Section;
+  operations: TestOperation[];
+}
+
+interface InitialDocument extends Section {
 }
 
 function parseMarkdownTests(contents: string) {
@@ -138,7 +139,9 @@ function parseMarkdownTests(contents: string) {
 
       const flags = execAll(/^> *(.+)$/gm, operationsText).map(([_, flag]) => flag),
             behavior = getBehavior(flags) ?? "caret",
-            data: InitialDocument = { title, flags, code: after, behavior };
+            data: InitialDocument = { title, code: after, behavior };
+
+      applyFlags(flags, data);
 
       initial.push(data);
       all.set(title, data);
@@ -172,7 +175,9 @@ function parseMarkdownTests(contents: string) {
     assert(comesAfter !== undefined, `test "${title}" depends on unknown test "${comesAfterTitle}"`);
 
     const behavior = getBehavior(flags) ?? comesAfter.behavior,
-          data: Test = { title, comesAfter, code: after, operations, flags, behavior };
+          data: Test = { title, comesAfter, code: after, operations, behavior };
+
+    applyFlags(flags, data);
 
     tests.push(data);
     all.set(title, data);
@@ -185,6 +190,35 @@ function parseMarkdownTests(contents: string) {
   );
 
   return { setups: initial, tests };
+}
+
+function applyFlags(flags: readonly string[], section: Section) {
+  for (const flag of flags) {
+    if (flag.startsWith("/")) {
+      const split = flag.slice(1).split(/(?<!\\)\//),
+            pattern = split[0],
+            replacement = split[1],
+            flags = split[2] ?? "gu",
+            re = new RegExp(pattern, flags);
+
+      if (section.replacements === undefined) {
+        section.replacements = [];
+      }
+
+      section.replacements.push([re, replacement]);
+
+      continue;
+    }
+
+    switch (flag) {
+    case "debug":
+      section.debug = true;
+      break;
+
+    default:
+      throw new Error("unrecognized flag " + JSON.stringify(flag));
+    }
+  }
 }
 
 function getBehavior(flags: string[]) {
@@ -207,20 +241,27 @@ function getBehavior(flags: string[]) {
   return undefined;
 }
 
+function replaceInTest(test: Section | undefined, text: string) {
+  while (test !== undefined) {
+    if (test.replacements !== undefined) {
+      for (const [re, replacement] of test.replacements) {
+        text = text.replace(re, replacement);
+      }
+    }
+
+    test = (test as Test).comesAfter;
+  }
+
+  return text;
+}
+
 function stringifyOperations(test: Test) {
   const operations = test.operations;
   let text = "",
       textEnd = "";
 
-  for (const flag of test.flags) {
-    switch (flag) {
-    case "debug":
-      text += "debugger;\n";
-      break;
-
-    default:
-      throw new Error("unrecognized flag " + JSON.stringify(flag));
-    }
+  if (test.debug) {
+    text += "debugger;\n";
   }
 
   if (test.behavior === "character") {
@@ -259,5 +300,5 @@ function stringifyOperations(test: Test) {
     }
   }
 
-  return text + textEnd;
+  return replaceInTest(test, text + textEnd);
 }

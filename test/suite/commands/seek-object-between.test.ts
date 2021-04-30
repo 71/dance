@@ -71,7 +71,7 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "selectToEnd" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", "action": "selectToEnd" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -108,7 +108,7 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "selectToEnd", "extend": true });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", "action": "selectToEnd", "extend": true });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);

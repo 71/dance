@@ -1,5 +1,7 @@
 # 1
 
+> /\$object/"\\((?#inner)\\)"/g
+
 ```
 if {0}(|{0}ok) {
   f|{1}oo ={1} a+(b{2}+(|{2}c+(d)+e)+f)+g;
@@ -13,7 +15,7 @@ if {0}(|{0}ok) {
 ## 1 to-end
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "selectToEnd" }
+- .seek.object { input: $object, "action": "selectToEnd" }
 
 Old selection #1 is removed because it is not in a parens block.  
 Old selection #4 is removed because it is not in a parens block (the `)` it is
@@ -32,7 +34,7 @@ if {0}(ok)|{0} {
 ## 1 to-end-extend
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "selectToEnd", "extend": true }
+- .seek.object { input: $object, "action": "selectToEnd", "extend": true }
 
 Old selection #1 is removed because it is not in a parens block.  
 Old selection #4 is removed because it is not in a parens block (the `)` it is
