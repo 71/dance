@@ -1,4 +1,4 @@
-# initial-1
+# 1
 
 > behavior <- character
 
@@ -7,8 +7,8 @@ console.log()
 ^ 0
 ```
 
-# word-end-1a
-[up](#initial-1)
+## 1 word-end
+[up](#1)
 
 - .seek.wordEnd
 
@@ -17,18 +17,8 @@ console.log()
 ^^^^^^^ 0
 ```
 
-# word-end-extend-1a
-[up](#initial-1)
-
-- .seek.wordEnd.extend
-
-```
-console.log()
-^^^^^^^ 0
-```
-
-# word-end-1b
-[up](#word-end-1a)
+### 1 word-end x
+[up](#1-word-end)
 
 - .seek.wordEnd
 
@@ -37,18 +27,8 @@ console.log()
        ^ 0
 ```
 
-# word-end-extend-1b
-[up](#word-end-extend-1a)
-
-- .seek.wordEnd.extend
-
-```
-console.log()
-^^^^^^^^ 0
-```
-
-# word-end-1c
-[up](#word-end-1b)
+#### 1 word-end x x
+[up](#1-word-end-x)
 
 - .seek.wordEnd
 
@@ -57,28 +37,8 @@ console.log()
         ^^^ 0
 ```
 
-# word-end-extend-1c
-[up](#word-end-extend-1b)
-
-- .seek.wordEnd.extend
-
-```
-console.log()
-^^^^^^^^^^^ 0
-```
-
-# word-end-extend-1b-word-end
-[up](#word-end-extend-1b)
-
-- .seek.wordEnd
-
-```
-console.log()
-        ^^^ 0
-```
-
-# word-end-1c-start-a
-[up](#word-end-1c)
+##### 1 word-end x x word-start-backward
+[up](#1-word-end-x-x)
 
 - .seek.word.backward
 
@@ -87,8 +47,8 @@ console.log()
         |^^ 0
 ```
 
-# word-end-1c-start-b
-[up](#word-end-1c-start-a)
+###### 1 word-end x x word-start-backward x
+[up](#1-word-end-x-x-word-start-backward)
 
 - .seek.word.backward
 
@@ -97,8 +57,8 @@ console.log()
        ^ 0
 ```
 
-# word-end-1c-start-c
-[up](#word-end-1c-start-b)
+###### 1 word-end x x word-start-backward x x
+[up](#1-word-end-x-x-word-start-backward-x)
 
 - .seek.word.backward
 
@@ -107,7 +67,47 @@ console.log()
 |^^^^^^ 0
 ```
 
-# initial-2
+## 1 word-end-extend
+[up](#1)
+
+- .seek.wordEnd.extend
+
+```
+console.log()
+^^^^^^^ 0
+```
+
+### 1 word-end-extend x
+[up](#1-word-end-extend)
+
+- .seek.wordEnd.extend
+
+```
+console.log()
+^^^^^^^^ 0
+```
+
+#### 1 word-end-extend x x
+[up](#1-word-end-extend-x)
+
+- .seek.wordEnd.extend
+
+```
+console.log()
+^^^^^^^^^^^ 0
+```
+
+#### 1 word-end-extend x word-end
+[up](#1-word-end-extend-x)
+
+- .seek.wordEnd
+
+```
+console.log()
+        ^^^ 0
+```
+
+# 2
 
 > behavior <- character
 
@@ -118,8 +118,8 @@ bar
 ^ 0
 ```
 
-# word-start-backward-2
-[up](#initial-2)
+## 2 word-start-backward
+[up](#2)
 
 - .seek.word.backward
 
@@ -130,7 +130,7 @@ foo
 bar
 ```
 
-# initial-3
+# 3
 
 Now with spaces.
 
@@ -141,8 +141,8 @@ aaa bbb ccc ddd
       ^ 0
 ```
 
-# word-end-3a
-[up](#initial-3)
+## 3 word-end
+[up](#3)
 
 - .seek.wordEnd
 
@@ -151,8 +151,8 @@ aaa bbb ccc ddd
        ^^^^ 0
 ```
 
-# word-end-3b
-[up](#word-end-3a)
+### 3 word-end x
+[up](#3-word-end)
 
 - .seek.wordEnd
 
@@ -161,8 +161,8 @@ aaa bbb ccc ddd
            ^^^^ 0
 ```
 
-# word-end-3b-previous
-[up](#word-end-3b)
+#### 3 word-end x word-start-backward
+[up](#3-word-end-x)
 
 - .seek.word.backward
 
@@ -171,8 +171,8 @@ aaa bbb ccc ddd
             |^^ 0
 ```
 
-# word-end-3b-previous-with-count
-[up](#word-end-3b)
+#### 3 word-end x word-start-backward-2
+[up](#3-word-end-x)
 
 - .seek.word.backward { count: 2 }
 
@@ -181,7 +181,7 @@ aaa bbb ccc ddd
         |^^^ 0
 ```
 
-# initial-4
+# 4
 
 ```
 aaa bbb
@@ -190,8 +190,8 @@ aaa bbb
 dd
 ```
 
-# word-start-4a
-[up](#initial-4)
+## 4 word-start
+[up](#4)
 
 - .seek.word
 
@@ -202,8 +202,8 @@ aaa bbb
 dd
 ```
 
-# word-start-4b
-[up](#word-start-4a)
+### 4 word-start word-end
+[up](#4-word-start)
 
 - .seek.wordEnd
 
@@ -214,7 +214,7 @@ aaa bbb
 dd
 ```
 
-# initial-5
+# 5
 
 > behavior <- character
 
@@ -224,8 +224,8 @@ foo x bar.baz ex
 la
 ```
 
-# word-end-5a
-[up](#initial-5)
+## 5 word-end
+[up](#5)
 
 - .seek.wordEnd
 
@@ -235,8 +235,8 @@ foo x bar.baz ex
 la
 ```
 
-# word-end-5b
-[up](#word-end-5a)
+### 5 word-end x
+[up](#5-word-end)
 
 - .seek.wordEnd
 
@@ -246,8 +246,8 @@ foo x bar.baz ex
 la
 ```
 
-# word-end-5c
-[up](#word-end-5b)
+#### 5 word-end x x
+[up](#5-word-end-x)
 
 - .seek.wordEnd
 
@@ -257,8 +257,8 @@ foo x bar.baz ex
 la
 ```
 
-# word-end-5d
-[up](#word-end-5c)
+##### 5 word-end x x x
+[up](#5-word-end-x-x)
 
 - .seek.wordEnd
 
@@ -268,7 +268,7 @@ foo x bar.baz ex
 la
 ```
 
-# initial-6
+# 6
 
 > behavior <- character
 
@@ -277,8 +277,8 @@ a b c d
   ^ 0
 ```
 
-# word-end-6
-[up](#initial-6)
+## 6 word-end
+[up](#6)
 
 - .seek.wordEnd
 
@@ -287,8 +287,8 @@ a b c d
    ^^ 0
 ```
 
-# word-start-6
-[up](#initial-6)
+## 6 word-start
+[up](#6)
 
 - .seek.word
 
@@ -297,8 +297,8 @@ a b c d
    ^^ 0
 ```
 
-# word-start-backward-6
-[up](#initial-6)
+## 6 word-start-backward
+[up](#6)
 
 - .seek.word.backward
 
@@ -307,8 +307,8 @@ a b c d
 |^ 0
 ```
 
-# word-end-extend-6
-[up](#initial-6)
+## 6 word-end-extend
+[up](#6)
 
 - .seek.wordEnd.extend
 
@@ -317,8 +317,8 @@ a b c d
   ^^^ 0
 ```
 
-# word-start-extend-6
-[up](#initial-6)
+## 6 word-start-extend
+[up](#6)
 
 - .seek.word.extend
 
@@ -327,8 +327,8 @@ a b c d
   ^^ 0
 ```
 
-# word-start-extend-backward-6
-[up](#initial-6)
+## 6 word-start-extend-backward
+[up](#6)
 
 - .seek.word.extend.backward
 

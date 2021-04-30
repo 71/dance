@@ -26,17 +26,17 @@ suite("search.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial-easy": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "easy": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo bar
               ^ 0
           `)),
-          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             The quick brown fox
               ^^^ 0
             jumps over the
             lazy dog quickly.
           `)),
-          "initial-2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             The quick brown fox
                        | 0
             jumps over the
@@ -44,40 +44,40 @@ suite("search.md", function () {
               ^ 0
           `)),
 
-          "search-easy": new Promise((resolve) => notifyDependents["search-easy"] = resolve),
-          "search-1": new Promise((resolve) => notifyDependents["search-1"] = resolve),
-          "search-repeat-1": new Promise((resolve) => notifyDependents["search-repeat-1"] = resolve),
-          "search-start-1": new Promise((resolve) => notifyDependents["search-start-1"] = resolve),
-          "search-start-wrap-1": new Promise((resolve) => notifyDependents["search-start-wrap-1"] = resolve),
-          "search-wrap-1": new Promise((resolve) => notifyDependents["search-wrap-1"] = resolve),
-          "search-not-found-1": new Promise((resolve) => notifyDependents["search-not-found-1"] = resolve),
-          "search-backward-1": new Promise((resolve) => notifyDependents["search-backward-1"] = resolve),
-          "search-backward-start-wrap-1a": new Promise((resolve) => notifyDependents["search-backward-start-wrap-1a"] = resolve),
-          "search-backward-start-wrap-1b": new Promise((resolve) => notifyDependents["search-backward-start-wrap-1b"] = resolve),
-          "search-backward-not-found-1": new Promise((resolve) => notifyDependents["search-backward-not-found-1"] = resolve),
-          "search-extend-1": new Promise((resolve) => notifyDependents["search-extend-1"] = resolve),
-          "search-extend-wrap-1": new Promise((resolve) => notifyDependents["search-extend-wrap-1"] = resolve),
-          "search-backward-extend-1a": new Promise((resolve) => notifyDependents["search-backward-extend-1a"] = resolve),
-          "search-backward-extend-character-1a": new Promise((resolve) => notifyDependents["search-backward-extend-character-1a"] = resolve),
-          "search-backward-extend-1b": new Promise((resolve) => notifyDependents["search-backward-extend-1b"] = resolve),
-          "search-backward-extend-character-1b": new Promise((resolve) => notifyDependents["search-backward-extend-character-1b"] = resolve),
-          "search-backward-extend-wrap-1": new Promise((resolve) => notifyDependents["search-backward-extend-wrap-1"] = resolve),
-          "search-2": new Promise((resolve) => notifyDependents["search-2"] = resolve),
-          "search-extend-2": new Promise((resolve) => notifyDependents["search-extend-2"] = resolve),
-          "search-extend-character-2": new Promise((resolve) => notifyDependents["search-extend-character-2"] = resolve),
-          "search-wrap-2": new Promise((resolve) => notifyDependents["search-wrap-2"] = resolve),
-          "search-extend-wrap-2": new Promise((resolve) => notifyDependents["search-extend-wrap-2"] = resolve),
-          "search-backward-2": new Promise((resolve) => notifyDependents["search-backward-2"] = resolve),
-          "search-backward-extend-2": new Promise((resolve) => notifyDependents["search-backward-extend-2"] = resolve),
-          "search-backward-wrap-2": new Promise((resolve) => notifyDependents["search-backward-wrap-2"] = resolve),
-          "search-backward-extend-wrap-2": new Promise((resolve) => notifyDependents["search-backward-extend-wrap-2"] = resolve),
+          "easy-search-b": new Promise((resolve) => notifyDependents["easy-search-b"] = resolve),
+          "1-search": new Promise((resolve) => notifyDependents["1-search"] = resolve),
+          "1-search-repeat": new Promise((resolve) => notifyDependents["1-search-repeat"] = resolve),
+          "1-search-start": new Promise((resolve) => notifyDependents["1-search-start"] = resolve),
+          "1-search-start-wrap": new Promise((resolve) => notifyDependents["1-search-start-wrap"] = resolve),
+          "1-search-wrap": new Promise((resolve) => notifyDependents["1-search-wrap"] = resolve),
+          "1-search-not-found": new Promise((resolve) => notifyDependents["1-search-not-found"] = resolve),
+          "1-search-backward": new Promise((resolve) => notifyDependents["1-search-backward"] = resolve),
+          "1-search-backward-wrap": new Promise((resolve) => notifyDependents["1-search-backward-wrap"] = resolve),
+          "1-search-backward-wrap-other": new Promise((resolve) => notifyDependents["1-search-backward-wrap-other"] = resolve),
+          "1-search-backward-not-found": new Promise((resolve) => notifyDependents["1-search-backward-not-found"] = resolve),
+          "1-search-extend": new Promise((resolve) => notifyDependents["1-search-extend"] = resolve),
+          "1-search-extend-wrap": new Promise((resolve) => notifyDependents["1-search-extend-wrap"] = resolve),
+          "1-search-backward-extend": new Promise((resolve) => notifyDependents["1-search-backward-extend"] = resolve),
+          "1-search-backward-extend-character": new Promise((resolve) => notifyDependents["1-search-backward-extend-character"] = resolve),
+          "1-search-backward-extend-other": new Promise((resolve) => notifyDependents["1-search-backward-extend-other"] = resolve),
+          "1-search-backward-extend-character-other": new Promise((resolve) => notifyDependents["1-search-backward-extend-character-other"] = resolve),
+          "1-search-backward-extend-wrap": new Promise((resolve) => notifyDependents["1-search-backward-extend-wrap"] = resolve),
+          "2-search": new Promise((resolve) => notifyDependents["2-search"] = resolve),
+          "2-search-extend": new Promise((resolve) => notifyDependents["2-search-extend"] = resolve),
+          "2-search-extend-character": new Promise((resolve) => notifyDependents["2-search-extend-character"] = resolve),
+          "2-search-wrap": new Promise((resolve) => notifyDependents["2-search-wrap"] = resolve),
+          "2-search-extend-wrap": new Promise((resolve) => notifyDependents["2-search-extend-wrap"] = resolve),
+          "2-search-backward": new Promise((resolve) => notifyDependents["2-search-backward"] = resolve),
+          "2-search-backward-extend": new Promise((resolve) => notifyDependents["2-search-backward-extend"] = resolve),
+          "2-search-backward-wrap": new Promise((resolve) => notifyDependents["2-search-backward-wrap"] = resolve),
+          "2-search-backward-extend-wrap": new Promise((resolve) => notifyDependents["2-search-backward-extend-wrap"] = resolve),
         };
 
-  test("transition initial-easy > search-easy                        ", async function () {
-    const beforeDocument = await documents["initial-easy"];
+  test("transition easy > easy-search-b                           ", async function () {
+    const beforeDocument = await documents["easy"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-easy"](undefined);
+      notifyDependents["easy-search-b"](undefined);
       this.skip();
     }
 
@@ -97,19 +97,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-easy"](afterDocument);
+      notifyDependents["easy-search-b"](afterDocument);
     } catch (e) {
-      notifyDependents["search-easy"](undefined);
+      notifyDependents["easy-search-b"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-1                           ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search                                ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-1"](undefined);
+      notifyDependents["1-search"](undefined);
       this.skip();
     }
 
@@ -131,19 +131,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-1"](afterDocument);
+      notifyDependents["1-search"](afterDocument);
     } catch (e) {
-      notifyDependents["search-1"](undefined);
+      notifyDependents["1-search"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-repeat-1                    ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-repeat                         ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-repeat-1"](undefined);
+      notifyDependents["1-search-repeat"](undefined);
       this.skip();
     }
 
@@ -165,19 +165,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-repeat-1"](afterDocument);
+      notifyDependents["1-search-repeat"](afterDocument);
     } catch (e) {
-      notifyDependents["search-repeat-1"](undefined);
+      notifyDependents["1-search-repeat"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-start-1                     ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-start                          ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-start-1"](undefined);
+      notifyDependents["1-search-start"](undefined);
       this.skip();
     }
 
@@ -199,19 +199,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-start-1"](afterDocument);
+      notifyDependents["1-search-start"](afterDocument);
     } catch (e) {
-      notifyDependents["search-start-1"](undefined);
+      notifyDependents["1-search-start"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-start-wrap-1                ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-start-wrap                     ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-start-wrap-1"](undefined);
+      notifyDependents["1-search-start-wrap"](undefined);
       this.skip();
     }
 
@@ -233,19 +233,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-start-wrap-1"](afterDocument);
+      notifyDependents["1-search-start-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-start-wrap-1"](undefined);
+      notifyDependents["1-search-start-wrap"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-wrap-1                      ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-wrap                           ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-wrap-1"](undefined);
+      notifyDependents["1-search-wrap"](undefined);
       this.skip();
     }
 
@@ -267,19 +267,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-wrap-1"](afterDocument);
+      notifyDependents["1-search-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-wrap-1"](undefined);
+      notifyDependents["1-search-wrap"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-not-found-1                 ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-not-found                      ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-not-found-1"](undefined);
+      notifyDependents["1-search-not-found"](undefined);
       this.skip();
     }
 
@@ -301,19 +301,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-not-found-1"](afterDocument);
+      notifyDependents["1-search-not-found"](afterDocument);
     } catch (e) {
-      notifyDependents["search-not-found-1"](undefined);
+      notifyDependents["1-search-not-found"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-1                  ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward                       ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-1"](undefined);
+      notifyDependents["1-search-backward"](undefined);
       this.skip();
     }
 
@@ -335,19 +335,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-1"](afterDocument);
+      notifyDependents["1-search-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-1"](undefined);
+      notifyDependents["1-search-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-start-wrap-1a      ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward-wrap                  ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-start-wrap-1a"](undefined);
+      notifyDependents["1-search-backward-wrap"](undefined);
       this.skip();
     }
 
@@ -369,19 +369,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-start-wrap-1a"](afterDocument);
+      notifyDependents["1-search-backward-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-start-wrap-1a"](undefined);
+      notifyDependents["1-search-backward-wrap"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-start-wrap-1b      ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward-wrap-other            ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-start-wrap-1b"](undefined);
+      notifyDependents["1-search-backward-wrap-other"](undefined);
       this.skip();
     }
 
@@ -403,19 +403,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-start-wrap-1b"](afterDocument);
+      notifyDependents["1-search-backward-wrap-other"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-start-wrap-1b"](undefined);
+      notifyDependents["1-search-backward-wrap-other"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-not-found-1        ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward-not-found             ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-not-found-1"](undefined);
+      notifyDependents["1-search-backward-not-found"](undefined);
       this.skip();
     }
 
@@ -437,19 +437,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-not-found-1"](afterDocument);
+      notifyDependents["1-search-backward-not-found"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-not-found-1"](undefined);
+      notifyDependents["1-search-backward-not-found"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-extend-1                    ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-extend                         ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-extend-1"](undefined);
+      notifyDependents["1-search-extend"](undefined);
       this.skip();
     }
 
@@ -472,19 +472,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-extend-1"](afterDocument);
+      notifyDependents["1-search-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["search-extend-1"](undefined);
+      notifyDependents["1-search-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-extend-wrap-1               ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-extend-wrap                    ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-extend-wrap-1"](undefined);
+      notifyDependents["1-search-extend-wrap"](undefined);
       this.skip();
     }
 
@@ -506,19 +506,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-extend-wrap-1"](afterDocument);
+      notifyDependents["1-search-extend-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-extend-wrap-1"](undefined);
+      notifyDependents["1-search-extend-wrap"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-extend-1a          ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward-extend                ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-extend-1a"](undefined);
+      notifyDependents["1-search-backward-extend"](undefined);
       this.skip();
     }
 
@@ -540,19 +540,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-extend-1a"](afterDocument);
+      notifyDependents["1-search-backward-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-extend-1a"](undefined);
+      notifyDependents["1-search-backward-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-extend-character-1a", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward-extend-character      ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-extend-character-1a"](undefined);
+      notifyDependents["1-search-backward-extend-character"](undefined);
       this.skip();
     }
 
@@ -576,19 +576,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-extend-character-1a"](afterDocument);
+      notifyDependents["1-search-backward-extend-character"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-extend-character-1a"](undefined);
+      notifyDependents["1-search-backward-extend-character"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-extend-1b          ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward-extend-other          ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-extend-1b"](undefined);
+      notifyDependents["1-search-backward-extend-other"](undefined);
       this.skip();
     }
 
@@ -610,19 +610,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-extend-1b"](afterDocument);
+      notifyDependents["1-search-backward-extend-other"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-extend-1b"](undefined);
+      notifyDependents["1-search-backward-extend-other"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-extend-character-1b", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward-extend-character-other", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-extend-character-1b"](undefined);
+      notifyDependents["1-search-backward-extend-character-other"](undefined);
       this.skip();
     }
 
@@ -646,19 +646,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-extend-character-1b"](afterDocument);
+      notifyDependents["1-search-backward-extend-character-other"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-extend-character-1b"](undefined);
+      notifyDependents["1-search-backward-extend-character-other"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1    > search-backward-extend-wrap-1      ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1    > 1-search-backward-extend-wrap           ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-extend-wrap-1"](undefined);
+      notifyDependents["1-search-backward-extend-wrap"](undefined);
       this.skip();
     }
 
@@ -680,19 +680,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-extend-wrap-1"](afterDocument);
+      notifyDependents["1-search-backward-extend-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-extend-wrap-1"](undefined);
+      notifyDependents["1-search-backward-extend-wrap"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-2                           ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search                                ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-2"](undefined);
+      notifyDependents["2-search"](undefined);
       this.skip();
     }
 
@@ -714,19 +714,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-2"](afterDocument);
+      notifyDependents["2-search"](afterDocument);
     } catch (e) {
-      notifyDependents["search-2"](undefined);
+      notifyDependents["2-search"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-extend-2                    ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search-extend                         ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-extend-2"](undefined);
+      notifyDependents["2-search-extend"](undefined);
       this.skip();
     }
 
@@ -748,19 +748,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-extend-2"](afterDocument);
+      notifyDependents["2-search-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["search-extend-2"](undefined);
+      notifyDependents["2-search-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-extend-character-2          ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search-extend-character               ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-extend-character-2"](undefined);
+      notifyDependents["2-search-extend-character"](undefined);
       this.skip();
     }
 
@@ -784,19 +784,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-extend-character-2"](afterDocument);
+      notifyDependents["2-search-extend-character"](afterDocument);
     } catch (e) {
-      notifyDependents["search-extend-character-2"](undefined);
+      notifyDependents["2-search-extend-character"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-wrap-2                      ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search-wrap                           ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-wrap-2"](undefined);
+      notifyDependents["2-search-wrap"](undefined);
       this.skip();
     }
 
@@ -818,19 +818,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-wrap-2"](afterDocument);
+      notifyDependents["2-search-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-wrap-2"](undefined);
+      notifyDependents["2-search-wrap"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-extend-wrap-2               ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search-extend-wrap                    ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-extend-wrap-2"](undefined);
+      notifyDependents["2-search-extend-wrap"](undefined);
       this.skip();
     }
 
@@ -853,19 +853,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-extend-wrap-2"](afterDocument);
+      notifyDependents["2-search-extend-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-extend-wrap-2"](undefined);
+      notifyDependents["2-search-extend-wrap"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-backward-2                  ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search-backward                       ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-2"](undefined);
+      notifyDependents["2-search-backward"](undefined);
       this.skip();
     }
 
@@ -887,19 +887,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-2"](afterDocument);
+      notifyDependents["2-search-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-2"](undefined);
+      notifyDependents["2-search-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-backward-extend-2           ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search-backward-extend                ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-extend-2"](undefined);
+      notifyDependents["2-search-backward-extend"](undefined);
       this.skip();
     }
 
@@ -922,19 +922,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-extend-2"](afterDocument);
+      notifyDependents["2-search-backward-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-extend-2"](undefined);
+      notifyDependents["2-search-backward-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-backward-wrap-2             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search-backward-wrap                  ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-wrap-2"](undefined);
+      notifyDependents["2-search-backward-wrap"](undefined);
       this.skip();
     }
 
@@ -956,19 +956,19 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-wrap-2"](afterDocument);
+      notifyDependents["2-search-backward-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-wrap-2"](undefined);
+      notifyDependents["2-search-backward-wrap"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > search-backward-extend-wrap-2      ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2    > 2-search-backward-extend-wrap           ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-backward-extend-wrap-2"](undefined);
+      notifyDependents["2-search-backward-extend-wrap"](undefined);
       this.skip();
     }
 
@@ -991,9 +991,9 @@ suite("search.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-backward-extend-wrap-2"](afterDocument);
+      notifyDependents["2-search-backward-extend-wrap"](afterDocument);
     } catch (e) {
-      notifyDependents["search-backward-extend-wrap-2"](undefined);
+      notifyDependents["2-search-backward-extend-wrap"](undefined);
 
       throw e;
     }

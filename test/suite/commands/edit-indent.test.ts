@@ -26,58 +26,58 @@ suite("edit-indent.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             The quick brown fox
             ^ 0
             jumps over the lazy
                                ^ 0
             dog.
           `)),
-          "initial-2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             The quick brown fox
             ^ 0
             jumps over the lazy
                               ^ 0
             dog.
           `)),
-          "initial-3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             The quick brown fox
             ^^^^^^^^^^^^^^^ 0
             jumps over the lazy
             dog.
           `)),
-          "initial-4": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "4": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             The quick brown fox
             |^^^^^^^^^^^^^^ 0
             jumps over the lazy
             dog.
           `)),
-          "initial-5": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "5": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             The quick brown fox
             ^^^^^^^^^^^^^^^^^^^^ 0
             jumps over the lazy
             dog.
           `)),
-          "initial-6": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "6": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             The quick brown fox
             | 0
             jumps over the lazy
             dog.
           `)),
 
-          "indent-1": new Promise((resolve) => notifyDependents["indent-1"] = resolve),
-          "indent-2": new Promise((resolve) => notifyDependents["indent-2"] = resolve),
-          "indent-3": new Promise((resolve) => notifyDependents["indent-3"] = resolve),
-          "indent-4": new Promise((resolve) => notifyDependents["indent-4"] = resolve),
-          "indent-5": new Promise((resolve) => notifyDependents["indent-5"] = resolve),
-          "indent-6": new Promise((resolve) => notifyDependents["indent-6"] = resolve),
+          "1-indent": new Promise((resolve) => notifyDependents["1-indent"] = resolve),
+          "2-indent": new Promise((resolve) => notifyDependents["2-indent"] = resolve),
+          "3-indent": new Promise((resolve) => notifyDependents["3-indent"] = resolve),
+          "4-indent": new Promise((resolve) => notifyDependents["4-indent"] = resolve),
+          "5-indent": new Promise((resolve) => notifyDependents["5-indent"] = resolve),
+          "6-indent": new Promise((resolve) => notifyDependents["6-indent"] = resolve),
         };
 
-  test("transition initial-1 > indent-1", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1 > 1-indent", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["indent-1"](undefined);
+      notifyDependents["1-indent"](undefined);
       this.skip();
     }
 
@@ -100,19 +100,19 @@ suite("edit-indent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["indent-1"](afterDocument);
+      notifyDependents["1-indent"](afterDocument);
     } catch (e) {
-      notifyDependents["indent-1"](undefined);
+      notifyDependents["1-indent"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2 > indent-2", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2 > 2-indent", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["indent-2"](undefined);
+      notifyDependents["2-indent"](undefined);
       this.skip();
     }
 
@@ -135,19 +135,19 @@ suite("edit-indent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["indent-2"](afterDocument);
+      notifyDependents["2-indent"](afterDocument);
     } catch (e) {
-      notifyDependents["indent-2"](undefined);
+      notifyDependents["2-indent"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3 > indent-3", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3 > 3-indent", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["indent-3"](undefined);
+      notifyDependents["3-indent"](undefined);
       this.skip();
     }
 
@@ -169,19 +169,19 @@ suite("edit-indent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["indent-3"](afterDocument);
+      notifyDependents["3-indent"](afterDocument);
     } catch (e) {
-      notifyDependents["indent-3"](undefined);
+      notifyDependents["3-indent"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-4 > indent-4", async function () {
-    const beforeDocument = await documents["initial-4"];
+  test("transition 4 > 4-indent", async function () {
+    const beforeDocument = await documents["4"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["indent-4"](undefined);
+      notifyDependents["4-indent"](undefined);
       this.skip();
     }
 
@@ -203,19 +203,19 @@ suite("edit-indent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["indent-4"](afterDocument);
+      notifyDependents["4-indent"](afterDocument);
     } catch (e) {
-      notifyDependents["indent-4"](undefined);
+      notifyDependents["4-indent"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-5 > indent-5", async function () {
-    const beforeDocument = await documents["initial-5"];
+  test("transition 5 > 5-indent", async function () {
+    const beforeDocument = await documents["5"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["indent-5"](undefined);
+      notifyDependents["5-indent"](undefined);
       this.skip();
     }
 
@@ -237,19 +237,19 @@ suite("edit-indent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["indent-5"](afterDocument);
+      notifyDependents["5-indent"](afterDocument);
     } catch (e) {
-      notifyDependents["indent-5"](undefined);
+      notifyDependents["5-indent"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-6 > indent-6", async function () {
-    const beforeDocument = await documents["initial-6"];
+  test("transition 6 > 6-indent", async function () {
+    const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["indent-6"](undefined);
+      notifyDependents["6-indent"](undefined);
       this.skip();
     }
 
@@ -271,9 +271,9 @@ suite("edit-indent.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["indent-6"](afterDocument);
+      notifyDependents["6-indent"](afterDocument);
     } catch (e) {
-      notifyDependents["indent-6"](undefined);
+      notifyDependents["6-indent"](undefined);
 
       throw e;
     }

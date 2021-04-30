@@ -1,4 +1,4 @@
-# initial-1
+# 1
 
 ```
 { hello: 1,
@@ -13,8 +13,8 @@
 }
 ```
 
-# enclosing-1a
-[up](#initial-1)
+## 1 enclosing
+[up](#1)
 
 - .seek.enclosing
 
@@ -36,8 +36,8 @@ from `]` to `[`). Same for selection #1.
 }
 ```
 
-# enclosing-1b
-[up](#enclosing-1a)
+### 1 enclosing x
+[up](#1-enclosing)
 
 Since the active position was at the opening square bracket (`[`), `m` again
 should keep the same selection but forwards, so the active position is at the
@@ -58,7 +58,7 @@ closing bracket (`]`).
 }
 ```
 
-# initial-2
+# 2
 
 ```
 { hello: 1,
@@ -72,8 +72,8 @@ closing bracket (`]`).
 }
 ```
 
-# enclosing-2
-[up](#initial-2)
+## 2 enclosing
+[up](#2)
 
 - .seek.enclosing
 

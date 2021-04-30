@@ -1,4 +1,4 @@
-# initial
+# 1
 
 ```
 foo
@@ -7,8 +7,8 @@ bar
 baz
 ```
 
-# whole-buffer
-[up](#initial)
+## 1 whole-buffer
+[up](#1)
 
 - .select.buffer
 
@@ -21,8 +21,8 @@ baz
 ^^^^ 0
 ```
 
-# line-1
-[up](#initial)
+## 1 select-line
+[up](#1)
 
 - .select.line.below
 
@@ -33,20 +33,8 @@ bar
 baz
 ```
 
-# line-extend-1
-[up](#initial)
-
-- .select.line.below.extend
-
-```
-foo
-^^^^ 0
-bar
-baz
-```
-
-# line-2
-[up](#line-1)
+### 1 select-line x
+[up](#1-select-line)
 
 - .select.line.below
 
@@ -57,8 +45,20 @@ bar
 baz
 ```
 
-# line-extend-2
-[up](#line-extend-1)
+## 1 extend-line
+[up](#1)
+
+- .select.line.below.extend
+
+```
+foo
+^^^^ 0
+bar
+baz
+```
+
+### 1 extend-line x
+[up](#1-extend-line)
 
 - .select.line.below.extend
 
@@ -70,7 +70,7 @@ bar
 baz
 ```
 
-# initial-3
+# 2
 
 ```
 hello
@@ -83,8 +83,8 @@ world
   and welcome
 ```
 
-# line-3
-[up](#initial-3)
+## 2 line
+[up](#2)
 
 - .select.line.below
 
@@ -97,8 +97,8 @@ world
   and welcome
 ```
 
-# line-extend-3
-[up](#initial-3)
+## 2 line-extend
+[up](#2)
 
 - .select.line.below.extend
 
@@ -113,8 +113,8 @@ world
   and welcome
 ```
 
-# line-with-count-3
-[up](#initial-3)
+## 2 line-2
+[up](#2)
 
 - .select.line.below { count: 2 }
 
@@ -127,8 +127,8 @@ world
   and welcome
 ```
 
-# line-extend-with-count-3
-[up](#initial-3)
+## 2 line-extend-2
+[up](#2)
 
 - .select.line.below.extend { count: 2 }
 
@@ -144,7 +144,7 @@ world
   and welcome
 ```
 
-# initial-4
+# 3
 
 ```
 hello
@@ -155,8 +155,8 @@ my
 friend
 ```
 
-# line-4
-[up](#initial-4)
+## 3 line
+[up](#3)
 
 - .select.line.below
 
@@ -171,8 +171,8 @@ my
 friend
 ```
 
-# line-with-count-4a
-[up](#initial-4)
+## 3 line-2
+[up](#3)
 
 - .select.line.below { count: 2 }
 
@@ -187,8 +187,8 @@ my
 friend
 ```
 
-# line-with-count-4b
-[up](#line-with-count-4a)
+### 3 line-2 line
+[up](#3-line-2)
 
 - .select.line.below
 
@@ -203,8 +203,8 @@ my
 friend
 ```
 
-# line-with-count-4c
-[up](#line-with-count-4b)
+#### 3 line-2 line x
+[up](#3-line-2-line)
 
 - .select.line.below
 
@@ -217,7 +217,7 @@ my
 friend
 ```
 
-# initial-5
+# 4
 
 The full line is selected, but in reverse direction.
 
@@ -227,8 +227,8 @@ hello
 world
 ```
 
-# line-5
-[up](#initial-5)
+## 4 line
+[up](#4)
 
 - .select.line.below
 
@@ -240,7 +240,7 @@ hello
 world
 ```
 
-# initial-6
+# 5
 
 ```
 hello
@@ -249,8 +249,8 @@ world
 ^ 0
 ```
 
-# line-extend-6a
-[up](#initial-6)
+## 5 line-extend
+[up](#5)
 
 - .select.line.below.extend
 
@@ -262,8 +262,8 @@ world
 ^ 0
 ```
 
-# line-extend-6b
-[up](#line-extend-6a)
+### 5 line-extend x
+[up](#5-line-extend)
 
 - .select.line.below.extend
 
@@ -273,7 +273,7 @@ world
 ^^^^^^ 0
 ```
 
-# initial-7
+# 6
 
 ```
 foo
@@ -283,8 +283,8 @@ baz
 quux
 ```
 
-# line-7a
-[up](#initial-7)
+## 6 line
+[up](#6)
 
 - .select.line.below
 
@@ -296,8 +296,48 @@ baz
 quux
 ```
 
-# line-extend-7
-[up](#initial-7)
+### 6 line x
+[up](#6-line)
+
+- .select.line.below
+
+```
+foo
+bar
+^^^^ 0
+baz
+quux
+```
+
+#### 6 line x x
+[up](#6-line-x)
+
+- .select.line.below
+
+```
+foo
+bar
+baz
+^^^^ 0
+quux
+```
+
+### 6 line line-extend
+[up](#6-line)
+
+- .select.line.below.extend
+
+```
+foo
+^^^^ 0
+bar
+^^^^ 0
+baz
+quux
+```
+
+## 6 line-extend
+[up](#6)
 
 - .select.line.below.extend
 
@@ -306,45 +346,5 @@ foo
 ^^^^ 0
 bar
 baz
-quux
-```
-
-# line-7b
-[up](#line-7a)
-
-- .select.line.below
-
-```
-foo
-bar
-^^^^ 0
-baz
-quux
-```
-
-# line-7b-extend
-[up](#line-7a)
-
-- .select.line.below.extend
-
-```
-foo
-^^^^ 0
-bar
-^^^^ 0
-baz
-quux
-```
-
-# line-7c
-[up](#line-7b)
-
-- .select.line.below
-
-```
-foo
-bar
-baz
-^^^^ 0
 quux
 ```

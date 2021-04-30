@@ -26,24 +26,24 @@ suite("select-line-end.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             the quick brown fox
                       ^^^ 0
           `)),
 
-          "line-start-1": new Promise((resolve) => notifyDependents["line-start-1"] = resolve),
-          "line-start-extend-1": new Promise((resolve) => notifyDependents["line-start-extend-1"] = resolve),
-          "line-start-extend-character-1": new Promise((resolve) => notifyDependents["line-start-extend-character-1"] = resolve),
-          "line-end-1": new Promise((resolve) => notifyDependents["line-end-1"] = resolve),
-          "line-end-character-1": new Promise((resolve) => notifyDependents["line-end-character-1"] = resolve),
-          "line-end-extend-1": new Promise((resolve) => notifyDependents["line-end-extend-1"] = resolve),
+          "1-line-start": new Promise((resolve) => notifyDependents["1-line-start"] = resolve),
+          "1-line-start-extend": new Promise((resolve) => notifyDependents["1-line-start-extend"] = resolve),
+          "1-line-start-extend-character": new Promise((resolve) => notifyDependents["1-line-start-extend-character"] = resolve),
+          "1-line-end": new Promise((resolve) => notifyDependents["1-line-end"] = resolve),
+          "1-line-end-character": new Promise((resolve) => notifyDependents["1-line-end-character"] = resolve),
+          "1-line-end-extend": new Promise((resolve) => notifyDependents["1-line-end-extend"] = resolve),
         };
 
-  test("transition initial-1 > line-start-1                 ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1 > 1-line-start                 ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-start-1"](undefined);
+      notifyDependents["1-line-start"](undefined);
       this.skip();
     }
 
@@ -63,19 +63,19 @@ suite("select-line-end.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-start-1"](afterDocument);
+      notifyDependents["1-line-start"](afterDocument);
     } catch (e) {
-      notifyDependents["line-start-1"](undefined);
+      notifyDependents["1-line-start"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1 > line-start-extend-1          ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1 > 1-line-start-extend          ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-start-extend-1"](undefined);
+      notifyDependents["1-line-start-extend"](undefined);
       this.skip();
     }
 
@@ -95,19 +95,19 @@ suite("select-line-end.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-start-extend-1"](afterDocument);
+      notifyDependents["1-line-start-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["line-start-extend-1"](undefined);
+      notifyDependents["1-line-start-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1 > line-start-extend-character-1", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1 > 1-line-start-extend-character", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-start-extend-character-1"](undefined);
+      notifyDependents["1-line-start-extend-character"](undefined);
       this.skip();
     }
 
@@ -129,19 +129,19 @@ suite("select-line-end.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-start-extend-character-1"](afterDocument);
+      notifyDependents["1-line-start-extend-character"](afterDocument);
     } catch (e) {
-      notifyDependents["line-start-extend-character-1"](undefined);
+      notifyDependents["1-line-start-extend-character"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1 > line-end-1                   ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1 > 1-line-end                   ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-end-1"](undefined);
+      notifyDependents["1-line-end"](undefined);
       this.skip();
     }
 
@@ -161,19 +161,19 @@ suite("select-line-end.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-end-1"](afterDocument);
+      notifyDependents["1-line-end"](afterDocument);
     } catch (e) {
-      notifyDependents["line-end-1"](undefined);
+      notifyDependents["1-line-end"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1 > line-end-character-1         ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1 > 1-line-end-character         ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-end-character-1"](undefined);
+      notifyDependents["1-line-end-character"](undefined);
       this.skip();
     }
 
@@ -195,19 +195,19 @@ suite("select-line-end.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-end-character-1"](afterDocument);
+      notifyDependents["1-line-end-character"](afterDocument);
     } catch (e) {
-      notifyDependents["line-end-character-1"](undefined);
+      notifyDependents["1-line-end-character"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1 > line-end-extend-1            ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1 > 1-line-end-extend            ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["line-end-extend-1"](undefined);
+      notifyDependents["1-line-end-extend"](undefined);
       this.skip();
     }
 
@@ -227,9 +227,9 @@ suite("select-line-end.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["line-end-extend-1"](afterDocument);
+      notifyDependents["1-line-end-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["line-end-extend-1"](undefined);
+      notifyDependents["1-line-end-extend"](undefined);
 
       throw e;
     }

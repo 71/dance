@@ -26,31 +26,31 @@ suite("search-next.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             apple pineapple pear
             ^ 0
             pear pineapple apple
             kiwi orange kiwi
           `)),
 
-          "search-a": new Promise((resolve) => notifyDependents["search-a"] = resolve),
-          "search-a-next": new Promise((resolve) => notifyDependents["search-a-next"] = resolve),
-          "search-a-next-add": new Promise((resolve) => notifyDependents["search-a-next-add"] = resolve),
-          "search-a-next-with-3": new Promise((resolve) => notifyDependents["search-a-next-with-3"] = resolve),
-          "search-a-next-with-3-add": new Promise((resolve) => notifyDependents["search-a-next-with-3-add"] = resolve),
-          "search-a-next-with-4": new Promise((resolve) => notifyDependents["search-a-next-with-4"] = resolve),
-          "search-a-next-with-4-add": new Promise((resolve) => notifyDependents["search-a-next-with-4-add"] = resolve),
-          "search-a-previous": new Promise((resolve) => notifyDependents["search-a-previous"] = resolve),
-          "search-a-previous-add": new Promise((resolve) => notifyDependents["search-a-previous-add"] = resolve),
-          "search-a-previous-with-2": new Promise((resolve) => notifyDependents["search-a-previous-with-2"] = resolve),
-          "search-a-previous-with-2-add": new Promise((resolve) => notifyDependents["search-a-previous-with-2-add"] = resolve),
+          "1-search-apple": new Promise((resolve) => notifyDependents["1-search-apple"] = resolve),
+          "1-search-apple-next": new Promise((resolve) => notifyDependents["1-search-apple-next"] = resolve),
+          "1-search-apple-next-add": new Promise((resolve) => notifyDependents["1-search-apple-next-add"] = resolve),
+          "1-search-apple-next-3": new Promise((resolve) => notifyDependents["1-search-apple-next-3"] = resolve),
+          "1-search-apple-next-add-3": new Promise((resolve) => notifyDependents["1-search-apple-next-add-3"] = resolve),
+          "1-search-apple-next-4": new Promise((resolve) => notifyDependents["1-search-apple-next-4"] = resolve),
+          "1-search-apple-next-add-4": new Promise((resolve) => notifyDependents["1-search-apple-next-add-4"] = resolve),
+          "1-search-apple-previous": new Promise((resolve) => notifyDependents["1-search-apple-previous"] = resolve),
+          "1-search-apple-previous-add": new Promise((resolve) => notifyDependents["1-search-apple-previous-add"] = resolve),
+          "1-search-apple-previous-2": new Promise((resolve) => notifyDependents["1-search-apple-previous-2"] = resolve),
+          "1-search-apple-previous-add-2": new Promise((resolve) => notifyDependents["1-search-apple-previous-add-2"] = resolve),
         };
 
-  test("transition initial  > search-a                    ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1              > 1-search-apple               ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a"](undefined);
+      notifyDependents["1-search-apple"](undefined);
       this.skip();
     }
 
@@ -72,19 +72,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a"](afterDocument);
+      notifyDependents["1-search-apple"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a"](undefined);
+      notifyDependents["1-search-apple"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-next               ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-next          ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-next"](undefined);
+      notifyDependents["1-search-apple-next"](undefined);
       this.skip();
     }
 
@@ -106,19 +106,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-next"](afterDocument);
+      notifyDependents["1-search-apple-next"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-next"](undefined);
+      notifyDependents["1-search-apple-next"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-next-add           ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-next-add      ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-next-add"](undefined);
+      notifyDependents["1-search-apple-next-add"](undefined);
       this.skip();
     }
 
@@ -141,19 +141,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-next-add"](afterDocument);
+      notifyDependents["1-search-apple-next-add"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-next-add"](undefined);
+      notifyDependents["1-search-apple-next-add"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-next-with-3        ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-next-3        ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-next-with-3"](undefined);
+      notifyDependents["1-search-apple-next-3"](undefined);
       this.skip();
     }
 
@@ -175,19 +175,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-next-with-3"](afterDocument);
+      notifyDependents["1-search-apple-next-3"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-next-with-3"](undefined);
+      notifyDependents["1-search-apple-next-3"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-next-with-3-add    ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-next-add-3    ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-next-with-3-add"](undefined);
+      notifyDependents["1-search-apple-next-add-3"](undefined);
       this.skip();
     }
 
@@ -211,19 +211,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-next-with-3-add"](afterDocument);
+      notifyDependents["1-search-apple-next-add-3"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-next-with-3-add"](undefined);
+      notifyDependents["1-search-apple-next-add-3"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-next-with-4        ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-next-4        ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-next-with-4"](undefined);
+      notifyDependents["1-search-apple-next-4"](undefined);
       this.skip();
     }
 
@@ -245,19 +245,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-next-with-4"](afterDocument);
+      notifyDependents["1-search-apple-next-4"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-next-with-4"](undefined);
+      notifyDependents["1-search-apple-next-4"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-next-with-4-add    ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-next-add-4    ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-next-with-4-add"](undefined);
+      notifyDependents["1-search-apple-next-add-4"](undefined);
       this.skip();
     }
 
@@ -281,19 +281,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-next-with-4-add"](afterDocument);
+      notifyDependents["1-search-apple-next-add-4"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-next-with-4-add"](undefined);
+      notifyDependents["1-search-apple-next-add-4"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-previous           ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-previous      ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-previous"](undefined);
+      notifyDependents["1-search-apple-previous"](undefined);
       this.skip();
     }
 
@@ -315,19 +315,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-previous"](afterDocument);
+      notifyDependents["1-search-apple-previous"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-previous"](undefined);
+      notifyDependents["1-search-apple-previous"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-previous-add       ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-previous-add  ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-previous-add"](undefined);
+      notifyDependents["1-search-apple-previous-add"](undefined);
       this.skip();
     }
 
@@ -349,19 +349,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-previous-add"](afterDocument);
+      notifyDependents["1-search-apple-previous-add"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-previous-add"](undefined);
+      notifyDependents["1-search-apple-previous-add"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-previous-with-2    ", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-previous-2    ", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-previous-with-2"](undefined);
+      notifyDependents["1-search-apple-previous-2"](undefined);
       this.skip();
     }
 
@@ -383,19 +383,19 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-previous-with-2"](afterDocument);
+      notifyDependents["1-search-apple-previous-2"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-previous-with-2"](undefined);
+      notifyDependents["1-search-apple-previous-2"](undefined);
 
       throw e;
     }
   });
 
-  test("transition search-a > search-a-previous-with-2-add", async function () {
-    const beforeDocument = await documents["search-a"];
+  test("transition 1-search-apple > 1-search-apple-previous-add-2", async function () {
+    const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["search-a-previous-with-2-add"](undefined);
+      notifyDependents["1-search-apple-previous-add-2"](undefined);
       this.skip();
     }
 
@@ -418,9 +418,9 @@ suite("search-next.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["search-a-previous-with-2-add"](afterDocument);
+      notifyDependents["1-search-apple-previous-add-2"](afterDocument);
     } catch (e) {
-      notifyDependents["search-a-previous-with-2-add"](undefined);
+      notifyDependents["1-search-apple-previous-add-2"](undefined);
 
       throw e;
     }

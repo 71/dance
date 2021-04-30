@@ -127,7 +127,7 @@ function parseMarkdownTests(contents: string) {
     const titleParts = badTitle.split(" ").length,
           nesting = /^#+/.exec(text)![0].length;
 
-    if (titleParts !== nesting && nesting <= 6) {
+    if (titleParts !== nesting && titleParts <= 6) {
       console.warn(`section "${title}" has ${titleParts} parts but a nesting of ${nesting}`);
     }
 
@@ -145,19 +145,15 @@ function parseMarkdownTests(contents: string) {
       continue;
     }
 
-    if (nesting > 1) {
-      // TODO: when all tests have the correct style, enforce that they all have
-      // >1 nesting.
-      const lastTitlePart = /\S+$/.exec(badTitle)![0],
-            expectedTitle = comesAfterTitle + "-" + lastTitlePart;
+    const lastTitlePart = /\S+$/.exec(badTitle)![0],
+          expectedTitle = comesAfterTitle + "-" + lastTitlePart;
 
-      if (title !== expectedTitle) {
-        console.warn(`section "${title}" should be called "${expectedTitle}"`);
-      }
+    if (title !== expectedTitle) {
+      console.warn(`section "${title}" should be called "${expectedTitle}"`);
+    }
 
-      if (!/^([a-z]+)(-([a-z]+|\d+))*$/.test(lastTitlePart)) {
-        console.warn(`section "${title}" has an invalid name`);
-      }
+    if (!/^([a-z]+)(-([a-z]+|\d+))*$/.test(lastTitlePart)) {
+      console.warn(`section "${title}" has an invalid name`);
     }
 
     const operations = [] as TestOperation[],

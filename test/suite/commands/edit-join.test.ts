@@ -26,7 +26,7 @@ suite("edit-join.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             a b
             ^^^ 0
             c d
@@ -35,7 +35,7 @@ suite("edit-join.md", function () {
             ^^^ 0
             g h
           `)),
-          "initial-2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             a b
               ^ 0
             c d
@@ -45,17 +45,17 @@ suite("edit-join.md", function () {
             i j
           `)),
 
-          "join": new Promise((resolve) => notifyDependents["join"] = resolve),
-          "join-select": new Promise((resolve) => notifyDependents["join-select"] = resolve),
-          "join-2": new Promise((resolve) => notifyDependents["join-2"] = resolve),
-          "join-select-2": new Promise((resolve) => notifyDependents["join-select-2"] = resolve),
+          "1-join": new Promise((resolve) => notifyDependents["1-join"] = resolve),
+          "1-join-select": new Promise((resolve) => notifyDependents["1-join-select"] = resolve),
+          "2-join": new Promise((resolve) => notifyDependents["2-join"] = resolve),
+          "2-join-select": new Promise((resolve) => notifyDependents["2-join-select"] = resolve),
         };
 
-  test("transition initial   > join         ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1 > 1-join       ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["join"](undefined);
+      notifyDependents["1-join"](undefined);
       this.skip();
     }
 
@@ -76,19 +76,19 @@ suite("edit-join.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["join"](afterDocument);
+      notifyDependents["1-join"](afterDocument);
     } catch (e) {
-      notifyDependents["join"](undefined);
+      notifyDependents["1-join"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial   > join-select  ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1 > 1-join-select", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["join-select"](undefined);
+      notifyDependents["1-join-select"](undefined);
       this.skip();
     }
 
@@ -109,19 +109,19 @@ suite("edit-join.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["join-select"](afterDocument);
+      notifyDependents["1-join-select"](afterDocument);
     } catch (e) {
-      notifyDependents["join-select"](undefined);
+      notifyDependents["1-join-select"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2 > join-2       ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2 > 2-join       ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["join-2"](undefined);
+      notifyDependents["2-join"](undefined);
       this.skip();
     }
 
@@ -144,19 +144,19 @@ suite("edit-join.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["join-2"](afterDocument);
+      notifyDependents["2-join"](afterDocument);
     } catch (e) {
-      notifyDependents["join-2"](undefined);
+      notifyDependents["2-join"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2 > join-select-2", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2 > 2-join-select", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["join-select-2"](undefined);
+      notifyDependents["2-join-select"](undefined);
       this.skip();
     }
 
@@ -179,9 +179,9 @@ suite("edit-join.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["join-select-2"](afterDocument);
+      notifyDependents["2-join-select"](afterDocument);
     } catch (e) {
-      notifyDependents["join-select-2"](undefined);
+      notifyDependents["2-join-select"](undefined);
 
       throw e;
     }

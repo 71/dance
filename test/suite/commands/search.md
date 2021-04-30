@@ -1,12 +1,12 @@
-# initial-easy
+# easy
 
 ```
 foo bar
   ^ 0
 ```
 
-# search-easy
-[up](#initial-easy)
+## easy search-b
+[up](#easy)
 
 - .search { input: "b" }
 
@@ -15,7 +15,7 @@ foo bar
     ^ 0
 ```
 
-# initial-1
+# 1
 
 ```
 The quick brown fox
@@ -24,8 +24,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-1
-[up](#initial-1)
+## 1 search
+[up](#1)
 
 - .search { input: "brown" }
 
@@ -36,8 +36,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-repeat-1
-[up](#initial-1)
+## 1 search-repeat
+[up](#1)
 
 - .search { input: "o", count: 2 }
 
@@ -48,8 +48,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-start-1
-[up](#initial-1)
+## 1 search-start
+[up](#1)
 
 - .search { input: "quick" }
 
@@ -62,8 +62,8 @@ lazy dog quickly.
          ^^^^^ 0
 ```
 
-# search-start-wrap-1
-[up](#initial-1)
+## 1 search-start-wrap
+[up](#1)
 
 - .search { input: "quick " }
 
@@ -76,8 +76,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-wrap-1
-[up](#initial-1)
+## 1 search-wrap
+[up](#1)
 
 - .search { input: "Th" }
 
@@ -88,8 +88,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-not-found-1
-[up](#initial-1)
+## 1 search-not-found
+[up](#1)
 
 - .search { input: "pig" }
 
@@ -103,8 +103,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-1
-[up](#initial-1)
+## 1 search-backward
+[up](#1)
 
 - .search { input: "Th", direction: -1 }
 
@@ -117,8 +117,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-start-wrap-1a
-[up](#initial-1)
+## 1 search-backward-wrap
+[up](#1)
 
 - .search { input: "he", direction: -1 }
 
@@ -131,8 +131,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-start-wrap-1b
-[up](#initial-1)
+## 1 search-backward-wrap-other
+[up](#1)
 
 - .search { input: "he q", direction: -1 }
 
@@ -145,8 +145,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-not-found-1
-[up](#initial-1)
+## 1 search-backward-not-found
+[up](#1)
 
 - .search { input: "pig", direction: -1 }
 
@@ -160,8 +160,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-extend-1
-[up](#initial-1)
+## 1 search-extend
+[up](#1)
 
 - .search { input: "quick", shift: "extend" }
 
@@ -173,8 +173,8 @@ lazy dog quickly.
              ^ 0
 ```
 
-# search-extend-wrap-1
-[up](#initial-1)
+## 1 search-extend-wrap
+[up](#1)
 
 - .search { input: "T", shift: "extend" }
 
@@ -189,8 +189,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-extend-1a
-[up](#initial-1)
+## 1 search-backward-extend
+[up](#1)
 
 - .search { input: "T", direction: -1, shift: "extend" }
 
@@ -203,8 +203,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-extend-character-1a
-[up](#initial-1)
+## 1 search-backward-extend-character
+[up](#1)
 
 > behavior <- character
 
@@ -219,8 +219,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-extend-1b
-[up](#initial-1)
+## 1 search-backward-extend-other
+[up](#1)
 
 - .search { input: "Th", direction: -1, shift: "extend" }
 
@@ -233,8 +233,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-extend-character-1b
-[up](#initial-1)
+## 1 search-backward-extend-character-other
+[up](#1)
 
 > behavior <- character
 
@@ -249,8 +249,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-extend-wrap-1
-[up](#initial-1)
+## 1 search-backward-extend-wrap
+[up](#1)
 
 - .search { input: "lazy", direction: -1, shift: "extend" }
 
@@ -265,7 +265,7 @@ jumps over the
 lazy dog quickly.
 ```
 
-# initial-2
+# 2
 Remember that the search will start at the start or end of the selection, so
 anything that is (partially) covered by the current selection cannot be
 found without wrapping first. The following cases show some consequences.
@@ -278,8 +278,8 @@ lazy dog quickly.
   ^ 0
 ```
 
-# search-2
-[up](#initial-2)
+## 2 search
+[up](#2)
 
 - .search { input: "o" }
 
@@ -292,8 +292,8 @@ lazy dog quickly.
       ^ 0
 ```
 
-# search-extend-2
-[up](#initial-2)
+## 2 search-extend
+[up](#2)
 
 - .search { input: "o", shift: "extend" }
 
@@ -306,8 +306,8 @@ lazy dog quickly.
    ^^^^ 0
 ```
 
-# search-extend-character-2
-[up](#initial-2)
+## 2 search-extend-character
+[up](#2)
 
 > behavior <- character
 
@@ -322,8 +322,8 @@ lazy dog quickly.
   ^^^^^ 0
 ```
 
-# search-wrap-2
-[up](#initial-2)
+## 2 search-wrap
+[up](#2)
 
 - .search { input: "he" }
 
@@ -336,8 +336,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-extend-wrap-2
-[up](#initial-2)
+## 2 search-extend-wrap
+[up](#2)
 
 - .search { input: "he", shift: "extend" }
 
@@ -352,8 +352,8 @@ lazy dog quickly.
   ^ 0
 ```
 
-# search-backward-2
-[up](#initial-2)
+## 2 search-backward
+[up](#2)
 
 - .search { input: "u", direction: -1 }
 
@@ -366,8 +366,8 @@ jumps over the
 lazy dog quickly.
 ```
 
-# search-backward-extend-2
-[up](#initial-2)
+## 2 search-backward-extend
+[up](#2)
 
 - .search { input: "u", direction: -1, shift: "extend" }
 
@@ -381,8 +381,8 @@ lazy dog quickly.
   ^ 0
 ```
 
-# search-backward-wrap-2
-[up](#initial-2)
+## 2 search-backward-wrap
+[up](#2)
 
 - .search { input: "o", direction: -1 }
 
@@ -395,8 +395,8 @@ lazy dog quickly.
       ^ 0
 ```
 
-# search-backward-extend-wrap-2
-[up](#initial-2)
+## 2 search-backward-extend-wrap
+[up](#2)
 
 - .search { input: "o", direction: -1, shift: "extend" }
 

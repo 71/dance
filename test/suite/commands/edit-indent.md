@@ -1,4 +1,4 @@
-# initial-1
+# 1
 
 ```
 The quick brown fox
@@ -8,8 +8,8 @@ jumps over the lazy
 dog.
 ```
 
-# indent-1
-[up](#initial-1)
+## 1 indent
+[up](#1)
 
 - .edit.indent
 
@@ -21,7 +21,7 @@ dog.
 dog.
 ```
 
-# initial-2
+# 2
 
 ```
 The quick brown fox
@@ -31,8 +31,8 @@ jumps over the lazy
 dog.
 ```
 
-# indent-2
-[up](#initial-2)
+## 2 indent
+[up](#2)
 
 - .edit.indent
 
@@ -44,7 +44,7 @@ dog.
 dog.
 ```
 
-# initial-3
+# 3
 
 ```
 The quick brown fox
@@ -53,8 +53,8 @@ jumps over the lazy
 dog.
 ```
 
-# indent-3
-[up](#initial-3)
+## 3 indent
+[up](#3)
 
 - .edit.indent
 
@@ -65,7 +65,7 @@ jumps over the lazy
 dog.
 ```
 
-# initial-4
+# 4
 
 ```
 The quick brown fox
@@ -74,8 +74,8 @@ jumps over the lazy
 dog.
 ```
 
-# indent-4
-[up](#initial-4)
+## 4 indent
+[up](#4)
 
 - .edit.indent
 
@@ -86,7 +86,7 @@ jumps over the lazy
 dog.
 ```
 
-# initial-5
+# 5
 
 ```
 The quick brown fox
@@ -95,8 +95,8 @@ jumps over the lazy
 dog.
 ```
 
-# indent-5
-[up](#initial-5)
+## 5 indent
+[up](#5)
 
 - .edit.indent
 
@@ -107,7 +107,7 @@ jumps over the lazy
 dog.
 ```
 
-# initial-6
+# 6
 No character is selected at all, so we just indent the active line.
 
 ```
@@ -117,8 +117,8 @@ jumps over the lazy
 dog.
 ```
 
-# indent-6
-[up](#initial-6)
+## 6 indent
+[up](#6)
 
 - .edit.indent
 

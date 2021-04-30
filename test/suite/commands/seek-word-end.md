@@ -1,12 +1,12 @@
-# initial-1
+# 1
 
 ```
 private String foo;
    | 0
 ```
 
-# word-end-1a
-[up](#initial-1)
+## 1 word-end
+[up](#1)
 
 - .seek.wordEnd
 
@@ -15,8 +15,8 @@ private String foo;
    ^^^^ 0
 ```
 
-# word-end-1b
-[up](#word-end-1a)
+### 1 word-end x
+[up](#1-word-end)
 
 - .seek.wordEnd
 
@@ -25,8 +25,8 @@ private String foo;
        ^^^^^^^ 0
 ```
 
-# word-end-with-count-1
-[up](#initial-1)
+## 1 word-end-2
+[up](#1)
 
 - .seek.wordEnd { count: 2 }
 

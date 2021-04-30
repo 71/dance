@@ -26,7 +26,7 @@ suite("seek-enclosing.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             { hello: 1,
               world: {
                 foo: [
@@ -38,7 +38,7 @@ suite("seek-enclosing.md", function () {
               },
             }
           `)),
-          "initial-2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             { hello: 1,
             ^ 0
               world: {
@@ -50,16 +50,16 @@ suite("seek-enclosing.md", function () {
             }
           `)),
 
-          "enclosing-1a": new Promise((resolve) => notifyDependents["enclosing-1a"] = resolve),
-          "enclosing-1b": new Promise((resolve) => notifyDependents["enclosing-1b"] = resolve),
-          "enclosing-2": new Promise((resolve) => notifyDependents["enclosing-2"] = resolve),
+          "1-enclosing": new Promise((resolve) => notifyDependents["1-enclosing"] = resolve),
+          "1-enclosing-x": new Promise((resolve) => notifyDependents["1-enclosing-x"] = resolve),
+          "2-enclosing": new Promise((resolve) => notifyDependents["2-enclosing"] = resolve),
         };
 
-  test("transition initial-1    > enclosing-1a", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1           > 1-enclosing  ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["enclosing-1a"](undefined);
+      notifyDependents["1-enclosing"](undefined);
       this.skip();
     }
 
@@ -87,19 +87,19 @@ suite("seek-enclosing.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["enclosing-1a"](afterDocument);
+      notifyDependents["1-enclosing"](afterDocument);
     } catch (e) {
-      notifyDependents["enclosing-1a"](undefined);
+      notifyDependents["1-enclosing"](undefined);
 
       throw e;
     }
   });
 
-  test("transition enclosing-1a > enclosing-1b", async function () {
-    const beforeDocument = await documents["enclosing-1a"];
+  test("transition 1-enclosing > 1-enclosing-x", async function () {
+    const beforeDocument = await documents["1-enclosing"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["enclosing-1b"](undefined);
+      notifyDependents["1-enclosing-x"](undefined);
       this.skip();
     }
 
@@ -127,19 +127,19 @@ suite("seek-enclosing.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["enclosing-1b"](afterDocument);
+      notifyDependents["1-enclosing-x"](afterDocument);
     } catch (e) {
-      notifyDependents["enclosing-1b"](undefined);
+      notifyDependents["1-enclosing-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2    > enclosing-2 ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2           > 2-enclosing  ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["enclosing-2"](undefined);
+      notifyDependents["2-enclosing"](undefined);
       this.skip();
     }
 
@@ -167,9 +167,9 @@ suite("seek-enclosing.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["enclosing-2"](afterDocument);
+      notifyDependents["2-enclosing"](afterDocument);
     } catch (e) {
-      notifyDependents["enclosing-2"](undefined);
+      notifyDependents["2-enclosing"](undefined);
 
       throw e;
     }

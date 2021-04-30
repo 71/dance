@@ -26,70 +26,70 @@ suite("seek-word.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             console.log()
             ^ 0
           `)),
-          "initial-2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo
 
             bar
             ^ 0
           `)),
-          "initial-3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             aaa bbb ccc ddd
                   ^ 0
           `)),
-          "initial-4": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "4": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             aaa bbb
                ^ 0
               ccc
             dd
           `)),
-          "initial-5": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "5": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo x bar.baz ex
             ^ 0
             la
           `)),
-          "initial-6": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "6": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             a b c d
               ^ 0
           `)),
 
-          "word-end-1a": new Promise((resolve) => notifyDependents["word-end-1a"] = resolve),
-          "word-end-extend-1a": new Promise((resolve) => notifyDependents["word-end-extend-1a"] = resolve),
-          "word-end-1b": new Promise((resolve) => notifyDependents["word-end-1b"] = resolve),
-          "word-end-extend-1b": new Promise((resolve) => notifyDependents["word-end-extend-1b"] = resolve),
-          "word-end-1c": new Promise((resolve) => notifyDependents["word-end-1c"] = resolve),
-          "word-end-extend-1c": new Promise((resolve) => notifyDependents["word-end-extend-1c"] = resolve),
-          "word-end-extend-1b-word-end": new Promise((resolve) => notifyDependents["word-end-extend-1b-word-end"] = resolve),
-          "word-end-1c-start-a": new Promise((resolve) => notifyDependents["word-end-1c-start-a"] = resolve),
-          "word-end-1c-start-b": new Promise((resolve) => notifyDependents["word-end-1c-start-b"] = resolve),
-          "word-end-1c-start-c": new Promise((resolve) => notifyDependents["word-end-1c-start-c"] = resolve),
-          "word-start-backward-2": new Promise((resolve) => notifyDependents["word-start-backward-2"] = resolve),
-          "word-end-3a": new Promise((resolve) => notifyDependents["word-end-3a"] = resolve),
-          "word-end-3b": new Promise((resolve) => notifyDependents["word-end-3b"] = resolve),
-          "word-end-3b-previous": new Promise((resolve) => notifyDependents["word-end-3b-previous"] = resolve),
-          "word-end-3b-previous-with-count": new Promise((resolve) => notifyDependents["word-end-3b-previous-with-count"] = resolve),
-          "word-start-4a": new Promise((resolve) => notifyDependents["word-start-4a"] = resolve),
-          "word-start-4b": new Promise((resolve) => notifyDependents["word-start-4b"] = resolve),
-          "word-end-5a": new Promise((resolve) => notifyDependents["word-end-5a"] = resolve),
-          "word-end-5b": new Promise((resolve) => notifyDependents["word-end-5b"] = resolve),
-          "word-end-5c": new Promise((resolve) => notifyDependents["word-end-5c"] = resolve),
-          "word-end-5d": new Promise((resolve) => notifyDependents["word-end-5d"] = resolve),
-          "word-end-6": new Promise((resolve) => notifyDependents["word-end-6"] = resolve),
-          "word-start-6": new Promise((resolve) => notifyDependents["word-start-6"] = resolve),
-          "word-start-backward-6": new Promise((resolve) => notifyDependents["word-start-backward-6"] = resolve),
-          "word-end-extend-6": new Promise((resolve) => notifyDependents["word-end-extend-6"] = resolve),
-          "word-start-extend-6": new Promise((resolve) => notifyDependents["word-start-extend-6"] = resolve),
-          "word-start-extend-backward-6": new Promise((resolve) => notifyDependents["word-start-extend-backward-6"] = resolve),
+          "1-word-end": new Promise((resolve) => notifyDependents["1-word-end"] = resolve),
+          "1-word-end-x": new Promise((resolve) => notifyDependents["1-word-end-x"] = resolve),
+          "1-word-end-x-x": new Promise((resolve) => notifyDependents["1-word-end-x-x"] = resolve),
+          "1-word-end-x-x-word-start-backward": new Promise((resolve) => notifyDependents["1-word-end-x-x-word-start-backward"] = resolve),
+          "1-word-end-x-x-word-start-backward-x": new Promise((resolve) => notifyDependents["1-word-end-x-x-word-start-backward-x"] = resolve),
+          "1-word-end-x-x-word-start-backward-x-x": new Promise((resolve) => notifyDependents["1-word-end-x-x-word-start-backward-x-x"] = resolve),
+          "1-word-end-extend": new Promise((resolve) => notifyDependents["1-word-end-extend"] = resolve),
+          "1-word-end-extend-x": new Promise((resolve) => notifyDependents["1-word-end-extend-x"] = resolve),
+          "1-word-end-extend-x-x": new Promise((resolve) => notifyDependents["1-word-end-extend-x-x"] = resolve),
+          "1-word-end-extend-x-word-end": new Promise((resolve) => notifyDependents["1-word-end-extend-x-word-end"] = resolve),
+          "2-word-start-backward": new Promise((resolve) => notifyDependents["2-word-start-backward"] = resolve),
+          "3-word-end": new Promise((resolve) => notifyDependents["3-word-end"] = resolve),
+          "3-word-end-x": new Promise((resolve) => notifyDependents["3-word-end-x"] = resolve),
+          "3-word-end-x-word-start-backward": new Promise((resolve) => notifyDependents["3-word-end-x-word-start-backward"] = resolve),
+          "3-word-end-x-word-start-backward-2": new Promise((resolve) => notifyDependents["3-word-end-x-word-start-backward-2"] = resolve),
+          "4-word-start": new Promise((resolve) => notifyDependents["4-word-start"] = resolve),
+          "4-word-start-word-end": new Promise((resolve) => notifyDependents["4-word-start-word-end"] = resolve),
+          "5-word-end": new Promise((resolve) => notifyDependents["5-word-end"] = resolve),
+          "5-word-end-x": new Promise((resolve) => notifyDependents["5-word-end-x"] = resolve),
+          "5-word-end-x-x": new Promise((resolve) => notifyDependents["5-word-end-x-x"] = resolve),
+          "5-word-end-x-x-x": new Promise((resolve) => notifyDependents["5-word-end-x-x-x"] = resolve),
+          "6-word-end": new Promise((resolve) => notifyDependents["6-word-end"] = resolve),
+          "6-word-start": new Promise((resolve) => notifyDependents["6-word-start"] = resolve),
+          "6-word-start-backward": new Promise((resolve) => notifyDependents["6-word-start-backward"] = resolve),
+          "6-word-end-extend": new Promise((resolve) => notifyDependents["6-word-end-extend"] = resolve),
+          "6-word-start-extend": new Promise((resolve) => notifyDependents["6-word-start-extend"] = resolve),
+          "6-word-start-extend-backward": new Promise((resolve) => notifyDependents["6-word-start-extend-backward"] = resolve),
         };
 
-  test("transition initial-1           > word-end-1a                    ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1                                    > 1-word-end                            ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-1a"](undefined);
+      notifyDependents["1-word-end"](undefined);
       this.skip();
     }
 
@@ -111,53 +111,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-1a"](afterDocument);
+      notifyDependents["1-word-end"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-1a"](undefined);
+      notifyDependents["1-word-end"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1           > word-end-extend-1a             ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1-word-end                           > 1-word-end-x                          ", async function () {
+    const beforeDocument = await documents["1-word-end"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-extend-1a"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      console.log()
-      ^^^^^^^ 0
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.wordEnd.extend");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-extend-1a"](afterDocument);
-    } catch (e) {
-      notifyDependents["word-end-extend-1a"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition word-end-1a         > word-end-1b                    ", async function () {
-    const beforeDocument = await documents["word-end-1a"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["word-end-1b"](undefined);
+      notifyDependents["1-word-end-x"](undefined);
       this.skip();
     }
 
@@ -179,53 +145,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-1b"](afterDocument);
+      notifyDependents["1-word-end-x"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-1b"](undefined);
+      notifyDependents["1-word-end-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-extend-1a  > word-end-extend-1b             ", async function () {
-    const beforeDocument = await documents["word-end-extend-1a"];
+  test("transition 1-word-end-x                         > 1-word-end-x-x                        ", async function () {
+    const beforeDocument = await documents["1-word-end-x"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-extend-1b"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      console.log()
-      ^^^^^^^^ 0
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.wordEnd.extend");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-extend-1b"](afterDocument);
-    } catch (e) {
-      notifyDependents["word-end-extend-1b"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition word-end-1b         > word-end-1c                    ", async function () {
-    const beforeDocument = await documents["word-end-1b"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["word-end-1c"](undefined);
+      notifyDependents["1-word-end-x-x"](undefined);
       this.skip();
     }
 
@@ -247,87 +179,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-1c"](afterDocument);
+      notifyDependents["1-word-end-x-x"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-1c"](undefined);
+      notifyDependents["1-word-end-x-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-extend-1b  > word-end-extend-1c             ", async function () {
-    const beforeDocument = await documents["word-end-extend-1b"];
+  test("transition 1-word-end-x-x                       > 1-word-end-x-x-word-start-backward    ", async function () {
+    const beforeDocument = await documents["1-word-end-x-x"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-extend-1c"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      console.log()
-      ^^^^^^^^^^^ 0
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.wordEnd.extend");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-extend-1c"](afterDocument);
-    } catch (e) {
-      notifyDependents["word-end-extend-1c"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition word-end-extend-1b  > word-end-extend-1b-word-end    ", async function () {
-    const beforeDocument = await documents["word-end-extend-1b"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["word-end-extend-1b-word-end"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      console.log()
-              ^^^ 0
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.wordEnd");
-      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-extend-1b-word-end"](afterDocument);
-    } catch (e) {
-      notifyDependents["word-end-extend-1b-word-end"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition word-end-1c         > word-end-1c-start-a            ", async function () {
-    const beforeDocument = await documents["word-end-1c"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["word-end-1c-start-a"](undefined);
+      notifyDependents["1-word-end-x-x-word-start-backward"](undefined);
       this.skip();
     }
 
@@ -349,19 +213,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-1c-start-a"](afterDocument);
+      notifyDependents["1-word-end-x-x-word-start-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-1c-start-a"](undefined);
+      notifyDependents["1-word-end-x-x-word-start-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-1c-start-a > word-end-1c-start-b            ", async function () {
-    const beforeDocument = await documents["word-end-1c-start-a"];
+  test("transition 1-word-end-x-x-word-start-backward   > 1-word-end-x-x-word-start-backward-x  ", async function () {
+    const beforeDocument = await documents["1-word-end-x-x-word-start-backward"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-1c-start-b"](undefined);
+      notifyDependents["1-word-end-x-x-word-start-backward-x"](undefined);
       this.skip();
     }
 
@@ -383,19 +247,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-1c-start-b"](afterDocument);
+      notifyDependents["1-word-end-x-x-word-start-backward-x"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-1c-start-b"](undefined);
+      notifyDependents["1-word-end-x-x-word-start-backward-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-1c-start-b > word-end-1c-start-c            ", async function () {
-    const beforeDocument = await documents["word-end-1c-start-b"];
+  test("transition 1-word-end-x-x-word-start-backward-x > 1-word-end-x-x-word-start-backward-x-x", async function () {
+    const beforeDocument = await documents["1-word-end-x-x-word-start-backward-x"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-1c-start-c"](undefined);
+      notifyDependents["1-word-end-x-x-word-start-backward-x-x"](undefined);
       this.skip();
     }
 
@@ -417,19 +281,155 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-1c-start-c"](afterDocument);
+      notifyDependents["1-word-end-x-x-word-start-backward-x-x"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-1c-start-c"](undefined);
+      notifyDependents["1-word-end-x-x-word-start-backward-x-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2           > word-start-backward-2          ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 1                                    > 1-word-end-extend                     ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-start-backward-2"](undefined);
+      notifyDependents["1-word-end-extend"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      console.log()
+      ^^^^^^^ 0
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.wordEnd.extend");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["1-word-end-extend"](afterDocument);
+    } catch (e) {
+      notifyDependents["1-word-end-extend"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition 1-word-end-extend                    > 1-word-end-extend-x                   ", async function () {
+    const beforeDocument = await documents["1-word-end-extend"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["1-word-end-extend-x"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      console.log()
+      ^^^^^^^^ 0
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.wordEnd.extend");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["1-word-end-extend-x"](afterDocument);
+    } catch (e) {
+      notifyDependents["1-word-end-extend-x"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition 1-word-end-extend-x                  > 1-word-end-extend-x-x                 ", async function () {
+    const beforeDocument = await documents["1-word-end-extend-x"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["1-word-end-extend-x-x"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      console.log()
+      ^^^^^^^^^^^ 0
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.wordEnd.extend");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["1-word-end-extend-x-x"](afterDocument);
+    } catch (e) {
+      notifyDependents["1-word-end-extend-x-x"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition 1-word-end-extend-x                  > 1-word-end-extend-x-word-end          ", async function () {
+    const beforeDocument = await documents["1-word-end-extend-x"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["1-word-end-extend-x-word-end"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      console.log()
+              ^^^ 0
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.wordEnd");
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["1-word-end-extend-x-word-end"](afterDocument);
+    } catch (e) {
+      notifyDependents["1-word-end-extend-x-word-end"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition 2                                    > 2-word-start-backward                 ", async function () {
+    const beforeDocument = await documents["2"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["2-word-start-backward"](undefined);
       this.skip();
     }
 
@@ -453,19 +453,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-start-backward-2"](afterDocument);
+      notifyDependents["2-word-start-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["word-start-backward-2"](undefined);
+      notifyDependents["2-word-start-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3           > word-end-3a                    ", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3                                    > 3-word-end                            ", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-3a"](undefined);
+      notifyDependents["3-word-end"](undefined);
       this.skip();
     }
 
@@ -487,19 +487,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-3a"](afterDocument);
+      notifyDependents["3-word-end"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-3a"](undefined);
+      notifyDependents["3-word-end"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-3a         > word-end-3b                    ", async function () {
-    const beforeDocument = await documents["word-end-3a"];
+  test("transition 3-word-end                           > 3-word-end-x                          ", async function () {
+    const beforeDocument = await documents["3-word-end"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-3b"](undefined);
+      notifyDependents["3-word-end-x"](undefined);
       this.skip();
     }
 
@@ -521,19 +521,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-3b"](afterDocument);
+      notifyDependents["3-word-end-x"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-3b"](undefined);
+      notifyDependents["3-word-end-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-3b         > word-end-3b-previous           ", async function () {
-    const beforeDocument = await documents["word-end-3b"];
+  test("transition 3-word-end-x                         > 3-word-end-x-word-start-backward      ", async function () {
+    const beforeDocument = await documents["3-word-end-x"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-3b-previous"](undefined);
+      notifyDependents["3-word-end-x-word-start-backward"](undefined);
       this.skip();
     }
 
@@ -555,19 +555,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-3b-previous"](afterDocument);
+      notifyDependents["3-word-end-x-word-start-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-3b-previous"](undefined);
+      notifyDependents["3-word-end-x-word-start-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-3b         > word-end-3b-previous-with-count", async function () {
-    const beforeDocument = await documents["word-end-3b"];
+  test("transition 3-word-end-x                         > 3-word-end-x-word-start-backward-2    ", async function () {
+    const beforeDocument = await documents["3-word-end-x"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-3b-previous-with-count"](undefined);
+      notifyDependents["3-word-end-x-word-start-backward-2"](undefined);
       this.skip();
     }
 
@@ -589,19 +589,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-3b-previous-with-count"](afterDocument);
+      notifyDependents["3-word-end-x-word-start-backward-2"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-3b-previous-with-count"](undefined);
+      notifyDependents["3-word-end-x-word-start-backward-2"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-4           > word-start-4a                  ", async function () {
-    const beforeDocument = await documents["initial-4"];
+  test("transition 4                                    > 4-word-start                          ", async function () {
+    const beforeDocument = await documents["4"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-start-4a"](undefined);
+      notifyDependents["4-word-start"](undefined);
       this.skip();
     }
 
@@ -623,19 +623,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-start-4a"](afterDocument);
+      notifyDependents["4-word-start"](afterDocument);
     } catch (e) {
-      notifyDependents["word-start-4a"](undefined);
+      notifyDependents["4-word-start"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-start-4a       > word-start-4b                  ", async function () {
-    const beforeDocument = await documents["word-start-4a"];
+  test("transition 4-word-start                         > 4-word-start-word-end                 ", async function () {
+    const beforeDocument = await documents["4-word-start"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-start-4b"](undefined);
+      notifyDependents["4-word-start-word-end"](undefined);
       this.skip();
     }
 
@@ -657,19 +657,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-start-4b"](afterDocument);
+      notifyDependents["4-word-start-word-end"](afterDocument);
     } catch (e) {
-      notifyDependents["word-start-4b"](undefined);
+      notifyDependents["4-word-start-word-end"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-5           > word-end-5a                    ", async function () {
-    const beforeDocument = await documents["initial-5"];
+  test("transition 5                                    > 5-word-end                            ", async function () {
+    const beforeDocument = await documents["5"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-5a"](undefined);
+      notifyDependents["5-word-end"](undefined);
       this.skip();
     }
 
@@ -692,19 +692,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-5a"](afterDocument);
+      notifyDependents["5-word-end"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-5a"](undefined);
+      notifyDependents["5-word-end"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-5a         > word-end-5b                    ", async function () {
-    const beforeDocument = await documents["word-end-5a"];
+  test("transition 5-word-end                           > 5-word-end-x                          ", async function () {
+    const beforeDocument = await documents["5-word-end"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-5b"](undefined);
+      notifyDependents["5-word-end-x"](undefined);
       this.skip();
     }
 
@@ -727,19 +727,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-5b"](afterDocument);
+      notifyDependents["5-word-end-x"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-5b"](undefined);
+      notifyDependents["5-word-end-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-5b         > word-end-5c                    ", async function () {
-    const beforeDocument = await documents["word-end-5b"];
+  test("transition 5-word-end-x                         > 5-word-end-x-x                        ", async function () {
+    const beforeDocument = await documents["5-word-end-x"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-5c"](undefined);
+      notifyDependents["5-word-end-x-x"](undefined);
       this.skip();
     }
 
@@ -762,19 +762,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-5c"](afterDocument);
+      notifyDependents["5-word-end-x-x"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-5c"](undefined);
+      notifyDependents["5-word-end-x-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition word-end-5c         > word-end-5d                    ", async function () {
-    const beforeDocument = await documents["word-end-5c"];
+  test("transition 5-word-end-x-x                       > 5-word-end-x-x-x                      ", async function () {
+    const beforeDocument = await documents["5-word-end-x-x"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-5d"](undefined);
+      notifyDependents["5-word-end-x-x-x"](undefined);
       this.skip();
     }
 
@@ -797,19 +797,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-5d"](afterDocument);
+      notifyDependents["5-word-end-x-x-x"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-5d"](undefined);
+      notifyDependents["5-word-end-x-x-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-6           > word-end-6                     ", async function () {
-    const beforeDocument = await documents["initial-6"];
+  test("transition 6                                    > 6-word-end                            ", async function () {
+    const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-6"](undefined);
+      notifyDependents["6-word-end"](undefined);
       this.skip();
     }
 
@@ -831,19 +831,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-6"](afterDocument);
+      notifyDependents["6-word-end"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-6"](undefined);
+      notifyDependents["6-word-end"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-6           > word-start-6                   ", async function () {
-    const beforeDocument = await documents["initial-6"];
+  test("transition 6                                    > 6-word-start                          ", async function () {
+    const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-start-6"](undefined);
+      notifyDependents["6-word-start"](undefined);
       this.skip();
     }
 
@@ -865,19 +865,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-start-6"](afterDocument);
+      notifyDependents["6-word-start"](afterDocument);
     } catch (e) {
-      notifyDependents["word-start-6"](undefined);
+      notifyDependents["6-word-start"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-6           > word-start-backward-6          ", async function () {
-    const beforeDocument = await documents["initial-6"];
+  test("transition 6                                    > 6-word-start-backward                 ", async function () {
+    const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-start-backward-6"](undefined);
+      notifyDependents["6-word-start-backward"](undefined);
       this.skip();
     }
 
@@ -899,19 +899,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-start-backward-6"](afterDocument);
+      notifyDependents["6-word-start-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["word-start-backward-6"](undefined);
+      notifyDependents["6-word-start-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-6           > word-end-extend-6              ", async function () {
-    const beforeDocument = await documents["initial-6"];
+  test("transition 6                                    > 6-word-end-extend                     ", async function () {
+    const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-end-extend-6"](undefined);
+      notifyDependents["6-word-end-extend"](undefined);
       this.skip();
     }
 
@@ -933,19 +933,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-end-extend-6"](afterDocument);
+      notifyDependents["6-word-end-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["word-end-extend-6"](undefined);
+      notifyDependents["6-word-end-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-6           > word-start-extend-6            ", async function () {
-    const beforeDocument = await documents["initial-6"];
+  test("transition 6                                    > 6-word-start-extend                   ", async function () {
+    const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-start-extend-6"](undefined);
+      notifyDependents["6-word-start-extend"](undefined);
       this.skip();
     }
 
@@ -967,19 +967,19 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-start-extend-6"](afterDocument);
+      notifyDependents["6-word-start-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["word-start-extend-6"](undefined);
+      notifyDependents["6-word-start-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-6           > word-start-extend-backward-6   ", async function () {
-    const beforeDocument = await documents["initial-6"];
+  test("transition 6                                    > 6-word-start-extend-backward          ", async function () {
+    const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["word-start-extend-backward-6"](undefined);
+      notifyDependents["6-word-start-extend-backward"](undefined);
       this.skip();
     }
 
@@ -1001,9 +1001,9 @@ suite("seek-word.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["word-start-extend-backward-6"](afterDocument);
+      notifyDependents["6-word-start-extend-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["word-start-extend-backward-6"](undefined);
+      notifyDependents["6-word-start-extend-backward"](undefined);
 
       throw e;
     }

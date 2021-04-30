@@ -1,4 +1,4 @@
-# initial
+# 1
 
 ```
 a b
@@ -10,8 +10,8 @@ e f
 g h
 ```
 
-# join
-[up](#initial)
+## 1 join
+[up](#1)
 
 - .edit.join
 
@@ -21,8 +21,8 @@ a b c d e f
 g h
 ```
 
-# join-select
-[up](#initial)
+## 1 join-select
+[up](#1)
 
 - .edit.join.select
 
@@ -32,7 +32,7 @@ a b c d e f
 g h
 ```
 
-# initial-2
+# 2
 
 ```
 a b
@@ -44,8 +44,8 @@ g h
 i j
 ```
 
-# join-2
-[up](#initial-2)
+## 2 join
+[up](#2)
 
 - .edit.join
 
@@ -57,8 +57,8 @@ e f g h
 i j
 ```
 
-# join-select-2
-[up](#initial-2)
+## 2 join-select
+[up](#2)
 
 - .edit.join.select
 

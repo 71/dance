@@ -26,41 +26,41 @@ suite("seek.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             abcabc
             | 0
           `)),
-          "initial-2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             abcdefghijk
                ^^^^ 0
           `)),
 
-          "select-to-1a": new Promise((resolve) => notifyDependents["select-to-1a"] = resolve),
-          "select-to-1b": new Promise((resolve) => notifyDependents["select-to-1b"] = resolve),
-          "select-to-1b-character": new Promise((resolve) => notifyDependents["select-to-1b-character"] = resolve),
-          "select-to-1c": new Promise((resolve) => notifyDependents["select-to-1c"] = resolve),
-          "select-to-1d": new Promise((resolve) => notifyDependents["select-to-1d"] = resolve),
-          "select-to-1d-character": new Promise((resolve) => notifyDependents["select-to-1d-character"] = resolve),
-          "select-to-backward-1a": new Promise((resolve) => notifyDependents["select-to-backward-1a"] = resolve),
-          "select-to-backward-1a-character": new Promise((resolve) => notifyDependents["select-to-backward-1a-character"] = resolve),
-          "select-to-backward-1b": new Promise((resolve) => notifyDependents["select-to-backward-1b"] = resolve),
-          "extend-backward-2a": new Promise((resolve) => notifyDependents["extend-backward-2a"] = resolve),
-          "extend-backward-2b": new Promise((resolve) => notifyDependents["extend-backward-2b"] = resolve),
-          "extend-backward-2c": new Promise((resolve) => notifyDependents["extend-backward-2c"] = resolve),
-          "extend-backward-2d": new Promise((resolve) => notifyDependents["extend-backward-2d"] = resolve),
-          "extend-backward-2d-character": new Promise((resolve) => notifyDependents["extend-backward-2d-character"] = resolve),
-          "extend-backward-2e": new Promise((resolve) => notifyDependents["extend-backward-2e"] = resolve),
-          "extend-backward-2f": new Promise((resolve) => notifyDependents["extend-backward-2f"] = resolve),
-          "extend-backward-2g": new Promise((resolve) => notifyDependents["extend-backward-2g"] = resolve),
-          "extend-backward-2h": new Promise((resolve) => notifyDependents["extend-backward-2h"] = resolve),
-          "extend-backward-2i": new Promise((resolve) => notifyDependents["extend-backward-2i"] = resolve),
+          "1-select-to-included": new Promise((resolve) => notifyDependents["1-select-to-included"] = resolve),
+          "1-select-to-included-select-to": new Promise((resolve) => notifyDependents["1-select-to-included-select-to"] = resolve),
+          "1-select-to-included-select-to-character": new Promise((resolve) => notifyDependents["1-select-to-included-select-to-character"] = resolve),
+          "1-select-to-c-2": new Promise((resolve) => notifyDependents["1-select-to-c-2"] = resolve),
+          "1-select-to-c-2-select-to-c": new Promise((resolve) => notifyDependents["1-select-to-c-2-select-to-c"] = resolve),
+          "1-select-to-c-2-select-to-c-select-to-b-backward": new Promise((resolve) => notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward"] = resolve),
+          "1-select-to-c-2-select-to-c-select-to-b-backward-select-to-a-backward": new Promise((resolve) => notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward-select-to-a-backward"] = resolve),
+          "1-select-to-c-2-select-to-c-character": new Promise((resolve) => notifyDependents["1-select-to-c-2-select-to-c-character"] = resolve),
+          "1-select-to-c-2-select-to-c-character-select-to-b-character": new Promise((resolve) => notifyDependents["1-select-to-c-2-select-to-c-character-select-to-b-character"] = resolve),
+          "2-extend-to-e-included-backward": new Promise((resolve) => notifyDependents["2-extend-to-e-included-backward"] = resolve),
+          "2-extend-to-g-included-backward": new Promise((resolve) => notifyDependents["2-extend-to-g-included-backward"] = resolve),
+          "2-extend-to-d-included-backward": new Promise((resolve) => notifyDependents["2-extend-to-d-included-backward"] = resolve),
+          "2-extend-to-b-included-backward": new Promise((resolve) => notifyDependents["2-extend-to-b-included-backward"] = resolve),
+          "2-extend-to-b-backward-character": new Promise((resolve) => notifyDependents["2-extend-to-b-backward-character"] = resolve),
+          "2-extend-to-g-backward": new Promise((resolve) => notifyDependents["2-extend-to-g-backward"] = resolve),
+          "2-extend-to-f-backward": new Promise((resolve) => notifyDependents["2-extend-to-f-backward"] = resolve),
+          "2-extend-to-e-backward": new Promise((resolve) => notifyDependents["2-extend-to-e-backward"] = resolve),
+          "2-extend-to-c-backward": new Promise((resolve) => notifyDependents["2-extend-to-c-backward"] = resolve),
+          "2-extend-to-b-backward": new Promise((resolve) => notifyDependents["2-extend-to-b-backward"] = resolve),
         };
 
-  test("transition initial-1              > select-to-1a                   ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1                                                > 1-select-to-included                                                 ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["select-to-1a"](undefined);
+      notifyDependents["1-select-to-included"](undefined);
       this.skip();
     }
 
@@ -80,19 +80,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-1a"](afterDocument);
+      notifyDependents["1-select-to-included"](afterDocument);
     } catch (e) {
-      notifyDependents["select-to-1a"](undefined);
+      notifyDependents["1-select-to-included"](undefined);
 
       throw e;
     }
   });
 
-  test("transition select-to-1a           > select-to-1b                   ", async function () {
-    const beforeDocument = await documents["select-to-1a"];
+  test("transition 1-select-to-included                             > 1-select-to-included-select-to                                       ", async function () {
+    const beforeDocument = await documents["1-select-to-included"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["select-to-1b"](undefined);
+      notifyDependents["1-select-to-included-select-to"](undefined);
       this.skip();
     }
 
@@ -112,19 +112,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-1b"](afterDocument);
+      notifyDependents["1-select-to-included-select-to"](afterDocument);
     } catch (e) {
-      notifyDependents["select-to-1b"](undefined);
+      notifyDependents["1-select-to-included-select-to"](undefined);
 
       throw e;
     }
   });
 
-  test("transition select-to-1a           > select-to-1b-character         ", async function () {
-    const beforeDocument = await documents["select-to-1a"];
+  test("transition 1-select-to-included                             > 1-select-to-included-select-to-character                             ", async function () {
+    const beforeDocument = await documents["1-select-to-included"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["select-to-1b-character"](undefined);
+      notifyDependents["1-select-to-included-select-to-character"](undefined);
       this.skip();
     }
 
@@ -146,19 +146,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-1b-character"](afterDocument);
+      notifyDependents["1-select-to-included-select-to-character"](afterDocument);
     } catch (e) {
-      notifyDependents["select-to-1b-character"](undefined);
+      notifyDependents["1-select-to-included-select-to-character"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-1              > select-to-1c                   ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1                                                > 1-select-to-c-2                                                      ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["select-to-1c"](undefined);
+      notifyDependents["1-select-to-c-2"](undefined);
       this.skip();
     }
 
@@ -178,19 +178,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-1c"](afterDocument);
+      notifyDependents["1-select-to-c-2"](afterDocument);
     } catch (e) {
-      notifyDependents["select-to-1c"](undefined);
+      notifyDependents["1-select-to-c-2"](undefined);
 
       throw e;
     }
   });
 
-  test("transition select-to-1c           > select-to-1d                   ", async function () {
-    const beforeDocument = await documents["select-to-1c"];
+  test("transition 1-select-to-c-2                                  > 1-select-to-c-2-select-to-c                                          ", async function () {
+    const beforeDocument = await documents["1-select-to-c-2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["select-to-1d"](undefined);
+      notifyDependents["1-select-to-c-2-select-to-c"](undefined);
       this.skip();
     }
 
@@ -210,19 +210,83 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-1d"](afterDocument);
+      notifyDependents["1-select-to-c-2-select-to-c"](afterDocument);
     } catch (e) {
-      notifyDependents["select-to-1d"](undefined);
+      notifyDependents["1-select-to-c-2-select-to-c"](undefined);
 
       throw e;
     }
   });
 
-  test("transition select-to-1c           > select-to-1d-character         ", async function () {
-    const beforeDocument = await documents["select-to-1c"];
+  test("transition 1-select-to-c-2-select-to-c                      > 1-select-to-c-2-select-to-c-select-to-b-backward                     ", async function () {
+    const beforeDocument = await documents["1-select-to-c-2-select-to-c"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["select-to-1d-character"](undefined);
+      notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      abcabc
+           | 0
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.seek", { input: "b", direction: -1 });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward"](afterDocument);
+    } catch (e) {
+      notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition 1-select-to-c-2-select-to-c-select-to-b-backward > 1-select-to-c-2-select-to-c-select-to-b-backward-select-to-a-backward", async function () {
+    const beforeDocument = await documents["1-select-to-c-2-select-to-c-select-to-b-backward"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward-select-to-a-backward"](undefined);
+      this.skip();
+    }
+
+    const afterDocument = ExpectedDocument.parseIndented(6, `\
+      abcabc
+          ^ 0
+    `);
+
+    try {
+      // Set-up document to be in expected initial state.
+      await beforeDocument.apply(editor);
+
+      // Perform all operations.
+      await executeCommand("dance.seek", { input: "a", direction: -1 });
+
+      // Ensure document is as expected.
+      afterDocument.assertEquals(editor);
+
+      // Test passed, allow dependent tests to run.
+      notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward-select-to-a-backward"](afterDocument);
+    } catch (e) {
+      notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward-select-to-a-backward"](undefined);
+
+      throw e;
+    }
+  });
+
+  test("transition 1-select-to-c-2                                  > 1-select-to-c-2-select-to-c-character                                ", async function () {
+    const beforeDocument = await documents["1-select-to-c-2"];
+
+    if (beforeDocument === undefined) {
+      notifyDependents["1-select-to-c-2-select-to-c-character"](undefined);
       this.skip();
     }
 
@@ -244,51 +308,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-1d-character"](afterDocument);
+      notifyDependents["1-select-to-c-2-select-to-c-character"](afterDocument);
     } catch (e) {
-      notifyDependents["select-to-1d-character"](undefined);
+      notifyDependents["1-select-to-c-2-select-to-c-character"](undefined);
 
       throw e;
     }
   });
 
-  test("transition select-to-1d           > select-to-backward-1a          ", async function () {
-    const beforeDocument = await documents["select-to-1d"];
+  test("transition 1-select-to-c-2-select-to-c-character            > 1-select-to-c-2-select-to-c-character-select-to-b-character          ", async function () {
+    const beforeDocument = await documents["1-select-to-c-2-select-to-c-character"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["select-to-backward-1a"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      abcabc
-           | 0
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek", { input: "b", direction: -1 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-backward-1a"](afterDocument);
-    } catch (e) {
-      notifyDependents["select-to-backward-1a"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition select-to-1d-character > select-to-backward-1a-character", async function () {
-    const beforeDocument = await documents["select-to-1d-character"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["select-to-backward-1a-character"](undefined);
+      notifyDependents["1-select-to-c-2-select-to-c-character-select-to-b-character"](undefined);
       this.skip();
     }
 
@@ -310,51 +342,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-backward-1a-character"](afterDocument);
+      notifyDependents["1-select-to-c-2-select-to-c-character-select-to-b-character"](afterDocument);
     } catch (e) {
-      notifyDependents["select-to-backward-1a-character"](undefined);
+      notifyDependents["1-select-to-c-2-select-to-c-character-select-to-b-character"](undefined);
 
       throw e;
     }
   });
 
-  test("transition select-to-backward-1a  > select-to-backward-1b          ", async function () {
-    const beforeDocument = await documents["select-to-backward-1a"];
+  test("transition 2                                                > 2-extend-to-e-included-backward                                      ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["select-to-backward-1b"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
-      abcabc
-          ^ 0
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek", { input: "a", direction: -1 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["select-to-backward-1b"](afterDocument);
-    } catch (e) {
-      notifyDependents["select-to-backward-1b"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("transition initial-2              > extend-backward-2a             ", async function () {
-    const beforeDocument = await documents["initial-2"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2a"](undefined);
+      notifyDependents["2-extend-to-e-included-backward"](undefined);
       this.skip();
     }
 
@@ -374,19 +374,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2a"](afterDocument);
+      notifyDependents["2-extend-to-e-included-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2a"](undefined);
+      notifyDependents["2-extend-to-e-included-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2b             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-g-included-backward                                      ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2b"](undefined);
+      notifyDependents["2-extend-to-g-included-backward"](undefined);
       this.skip();
     }
 
@@ -406,19 +406,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2b"](afterDocument);
+      notifyDependents["2-extend-to-g-included-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2b"](undefined);
+      notifyDependents["2-extend-to-g-included-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2c             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-d-included-backward                                      ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2c"](undefined);
+      notifyDependents["2-extend-to-d-included-backward"](undefined);
       this.skip();
     }
 
@@ -438,19 +438,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2c"](afterDocument);
+      notifyDependents["2-extend-to-d-included-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2c"](undefined);
+      notifyDependents["2-extend-to-d-included-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2d             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-b-included-backward                                      ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2d"](undefined);
+      notifyDependents["2-extend-to-b-included-backward"](undefined);
       this.skip();
     }
 
@@ -470,19 +470,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2d"](afterDocument);
+      notifyDependents["2-extend-to-b-included-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2d"](undefined);
+      notifyDependents["2-extend-to-b-included-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2d-character   ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-b-backward-character                                     ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2d-character"](undefined);
+      notifyDependents["2-extend-to-b-backward-character"](undefined);
       this.skip();
     }
 
@@ -504,19 +504,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2d-character"](afterDocument);
+      notifyDependents["2-extend-to-b-backward-character"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2d-character"](undefined);
+      notifyDependents["2-extend-to-b-backward-character"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2e             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-g-backward                                               ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2e"](undefined);
+      notifyDependents["2-extend-to-g-backward"](undefined);
       this.skip();
     }
 
@@ -536,19 +536,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2e"](afterDocument);
+      notifyDependents["2-extend-to-g-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2e"](undefined);
+      notifyDependents["2-extend-to-g-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2f             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-f-backward                                               ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2f"](undefined);
+      notifyDependents["2-extend-to-f-backward"](undefined);
       this.skip();
     }
 
@@ -568,19 +568,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2f"](afterDocument);
+      notifyDependents["2-extend-to-f-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2f"](undefined);
+      notifyDependents["2-extend-to-f-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2g             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-e-backward                                               ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2g"](undefined);
+      notifyDependents["2-extend-to-e-backward"](undefined);
       this.skip();
     }
 
@@ -600,19 +600,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2g"](afterDocument);
+      notifyDependents["2-extend-to-e-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2g"](undefined);
+      notifyDependents["2-extend-to-e-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2h             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-c-backward                                               ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2h"](undefined);
+      notifyDependents["2-extend-to-c-backward"](undefined);
       this.skip();
     }
 
@@ -632,19 +632,19 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2h"](afterDocument);
+      notifyDependents["2-extend-to-c-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2h"](undefined);
+      notifyDependents["2-extend-to-c-backward"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2              > extend-backward-2i             ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2                                                > 2-extend-to-b-backward                                               ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["extend-backward-2i"](undefined);
+      notifyDependents["2-extend-to-b-backward"](undefined);
       this.skip();
     }
 
@@ -664,9 +664,9 @@ suite("seek.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["extend-backward-2i"](afterDocument);
+      notifyDependents["2-extend-to-b-backward"](afterDocument);
     } catch (e) {
-      notifyDependents["extend-backward-2i"](undefined);
+      notifyDependents["2-extend-to-b-backward"](undefined);
 
       throw e;
     }

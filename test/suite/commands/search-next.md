@@ -1,4 +1,4 @@
-# initial
+# 1
 
 ```
 apple pineapple pear
@@ -7,8 +7,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a
-[up](#initial)
+## 1 search-apple
+[up](#1)
 
 - .search { input: "apple" }
 
@@ -19,8 +19,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-next
-[up](#search-a)
+### 1 search-apple next
+[up](#1-search-apple)
 
 - .search.next
 
@@ -31,8 +31,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-next-add
-[up](#search-a)
+### 1 search-apple next-add
+[up](#1-search-apple)
 
 - .search.next.add
 
@@ -44,8 +44,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-next-with-3
-[up](#search-a)
+### 1 search-apple next-3
+[up](#1-search-apple)
 
 - .search.next { count: 3 }
 
@@ -58,8 +58,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-next-with-3-add
-[up](#search-a)
+### 1 search-apple next-add-3
+[up](#1-search-apple)
 
 - .search.next.add { count: 3 }
 
@@ -74,8 +74,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-next-with-4
-[up](#search-a)
+### 1 search-apple next-4
+[up](#1-search-apple)
 
 - .search.next { count: 4 }
 
@@ -88,8 +88,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-next-with-4-add
-[up](#search-a)
+### 1 search-apple next-add-4
+[up](#1-search-apple)
 
 - .search.next.add { count: 4 }
 
@@ -105,8 +105,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-previous
-[up](#search-a)
+### 1 search-apple previous
+[up](#1-search-apple)
 
 - .search.previous
 
@@ -117,8 +117,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-previous-add
-[up](#search-a)
+### 1 search-apple previous-add
+[up](#1-search-apple)
 
 - .search.previous.add
 
@@ -129,8 +129,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-previous-with-2
-[up](#search-a)
+### 1 search-apple previous-2
+[up](#1-search-apple)
 
 - .search.previous { count: 2 }
 
@@ -143,8 +143,8 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
-# search-a-previous-with-2-add
-[up](#search-a)
+### 1 search-apple previous-add-2
+[up](#1-search-apple)
 
 - .search.previous.add { count: 2 }
 

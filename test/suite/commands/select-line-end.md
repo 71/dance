@@ -1,12 +1,12 @@
-# initial-1
+# 1
 
 ```
 the quick brown fox
           ^^^ 0
 ```
 
-# line-start-1
-[up](#initial-1)
+## 1 line-start
+[up](#1)
 
 - .select.lineStart
 
@@ -15,8 +15,8 @@ the quick brown fox
 |^^^^^^^^^^^^ 0
 ```
 
-# line-start-extend-1
-[up](#initial-1)
+## 1 line-start-extend
+[up](#1)
 
 - .select.lineStart.extend
 
@@ -25,8 +25,8 @@ the quick brown fox
 |^^^^^^^^^ 0
 ```
 
-# line-start-extend-character-1
-[up](#initial-1)
+## 1 line-start-extend-character
+[up](#1)
 
 > behavior <- character
 
@@ -37,8 +37,8 @@ the quick brown fox
 |^^^^^^^^^^ 0
 ```
 
-# line-end-1
-[up](#initial-1)
+## 1 line-end
+[up](#1)
 
 - .select.lineEnd
 
@@ -47,8 +47,8 @@ the quick brown fox
              ^^^^^^ 0
 ```
 
-# line-end-character-1
-[up](#initial-1)
+## 1 line-end-character
+[up](#1)
 
 > behavior <- character
 
@@ -59,8 +59,8 @@ the quick brown fox
             ^^^^^^^ 0
 ```
 
-# line-end-extend-1
-[up](#initial-1)
+## 1 line-end-extend
+[up](#1)
 
 - .select.lineEnd.extend
 
