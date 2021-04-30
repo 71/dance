@@ -26,14 +26,14 @@ suite("selections-copy.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo
             ^ 0
             bar
             baz
             qux
           `)),
-          "initial-2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             aaa aaa aaa
               bb bb bb bb
                ^ 0     ^^ 1
@@ -43,7 +43,7 @@ suite("selections-copy.md", function () {
                 f
               gg gg gg gg gg
           `)),
-          "initial-3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             ab
               ^ 0
             cd
@@ -51,20 +51,20 @@ suite("selections-copy.md", function () {
             hi
           `)),
 
-          "copy-1a": new Promise((resolve) => notifyDependents["copy-1a"] = resolve),
-          "copy-1b": new Promise((resolve) => notifyDependents["copy-1b"] = resolve),
-          "copy-2a": new Promise((resolve) => notifyDependents["copy-2a"] = resolve),
-          "copy-2aa": new Promise((resolve) => notifyDependents["copy-2aa"] = resolve),
-          "copy-2aaa": new Promise((resolve) => notifyDependents["copy-2aaa"] = resolve),
-          "copy-3a": new Promise((resolve) => notifyDependents["copy-3a"] = resolve),
-          "copy-3aa": new Promise((resolve) => notifyDependents["copy-3aa"] = resolve),
+          "1-copy": new Promise((resolve) => notifyDependents["1-copy"] = resolve),
+          "1-copy-x": new Promise((resolve) => notifyDependents["1-copy-x"] = resolve),
+          "2-copy": new Promise((resolve) => notifyDependents["2-copy"] = resolve),
+          "2-copy-x": new Promise((resolve) => notifyDependents["2-copy-x"] = resolve),
+          "2-copy-x-x": new Promise((resolve) => notifyDependents["2-copy-x-x"] = resolve),
+          "3-copy": new Promise((resolve) => notifyDependents["3-copy"] = resolve),
+          "3-copy-x": new Promise((resolve) => notifyDependents["3-copy-x"] = resolve),
         };
 
-  test("transition initial-1 > copy-1a  ", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1        > 1-copy    ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["copy-1a"](undefined);
+      notifyDependents["1-copy"](undefined);
       this.skip();
     }
 
@@ -88,19 +88,19 @@ suite("selections-copy.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["copy-1a"](afterDocument);
+      notifyDependents["1-copy"](afterDocument);
     } catch (e) {
-      notifyDependents["copy-1a"](undefined);
+      notifyDependents["1-copy"](undefined);
 
       throw e;
     }
   });
 
-  test("transition copy-1a   > copy-1b  ", async function () {
-    const beforeDocument = await documents["copy-1a"];
+  test("transition 1-copy   > 1-copy-x  ", async function () {
+    const beforeDocument = await documents["1-copy"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["copy-1b"](undefined);
+      notifyDependents["1-copy-x"](undefined);
       this.skip();
     }
 
@@ -125,19 +125,19 @@ suite("selections-copy.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["copy-1b"](afterDocument);
+      notifyDependents["1-copy-x"](afterDocument);
     } catch (e) {
-      notifyDependents["copy-1b"](undefined);
+      notifyDependents["1-copy-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2 > copy-2a  ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2        > 2-copy    ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["copy-2a"](undefined);
+      notifyDependents["2-copy"](undefined);
       this.skip();
     }
 
@@ -164,19 +164,19 @@ suite("selections-copy.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["copy-2a"](afterDocument);
+      notifyDependents["2-copy"](afterDocument);
     } catch (e) {
-      notifyDependents["copy-2a"](undefined);
+      notifyDependents["2-copy"](undefined);
 
       throw e;
     }
   });
 
-  test("transition copy-2a   > copy-2aa ", async function () {
-    const beforeDocument = await documents["copy-2a"];
+  test("transition 2-copy   > 2-copy-x  ", async function () {
+    const beforeDocument = await documents["2-copy"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["copy-2aa"](undefined);
+      notifyDependents["2-copy-x"](undefined);
       this.skip();
     }
 
@@ -205,19 +205,19 @@ suite("selections-copy.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["copy-2aa"](afterDocument);
+      notifyDependents["2-copy-x"](afterDocument);
     } catch (e) {
-      notifyDependents["copy-2aa"](undefined);
+      notifyDependents["2-copy-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition copy-2aa  > copy-2aaa", async function () {
-    const beforeDocument = await documents["copy-2aa"];
+  test("transition 2-copy-x > 2-copy-x-x", async function () {
+    const beforeDocument = await documents["2-copy-x"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["copy-2aaa"](undefined);
+      notifyDependents["2-copy-x-x"](undefined);
       this.skip();
     }
 
@@ -247,19 +247,19 @@ suite("selections-copy.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["copy-2aaa"](afterDocument);
+      notifyDependents["2-copy-x-x"](afterDocument);
     } catch (e) {
-      notifyDependents["copy-2aaa"](undefined);
+      notifyDependents["2-copy-x-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3 > copy-3a  ", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3        > 3-copy    ", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["copy-3a"](undefined);
+      notifyDependents["3-copy"](undefined);
       this.skip();
     }
 
@@ -283,19 +283,19 @@ suite("selections-copy.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["copy-3a"](afterDocument);
+      notifyDependents["3-copy"](afterDocument);
     } catch (e) {
-      notifyDependents["copy-3a"](undefined);
+      notifyDependents["3-copy"](undefined);
 
       throw e;
     }
   });
 
-  test("transition copy-3a   > copy-3aa ", async function () {
-    const beforeDocument = await documents["copy-3a"];
+  test("transition 3-copy   > 3-copy-x  ", async function () {
+    const beforeDocument = await documents["3-copy"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["copy-3aa"](undefined);
+      notifyDependents["3-copy-x"](undefined);
       this.skip();
     }
 
@@ -320,9 +320,9 @@ suite("selections-copy.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["copy-3aa"](afterDocument);
+      notifyDependents["3-copy-x"](afterDocument);
     } catch (e) {
-      notifyDependents["copy-3aa"](undefined);
+      notifyDependents["3-copy-x"](undefined);
 
       throw e;
     }

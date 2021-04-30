@@ -89,7 +89,7 @@ which reads all files under the [`commands`](./suite/commands) directory and
 parses them into several sections.
 
 Each section must start with a Markdown `# heading`, which represents the title
-of the section. Except for the first section, all sections must also link to
+of the section. Except for initial sections, all sections must also link to
 the section from which they transition with a Markdown `[link](#heading)`.
 
 Sections can then specify a set of [flags](#available-flags) that may alter the
@@ -104,15 +104,15 @@ code block.
 <details>
   <summary><b>Example</b></summary>
 
-# initial
+# 1
 
 ```
 foo bar
   ^ 0
 ```
 
-# search
-[up](#initial)
+## 1 search-b
+[up](#1)
 
 - .search { input: "b" }
 
@@ -130,6 +130,25 @@ foo bar
   for the duration of the test. The mode will be reset to `caret` at the end of
   the test. Tests that depend on a test with character behavior `character` will
   default to having that same behavior. Use `behavior <- caret` to undo this.
+
+### Naming and organization
+
+To make it easier to navigate and understand tests, tests must have be named
+this way:
+- Initial sections should be top-level headers (have a single `#` character),
+  and be a single non-whitespace word (e.g. `1`, `empty-document`).
+- Non-initial sections have names split in several parts separated by spaces.
+  If a test essentially moves to the left, it should be named `<up> left`, with
+  `<up>` the name of the section from which it transitions. It should also have
+  as many `#` characters as parts (with a upper bound of 6).
+  * Names cannot contain whitespace. Names should be in snake-case. If a count
+    is associated with the test, it should be the last part of the test. If a
+    test repeats exactly what its previous test does, it should be named `x`.
+  * If a test performs multiple logically different actions, they should be
+    separated by `-then-` in the title of the test.
+
+Finally, sections should always be nested under the section from which they
+transition.
 
 ## Syntax of expected documents
 

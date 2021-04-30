@@ -26,23 +26,23 @@ suite("edit-paste.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo
             ^^^^ 0
             bar
           `)),
 
-          "a-1": new Promise((resolve) => notifyDependents["a-1"] = resolve),
-          "a-2": new Promise((resolve) => notifyDependents["a-2"] = resolve),
-          "b-1": new Promise((resolve) => notifyDependents["b-1"] = resolve),
-          "b-2": new Promise((resolve) => notifyDependents["b-2"] = resolve),
+          "1-paste": new Promise((resolve) => notifyDependents["1-paste"] = resolve),
+          "1-paste-x": new Promise((resolve) => notifyDependents["1-paste-x"] = resolve),
+          "1-move-then-paste": new Promise((resolve) => notifyDependents["1-move-then-paste"] = resolve),
+          "1-move-then-paste-move-2-then-paste": new Promise((resolve) => notifyDependents["1-move-then-paste-move-2-then-paste"] = resolve),
         };
 
-  test("transition initial > a-1", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                 > 1-paste                            ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["a-1"](undefined);
+      notifyDependents["1-paste"](undefined);
       this.skip();
     }
 
@@ -65,19 +65,19 @@ suite("edit-paste.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["a-1"](afterDocument);
+      notifyDependents["1-paste"](afterDocument);
     } catch (e) {
-      notifyDependents["a-1"](undefined);
+      notifyDependents["1-paste"](undefined);
 
       throw e;
     }
   });
 
-  test("transition a-1     > a-2", async function () {
-    const beforeDocument = await documents["a-1"];
+  test("transition 1-paste           > 1-paste-x                          ", async function () {
+    const beforeDocument = await documents["1-paste"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["a-2"](undefined);
+      notifyDependents["1-paste-x"](undefined);
       this.skip();
     }
 
@@ -100,19 +100,19 @@ suite("edit-paste.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["a-2"](afterDocument);
+      notifyDependents["1-paste-x"](afterDocument);
     } catch (e) {
-      notifyDependents["a-2"](undefined);
+      notifyDependents["1-paste-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial > b-1", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                 > 1-move-then-paste                  ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["b-1"](undefined);
+      notifyDependents["1-move-then-paste"](undefined);
       this.skip();
     }
 
@@ -135,19 +135,19 @@ suite("edit-paste.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["b-1"](afterDocument);
+      notifyDependents["1-move-then-paste"](afterDocument);
     } catch (e) {
-      notifyDependents["b-1"](undefined);
+      notifyDependents["1-move-then-paste"](undefined);
 
       throw e;
     }
   });
 
-  test("transition b-1     > b-2", async function () {
-    const beforeDocument = await documents["b-1"];
+  test("transition 1-move-then-paste > 1-move-then-paste-move-2-then-paste", async function () {
+    const beforeDocument = await documents["1-move-then-paste"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["b-2"](undefined);
+      notifyDependents["1-move-then-paste-move-2-then-paste"](undefined);
       this.skip();
     }
 
@@ -171,9 +171,9 @@ suite("edit-paste.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["b-2"](afterDocument);
+      notifyDependents["1-move-then-paste-move-2-then-paste"](afterDocument);
     } catch (e) {
-      notifyDependents["b-2"](undefined);
+      notifyDependents["1-move-then-paste-move-2-then-paste"](undefined);
 
       throw e;
     }

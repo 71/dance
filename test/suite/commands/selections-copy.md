@@ -1,4 +1,4 @@
-# initial-1
+# 1
 
 ```
 foo
@@ -8,8 +8,8 @@ baz
 qux
 ```
 
-# copy-1a
-[up](#initial-1)
+## 1 copy
+[up](#1)
 
 - .selections.copy
 
@@ -22,8 +22,8 @@ baz
 qux
 ```
 
-# copy-1b
-[up](#copy-1a)
+### 1 copy x
+[up](#1-copy)
 
 - .selections.copy
 
@@ -37,7 +37,7 @@ baz
 qux
 ```
 
-# initial-2
+# 2
 
 ```
 aaa aaa aaa
@@ -50,8 +50,8 @@ aaa aaa aaa
   gg gg gg gg gg
 ```
 
-# copy-2a
-[up](#initial-2)
+## 2 copy
+[up](#2)
 
 - .selections.copy
 
@@ -69,8 +69,8 @@ aaa aaa aaa
   gg gg gg gg gg
 ```
 
-# copy-2aa
-[up](#copy-2a)
+### 2 copy x
+[up](#2-copy)
 
 - .selections.copy
 
@@ -90,8 +90,8 @@ aaa aaa aaa
            ^^ 1
 ```
 
-# copy-2aaa
-[up](#copy-2aa)
+#### 2 copy x x
+[up](#2-copy-x)
 
 - .selections.copy
 
@@ -112,7 +112,7 @@ aaa aaa aaa
            ^^ 2
 ```
 
-# initial-3
+# 3
 
 ```
 ab
@@ -122,8 +122,8 @@ efg
 hi
 ```
 
-# copy-3a
-[up](#initial-3)
+## 3 copy
+[up](#3)
 
 - .selections.copy
 
@@ -136,8 +136,8 @@ efg
 hi
 ```
 
-# copy-3aa
-[up](#copy-3a)
+### 3 copy x
+[up](#3-copy)
 
 - .selections.copy
 

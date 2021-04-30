@@ -48,7 +48,7 @@ export function wordBoundary(
   // Starting from active, try to seek to the word start.
   const isAtLineBoundary = direction === Direction.Forward
     ? (active.character >= lineEndCol)
-    : (active.character === 0);
+    : (active.character === 0 || active.character === 1);
 
   if (isAtLineBoundary) {
     const afterEmptyLines = skipEmptyLines(direction, active.line + direction, document);
@@ -66,7 +66,7 @@ export function wordBoundary(
     if (context.selectionBehavior === SelectionBehavior.Character) {
       // Skip current character if it is at boundary.
       // (e.g. "ab[c]  " =>`w`)
-      const col = active.character,
+      const col = active.character - +(direction === Direction.Backward),
             characterCategory = categorize(text.charCodeAt(col), isBlank, isWord),
             nextCharacterCategory = categorize(text.charCodeAt(col + direction), isBlank, isWord);
 
@@ -84,6 +84,10 @@ export function wordBoundary(
   // Scan within the current line until the word ends.
   const curLineText = document.lineAt(active).text;
   let nextCol = active.character;  // The next character to be tested.
+
+  if (direction === Direction.Backward) {
+    nextCol--;
+  }
 
   if (stopAtEnd) {
     // Select the whitespace before word, if any.

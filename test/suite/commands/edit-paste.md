@@ -1,4 +1,4 @@
-# initial
+# 1
 
 ```
 foo
@@ -6,8 +6,8 @@ foo
 bar
 ```
 
-# a-1
-[up](#initial)
+## 1 paste
+[up](#1)
 
 - .selections.saveText
 - .edit.paste.after
@@ -19,8 +19,8 @@ foo
 bar
 ```
 
-# a-2
-[up](#a-1)
+### 1 paste x
+[up](#1-paste)
 
 - .edit.paste.after
 
@@ -32,8 +32,8 @@ foo
 bar
 ```
 
-# b-1
-[up](#initial)
+## 1 move-then-paste
+[up](#1)
 
 - .select.left.jump
 - .edit.paste.after
@@ -45,8 +45,8 @@ foo
 bar
 ```
 
-# b-2
-[up](#b-1)
+### 1 move-then-paste move-2-then-paste
+[up](#1-move-then-paste)
 
 - .select.left.extend { count: 2 }
 - .selections.saveText

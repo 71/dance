@@ -26,21 +26,21 @@ suite("select-lateral.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo
             bar
                ^ 0
             baz
             quxxx
           `)),
-          "blank-initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo
 
             bar
                ^ 0
 
           `)),
-          "initial-3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             foo
 
             ^ 0
@@ -48,29 +48,29 @@ suite("select-lateral.md", function () {
             baz
           `)),
 
-          "left": new Promise((resolve) => notifyDependents["left"] = resolve),
-          "right": new Promise((resolve) => notifyDependents["right"] = resolve),
-          "up": new Promise((resolve) => notifyDependents["up"] = resolve),
-          "up-skip-eol": new Promise((resolve) => notifyDependents["up-skip-eol"] = resolve),
-          "down": new Promise((resolve) => notifyDependents["down"] = resolve),
-          "down-skip-eol-1": new Promise((resolve) => notifyDependents["down-skip-eol-1"] = resolve),
-          "down-skip-eol-2": new Promise((resolve) => notifyDependents["down-skip-eol-2"] = resolve),
-          "blank-up-1": new Promise((resolve) => notifyDependents["blank-up-1"] = resolve),
-          "blank-up-2": new Promise((resolve) => notifyDependents["blank-up-2"] = resolve),
-          "left-3": new Promise((resolve) => notifyDependents["left-3"] = resolve),
-          "right-3": new Promise((resolve) => notifyDependents["right-3"] = resolve),
-          "up-3": new Promise((resolve) => notifyDependents["up-3"] = resolve),
-          "down-3": new Promise((resolve) => notifyDependents["down-3"] = resolve),
-          "down-3-up": new Promise((resolve) => notifyDependents["down-3-up"] = resolve),
-          "down-3-up-extend-a": new Promise((resolve) => notifyDependents["down-3-up-extend-a"] = resolve),
-          "down-3-up-extend-b": new Promise((resolve) => notifyDependents["down-3-up-extend-b"] = resolve),
+          "1-left": new Promise((resolve) => notifyDependents["1-left"] = resolve),
+          "1-right": new Promise((resolve) => notifyDependents["1-right"] = resolve),
+          "1-up": new Promise((resolve) => notifyDependents["1-up"] = resolve),
+          "1-up-skip-eol": new Promise((resolve) => notifyDependents["1-up-skip-eol"] = resolve),
+          "1-down": new Promise((resolve) => notifyDependents["1-down"] = resolve),
+          "1-down-skip-eol": new Promise((resolve) => notifyDependents["1-down-skip-eol"] = resolve),
+          "1-down-skip-eol-2": new Promise((resolve) => notifyDependents["1-down-skip-eol-2"] = resolve),
+          "2-up": new Promise((resolve) => notifyDependents["2-up"] = resolve),
+          "2-up-skip-eol-2": new Promise((resolve) => notifyDependents["2-up-skip-eol-2"] = resolve),
+          "3-left": new Promise((resolve) => notifyDependents["3-left"] = resolve),
+          "3-right": new Promise((resolve) => notifyDependents["3-right"] = resolve),
+          "3-up": new Promise((resolve) => notifyDependents["3-up"] = resolve),
+          "3-down": new Promise((resolve) => notifyDependents["3-down"] = resolve),
+          "3-down-up": new Promise((resolve) => notifyDependents["3-down-up"] = resolve),
+          "3-down-up-extend": new Promise((resolve) => notifyDependents["3-down-up-extend"] = resolve),
+          "3-down-up-extend-x": new Promise((resolve) => notifyDependents["3-down-up-extend-x"] = resolve),
         };
 
-  test("transition initial            > left              ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                > 1-left            ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["left"](undefined);
+      notifyDependents["1-left"](undefined);
       this.skip();
     }
 
@@ -95,19 +95,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["left"](afterDocument);
+      notifyDependents["1-left"](afterDocument);
     } catch (e) {
-      notifyDependents["left"](undefined);
+      notifyDependents["1-left"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial            > right             ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                > 1-right           ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["right"](undefined);
+      notifyDependents["1-right"](undefined);
       this.skip();
     }
 
@@ -132,19 +132,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["right"](afterDocument);
+      notifyDependents["1-right"](afterDocument);
     } catch (e) {
-      notifyDependents["right"](undefined);
+      notifyDependents["1-right"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial            > up                ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                > 1-up              ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["up"](undefined);
+      notifyDependents["1-up"](undefined);
       this.skip();
     }
 
@@ -169,19 +169,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["up"](afterDocument);
+      notifyDependents["1-up"](afterDocument);
     } catch (e) {
-      notifyDependents["up"](undefined);
+      notifyDependents["1-up"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial            > up-skip-eol       ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                > 1-up-skip-eol     ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["up-skip-eol"](undefined);
+      notifyDependents["1-up-skip-eol"](undefined);
       this.skip();
     }
 
@@ -206,19 +206,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["up-skip-eol"](afterDocument);
+      notifyDependents["1-up-skip-eol"](afterDocument);
     } catch (e) {
-      notifyDependents["up-skip-eol"](undefined);
+      notifyDependents["1-up-skip-eol"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial            > down              ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                > 1-down            ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down"](undefined);
+      notifyDependents["1-down"](undefined);
       this.skip();
     }
 
@@ -243,19 +243,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down"](afterDocument);
+      notifyDependents["1-down"](afterDocument);
     } catch (e) {
-      notifyDependents["down"](undefined);
+      notifyDependents["1-down"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial            > down-skip-eol-1   ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                > 1-down-skip-eol   ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down-skip-eol-1"](undefined);
+      notifyDependents["1-down-skip-eol"](undefined);
       this.skip();
     }
 
@@ -280,19 +280,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down-skip-eol-1"](afterDocument);
+      notifyDependents["1-down-skip-eol"](afterDocument);
     } catch (e) {
-      notifyDependents["down-skip-eol-1"](undefined);
+      notifyDependents["1-down-skip-eol"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial            > down-skip-eol-2   ", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1                > 1-down-skip-eol-2 ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down-skip-eol-2"](undefined);
+      notifyDependents["1-down-skip-eol-2"](undefined);
       this.skip();
     }
 
@@ -317,19 +317,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down-skip-eol-2"](afterDocument);
+      notifyDependents["1-down-skip-eol-2"](afterDocument);
     } catch (e) {
-      notifyDependents["down-skip-eol-2"](undefined);
+      notifyDependents["1-down-skip-eol-2"](undefined);
 
       throw e;
     }
   });
 
-  test("transition blank-initial      > blank-up-1        ", async function () {
-    const beforeDocument = await documents["blank-initial"];
+  test("transition 2                > 2-up              ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["blank-up-1"](undefined);
+      notifyDependents["2-up"](undefined);
       this.skip();
     }
 
@@ -354,19 +354,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["blank-up-1"](afterDocument);
+      notifyDependents["2-up"](afterDocument);
     } catch (e) {
-      notifyDependents["blank-up-1"](undefined);
+      notifyDependents["2-up"](undefined);
 
       throw e;
     }
   });
 
-  test("transition blank-initial      > blank-up-2        ", async function () {
-    const beforeDocument = await documents["blank-initial"];
+  test("transition 2                > 2-up-skip-eol-2   ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["blank-up-2"](undefined);
+      notifyDependents["2-up-skip-eol-2"](undefined);
       this.skip();
     }
 
@@ -391,19 +391,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["blank-up-2"](afterDocument);
+      notifyDependents["2-up-skip-eol-2"](afterDocument);
     } catch (e) {
-      notifyDependents["blank-up-2"](undefined);
+      notifyDependents["2-up-skip-eol-2"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3          > left-3            ", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3                > 3-left            ", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["left-3"](undefined);
+      notifyDependents["3-left"](undefined);
       this.skip();
     }
 
@@ -428,19 +428,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["left-3"](afterDocument);
+      notifyDependents["3-left"](afterDocument);
     } catch (e) {
-      notifyDependents["left-3"](undefined);
+      notifyDependents["3-left"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3          > right-3           ", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3                > 3-right           ", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["right-3"](undefined);
+      notifyDependents["3-right"](undefined);
       this.skip();
     }
 
@@ -465,19 +465,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["right-3"](afterDocument);
+      notifyDependents["3-right"](afterDocument);
     } catch (e) {
-      notifyDependents["right-3"](undefined);
+      notifyDependents["3-right"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3          > up-3              ", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3                > 3-up              ", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["up-3"](undefined);
+      notifyDependents["3-up"](undefined);
       this.skip();
     }
 
@@ -502,19 +502,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["up-3"](afterDocument);
+      notifyDependents["3-up"](afterDocument);
     } catch (e) {
-      notifyDependents["up-3"](undefined);
+      notifyDependents["3-up"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3          > down-3            ", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3                > 3-down            ", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down-3"](undefined);
+      notifyDependents["3-down"](undefined);
       this.skip();
     }
 
@@ -539,19 +539,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down-3"](afterDocument);
+      notifyDependents["3-down"](afterDocument);
     } catch (e) {
-      notifyDependents["down-3"](undefined);
+      notifyDependents["3-down"](undefined);
 
       throw e;
     }
   });
 
-  test("transition down-3             > down-3-up         ", async function () {
-    const beforeDocument = await documents["down-3"];
+  test("transition 3-down           > 3-down-up         ", async function () {
+    const beforeDocument = await documents["3-down"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down-3-up"](undefined);
+      notifyDependents["3-down-up"](undefined);
       this.skip();
     }
 
@@ -576,19 +576,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down-3-up"](afterDocument);
+      notifyDependents["3-down-up"](afterDocument);
     } catch (e) {
-      notifyDependents["down-3-up"](undefined);
+      notifyDependents["3-down-up"](undefined);
 
       throw e;
     }
   });
 
-  test("transition down-3             > down-3-up-extend-a", async function () {
-    const beforeDocument = await documents["down-3"];
+  test("transition 3-down           > 3-down-up-extend  ", async function () {
+    const beforeDocument = await documents["3-down"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down-3-up-extend-a"](undefined);
+      notifyDependents["3-down-up-extend"](undefined);
       this.skip();
     }
 
@@ -614,19 +614,19 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down-3-up-extend-a"](afterDocument);
+      notifyDependents["3-down-up-extend"](afterDocument);
     } catch (e) {
-      notifyDependents["down-3-up-extend-a"](undefined);
+      notifyDependents["3-down-up-extend"](undefined);
 
       throw e;
     }
   });
 
-  test("transition down-3-up-extend-a > down-3-up-extend-b", async function () {
-    const beforeDocument = await documents["down-3-up-extend-a"];
+  test("transition 3-down-up-extend > 3-down-up-extend-x", async function () {
+    const beforeDocument = await documents["3-down-up-extend"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["down-3-up-extend-b"](undefined);
+      notifyDependents["3-down-up-extend-x"](undefined);
       this.skip();
     }
 
@@ -653,9 +653,9 @@ suite("select-lateral.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["down-3-up-extend-b"](afterDocument);
+      notifyDependents["3-down-up-extend-x"](afterDocument);
     } catch (e) {
-      notifyDependents["down-3-up-extend-b"](undefined);
+      notifyDependents["3-down-up-extend-x"](undefined);
 
       throw e;
     }

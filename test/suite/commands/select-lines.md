@@ -7,7 +7,7 @@ bar
 baz
 ```
 
-# whole buffer
+# whole-buffer
 [up](#initial)
 
 - .select.buffer

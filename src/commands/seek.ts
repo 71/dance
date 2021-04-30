@@ -191,12 +191,13 @@ export function word(
 
   Selections.update.byIndex((_i, selection) => {
     const anchor = selection.anchor;
+    let active = Selections.seekFrom(selection, direction, selection.active, _);
 
     for (let i = 0; i < repetitions; i++) {
-      const mapped = wordBoundary(direction, selection.active, stopAtEnd, charset, _);
+      const mapped = wordBoundary(direction, active, stopAtEnd, charset, _);
 
       if (mapped === undefined) {
-        if (direction === Direction.Backward && selection.active.line > 0) {
+        if (direction === Direction.Backward && active.line > 0) {
           // This is a special case in Kakoune and we try to mimic it
           // here.
           // Instead of overflowing, put anchor at document start and
@@ -208,6 +209,7 @@ export function word(
       }
 
       selection = mapped;
+      active = selection.active;
     }
 
     if (shift === Shift.Extend) {

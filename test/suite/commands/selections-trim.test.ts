@@ -26,7 +26,7 @@ suite("selections-trim.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial-1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
 
             ^ 0
             there are two blank lines before me
@@ -40,7 +40,7 @@ suite("selections-trim.md", function () {
                 that contains only whitespace
             ^^^| 3
           `)),
-          "initial-2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             hello
              ^ 0
             world
@@ -48,7 +48,7 @@ suite("selections-trim.md", function () {
              |^^^^^ 1
             friends
           `)),
-          "initial-3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             hello
              |^^^^ 0
             world
@@ -61,19 +61,19 @@ suite("selections-trim.md", function () {
             ^^^ 1
           `)),
 
-          "trim-whitespace-1": new Promise((resolve) => notifyDependents["trim-whitespace-1"] = resolve),
-          "trim-2": new Promise((resolve) => notifyDependents["trim-2"] = resolve),
-          "expand-2a": new Promise((resolve) => notifyDependents["expand-2a"] = resolve),
-          "expand-2b": new Promise((resolve) => notifyDependents["expand-2b"] = resolve),
-          "expand-3": new Promise((resolve) => notifyDependents["expand-3"] = resolve),
-          "trim-3": new Promise((resolve) => notifyDependents["trim-3"] = resolve),
+          "1-trim-whitespace": new Promise((resolve) => notifyDependents["1-trim-whitespace"] = resolve),
+          "2-trim": new Promise((resolve) => notifyDependents["2-trim"] = resolve),
+          "2-expand": new Promise((resolve) => notifyDependents["2-expand"] = resolve),
+          "2-expand-x": new Promise((resolve) => notifyDependents["2-expand-x"] = resolve),
+          "3-expand": new Promise((resolve) => notifyDependents["3-expand"] = resolve),
+          "3-trim": new Promise((resolve) => notifyDependents["3-trim"] = resolve),
         };
 
-  test("transition initial-1 > trim-whitespace-1", async function () {
-    const beforeDocument = await documents["initial-1"];
+  test("transition 1        > 1-trim-whitespace", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["trim-whitespace-1"](undefined);
+      notifyDependents["1-trim-whitespace"](undefined);
       this.skip();
     }
 
@@ -100,19 +100,19 @@ suite("selections-trim.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["trim-whitespace-1"](afterDocument);
+      notifyDependents["1-trim-whitespace"](afterDocument);
     } catch (e) {
-      notifyDependents["trim-whitespace-1"](undefined);
+      notifyDependents["1-trim-whitespace"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2 > trim-2           ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2        > 2-trim           ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["trim-2"](undefined);
+      notifyDependents["2-trim"](undefined);
       this.skip();
     }
 
@@ -136,19 +136,19 @@ suite("selections-trim.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["trim-2"](afterDocument);
+      notifyDependents["2-trim"](afterDocument);
     } catch (e) {
-      notifyDependents["trim-2"](undefined);
+      notifyDependents["2-trim"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-2 > expand-2a        ", async function () {
-    const beforeDocument = await documents["initial-2"];
+  test("transition 2        > 2-expand         ", async function () {
+    const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["expand-2a"](undefined);
+      notifyDependents["2-expand"](undefined);
       this.skip();
     }
 
@@ -172,19 +172,19 @@ suite("selections-trim.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["expand-2a"](afterDocument);
+      notifyDependents["2-expand"](afterDocument);
     } catch (e) {
-      notifyDependents["expand-2a"](undefined);
+      notifyDependents["2-expand"](undefined);
 
       throw e;
     }
   });
 
-  test("transition expand-2a > expand-2b        ", async function () {
-    const beforeDocument = await documents["expand-2a"];
+  test("transition 2-expand > 2-expand-x       ", async function () {
+    const beforeDocument = await documents["2-expand"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["expand-2b"](undefined);
+      notifyDependents["2-expand-x"](undefined);
       this.skip();
     }
 
@@ -208,19 +208,19 @@ suite("selections-trim.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["expand-2b"](afterDocument);
+      notifyDependents["2-expand-x"](afterDocument);
     } catch (e) {
-      notifyDependents["expand-2b"](undefined);
+      notifyDependents["2-expand-x"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3 > expand-3         ", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3        > 3-expand         ", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["expand-3"](undefined);
+      notifyDependents["3-expand"](undefined);
       this.skip();
     }
 
@@ -248,19 +248,19 @@ suite("selections-trim.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["expand-3"](afterDocument);
+      notifyDependents["3-expand"](afterDocument);
     } catch (e) {
-      notifyDependents["expand-3"](undefined);
+      notifyDependents["3-expand"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial-3 > trim-3           ", async function () {
-    const beforeDocument = await documents["initial-3"];
+  test("transition 3        > 3-trim           ", async function () {
+    const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["trim-3"](undefined);
+      notifyDependents["3-trim"](undefined);
       this.skip();
     }
 
@@ -284,9 +284,9 @@ suite("selections-trim.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["trim-3"](afterDocument);
+      notifyDependents["3-trim"](afterDocument);
     } catch (e) {
-      notifyDependents["trim-3"](undefined);
+      notifyDependents["3-trim"](undefined);
 
       throw e;
     }

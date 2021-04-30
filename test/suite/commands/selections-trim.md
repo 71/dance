@@ -1,4 +1,4 @@
-# initial-1
+# 1
 
 ```
 
@@ -15,8 +15,8 @@ finally a selection
 ^^^| 3
 ```
 
-# trim-whitespace-1
-[up](#initial-1)
+## 1 trim-whitespace
+[up](#1)
 
 - .selections.trimWhitespace
 
@@ -32,7 +32,7 @@ finally a selection
     that contains only whitespace
 ```
 
-# initial-2
+# 2
 
 ```
 hello
@@ -43,8 +43,8 @@ my dear
 friends
 ```
 
-# trim-2
-[up](#initial-2)
+## 2 trim
+[up](#2)
 
 - .selections.trimLines
 
@@ -60,8 +60,8 @@ my dear
 friends
 ```
 
-# expand-2a
-[up](#initial-2)
+## 2 expand
+[up](#2)
 
 - .selections.expandToLines
 
@@ -74,8 +74,8 @@ my dear
 friends
 ```
 
-# expand-2b
-[up](#expand-2a)
+### 2 expand x
+[up](#2-expand)
 
 - .selections.expandToLines
 
@@ -90,7 +90,7 @@ my dear
 friends
 ```
 
-# initial-3
+# 3
 
 ```
 hello
@@ -105,8 +105,8 @@ friends
 ^^^ 1
 ```
 
-# expand-3
-[up](#initial-3)
+## 3 expand
+[up](#3)
 
 - .selections.expandToLines
 
@@ -126,8 +126,8 @@ friends
 ^^^^^^^^ 1
 ```
 
-# trim-3
-[up](#initial-3)
+## 3 trim
+[up](#3)
 
 - .selections.trimLines
 

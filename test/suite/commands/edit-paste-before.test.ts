@@ -26,20 +26,20 @@ suite("edit-paste-before.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "initial": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
             hello world
              ^^^^ 0
           `)),
 
-          "a-1": new Promise((resolve) => notifyDependents["a-1"] = resolve),
-          "a-2": new Promise((resolve) => notifyDependents["a-2"] = resolve),
+          "1-paste": new Promise((resolve) => notifyDependents["1-paste"] = resolve),
+          "1-paste-select": new Promise((resolve) => notifyDependents["1-paste-select"] = resolve),
         };
 
-  test("transition initial > a-1", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1 > 1-paste       ", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["a-1"](undefined);
+      notifyDependents["1-paste"](undefined);
       this.skip();
     }
 
@@ -60,19 +60,19 @@ suite("edit-paste-before.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["a-1"](afterDocument);
+      notifyDependents["1-paste"](afterDocument);
     } catch (e) {
-      notifyDependents["a-1"](undefined);
+      notifyDependents["1-paste"](undefined);
 
       throw e;
     }
   });
 
-  test("transition initial > a-2", async function () {
-    const beforeDocument = await documents["initial"];
+  test("transition 1 > 1-paste-select", async function () {
+    const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["a-2"](undefined);
+      notifyDependents["1-paste-select"](undefined);
       this.skip();
     }
 
@@ -92,9 +92,9 @@ suite("edit-paste-before.md", function () {
       afterDocument.assertEquals(editor);
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["a-2"](afterDocument);
+      notifyDependents["1-paste-select"](afterDocument);
     } catch (e) {
-      notifyDependents["a-2"](undefined);
+      notifyDependents["1-paste-select"](undefined);
 
       throw e;
     }

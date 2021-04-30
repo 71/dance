@@ -1,4 +1,4 @@
-# initial
+# 1
 
 > behavior <- character
 
@@ -10,8 +10,8 @@ baz
 quxxx
 ```
 
-# left
-[up](#initial)
+## 1 left
+[up](#1)
 
 - .select.left.jump
 
@@ -23,8 +23,8 @@ baz
 quxxx
 ```
 
-# right
-[up](#initial)
+## 1 right
+[up](#1)
 
 - .select.right.jump
 
@@ -36,8 +36,8 @@ baz
 quxxx
 ```
 
-# up
-[up](#initial)
+## 1 up
+[up](#1)
 
 - .select.up.jump
 
@@ -49,8 +49,8 @@ baz
 quxxx
 ```
 
-# up-skip-eol
-[up](#initial)
+## 1 up-skip-eol
+[up](#1)
 
 - .select.up.jump { avoidEol: true }
 
@@ -66,8 +66,8 @@ baz
 quxxx
 ```
 
-# down
-[up](#initial)
+## 1 down
+[up](#1)
 
 - .select.down.jump
 
@@ -79,12 +79,12 @@ baz
 quxxx
 ```
 
-# down-skip-eol-1
-[up](#initial)
+## 1 down-skip-eol
+[up](#1)
 
 - .select.down.jump { avoidEol: true }
 
-Similarly to the [test case above](#up-skip-eol), "desired column" is 4 so we
+Similarly to the [test case above](#1-up-skip-eol), "desired column" is 4 so we
 select the last character.
 
 ```
@@ -95,8 +95,8 @@ baz
 quxxx
 ```
 
-# down-skip-eol-2
-[up](#initial)
+## 1 down-skip-eol-2
+[up](#1)
 
 - .select.down.jump { count: 2, avoidEol: true }
 
@@ -111,7 +111,7 @@ quxxx
    ^ 0
 ```
 
-# blank-initial
+# 2
 
 > behavior <- character
 
@@ -123,8 +123,8 @@ bar
 
 ```
 
-# blank-up-1
-[up](#blank-initial)
+## 2 up
+[up](#2)
 
 - .select.up.jump
 
@@ -138,8 +138,8 @@ bar
 
 ```
 
-# blank-up-2
-[up](#blank-initial)
+## 2 up-skip-eol-2
+[up](#2)
 
 - .select.up.jump { count: 2, avoidEol: true }
 
@@ -151,7 +151,7 @@ bar
 
 ```
 
-# initial-3
+# 3
 
 > behavior <- character
 
@@ -163,8 +163,8 @@ bar
 baz
 ```
 
-# left-3
-[up](#initial-3)
+## 3 left
+[up](#3)
 
 - .select.left.jump
 
@@ -176,8 +176,8 @@ bar
 baz
 ```
 
-# right-3
-[up](#initial-3)
+## 3 right
+[up](#3)
 
 - .select.right.jump
 
@@ -189,8 +189,8 @@ bar
 baz
 ```
 
-# up-3
-[up](#initial-3)
+## 3 up
+[up](#3)
 
 - .select.up.jump
 
@@ -202,8 +202,8 @@ bar
 baz
 ```
 
-# down-3
-[up](#initial-3)
+## 3 down
+[up](#3)
 
 - .select.down.jump
 
@@ -215,8 +215,8 @@ bar
 baz
 ```
 
-# down-3-up
-[up](#down-3)
+### 3 down up
+[up](#3-down)
 
 - .select.up.jump
 
@@ -228,8 +228,8 @@ bar
 baz
 ```
 
-# down-3-up-extend-a
-[up](#down-3)
+### 3 down up-extend
+[up](#3-down)
 
 - .select.up.extend
 
@@ -242,8 +242,8 @@ bar
 baz
 ```
 
-# down-3-up-extend-b
-[up](#down-3-up-extend-a)
+#### 3 down up-extend x
+[up](#3-down-up-extend)
 
 - .select.up.extend
 

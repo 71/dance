@@ -113,18 +113,29 @@ interface InitialDocument {
 }
 
 function parseMarkdownTests(contents: string) {
-  const re = /^# (.+)\n(?:\[.+?\]\(#(.+?)\)\n)?([\s\S]+?)^```\n([\s\S]+?)^```\n/gm,
+  const re = /^#+ (.+)\n(?:\[.+?\]\(#(.+?)\)\n)?([\s\S]+?)^```\n([\s\S]+?)^```\n/gm,
         opre = /^- *([\w.:]+)( +.+)?$|^> *(.+)$/gm,
         initial = [] as InitialDocument[],
         tests = [] as Test[],
         all = new Map<string, Test | InitialDocument>();
 
-  for (const [_, badTitle, comesAfterTitle, operationsText, after] of execAll(re, contents)) {
+  for (const [text, badTitle, comesAfterTitle, operationsText, after] of execAll(re, contents)) {
     const title = badTitle.replace(/\s/g, "-");
 
     assert(!all.has(title), `document state "${title}" is defined multiple times`);
 
+    const titleParts = badTitle.split(" ").length,
+          nesting = /^#+/.exec(text)![0].length;
+
+    if (titleParts !== nesting && nesting <= 6) {
+      console.warn(`section "${title}" has ${titleParts} parts but a nesting of ${nesting}`);
+    }
+
     if (comesAfterTitle === undefined) {
+      if (nesting !== 1) {
+        console.warn("an initial section should have a top-level header");
+      }
+
       const flags = execAll(/^> *(.+)$/gm, operationsText).map(([_, flag]) => flag),
             behavior = getBehavior(flags) ?? "caret",
             data: InitialDocument = { title, flags, code: after, behavior };
@@ -132,6 +143,21 @@ function parseMarkdownTests(contents: string) {
       initial.push(data);
       all.set(title, data);
       continue;
+    }
+
+    if (nesting > 1) {
+      // TODO: when all tests have the correct style, enforce that they all have
+      // >1 nesting.
+      const lastTitlePart = /\S+$/.exec(badTitle)![0],
+            expectedTitle = comesAfterTitle + "-" + lastTitlePart;
+
+      if (title !== expectedTitle) {
+        console.warn(`section "${title}" should be called "${expectedTitle}"`);
+      }
+
+      if (!/^([a-z]+)(-([a-z]+|\d+))*$/.test(lastTitlePart)) {
+        console.warn(`section "${title}" has an invalid name`);
+      }
     }
 
     const operations = [] as TestOperation[],
@@ -157,7 +183,7 @@ function parseMarkdownTests(contents: string) {
   }
 
   assert.strictEqual(
-    execAll(/^# /gm, contents).length,
+    execAll(/^#+ /gm, contents).length,
     tests.length + initial.length,
     "not all tests were parsed",
   );

@@ -544,7 +544,7 @@ export function skipEmptyLines(
     if (lineLength > 0) {
       return new vscode.Position(
         line,
-        direction === Direction.Backward ? lineLength - 1 : 0,
+        direction === Direction.Backward ? lineLength : 0,
       );
     }
 
