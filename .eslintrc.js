@@ -16,6 +16,12 @@ module.exports = {
         "max-len": "off",
       },
     },
+    {
+      files: ["test/suite/commands/*.ts"],
+      rules: {
+        "no-useless-escape": "off",
+      },
+    }
   ],
   rules: {
     "indent": ["error", 2, {

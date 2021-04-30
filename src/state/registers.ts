@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { ArgumentError, assert, Context, EditNotAppliedError, EditorRequiredError, Selections } from "../api";
+import { ArgumentError, assert, Context, EditNotAppliedError, EditorRequiredError, prompt, Selections } from "../api";
 import { SelectionBehavior } from "./modes";
 import { noUndoStops } from "../utils/misc";
 import { TrackedSelection } from "../utils/tracked-selection";
@@ -448,10 +448,12 @@ export abstract class RegisterSet {
   /**
    * The ":" (`colon`) register.
    *
-   * In Kakoune it is mapped to the last entered * command, but since we don't
-   * have access to that information in Dance, it's a general purpose register.
+   * In Kakoune it is mapped to the last entered command, but since we don't
+   * have access to that information in Dance, we map it to a prompt.
    */
-  public readonly colon = new GeneralPurposeRegister(":");
+  public readonly colon = new SpecialRegister(":", () =>
+    prompt({ prompt: ":" }).then((result) => [result]),
+  );
 
   /**
    * The `null` register, which forgets selections written to it and always
