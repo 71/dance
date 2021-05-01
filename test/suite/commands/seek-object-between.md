@@ -1,13 +1,18 @@
 # 1
 
+> behavior <- character
 > /\$object/"\\((?#inner)\\)"/g
 
 ```
-if {0}(|{0}ok) {
-  f|{1}oo ={1} a+(b{2}+(|{2}c+(d)+e)+f)+g;
+if (ok) {
+   ^ 0
+  foo = a+(b+(c+(d)+e)+f)+g;
+   |^^^ 1   ^^ 2
 } else {
-  {3}for (var i = (foo + bar)|{3}; i < 1000; i++) {
-    getAction(i{4})|{4}();
+  for (var i = (foo + bar); i < 1000; i++) {
+  ^^^^^^^^^^^^^^^^^^^^^^^^ 3
+    getAction(i)();
+               ^ 4
   }
 }
 ```
@@ -15,17 +20,20 @@ if {0}(|{0}ok) {
 ## 1 to-end
 [up](#1)
 
-- .seek.object { input: $object, "action": "selectToEnd" }
+- .seek.object { input: $object, where: "end" }
 
 Old selection #1 is removed because it is not in a parens block.  
 Old selection #4 is removed because it is not in a parens block (the `)` it is
 on does not count, and the next `(` starts a NEW parens block).
 
 ```
-if {0}(ok)|{0} {
-  foo = a+(b+{1}(c+(d)+e)|{1}+f)+g;
+if (ok) {
+   ^^^^ 0
+  foo = a+(b+(c+(d)+e)+f)+g;
+             ^^^^^^^^^ 1
 } else {
-  for (var i = (foo + bar{2}); i < 1000; i++)|{2} {
+  for (var i = (foo + bar); i < 1000; i++) {
+                         ^^^^^^^^^^^^^^^^^ 2
     getAction(i)();
   }
 }
@@ -34,17 +42,20 @@ if {0}(ok)|{0} {
 ## 1 to-end-extend
 [up](#1)
 
-- .seek.object { input: $object, "action": "selectToEnd", "extend": true }
+- .seek.object { input: $object, where: "end", shift: "extend" }
 
 Old selection #1 is removed because it is not in a parens block.  
 Old selection #4 is removed because it is not in a parens block (the `)` it is
 on does not count, and the next `(` starts a NEW parens block).
 
 ```
-if {0}(ok)|{0} {
-  foo = a+(b{1}+(c+(d)+e)|{1}+f)+g;
+if (ok) {
+   ^^^^ 0
+  foo = a+(b+(c+(d)+e)+f)+g;
+            ^^^^^^^^^^ 1
 } else {
-  {2}for (var i = (foo + bar); i < 1000; i++)|{2} {
+  for (var i = (foo + bar); i < 1000; i++) {
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
     getAction(i)();
   }
 }
@@ -53,17 +64,20 @@ if {0}(ok)|{0} {
 ## 1 to-end-inner
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "selectToEnd", "inner": true }
+- .seek.object { input: $object, where: "end", inner: true }
 
 Old selection #1 is removed because it is not in a parens block.  
 Old selection #4 is removed because it is not in a parens block (the `)` it is
 on does not count, and the next `(` starts a NEW parens block).
 
 ```
-if {0}(ok|{0}) {
-  foo = a+(b+{1}(c+(d)+e|{1})+f)+g;
+if (ok) {
+   ^^^ 0
+  foo = a+(b+(c+(d)+e)+f)+g;
+             ^^^^^^^^ 1
 } else {
-  for (var i = (foo + bar{2}); i < 1000; i++|{2}) {
+  for (var i = (foo + bar); i < 1000; i++) {
+                         ^^^^^^^^^^^^^^^^ 2
     getAction(i)();
   }
 }
@@ -72,17 +86,20 @@ if {0}(ok|{0}) {
 ## 1 to-end-inner-extend
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "selectToEnd", "inner": true, "extend": true }
+- .seek.object { input: $object, where: "end", inner: true, shift: "extend" }
 
 Old selection #1 is removed because it is not in a parens block.  
 Old selection #4 is removed because it is not in a parens block (the `)` it is
 on does not count, and the next `(` starts a NEW parens block).
 
 ```
-if {0}(ok|{0}) {
-  foo = a+(b{1}+(c+(d)+e|{1})+f)+g;
+if (ok) {
+   ^^^ 0
+  foo = a+(b+(c+(d)+e)+f)+g;
+            ^^^^^^^^^ 1
 } else {
-  {2}for (var i = (foo + bar); i < 1000; i++|{2}) {
+  for (var i = (foo + bar); i < 1000; i++) {
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
     getAction(i)();
   }
 }
@@ -91,7 +108,7 @@ if {0}(ok|{0}) {
 ## 1 to-start
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "selectToStart" }
+- .seek.object { input: $object, where: "start" }
 
 Old selection #0 is removed because it is not in a parens block (the `(` it is
 is on does not count).  
@@ -99,10 +116,13 @@ Old selection #1 is removed because it is not in a parens block.
 
 ```
 if (ok) {
-  foo = a+|{0}(b+({0}c+(d)+e)+f)+g;
+  foo = a+(b+(c+(d)+e)+f)+g;
+          |^^^ 0
 } else {
-  for (var i = |{1}(foo + bar){1}; i < 1000; i++) {
-    getAction|{2}(i){2}();
+  for (var i = (foo + bar); i < 1000; i++) {
+               |^^^^^^^^^^ 1
+    getAction(i)();
+             |^^ 2
   }
 }
 ```
@@ -110,7 +130,7 @@ if (ok) {
 ## 1 to-start-extend
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "selectToStart", "extend": true }
+- .seek.object { input: $object, where: "start", shift: "extend" }
 
 Old selection #0 is removed because it is not in a parens block (the `(` it is
 is on does not count).  
@@ -118,10 +138,13 @@ Old selection #1 is removed because it is not in a parens block.
 
 ```
 if (ok) {
-  foo = a+|{0}(b+{0}(c+(d)+e)+f)+g;
+  foo = a+(b+(c+(d)+e)+f)+g;
+          |^^ 0
 } else {
-  {1}for (var i = (|{1}foo + bar); i < 1000; i++) {
-    getAction|{2}(i){2}();
+  for (var i = (foo + bar); i < 1000; i++) {
+  ^^^^^^^^^^^^^ 1
+    getAction(i)();
+             |^^ 2
   }
 }
 ```
@@ -129,7 +152,7 @@ if (ok) {
 ## 1 to-start-inner
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "selectToStart", "inner": true }
+- .seek.object { input: $object, where: "start", inner: true }
 
 Old selection #0 is removed because it is not in a parens block (the `(` it is
 on does not count).  
@@ -137,10 +160,13 @@ Old selection #1 is removed because it is not in a parens block.
 
 ```
 if (ok) {
-  foo = a+(|{0}b+({0}c+(d)+e)+f)+g;
+  foo = a+(b+(c+(d)+e)+f)+g;
+           |^^ 0
 } else {
-  for (var i = (|{1}foo + bar){1}; i < 1000; i++) {
-    getAction(|{2}i){2}();
+  for (var i = (foo + bar); i < 1000; i++) {
+                |^^^^^^^^^ 1
+    getAction(i)();
+              |^ 2
   }
 }
 ```
@@ -148,7 +174,7 @@ if (ok) {
 ## 1 to-start-inner-extend
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "selectToStart", "inner": true, "extend": true }
+- .seek.object { input: $object, where: "start", inner: true, shift: "extend" }
 
 Old selection #0 is removed because it is not in a parens block (the `(` it is
 on does not count).  
@@ -156,10 +182,13 @@ Old selection #1 is removed because it is not in a parens block.
 
 ```
 if (ok) {
-  foo = a+(|{0}b+{0}(c+(d)+e)+f)+g;
+  foo = a+(b+(c+(d)+e)+f)+g;
+           |^ 0
 } else {
-  {1}for (var i = (f|{1}oo + bar); i < 1000; i++) {
-    getAction(|{2}i){2}();
+  for (var i = (foo + bar); i < 1000; i++) {
+  ^^^^^^^^^^^^^^ 1
+    getAction(i)();
+              |^ 2
   }
 }
 ```
@@ -167,16 +196,20 @@ if (ok) {
 ## 1 select
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "select" }
+- .seek.object { input: $object }
 
 Old selection #1 is removed because it is not in a parens block.
 
 ```
-if {0}(ok)|{0} {
-  foo = a+(b+{1}(c+(d)+e)|{1}+f)+g;
+if (ok) {
+   ^^^^ 0
+  foo = a+(b+(c+(d)+e)+f)+g;
+             ^^^^^^^^^ 1
 } else {
-  for (var i = {2}(foo + bar)|{2}; i < 1000; i++) {
-    getAction{3}(i)|{3}();
+  for (var i = (foo + bar); i < 1000; i++) {
+               ^^^^^^^^^^^ 2
+    getAction(i)();
+             ^^^ 3
   }
 }
 ```
@@ -184,14 +217,18 @@ if {0}(ok)|{0} {
 ## 1 select-inner
 [up](#1)
 
-- .seek.object { "object": "parens", "action": "select", "inner": true }
+- .seek.object { input: $object, inner: true }
 
 ```
-if ({0}ok|{0}) {
-  foo = a+(b+({1}c+(d)+e|{1})+f)+g;
+if (ok) {
+    ^^ 0
+  foo = a+(b+(c+(d)+e)+f)+g;
+              ^^^^^^^ 1
 } else {
-  for (var i = ({2}foo + bar|{2}); i < 1000; i++) {
-    getAction({3}i|{3})();
+  for (var i = (foo + bar); i < 1000; i++) {
+                ^^^^^^^^^ 2
+    getAction(i)();
+              ^ 3
   }
 }
 ```

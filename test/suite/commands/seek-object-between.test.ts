@@ -27,11 +27,15 @@ suite("seek-object-between.md", function () {
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
           "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-            if {0}(|{0}ok) {
-              f|{1}oo ={1} a+(b{2}+(|{2}c+(d)+e)+f)+g;
+            if (ok) {
+               ^ 0
+              foo = a+(b+(c+(d)+e)+f)+g;
+               |^^^ 1   ^^ 2
             } else {
-              {3}for (var i = (foo + bar)|{3}; i < 1000; i++) {
-                getAction(i{4})|{4}();
+              for (var i = (foo + bar); i < 1000; i++) {
+              ^^^^^^^^^^^^^^^^^^^^^^^^ 3
+                getAction(i)();
+                           ^ 4
               }
             }
           `)),
@@ -57,10 +61,13 @@ suite("seek-object-between.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      if {0}(ok)|{0} {
-        foo = a+(b+{1}(c+(d)+e)|{1}+f)+g;
+      if (ok) {
+         ^^^^ 0
+        foo = a+(b+(c+(d)+e)+f)+g;
+                   ^^^^^^^^^ 1
       } else {
-        for (var i = (foo + bar{2}); i < 1000; i++)|{2} {
+        for (var i = (foo + bar); i < 1000; i++) {
+                               ^^^^^^^^^^^^^^^^^ 2
           getAction(i)();
         }
       }
@@ -71,7 +78,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", "action": "selectToEnd" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -94,10 +103,13 @@ suite("seek-object-between.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      if {0}(ok)|{0} {
-        foo = a+(b{1}+(c+(d)+e)|{1}+f)+g;
+      if (ok) {
+         ^^^^ 0
+        foo = a+(b+(c+(d)+e)+f)+g;
+                  ^^^^^^^^^^ 1
       } else {
-        {2}for (var i = (foo + bar); i < 1000; i++)|{2} {
+        for (var i = (foo + bar); i < 1000; i++) {
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
           getAction(i)();
         }
       }
@@ -108,7 +120,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", "action": "selectToEnd", "extend": true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", shift: "extend" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -131,10 +145,13 @@ suite("seek-object-between.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      if {0}(ok|{0}) {
-        foo = a+(b+{1}(c+(d)+e|{1})+f)+g;
+      if (ok) {
+         ^^^ 0
+        foo = a+(b+(c+(d)+e)+f)+g;
+                   ^^^^^^^^ 1
       } else {
-        for (var i = (foo + bar{2}); i < 1000; i++|{2}) {
+        for (var i = (foo + bar); i < 1000; i++) {
+                               ^^^^^^^^^^^^^^^^ 2
           getAction(i)();
         }
       }
@@ -145,7 +162,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "selectToEnd", "inner": true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", inner: true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -168,10 +187,13 @@ suite("seek-object-between.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      if {0}(ok|{0}) {
-        foo = a+(b{1}+(c+(d)+e|{1})+f)+g;
+      if (ok) {
+         ^^^ 0
+        foo = a+(b+(c+(d)+e)+f)+g;
+                  ^^^^^^^^^ 1
       } else {
-        {2}for (var i = (foo + bar); i < 1000; i++|{2}) {
+        for (var i = (foo + bar); i < 1000; i++) {
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
           getAction(i)();
         }
       }
@@ -182,7 +204,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "selectToEnd", "inner": true, "extend": true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", inner: true, shift: "extend" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -206,10 +230,13 @@ suite("seek-object-between.md", function () {
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if (ok) {
-        foo = a+|{0}(b+({0}c+(d)+e)+f)+g;
+        foo = a+(b+(c+(d)+e)+f)+g;
+                |^^^ 0
       } else {
-        for (var i = |{1}(foo + bar){1}; i < 1000; i++) {
-          getAction|{2}(i){2}();
+        for (var i = (foo + bar); i < 1000; i++) {
+                     |^^^^^^^^^^ 1
+          getAction(i)();
+                   |^^ 2
         }
       }
     `);
@@ -219,7 +246,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "selectToStart" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -243,10 +272,13 @@ suite("seek-object-between.md", function () {
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if (ok) {
-        foo = a+|{0}(b+{0}(c+(d)+e)+f)+g;
+        foo = a+(b+(c+(d)+e)+f)+g;
+                |^^ 0
       } else {
-        {1}for (var i = (|{1}foo + bar); i < 1000; i++) {
-          getAction|{2}(i){2}();
+        for (var i = (foo + bar); i < 1000; i++) {
+        ^^^^^^^^^^^^^ 1
+          getAction(i)();
+                   |^^ 2
         }
       }
     `);
@@ -256,7 +288,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "selectToStart", "extend": true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", shift: "extend" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -280,10 +314,13 @@ suite("seek-object-between.md", function () {
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if (ok) {
-        foo = a+(|{0}b+({0}c+(d)+e)+f)+g;
+        foo = a+(b+(c+(d)+e)+f)+g;
+                 |^^ 0
       } else {
-        for (var i = (|{1}foo + bar){1}; i < 1000; i++) {
-          getAction(|{2}i){2}();
+        for (var i = (foo + bar); i < 1000; i++) {
+                      |^^^^^^^^^ 1
+          getAction(i)();
+                    |^ 2
         }
       }
     `);
@@ -293,7 +330,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "selectToStart", "inner": true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", inner: true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -317,10 +356,13 @@ suite("seek-object-between.md", function () {
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if (ok) {
-        foo = a+(|{0}b+{0}(c+(d)+e)+f)+g;
+        foo = a+(b+(c+(d)+e)+f)+g;
+                 |^ 0
       } else {
-        {1}for (var i = (f|{1}oo + bar); i < 1000; i++) {
-          getAction(|{2}i){2}();
+        for (var i = (foo + bar); i < 1000; i++) {
+        ^^^^^^^^^^^^^^ 1
+          getAction(i)();
+                    |^ 2
         }
       }
     `);
@@ -330,7 +372,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "selectToStart", "inner": true, "extend": true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", inner: true, shift: "extend" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -353,11 +397,15 @@ suite("seek-object-between.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      if {0}(ok)|{0} {
-        foo = a+(b+{1}(c+(d)+e)|{1}+f)+g;
+      if (ok) {
+         ^^^^ 0
+        foo = a+(b+(c+(d)+e)+f)+g;
+                   ^^^^^^^^^ 1
       } else {
-        for (var i = {2}(foo + bar)|{2}; i < 1000; i++) {
-          getAction{3}(i)|{3}();
+        for (var i = (foo + bar); i < 1000; i++) {
+                     ^^^^^^^^^^^ 2
+          getAction(i)();
+                   ^^^ 3
         }
       }
     `);
@@ -367,7 +415,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "select" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)" });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -390,11 +440,15 @@ suite("seek-object-between.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      if ({0}ok|{0}) {
-        foo = a+(b+({1}c+(d)+e|{1})+f)+g;
+      if (ok) {
+          ^^ 0
+        foo = a+(b+(c+(d)+e)+f)+g;
+                    ^^^^^^^ 1
       } else {
-        for (var i = ({2}foo + bar|{2}); i < 1000; i++) {
-          getAction({3}i|{3})();
+        for (var i = (foo + bar); i < 1000; i++) {
+                      ^^^^^^^^^ 2
+          getAction(i)();
+                    ^ 3
         }
       }
     `);
@@ -404,7 +458,9 @@ suite("seek-object-between.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "parens", "action": "select", "inner": true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", inner: true });
+      await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);

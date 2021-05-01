@@ -187,22 +187,30 @@ expect.addAssertion<vscode.Selection>(
 );
 
 function stringifySelection(document: vscode.TextDocument, selection: vscode.Selection) {
-  const content = document.getText();
-  const startOffset = document.offsetAt(selection.start),
-        endOffset = document.offsetAt(selection.end),
-        [startString, endString] = selection.isReversed ? ["|", "<"] : [">", "|"];
+  const content = document.getText(),
+        startOffset = document.offsetAt(selection.start);
 
   if (selection.isEmpty) {
-    return content.substring(0, startOffset) + "|" + content.substring(startOffset);
-  } else {
-    return (
-      content.substring(0, startOffset)
-      + startString
-      + content.substring(startOffset, endOffset)
-      + endString
-      + content.substring(endOffset)
-    );
+    return content.slice(0, startOffset) + "|" + content.slice(startOffset);
   }
+
+  let endOffset = document.offsetAt(selection.end),
+      endString = selection.isReversed ? "<" : "|";
+  const startString = selection.isReversed ? "|" : ">";
+
+  if (selection.end.character === 0) {
+    // Selection ends at line break.
+    endString = "↵" + endString;
+    endOffset--;
+  }
+
+  return (
+    content.slice(0, startOffset)
+    + startString
+    + content.slice(startOffset, endOffset)
+    + endString
+    + content.slice(endOffset)
+  );
 }
 
 export class ExpectedDocument {
@@ -290,57 +298,117 @@ export class ExpectedDocument {
       `Document text is not as expected.`,
     );
 
-    const expectedSelections = this.selections;
+    const expectedSelections = this.selections.slice() as (vscode.Selection | undefined)[];
 
     if (expectedSelections.length === 0) {
       return;
     }
 
-    let actualSelections = Selections.mergeOverlapping(editor.selections);
+    // Ensure resulting selections are right.
+    let mergedSelections = Selections.mergeOverlapping(editor.selections).slice();
 
     if (Context.currentOrUndefined?.selectionBehavior === SelectionBehavior.Character) {
-      actualSelections = Selections.toCharacterMode(actualSelections, document);
+      mergedSelections = Selections.toCharacterMode(mergedSelections, document);
     }
 
-    // Ensure resulting selections are right.
-    if (actualSelections.length !== expectedSelections.length) {
-      let error =
-        `Expected ${expectedSelections.length} selection(s), but had ${actualSelections.length}.`;
+    const actualSelections = mergedSelections.slice() as (vscode.Selection | undefined)[];
 
-      for (let i = actualSelections.length; i < expectedSelections.length; i++) {
-        error += `\nMissing selection #${i} ('>' is anchor, '|' is cursor):\n`;
-        error += stringifySelection(document, expectedSelections[i]);
+    // First, we set correct selections to `undefined` to ignore them in the
+    // checks below.
+    let hasUnexpectedSelection = false;
+
+    for (let i = 0; i < expectedSelections.length && i < actualSelections.length; i++) {
+      if (expectedSelections[i]!.isEqual(actualSelections[i]!)) {
+        expectedSelections[i] = actualSelections[i] = undefined;
+      } else {
+        hasUnexpectedSelection = true;
       }
-
-      for (let i = expectedSelections.length; i < actualSelections.length; i++) {
-        error += `\nUnexpected selection #${i} ('>' is anchor, '|' is cursor):\n`;
-        error += stringifySelection(document, actualSelections[i]);
-      }
-
-      assert.fail(error);
     }
 
+    if (!hasUnexpectedSelection && expectedSelections.length === actualSelections.length) {
+      return;
+    }
+
+    const commonText: string[] = ["Selections are not as expected."],
+          expectedText: string[] = [],
+          actualText: string[] = [];
+
+    // Then, we report selections that are correct, but have the wrong index.
     for (let i = 0; i < expectedSelections.length; i++) {
-      if (actualSelections[i].isEqual(expectedSelections[i])) {
+      const expectedSelection = expectedSelections[i];
+
+      if (expectedSelection === undefined) {
         continue;
       }
 
-      const expected = stringifySelection(document, expectedSelections[i]);
-      const actual = stringifySelection(document, actualSelections[i]);
+      for (let j = 0; j < actualSelections.length; j++) {
+        const actualSelection = actualSelections[j];
 
-      assert.strictEqual(
-        actual,
-        expected,
-        `Expected Selection #${i} to match ('>' is anchor, '|' is cursor).`,
-      );
-      // If stringified results are the same, throw message using strict equal.
-      assert.deepStrictEqual(
-        actualSelections[i],
-        expectedSelections[i],
-        `(Actual Selection #${i} is at same spots in document as expected, `
-        + `but with different numbers)`,
-      );
-      assert.fail();
+        if (actualSelection === undefined) {
+          continue;
+        }
+
+        if (expectedSelection.isEqual(actualSelection)) {
+          commonText.push(`Expected selection found at index #${j} to be at index #${i}.`);
+          expectedSelections[i] = actualSelections[j] = undefined;
+          break;
+        }
+      }
     }
+
+    // Then, we report selections that are expected and not found, and those
+    // that were found but were not expected.
+    const sortedExpectedSelections = expectedSelections
+      .filter((x) => x !== undefined)
+      .map((x, i) => [i, x!] as const)
+      .sort((a, b) => a[1].start.compareTo(b[1].start));
+    const sortedActualSelections = actualSelections
+      .filter((x) => x !== undefined)
+      .map((x, i) => [i, x!] as const)
+      .sort((a, b) => a[1].start.compareTo(b[1].start));
+
+    for (let i = sortedActualSelections.length; i < sortedExpectedSelections.length; i++) {
+      const [index, expectedSelection] = sortedExpectedSelections[i];
+
+      expectedText.push(
+        `Missing selection #${index}:\n${
+          stringifySelection(document, expectedSelection).replace(/^/gm, "  ")}`);
+      actualText.push(
+        `Missing selection #${index}:\n${document.getText().replace(/^/gm, "  ")}`);
+    }
+
+    for (let i = sortedExpectedSelections.length; i < sortedActualSelections.length; i++) {
+      const [index, actualSelection] = sortedActualSelections[i];
+
+      actualText.push(
+        `Unexpected selection #${index}:\n${
+          stringifySelection(document, actualSelection).replace(/^/gm, "  ")}`);
+      expectedText.push(
+        `Unexpected selection #${index}:\n${document.getText().replace(/^/gm, "  ")}`);
+    }
+
+    // Finally, we diff selections that exist in both arrays.
+    for (let i = 0; i < sortedExpectedSelections.length && i < sortedActualSelections.length; i++) {
+      const [expectedIndex, expectedSelection] = sortedExpectedSelections[i],
+            [actualIndex, actualSelection] = sortedActualSelections[i];
+
+      const error = actualIndex === expectedIndex
+        ? `Selection #${actualIndex} is not as expected:`
+        : `Actual selection #${actualIndex} differs from expected selection #${expectedIndex}:`;
+
+      actualText.push(error);
+      expectedText.push(error);
+
+      actualText.push(stringifySelection(document, actualSelection).replace(/^/gm, "  "));
+      expectedText.push(stringifySelection(document, expectedSelection).replace(/^/gm, "  "));
+    }
+
+    assert.strictEqual(
+      actualText.join("\n"),
+      expectedText.join("\n"),
+      commonText.join("\n"),
+    );
+
+    assert.fail("Internal error.");
   }
 }

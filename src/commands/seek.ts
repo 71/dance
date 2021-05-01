@@ -275,16 +275,48 @@ export async function object(
           closeRe = new RegExp(preprocessRegExp(match[2]), "u"),
           p = pair(openRe, closeRe);
 
-    return shiftWhere(
-      _,
-      (selection, _) => {
-        const startResult = p.searchOpening(selection.active);
+    if (where === "start") {
+      return Selections.update.byIndex((_i, selection) => {
+        const startResult = p.searchOpening(Selections.activeStart(selection, _));
 
         if (startResult === undefined) {
           return undefined;
         }
 
-        const endResult = p.searchClosing(selection.active);
+        const start = inner
+          ? Positions.offset(startResult[0], startResult[1][0].length, _.document) ?? startResult[0]
+          : startResult[0];
+
+        return Selections.shift(selection, start, shift, _);
+      });
+    }
+
+    if (where === "end") {
+      return Selections.update.byIndex((_i, selection) => {
+        const endResult = p.searchClosing(Selections.activeEnd(selection, _));
+
+        if (endResult === undefined) {
+          return undefined;
+        }
+
+        const end = inner
+          ? endResult[0]
+          : Positions.offset(endResult[0], endResult[1][0].length, _.document) ?? endResult[0];
+
+        return Selections.shift(selection, end, shift, _);
+      });
+    }
+
+    return shiftWhere(
+      _,
+      (selection, _) => {
+        const startResult = p.searchOpening(Selections.activeStart(selection, _));
+
+        if (startResult === undefined) {
+          return undefined;
+        }
+
+        const endResult = p.searchClosing(Selections.activeEnd(selection, _));
 
         if (endResult === undefined) {
           return undefined;
