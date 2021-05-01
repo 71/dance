@@ -26,7 +26,7 @@ suite("seek-object-sentence.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             {0}A|{0} sentence starts with a non-blank character or a line break. <== It ends with a
             punctuation mark like the previous {1}o|{1}ne, or two consecutive line breaks like this
 
@@ -36,29 +36,29 @@ suite("seek-object-sentence.md", function () {
                <- |{5}White spaces here and {5}the line break before them belongs to this sentence,
             not the previous one, since the previous trailing cannot contain line breaks.
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
                 {0} |{0}   {1}I|{1}'m a sen|{2}tenc{2}e   .        I'm another sentence.
           `)),
-          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             I'm a previous sent|{3}ence{3}.  {4} |{4} {5}
             |{5}    {0} |{0}   {1}I|{1}'m a sen|{2}tenc{2}e   .        I'm another sentence.
           `)),
-          "4": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "4": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             I'm a s{0}ente|{0}nce{1}.|{1}{2}I|{2}'m anoth{3}e|{3}r sentence{4}
             |{4}
           `)),
-          "5": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "5": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             I'm a sentence ter|{0}minate{0}d by two line breaks{1}
             |{1}{2}
             |{2} {3} |{3}  I'm anoth|{4}er sen{4}tence
           `)),
-          "6": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "6": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             I'm a sentence ter|{0}minate{0}d by two line breaks plus one more{1}
             |{1}{2}
             |{2}{3}
             |{3}
           `)),
-          "7": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "7": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             I'm a sentence at end of document
             {0}|{0}
           `)),
@@ -95,7 +95,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}A sentence starts with a non-blank character or a line break. |{0}<== It ends with a
       punctuation mark like the previous {1}one, or two consecutive line breaks like this
       |{1}
@@ -133,7 +133,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}A|{0} sentence starts with a non-blank character or a line break. |{1}<== It ends with a
       punctuation mark like the previous o{1}ne, or two consecutive line breaks like this
 
@@ -171,7 +171,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}A sentence starts with a non-blank character or a line break.|{0} {1}<== It ends with a
       punctuation mark like the previous one, or two consecutive line breaks like this
       |{1}
@@ -209,7 +209,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
           {0}    {1}|{2}I|{0}|{1}'m a sent{2}ence   .        I'm another sentence.
     `);
 
@@ -240,7 +240,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
           {0}    {1}I'm a sen{2}tence   .        |{0}|{1}|{2}I'm another sentence.
     `);
 
@@ -271,7 +271,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
               {0}{1}{2}I'm a sentence   .        |{0}|{1}|{2}I'm another sentence.
     `);
 
@@ -302,7 +302,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {3}{4}I'm a previous sentence.|{3}|{4}    {0}{1}{2}{5}
               I'm a sentence   .|{0}|{1}|{2}|{5}        I'm another sentence.
     `);
@@ -334,7 +334,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}|{1}|{3}|{4}|{5}I'm a previous sente{3}nce.{0}{1}{4}{5}    |{2}
               I'm a sent{2}ence   .        I'm another sentence.
     `);
@@ -366,7 +366,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}|{1}|{3}|{4}|{5}I'm a previous sente{3}nce.{0}{1}{4}{5}    |{2}
               I'm a sent{2}ence   .        I'm another sentence.
     `);
@@ -398,7 +398,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       I'm a previous sent{3}ence.  {4}  |{3}{5}
           {0}    {1}I'm a sen{2}tence   .        |{0}|{1}|{2}|{4}|{5}I'm another sentence.
     `);
@@ -430,7 +430,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}{1}I'm a sentence.|{0}|{1}{2}{3}{4}I'm another sentence
       |{2}|{3}|{4}
     `);
@@ -462,7 +462,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}|{1}|{2}I'm a sente{0}nce.{1}{2}|{3}|{4}I'm anothe{3}r sentence
       {4}
     `);
@@ -494,7 +494,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       I'm a sent{0}ence{1}.|{0}|{1}{2}I'm anoth{3}er sentence{4}
       |{2}|{3}|{4}
     `);
@@ -526,7 +526,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}{1}I'm a sentence terminated by two line breaks
       |{0}|{1}
           {2}{3}{4}I'm another sentence|{2}|{3}|{4}
@@ -559,7 +559,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}|{1}I'm a sentence term{0}inated by two line breaks
       {1}{2}
        {3}   |{4}I|{2}|{3}'m anothe{4}r sentence
@@ -592,7 +592,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       I'm a sentence ter{0}minated by two line breaks{1}
       |{0}|{1}{2}
        {3}   I'm anoth{4}er sentence|{2}|{3}|{4}
@@ -625,7 +625,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}|{1}I'm a sentence term{0}inated by two line breaks plus one more
       {1}{2}
       {3}
@@ -659,7 +659,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       I'm a sentence ter{0}minated by two line breaks plus one more{1}
       |{0}|{1}{2}
       |{2}{3}
@@ -693,7 +693,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}{1}I'm a sentence terminated by two line breaks plus one more
       |{0}|{1}{2}
       {3}
@@ -727,7 +727,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}I'm a sentence at end of document
       {0}
     `);
@@ -759,7 +759,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       I'm a sentence at end of document{0}
       |{0}
     `);
@@ -791,7 +791,7 @@ suite("seek-object-sentence.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}I'm a sentence at end of document
       {0}
     `);

@@ -26,21 +26,21 @@ suite("select-lateral.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             foo
             bar
                ^ 0
             baz
             quxxx
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             foo
 
             bar
                ^ 0
 
           `)),
-          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             foo
 
             ^ 0
@@ -74,7 +74,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       bar
         ^ 0
@@ -111,7 +111,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       bar
       baz
@@ -148,7 +148,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
          ^ 0
       bar
@@ -185,7 +185,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
         ^ 0
       bar
@@ -222,7 +222,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       bar
       baz
@@ -259,7 +259,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       bar
       baz
@@ -296,7 +296,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       bar
       baz
@@ -333,7 +333,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
 
       ^ 0
@@ -370,7 +370,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
         ^ 0
 
@@ -407,7 +407,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
          ^ 0
 
@@ -444,7 +444,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
 
       bar
@@ -481,7 +481,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       ^ 0
 
@@ -518,7 +518,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
 
       bar
@@ -555,7 +555,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
 
       ^ 0
@@ -592,7 +592,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
 
       | 0
@@ -630,7 +630,7 @@ suite("select-lateral.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       | 0
 

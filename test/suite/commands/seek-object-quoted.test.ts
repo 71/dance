@@ -26,7 +26,7 @@ suite("seek-object-quoted.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             hello world "inside a quote, there can be escaped \" characters! also\"\\\"\\""
                             ^ 0
           `)),
@@ -43,7 +43,7 @@ suite("seek-object-quoted.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       hello world "inside a quote, there can be escaped \" characters! also\"\\\"\\""
                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
     `);
@@ -53,7 +53,7 @@ suite("seek-object-quoted.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { });
+      await executeCommand("dance.seek.object", { input: "(?#noescape)\"(?#inner)(?#noescape)\"" });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);
@@ -75,7 +75,7 @@ suite("seek-object-quoted.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       hello world "inside a quote, there can be escaped \" characters! also\"\\\"\\""
                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
     `);
@@ -85,7 +85,7 @@ suite("seek-object-quoted.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { inner: true });
+      await executeCommand("dance.seek.object", { input: "(?#noescape)\"(?#inner)(?#noescape)\"", inner: true });
 
       // Ensure document is as expected.
       afterDocument.assertEquals(editor);

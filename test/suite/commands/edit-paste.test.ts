@@ -26,7 +26,7 @@ suite("edit-paste.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             foo
             ^^^^ 0
             bar
@@ -46,7 +46,7 @@ suite("edit-paste.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       ^^^^ 0
       foo
@@ -81,7 +81,7 @@ suite("edit-paste.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       ^^^^ 0
       foo
@@ -116,7 +116,7 @@ suite("edit-paste.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
          | 0
       foo
@@ -151,7 +151,7 @@ suite("edit-paste.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foooo
        ^^ 0
       foo

@@ -26,7 +26,7 @@ suite("search-next.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             apple pineapple pear
             ^ 0
             pear pineapple apple
@@ -54,7 +54,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
                 ^^^^^ 0
       pear pineapple apple
@@ -88,7 +88,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
       pear pineapple apple
                ^^^^^ 0
@@ -122,7 +122,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
                 ^^^^^ 1
       pear pineapple apple
@@ -157,7 +157,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
       ^^^^^ 0
       pear pineapple apple
@@ -191,7 +191,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
       ^^^^^ 0   ^^^^^ 3
       pear pineapple apple
@@ -227,7 +227,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
                 ^^^^^ 0
       pear pineapple apple
@@ -261,7 +261,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
       ^^^^^ 1   ^^^^^ 0
       pear pineapple apple
@@ -297,7 +297,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
       ^^^^^ 0
       pear pineapple apple
@@ -331,7 +331,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
       ^^^^^ 0   ^^^^^ 1
       pear pineapple apple
@@ -365,7 +365,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
       pear pineapple apple
                      ^^^^^ 0
@@ -399,7 +399,7 @@ suite("search-next.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       apple pineapple pear
       ^^^^^ 1   ^^^^^ 2
       pear pineapple apple

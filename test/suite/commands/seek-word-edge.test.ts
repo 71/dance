@@ -26,21 +26,21 @@ suite("seek-word-edge.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             |{0}th{0}e quick brown fox
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             foo bar{0}
             |{0}baz
           `)),
-          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             |{0}the {0}qu|{1}ic{1}k brown fox
           `)),
-          "4": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "4": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
 
             |{0}there{0} is a blank line before me
           `)),
-          "5": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "5": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
 
 
             |{0}there{0} are two blank lines before me
@@ -74,7 +74,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}th{0}e quick brown fox
     `);
 
@@ -105,7 +105,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown {0}fox|{0}
     `);
 
@@ -136,7 +136,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown {0}fox|{0}
     `);
 
@@ -167,7 +167,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown {0}fox|{0}
     `);
 
@@ -198,7 +198,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}the {0}quick brown fox
     `);
 
@@ -229,7 +229,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}the {0}quick brown fox
     `);
 
@@ -260,7 +260,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown {0}fox|{0}
     `);
 
@@ -291,7 +291,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo |{0}bar{0}
       baz
     `);
@@ -323,7 +323,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the |{0}qui{0}ck brown fox
     `);
 
@@ -354,7 +354,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       |{0}|{1}the {0}{1}quick brown fox
     `);
 
@@ -385,7 +385,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown{0} fox|{0}
     `);
 
@@ -416,7 +416,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown{0}{1} fox|{0}|{1}
     `);
 
@@ -447,7 +447,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}
       t|{0}here is a blank line before me
     `);
@@ -479,7 +479,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}
       t|{0}here is a blank line before me
     `);
@@ -511,7 +511,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}
       t|{0}here is a blank line before me
     `);
@@ -543,7 +543,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}
 
       |{0}there are two blank lines before me
@@ -576,7 +576,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}
 
       |{0}there are two blank lines before me
@@ -609,7 +609,7 @@ suite("seek-word-edge.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}
 
       |{0}there are two blank lines before me

@@ -26,39 +26,39 @@ suite("edit-indent.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             The quick brown fox
             ^ 0
             jumps over the lazy
                                ^ 0
             dog.
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             The quick brown fox
             ^ 0
             jumps over the lazy
                               ^ 0
             dog.
           `)),
-          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             The quick brown fox
             ^^^^^^^^^^^^^^^ 0
             jumps over the lazy
             dog.
           `)),
-          "4": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "4": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             The quick brown fox
             |^^^^^^^^^^^^^^ 0
             jumps over the lazy
             dog.
           `)),
-          "5": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "5": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             The quick brown fox
             ^^^^^^^^^^^^^^^^^^^^ 0
             jumps over the lazy
             dog.
           `)),
-          "6": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "6": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             The quick brown fox
             | 0
             jumps over the lazy
@@ -81,7 +81,7 @@ suite("edit-indent.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
         The quick brown fox
         ^ 0
         jumps over the lazy
@@ -116,7 +116,7 @@ suite("edit-indent.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
         The quick brown fox
         ^ 0
         jumps over the lazy
@@ -151,7 +151,7 @@ suite("edit-indent.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
         The quick brown fox
         ^^^^^^^^^^^^^^^ 0
       jumps over the lazy
@@ -185,7 +185,7 @@ suite("edit-indent.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
         The quick brown fox
         |^^^^^^^^^^^^^^ 0
       jumps over the lazy
@@ -219,7 +219,7 @@ suite("edit-indent.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
         The quick brown fox
         ^^^^^^^^^^^^^^^^^^^^ 0
       jumps over the lazy
@@ -253,7 +253,7 @@ suite("edit-indent.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
         The quick brown fox
         | 0
       jumps over the lazy

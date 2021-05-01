@@ -4,7 +4,7 @@ export function stringifyExpectedDocument(code: string, codeIndent: number, inde
   code = code.replace(/`/g, "\\`").replace(/^/gm, " ".repeat(codeIndent));
   code = code.slice(0, code.length - 2);  // De-indent end line.
 
-  return `ExpectedDocument.parseIndented(${indent}, \`\\\n${code}\`)`;
+  return `ExpectedDocument.parseIndented(${indent}, String.raw\`\n${code}\`)`;
 }
 
 export function longestStringLength<T>(f: (v: T) => string, values: readonly T[]) {

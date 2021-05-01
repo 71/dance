@@ -409,7 +409,7 @@ export async function object(
 }
 
 function preprocessRegExp(re: string) {
-  return re.replace(/\(\?#noescape\)/g, "(?<!\\\\)(?:\\\\{2})*");
+  return re.replace(/\(\?#noescape\)/g, "(?<=(?<!\\\\)(?:\\\\{2})*)");
 }
 
 function shiftWhere(

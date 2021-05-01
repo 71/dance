@@ -26,32 +26,32 @@ suite("seek-word.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             console.log()
             ^ 0
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             foo
 
             bar
             ^ 0
           `)),
-          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             aaa bbb ccc ddd
                   ^ 0
           `)),
-          "4": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "4": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             aaa bbb
                ^ 0
               ccc
             dd
           `)),
-          "5": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "5": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             foo x bar.baz ex
             ^ 0
             la
           `)),
-          "6": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "6": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             a b c d
               ^ 0
           `)),
@@ -93,7 +93,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
       ^^^^^^^ 0
     `);
@@ -127,7 +127,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
              ^ 0
     `);
@@ -161,7 +161,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
               ^^^ 0
     `);
@@ -195,7 +195,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
               |^^ 0
     `);
@@ -229,7 +229,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
              ^ 0
     `);
@@ -263,7 +263,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
       |^^^^^^ 0
     `);
@@ -297,7 +297,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
       ^^^^^^^ 0
     `);
@@ -331,7 +331,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
       ^^^^^^^^ 0
     `);
@@ -365,7 +365,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
       ^^^^^^^^^^^ 0
     `);
@@ -399,7 +399,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       console.log()
               ^^^ 0
     `);
@@ -433,7 +433,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       |^^ 0
 
@@ -469,7 +469,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa bbb ccc ddd
              ^^^^ 0
     `);
@@ -503,7 +503,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa bbb ccc ddd
                  ^^^^ 0
     `);
@@ -537,7 +537,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa bbb ccc ddd
                   |^^ 0
     `);
@@ -571,7 +571,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa bbb ccc ddd
               |^^^ 0
     `);
@@ -605,7 +605,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa bbb
           ^^^ 0
         ccc
@@ -639,7 +639,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa bbb
         ccc
       ^^^^^ 0
@@ -673,7 +673,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo x bar.baz ex
       ^^^ 0
       la
@@ -708,7 +708,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo x bar.baz ex
          ^^ 0
       la
@@ -743,7 +743,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo x bar.baz ex
            ^^^^ 0
       la
@@ -778,7 +778,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo x bar.baz ex
                ^ 0
       la
@@ -813,7 +813,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d
          ^^ 0
     `);
@@ -847,7 +847,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d
          ^^ 0
     `);
@@ -881,7 +881,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d
       |^ 0
     `);
@@ -915,7 +915,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d
         ^^^ 0
     `);
@@ -949,7 +949,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d
         ^^ 0
     `);
@@ -983,7 +983,7 @@ suite("seek-word.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d
       |^^ 0
     `);

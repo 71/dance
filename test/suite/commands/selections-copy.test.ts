@@ -26,14 +26,14 @@ suite("selections-copy.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             foo
             ^ 0
             bar
             baz
             qux
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             aaa aaa aaa
               bb bb bb bb
                ^ 0     ^^ 1
@@ -43,7 +43,7 @@ suite("selections-copy.md", function () {
                 f
               gg gg gg gg gg
           `)),
-          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             ab
               ^ 0
             cd
@@ -68,7 +68,7 @@ suite("selections-copy.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       ^ 1
       bar
@@ -104,7 +104,7 @@ suite("selections-copy.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       foo
       ^ 2
       bar
@@ -141,7 +141,7 @@ suite("selections-copy.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa aaa aaa
         bb bb bb bb
          ^ 2     ^^ 3
@@ -180,7 +180,7 @@ suite("selections-copy.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa aaa aaa
         bb bb bb bb
          ^ 4     ^^ 5
@@ -221,7 +221,7 @@ suite("selections-copy.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       aaa aaa aaa
         bb bb bb bb
          ^ 5     ^^ 6
@@ -263,7 +263,7 @@ suite("selections-copy.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       ab
         ^ 1
       cd
@@ -299,7 +299,7 @@ suite("selections-copy.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       ab
         ^ 2
       cd

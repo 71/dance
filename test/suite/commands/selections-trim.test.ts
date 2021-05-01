@@ -26,7 +26,7 @@ suite("selections-trim.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
 
             ^ 0
             there are two blank lines before me
@@ -40,7 +40,7 @@ suite("selections-trim.md", function () {
                 that contains only whitespace
             ^^^| 3
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             hello
              ^ 0
             world
@@ -48,7 +48,7 @@ suite("selections-trim.md", function () {
              |^^^^^ 1
             friends
           `)),
-          "3": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "3": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             hello
              |^^^^ 0
             world
@@ -77,7 +77,7 @@ suite("selections-trim.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
 
       there are two blank lines before me
       ^^^^^^^^^ 0
@@ -116,7 +116,7 @@ suite("selections-trim.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       hello
        ^ 0
       world
@@ -152,7 +152,7 @@ suite("selections-trim.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       hello
       ^^^^^^ 0
       world
@@ -188,7 +188,7 @@ suite("selections-trim.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       hello
       ^^^^^^ 0
       world
@@ -224,7 +224,7 @@ suite("selections-trim.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       hello
       |^^^^^ 0
       world
@@ -264,7 +264,7 @@ suite("selections-trim.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       hello
       world
       my

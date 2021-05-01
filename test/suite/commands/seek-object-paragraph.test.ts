@@ -26,7 +26,7 @@ suite("seek-object-paragraph.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             {0}f|{0}oo{1}
             |{1}bar{2}
             |{2}{3}
@@ -37,7 +37,7 @@ suite("seek-object-paragraph.md", function () {
 
             qux
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             paragraph 1{0}
             |{0}{1}
             |{1}{2}
@@ -62,7 +62,7 @@ suite("seek-object-paragraph.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}|{1}|{2}|{3}|{4}f|{0}oo
       {1}bar
       {2}
@@ -101,7 +101,7 @@ suite("seek-object-paragraph.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}foo{1}
       bar{2}
 
@@ -140,7 +140,7 @@ suite("seek-object-paragraph.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}foo{1}
       bar{2}
       |{0}|{1}|{2}
@@ -179,7 +179,7 @@ suite("seek-object-paragraph.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}{1}{2}foo
       bar
 
@@ -218,7 +218,7 @@ suite("seek-object-paragraph.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       {0}{1}{2}{3}paragraph 1
       |{0}|{1}|{2}|{3}|{3}
 
@@ -254,7 +254,7 @@ suite("seek-object-paragraph.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       paragraph 1{0}
       |{0}
       {1}

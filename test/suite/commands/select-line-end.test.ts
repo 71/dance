@@ -26,7 +26,7 @@ suite("select-line-end.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             the quick brown fox
                       ^^^ 0
           `)),
@@ -47,7 +47,7 @@ suite("select-line-end.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown fox
       |^^^^^^^^^^^^ 0
     `);
@@ -79,7 +79,7 @@ suite("select-line-end.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown fox
       |^^^^^^^^^ 0
     `);
@@ -111,7 +111,7 @@ suite("select-line-end.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown fox
       |^^^^^^^^^^ 0
     `);
@@ -145,7 +145,7 @@ suite("select-line-end.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown fox
                    ^^^^^^ 0
     `);
@@ -177,7 +177,7 @@ suite("select-line-end.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown fox
                   ^^^^^^^ 0
     `);
@@ -211,7 +211,7 @@ suite("select-line-end.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       the quick brown fox
                 ^^^^^^^^^ 0
     `);

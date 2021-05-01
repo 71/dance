@@ -26,7 +26,7 @@ suite("seek-object-between.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             if {0}(|{0}ok) {
               f|{1}oo ={1} a+(b{2}+(|{2}c+(d)+e)+f)+g;
             } else {
@@ -56,7 +56,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if {0}(ok)|{0} {
         foo = a+(b+{1}(c+(d)+e)|{1}+f)+g;
       } else {
@@ -93,7 +93,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if {0}(ok)|{0} {
         foo = a+(b{1}+(c+(d)+e)|{1}+f)+g;
       } else {
@@ -130,7 +130,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if {0}(ok|{0}) {
         foo = a+(b+{1}(c+(d)+e|{1})+f)+g;
       } else {
@@ -167,7 +167,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if {0}(ok|{0}) {
         foo = a+(b{1}+(c+(d)+e|{1})+f)+g;
       } else {
@@ -204,7 +204,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if (ok) {
         foo = a+|{0}(b+({0}c+(d)+e)+f)+g;
       } else {
@@ -241,7 +241,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if (ok) {
         foo = a+|{0}(b+{0}(c+(d)+e)+f)+g;
       } else {
@@ -278,7 +278,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if (ok) {
         foo = a+(|{0}b+({0}c+(d)+e)+f)+g;
       } else {
@@ -315,7 +315,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if (ok) {
         foo = a+(|{0}b+{0}(c+(d)+e)+f)+g;
       } else {
@@ -352,7 +352,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if {0}(ok)|{0} {
         foo = a+(b+{1}(c+(d)+e)|{1}+f)+g;
       } else {
@@ -389,7 +389,7 @@ suite("seek-object-between.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       if ({0}ok|{0}) {
         foo = a+(b+({1}c+(d)+e|{1})+f)+g;
       } else {

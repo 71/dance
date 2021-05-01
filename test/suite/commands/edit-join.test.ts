@@ -26,7 +26,7 @@ suite("edit-join.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             a b
             ^^^ 0
             c d
@@ -35,7 +35,7 @@ suite("edit-join.md", function () {
             ^^^ 0
             g h
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             a b
               ^ 0
             c d
@@ -59,7 +59,7 @@ suite("edit-join.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d e f
       ^^^^^^^^^^^ 0
       g h
@@ -92,7 +92,7 @@ suite("edit-join.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d e f
          ^ 0 ^ 1
       g h
@@ -125,7 +125,7 @@ suite("edit-join.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d
         ^ 0
       e f g h
@@ -160,7 +160,7 @@ suite("edit-join.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       a b c d
          ^ 0
       e f g h

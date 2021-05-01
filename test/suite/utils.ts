@@ -212,6 +212,8 @@ export class ExpectedDocument {
   ) {}
 
   public static parseIndented(indent: number, text: string) {
+    text = text.slice(1);  // Remove first line break.
+
     return ExpectedDocument.parse(
       text.replace(new RegExp(`^ {${indent}}`, "gm"), "").replace(/ +$/, ""),
     );

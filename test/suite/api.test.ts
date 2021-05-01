@@ -42,7 +42,7 @@ suite("API tests", function () {
     test("function text", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo bar
             `);
 
@@ -64,7 +64,7 @@ suite("API tests", function () {
     test("function text#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo bar
             `);
 
@@ -153,13 +153,13 @@ suite("API tests", function () {
     test("function insert", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               1 2 3
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               2 4 6
               ^ 0
                 ^ 1
@@ -178,13 +178,13 @@ suite("API tests", function () {
     test("function byIndex", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               1a 2b 3c
                ^ 0
                   ^ 1
@@ -203,13 +203,13 @@ suite("API tests", function () {
     test("function byIndex#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               1a 2b 3c
               ^ 0
                  ^ 1
@@ -228,13 +228,13 @@ suite("API tests", function () {
     test("function byIndex#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               1a 2b 3c
               ^^ 0
                  ^^ 1
@@ -253,13 +253,13 @@ suite("API tests", function () {
     test("function byIndex#3", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a1 b2 c3
               ^ 0
                  ^ 1
@@ -278,13 +278,13 @@ suite("API tests", function () {
     test("function byIndex#4", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a1 b2 c3
                ^ 0
                   ^ 1
@@ -303,13 +303,13 @@ suite("API tests", function () {
     test("function byIndex#5", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a1 b2 c3
               ^^ 0
                  ^^ 1
@@ -328,13 +328,13 @@ suite("API tests", function () {
     test("function replace", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               1 2 3
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               2 4 6
               ^ 0
                 ^ 1
@@ -353,13 +353,13 @@ suite("API tests", function () {
     test("function byIndex#6", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               1 2 3
               ^ 0
                 ^ 1
@@ -378,13 +378,13 @@ suite("API tests", function () {
     test("function rotate", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               b c a
               ^ 1
                 ^ 2
@@ -403,13 +403,13 @@ suite("API tests", function () {
     test("function selectionsOnly", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 0
                 ^ 1
                   ^ 2
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a b c
               ^ 1
                 ^ 2
@@ -432,7 +432,7 @@ suite("API tests", function () {
     test("function backward", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abc
             `);
 
@@ -466,7 +466,7 @@ suite("API tests", function () {
     test("function forward", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abc
             `);
 
@@ -504,13 +504,13 @@ suite("API tests", function () {
     test("function indentLines", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a
 
               c
               d
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
                 a
 
               c
@@ -529,10 +529,10 @@ suite("API tests", function () {
     test("function indentLines#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
                   a
             `);
 
@@ -548,11 +548,11 @@ suite("API tests", function () {
     test("function indentLines#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a
 
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
                 a
               ··
             `);
@@ -569,13 +569,13 @@ suite("API tests", function () {
     test("function deindentLines", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
                 a
               ··
                   c
                   d
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a
 
                   c
@@ -594,13 +594,13 @@ suite("API tests", function () {
     test("function deindentLines#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
                 a
               ··
                   c
                   d
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a
 
                   c
@@ -619,13 +619,13 @@ suite("API tests", function () {
     test("function joinLines", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b
               c d
               e f
               g h
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a b c d
               e f
               g h
@@ -643,13 +643,13 @@ suite("API tests", function () {
     test("function joinLines#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b
               c d
               e f
               g h
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a b c d
               e f
               g h
@@ -667,13 +667,13 @@ suite("API tests", function () {
     test("function joinLines#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b
               c d
               e f
               g h
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a b c d
               e f g h
             `);
@@ -690,13 +690,13 @@ suite("API tests", function () {
     test("function joinLines#3", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a b
               c d
               e f
               g h
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               a b
               c d    e f
               g h
@@ -718,7 +718,7 @@ suite("API tests", function () {
     test("function backward", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abc
             `);
 
@@ -747,7 +747,7 @@ suite("API tests", function () {
     test("function forward", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abc
             `);
 
@@ -780,11 +780,11 @@ suite("API tests", function () {
     test("function setSelections", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               hello world
               ^ 0
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               hello world
                     ^^^^^ 0
             `);
@@ -818,7 +818,7 @@ suite("API tests", function () {
     test("function filterSelections", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo 123
               ^^^ 0
                   ^^^ 1
@@ -841,7 +841,7 @@ suite("API tests", function () {
     test("function filterSelections#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo 123
               ^^^ 0
                   ^^^ 1
@@ -864,12 +864,12 @@ suite("API tests", function () {
     test("function updateSelections", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo 123
               ^^^ 0
                   ^^^ 1
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               foo 123
               |^^ 0
             `);
@@ -889,7 +889,7 @@ suite("API tests", function () {
     test("function updateSelections#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo 123
               ^^^ 0
             `);
@@ -906,12 +906,12 @@ suite("API tests", function () {
     test("function updateSelections#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo 123
               ^^^ 0
                   ^^^ 1
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               foo 123
                   |^^ 0
             `);
@@ -931,12 +931,12 @@ suite("API tests", function () {
     test("function rotateSelections", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo bar baz
               ^^^ 0   ^^^ 2
                   ^^^ 1
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               foo bar baz
               ^^^ 1   ^^^ 0
                   ^^^ 2
@@ -954,12 +954,12 @@ suite("API tests", function () {
     test("function rotateSelections#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               foo bar baz
               ^^^ 0   ^^^ 2
                   ^^^ 1
             `),
-            after = ExpectedDocument.parseIndented(14, `\
+            after = ExpectedDocument.parseIndented(14, String.raw`
               foo bar baz
               ^^^ 2   ^^^ 1
                   ^^^ 0
@@ -977,7 +977,7 @@ suite("API tests", function () {
     test("function selectionsLines", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               ab
               ^^ 0
               cd
@@ -1007,7 +1007,7 @@ suite("API tests", function () {
     test("function mergeOverlappingSelections", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abcd
                ^^ 0
                ^^ 1
@@ -1025,7 +1025,7 @@ suite("API tests", function () {
     test("function mergeOverlappingSelections#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abcd
                | 0
                | 1
@@ -1043,7 +1043,7 @@ suite("API tests", function () {
     test("function mergeOverlappingSelections#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abcd
               ^^^ 0
                ^^^ 1
@@ -1063,7 +1063,7 @@ suite("API tests", function () {
     test("function mergeOverlappingSelections#3", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abcd
               ^^ 0
                 ^^ 1
@@ -1085,7 +1085,7 @@ suite("API tests", function () {
     test("function mergeOverlappingSelections#4", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abcd
               ^^ 1
                 ^^ 0
@@ -1136,7 +1136,7 @@ suite("API tests", function () {
     test("function isEntireLine", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abc
               ^^^^ 0
 
@@ -1157,7 +1157,7 @@ suite("API tests", function () {
     test("function isEntireLine#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abc
               ^^^^ 0
               def
@@ -1177,7 +1177,7 @@ suite("API tests", function () {
     test("function isEntireLines", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abc
               ^^^^ 0
               def
@@ -1204,7 +1204,7 @@ suite("API tests", function () {
     test("function length", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               abc
               ^^^^ 0
               def
@@ -1258,7 +1258,7 @@ suite("API tests", function () {
     test("function toCharacterMode", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a
               b
             `);
@@ -1303,7 +1303,7 @@ suite("API tests", function () {
     test("function fromCharacterMode", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
             `);
 
       await before.apply(editor);
@@ -1320,7 +1320,7 @@ suite("API tests", function () {
     test("function fromCharacterMode#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, `\
+            before = ExpectedDocument.parseIndented(14, String.raw`
               a
               b
             `);

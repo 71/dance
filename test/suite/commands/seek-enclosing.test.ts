@@ -26,7 +26,7 @@ suite("seek-enclosing.md", function () {
   // tests whose dependencies failed.
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             { hello: 1,
               world: {
                 foo: [
@@ -38,7 +38,7 @@ suite("seek-enclosing.md", function () {
               },
             }
           `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, `\
+          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
             { hello: 1,
             ^ 0
               world: {
@@ -63,7 +63,7 @@ suite("seek-enclosing.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       { hello: 1,
         world: {
           foo: [
@@ -103,7 +103,7 @@ suite("seek-enclosing.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       { hello: 1,
         world: {
           foo: [
@@ -143,7 +143,7 @@ suite("seek-enclosing.md", function () {
       this.skip();
     }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, `\
+    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
       { hello: 1,
       ^ 0
         world: {
