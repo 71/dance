@@ -75,8 +75,7 @@ export function wordBoundary(
         shouldSkip = false;
       }
     } else {
-      // Ignore the character on the right of the caret.
-      shouldSkip = direction === Direction.Backward;
+      shouldSkip = false;
     }
 
     anchor = shouldSkip ? new vscode.Position(active.line, active.character + direction) : active;

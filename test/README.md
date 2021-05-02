@@ -82,6 +82,12 @@ expect(
 ```
 </details>
 
+### Debugging
+
+While viewing a file in the [`api`](../src/api) directory, select "Run tests in
+this file" to debug all doc tests in the file being viewed. Select "Run test on
+this line" to debug the test of the function under the cursor.
+
 ## Command tests
 
 Command tests are processed by [`commands.test.ts`](./suite/commands.test.ts),
@@ -130,6 +136,8 @@ foo bar
   for the duration of the test. The mode will be reset to `caret` at the end of
   the test. Tests that depend on a test with character behavior `character` will
   default to having that same behavior. Use `behavior <- caret` to undo this.
+- `/<pattern>/<replacement>/<flags>`: Replaces the given pattern by the given
+  replacement string in all sections that inherit from the current section.
 
 ### Naming and organization
 
@@ -149,6 +157,13 @@ this way:
 
 Finally, sections should always be nested under the section from which they
 transition.
+
+### Debugging
+
+While viewing a Markdown file in the [`commands`](./suite/commands) directory,
+select "Run tests in this file" to debug all tests defined by the Markdown file.
+Select "Run test on this line" to debug the test defined in the section under
+the cursor.
 
 ## Syntax of expected documents
 

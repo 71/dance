@@ -241,7 +241,7 @@ export namespace filterSelections {
 export function mapSelections<T>(
   f: mapSelections.Mapper<T | undefined>,
   selections?: readonly vscode.Selection[],
-): vscode.Selection[];
+): T[];
 
 /**
  * Applies an async function to all the given selections, and returns the array
@@ -269,7 +269,7 @@ export function mapSelections<T>(
 export function mapSelections<T>(
   f: mapSelections.Mapper<Thenable<T | undefined>>,
   selections?: readonly vscode.Selection[],
-): Thenable<vscode.Selection[]>;
+): Thenable<T[]>;
 
 export function mapSelections<T>(
   f: mapSelections.Mapper<T | undefined> | mapSelections.Mapper<Thenable<T | undefined>>,
@@ -306,7 +306,7 @@ export namespace mapSelections {
   export function byIndex<T>(
     f: ByIndexMapper<T | undefined>,
     selections?: readonly vscode.Selection[],
-  ): vscode.Selection[];
+  ): T[];
 
   /**
    * Applies an async function to all the given selections, and returns the
@@ -318,7 +318,7 @@ export namespace mapSelections {
   export function byIndex<T>(
     f: ByIndexMapper<Thenable<T | undefined>>,
     selections?: readonly vscode.Selection[],
-  ): Thenable<vscode.Selection[]>;
+  ): Thenable<T[]>;
 
   export function byIndex<T>(
     f: ByIndexMapper<T | undefined> | ByIndexMapper<Thenable<T | undefined>>,
@@ -465,6 +465,21 @@ export function updateSelections(
   return (selections as Thenable<vscode.Selection[]>).then(setSelections);
 }
 
+function mapFallbackSelections(values: (vscode.Selection | readonly [vscode.Selection])[]) {
+  const selections: vscode.Selection[] = [],
+        fallbackSelections: vscode.Selection[] = [];
+
+  for (const value of values) {
+    if (Array.isArray(value)) {
+      fallbackSelections.push(value[0]);
+    } else {
+      selections.push(value as vscode.Selection);
+    }
+  }
+
+  return selections.length === 0 ? fallbackSelections : selections;
+}
+
 export namespace updateSelections {
   /**
    * Sets the selections of the current editor after transforming them according
@@ -493,6 +508,48 @@ export namespace updateSelections {
     }
 
     return (selections as Thenable<vscode.Selection[]>).then(setSelections);
+  }
+
+  /**
+   * A possible return value for a function passed to `withFallback`. An
+   * array with a single selection corresponds to a fallback selection.
+   */
+  export type SelectionOrFallback = vscode.Selection | readonly [vscode.Selection] | undefined;
+
+  /**
+   * Same as `updateSelections`, but additionally lets `f` return a fallback
+   * selection. If no selection remains after the end of the update, fallback
+   * selections will be used instead.
+   */
+  export function withFallback<T extends SelectionOrFallback | Thenable<SelectionOrFallback>>(
+    f: mapSelections.Mapper<T>,
+  ): T extends Thenable<SelectionOrFallback> ? Thenable<vscode.Selection[]> : vscode.Selection[] {
+    const selections = mapSelections(f as any);
+
+    if (Array.isArray(selections)) {
+      return setSelections(mapFallbackSelections(selections)) as any;
+    }
+
+    return (selections as Thenable<(vscode.Selection | readonly [vscode.Selection])[]>)
+      .then((values) => setSelections(mapFallbackSelections(values))) as any;
+  }
+
+  export namespace withFallback {
+    /**
+     * Same as `withFallback`, but does not pass the text of each selection.
+     */
+    export function byIndex<T extends SelectionOrFallback | Thenable<SelectionOrFallback>>(
+      f: mapSelections.ByIndexMapper<T>,
+    ): T extends Thenable<SelectionOrFallback> ? Thenable<vscode.Selection[]> : vscode.Selection[] {
+      const selections = mapSelections.byIndex(f as any);
+
+      if (Array.isArray(selections)) {
+        return setSelections(mapFallbackSelections(selections)) as any;
+      }
+
+      return (selections as Thenable<(vscode.Selection | readonly [vscode.Selection])[]>)
+        .then((values) => setSelections(mapFallbackSelections(values))) as any;
+    }
   }
 }
 
@@ -819,6 +876,7 @@ export function mergeOverlappingSelections(
           if (aStart.isEqual(bStart)) {
             // B is included in A: avoid creating a new selection needlessly.
             ignoreSelections[j] = 1;
+            newSelections ??= selections.slice(0, i);
             continue;
           }
           aStart = bStart;
@@ -1094,6 +1152,9 @@ export namespace Selections {
    * to `selection.active` except when the selection is non-directional, in
    * which case this is whatever position is **furthest** from the given
    * direction (in order to include the current character in the search).
+   *
+   * A position other than active (typically, the `anchor`) can be specified to
+   * seek from that position.
    */
   export function seekFrom(
     selection: vscode.Selection,

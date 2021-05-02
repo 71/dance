@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Argument, InputOr } from ".";
-import { ArgumentError, assert, Context, Direction, keypress, moveTo, moveWhile, Pair, pair, Positions, prompt, Selections, Shift, surroundedBy, todo } from "../api";
+import { ArgumentError, assert, Context, Direction, keypress, Lines, moveTo, moveWhile, Pair, pair, Positions, prompt, Selections, Shift, surroundedBy, todo } from "../api";
 import { Range } from "../api/search/range";
 import { wordBoundary } from "../api/search/word";
 import { SelectionBehavior } from "../state/modes";
@@ -189,7 +189,7 @@ export function word(
 ) {
   const charset = ws ? CharSet.NonBlank : CharSet.Word;
 
-  Selections.update.byIndex((_i, selection) => {
+  Selections.update.withFallback.byIndex((_i, selection) => {
     const anchor = Selections.seekFrom(selection, direction, selection.anchor, _);
     let active = Selections.seekFrom(selection, direction, selection.active, _);
 
@@ -202,10 +202,18 @@ export function word(
           // here.
           // Instead of overflowing, put anchor at document start and
           // active always on the first character on the second line.
-          return new vscode.Selection(Positions.lineStart(0), Positions.lineStart(1));
+          const end = _.selectionBehavior === SelectionBehavior.Caret
+            ? Positions.lineStart(1)
+            : (Lines.isEmpty(1) ? Positions.lineStart(2) : Positions.at(1, 1));
+
+          return new vscode.Selection(Positions.lineStart(0), end);
         }
 
-        return undefined;
+        if (shift === Shift.Extend) {
+          return [new vscode.Selection(anchor, selection.active)];
+        }
+
+        return [selection];
       }
 
       selection = mapped;

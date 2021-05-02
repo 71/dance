@@ -328,7 +328,7 @@ export class ExpectedDocument {
     assert.strictEqual(
       document.getText(),
       this.text,
-      message + `Document text is not as expected.`,
+      message + (message ? "\n" : "") + `Document text is not as expected.`,
     );
 
     const expectedSelections = this.selections.slice() as (vscode.Selection | undefined)[];
@@ -392,12 +392,12 @@ export class ExpectedDocument {
     // Then, we report selections that are expected and not found, and those
     // that were found but were not expected.
     const sortedExpectedSelections = expectedSelections
-      .filter((x) => x !== undefined)
       .map((x, i) => [i, x!] as const)
+      .filter((x) => x[1] !== undefined)
       .sort((a, b) => a[1].start.compareTo(b[1].start));
     const sortedActualSelections = actualSelections
-      .filter((x) => x !== undefined)
       .map((x, i) => [i, x!] as const)
+      .filter((x) => x[1] !== undefined)
       .sort((a, b) => a[1].start.compareTo(b[1].start));
 
     for (let i = sortedActualSelections.length; i < sortedExpectedSelections.length; i++) {
@@ -405,9 +405,8 @@ export class ExpectedDocument {
 
       expectedText.push(
         `Missing selection #${index}:\n${
-          stringifySelection(document, expectedSelection).replace(/^/gm, "  ")}`);
-      actualText.push(
-        `Missing selection #${index}:\n${document.getText().replace(/^/gm, "  ")}`);
+          stringifySelection(document, expectedSelection).replace(/^(?=.)/gm, "  ")}`);
+      actualText.push(`Missing selection #${index}:\n`);
     }
 
     for (let i = sortedExpectedSelections.length; i < sortedActualSelections.length; i++) {
@@ -415,9 +414,8 @@ export class ExpectedDocument {
 
       actualText.push(
         `Unexpected selection #${index}:\n${
-          stringifySelection(document, actualSelection).replace(/^/gm, "  ")}`);
-      expectedText.push(
-        `Unexpected selection #${index}:\n${document.getText().replace(/^/gm, "  ")}`);
+          stringifySelection(document, actualSelection).replace(/^(?=.)/gm, "  ")}`);
+      expectedText.push(`Unexpected selection #${index}:\n`);
     }
 
     // Finally, we diff selections that exist in both arrays.
