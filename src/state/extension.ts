@@ -294,42 +294,35 @@ export class Extension implements vscode.Disposable {
   }
 
   /**
-   * Displays a dismissable error message.
-   *
-   * Note: since VS Code [does not support](
-   * https://github.com/Microsoft/vscode/issues/2732) dismissable notifications,
-   * we show a progress notification, which can be dismissed. Hopefully we'll be
-   * able to show actual error messages in the future, but in the meantime this
-   * is better than:
-   * - Showing dismissable messages in the status bar, which is not prominent at
-   *   all.
-   * - Showing non-dismissable error messages that accumulate over time unless
-   *   the user interacts with them.
+   * Displays a dismissable error message in the status bar.
    */
   public showDismissableErrorMessage(message: string) {
-    this._dismissErrorMessage?.();
+    // Log the error so that long error messages and stacktraces can still be
+    // accessed by the user.
+    console.error(message);
 
-    vscode.window.withProgress({
-      title: "Error",
-      location: vscode.ProgressLocation.Notification,
-    }, (progress) => {
-      progress.report({ message, increment: 100 });
+    if (message.length > 80) {
+      message = message.slice(0, 77) + "...";
+    }
 
-      return new Promise<void>((resolve) => {
-        const dispose = () => {
-          this._dismissErrorMessage = undefined;
-          subscriptions.splice(0).forEach((d) => d.dispose());
-          resolve();
-        };
+    if (this.statusBar.errorSegment.content !== undefined) {
+      return this.statusBar.errorSegment.setContent(message);
+    }
 
-        const subscriptions = [
-          vscode.window.onDidChangeActiveTextEditor(dispose),
-          vscode.window.onDidChangeTextEditorSelection(dispose),
-        ];
+    this.statusBar.errorSegment.setContent(message);
 
-        this._dismissErrorMessage = dispose;
-      });
-    });
+    const dispose = () => {
+      this.statusBar.errorSegment.setContent();
+      this._dismissErrorMessage = undefined;
+      subscriptions.splice(0).forEach((d) => d.dispose());
+    };
+
+    const subscriptions = [
+      vscode.window.onDidChangeActiveTextEditor(dispose),
+      vscode.window.onDidChangeTextEditorSelection(dispose),
+    ];
+
+    this._dismissErrorMessage = dispose;
   }
 
   /**
@@ -341,6 +334,8 @@ export class Extension implements vscode.Disposable {
     errorValue: () => T,
     errorMessage: (error: any) => T extends Thenable<any> ? never : string,
   ) {
+    this.dismissErrorMessage();
+
     try {
       return f();
     } catch (e) {
@@ -361,6 +356,8 @@ export class Extension implements vscode.Disposable {
     errorValue: () => T,
     errorMessage: (error: any) => string,
   ) {
+    this.dismissErrorMessage();
+
     try {
       return await f();
     } catch (e) {

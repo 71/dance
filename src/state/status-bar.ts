@@ -10,6 +10,7 @@ export class StatusBar implements vscode.Disposable {
   public readonly recordingSegment: StatusBar.Segment;
   public readonly countSegment: StatusBar.Segment;
   public readonly registerSegment: StatusBar.Segment;
+  public readonly errorSegment: StatusBar.Segment;
 
   public constructor() {
     this.activeModeSegment = this.addSegment("Dance - Set mode", "zap", "dance.modes.set");
@@ -25,6 +26,13 @@ export class StatusBar implements vscode.Disposable {
       "clone",
       { command: "dance.selectRegister", arguments: [{ input: "" }], title: "" },
     );
+    this.errorSegment = this.addSegment(
+      "Dance - Dismiss error",
+      "error",
+      "dance.ignore",
+    );
+    this.errorSegment.statusBarItem.backgroundColor =
+      new vscode.ThemeColor("statusBarItem.errorBackground");
   }
 
   public dispose() {
@@ -48,6 +56,10 @@ export namespace StatusBar {
 
     public get content() {
       return this._content;
+    }
+
+    public get statusBarItem() {
+      return this._statusBarItem;
     }
 
     public constructor(
