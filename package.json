@@ -52,7 +52,7 @@
     "Other"
   ],
   "readme": "README.md",
-  "icon": "assets/dance.svg",
+  "icon": "assets/dance.png",
   "activationEvents": [
     "*"
   ],
