@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { Direction, Shift } from ".";
 import { Context } from "./context";
 import { NotASelectionError } from "./errors";
@@ -1081,6 +1082,27 @@ export namespace Selections {
   }
 
   /**
+   * Returns the end position of the given selection. If the selection ends at
+   * the first character of a line and is not empty, this is equal to the
+   * position at the end of the previous line. Otherwise, this is `end`.
+   */
+  export function endPosition(
+    selection: vscode.Selection | vscode.Range,
+    document?: vscode.TextDocument,
+  ) {
+    const line = endLine(selection);
+
+    if (line !== selection.end.line) {
+      return new vscode.Position(
+        line,
+        (document ?? Context.current.document).lineAt(line).text.length,
+      );
+    }
+
+    return selection.end;
+  }
+
+  /**
    * Returns the line of the active position of the given selection. If the
    * selection faces forward (the active position is the end of the selection),
    * returns `endLine(selection)`. Otherwise, returns `active.line`.
@@ -1104,6 +1126,17 @@ export namespace Selections {
     }
 
     return endCharacter(selection, document);
+  }
+
+  /**
+   * Returns the position of the active position of the given selection.
+   */
+  export function activePosition(selection: vscode.Selection, document?: vscode.TextDocument) {
+    if (selection.isReversed) {
+      return selection.active;
+    }
+
+    return endPosition(selection, document);
   }
 
   /**

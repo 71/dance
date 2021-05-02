@@ -410,11 +410,21 @@ export async function object(
 
     if (where === "start") {
       Selections.update.byIndex((_i, selection, document) =>
-        Selections.shift(selection, f.start(selection.active, inner, document), shift, _),
+        Selections.shift(
+          selection,
+          f.start(Selections.activePosition(selection, _.document), inner, document),
+          shift,
+          _,
+        ),
       );
     } else if (where === "end") {
       Selections.update.byIndex((_i, selection, document) =>
-        Selections.shift(selection, f.end(selection.active, inner, document), shift, _),
+        Selections.shift(
+          selection,
+          f.end(Selections.activePosition(selection, _.document), inner, document),
+          shift,
+          _,
+        ),
       );
     } else {
       Selections.update.byIndex((_, selection, document) => f(selection.active, inner, document));

@@ -79,7 +79,7 @@ An outer sentence also contains the trailing blank characters (but never line
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
 breaks) like this.       <== The white spaces before this sentence belongs to
 ^^^^^^^^^^^^^^^^^^ 2     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
-the outer previous sentence.|{4}{5}
+the outer previous sentence.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
                             ^ 5
    <- White spaces here and the line break before them belongs to this sentence,
@@ -375,8 +375,8 @@ I'm a sentence terminated by two line breaks plus one more
 - .seek.object { input: $object, where: "start" }
 
 ```
-I'm a sentence term{0}inated by two line breaks plus one more
-|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
+I'm a sentence terminated by two line breaks plus one more
+|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
 ^ 1
 

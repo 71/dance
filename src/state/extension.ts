@@ -281,6 +281,57 @@ export class Extension implements vscode.Disposable {
   // ==  ERRORS  =================================================================================
   // =============================================================================================
 
+  private _dismissErrorMessage?: () => void;
+
+  /**
+   * Dismisses a currently shown error message, if any.
+   */
+  public dismissErrorMessage() {
+    if (this._dismissErrorMessage !== undefined) {
+      this._dismissErrorMessage();
+      this._dismissErrorMessage = undefined;
+    }
+  }
+
+  /**
+   * Displays a dismissable error message.
+   *
+   * Note: since VS Code [does not support](
+   * https://github.com/Microsoft/vscode/issues/2732) dismissable notifications,
+   * we show a progress notification, which can be dismissed. Hopefully we'll be
+   * able to show actual error messages in the future, but in the meantime this
+   * is better than:
+   * - Showing dismissable messages in the status bar, which is not prominent at
+   *   all.
+   * - Showing non-dismissable error messages that accumulate over time unless
+   *   the user interacts with them.
+   */
+  public showDismissableErrorMessage(message: string) {
+    this._dismissErrorMessage?.();
+
+    vscode.window.withProgress({
+      title: "Error",
+      location: vscode.ProgressLocation.Notification,
+    }, (progress) => {
+      progress.report({ message, increment: 100 });
+
+      return new Promise<void>((resolve) => {
+        const dispose = () => {
+          this._dismissErrorMessage = undefined;
+          subscriptions.splice(0).forEach((d) => d.dispose());
+          resolve();
+        };
+
+        const subscriptions = [
+          vscode.window.onDidChangeActiveTextEditor(dispose),
+          vscode.window.onDidChangeTextEditorSelection(dispose),
+        ];
+
+        this._dismissErrorMessage = dispose;
+      });
+    });
+  }
+
   /**
    * Runs the given function, displaying an error message and returning the
    * specified value if it throws an exception during its execution.
@@ -294,7 +345,7 @@ export class Extension implements vscode.Disposable {
       return f();
     } catch (e) {
       if (!(e instanceof CancellationError)) {
-        vscode.window.showErrorMessage(errorMessage(e));
+        this.showDismissableErrorMessage(errorMessage(e));
       }
 
       return errorValue();
@@ -314,7 +365,7 @@ export class Extension implements vscode.Disposable {
       return await f();
     } catch (e) {
       if (!(e instanceof CancellationError)) {
-        vscode.window.showErrorMessage(errorMessage(e));
+        this.showDismissableErrorMessage(errorMessage(e));
       }
 
       return errorValue();
