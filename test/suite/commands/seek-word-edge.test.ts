@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { addDepthToCommandTests, ExpectedDocument } from "../utils";
+import { ExpectedDocument, groupTestsByParentName } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
@@ -20,619 +20,295 @@ suite("./test/suite/commands/seek-word-edge.md", function () {
     await executeCommand("workbench.action.closeActiveEditor");
   });
 
-  // Each test sets up using its previous document, and notifies its
-  // dependents that it is done by writing its document to `documents`.
-  // This ensures that tests are executed in the right order, and that we skip
-  // tests whose dependencies failed.
-  const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
-        documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-            |{0}th{0}e quick brown fox
-          `)),
-          "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-            foo bar{0}
-            |{0}baz
-          `)),
-          "3": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-            |{0}the {0}qu|{1}ic{1}k brown fox
-          `)),
-          "4": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-
-            |{0}there{0} is a blank line before me
-          `)),
-          "5": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-
-
-            |{0}there{0} are two blank lines before me
-          `)),
-
-          "1-word-start-backward": new Promise((resolve) => notifyDependents["1-word-start-backward"] = resolve),
-          "1-word-start-4": new Promise((resolve) => notifyDependents["1-word-start-4"] = resolve),
-          "1-word-start-4-word-start": new Promise((resolve) => notifyDependents["1-word-start-4-word-start"] = resolve),
-          "1-word-start-4-word-start-x": new Promise((resolve) => notifyDependents["1-word-start-4-word-start-x"] = resolve),
-          "1-word-start-4-word-start-backward-4": new Promise((resolve) => notifyDependents["1-word-start-4-word-start-backward-4"] = resolve),
-          "1-word-start-4-word-start-backward-5": new Promise((resolve) => notifyDependents["1-word-start-4-word-start-backward-5"] = resolve),
-          "1-word-start-5": new Promise((resolve) => notifyDependents["1-word-start-5"] = resolve),
-          "2-word-start-backward": new Promise((resolve) => notifyDependents["2-word-start-backward"] = resolve),
-          "3-word-start-backward": new Promise((resolve) => notifyDependents["3-word-start-backward"] = resolve),
-          "3-word-start-backward-9": new Promise((resolve) => notifyDependents["3-word-start-backward-9"] = resolve),
-          "3-word-end-4": new Promise((resolve) => notifyDependents["3-word-end-4"] = resolve),
-          "3-word-end-5": new Promise((resolve) => notifyDependents["3-word-end-5"] = resolve),
-          "4-word-start-backward": new Promise((resolve) => notifyDependents["4-word-start-backward"] = resolve),
-          "4-word-start-backward-x": new Promise((resolve) => notifyDependents["4-word-start-backward-x"] = resolve),
-          "4-word-start-backward-4": new Promise((resolve) => notifyDependents["4-word-start-backward-4"] = resolve),
-          "5-word-start-backward": new Promise((resolve) => notifyDependents["5-word-start-backward"] = resolve),
-          "5-word-start-backward-x": new Promise((resolve) => notifyDependents["5-word-start-backward-x"] = resolve),
-          "5-word-start-backward-9": new Promise((resolve) => notifyDependents["5-word-start-backward-9"] = resolve),
-        };
-
   test("1 > word-start-backward", async function () {
-    const beforeDocument = await documents["1"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["1-word-start-backward"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
       |{0}th{0}e quick brown fox
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward");
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:7:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-word-start-backward"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-word-start-backward"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:7:1", 6, String.raw`
+      |{0}th{0}e quick brown fox
+    `);
   });
 
   test("1 > word-start-4", async function () {
-    const beforeDocument = await documents["1"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["1-word-start-4"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      the quick brown {0}fox|{0}
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      |{0}th{0}e quick brown fox
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word", { count: 4 });
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word", { count: 4 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:18:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-word-start-4"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-word-start-4"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:18:1", 6, String.raw`
+      the quick brown {0}fox|{0}
+    `);
   });
 
   test("1 > word-start-4 > word-start", async function () {
-    const beforeDocument = await documents["1-word-start-4"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["1-word-start-4-word-start"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
       the quick brown {0}fox|{0}
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word");
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:27:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-word-start-4-word-start"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-word-start-4-word-start"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:27:1", 6, String.raw`
+      the quick brown {0}fox|{0}
+    `);
   });
 
   test("1 > word-start-4 > word-start > x", async function () {
-    const beforeDocument = await documents["1-word-start-4-word-start"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["1-word-start-4-word-start-x"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
       the quick brown {0}fox|{0}
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word");
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:38:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-word-start-4-word-start-x"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-word-start-4-word-start-x"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:38:1", 6, String.raw`
+      the quick brown {0}fox|{0}
+    `);
   });
 
   test("1 > word-start-4 > word-start-backward-4", async function () {
-    const beforeDocument = await documents["1-word-start-4"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["1-word-start-4-word-start-backward-4"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      |{0}the {0}quick brown fox
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward", { count: 4 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:49:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-word-start-4-word-start-backward-4"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-word-start-4-word-start-backward-4"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("1 > word-start-4 > word-start-backward-5", async function () {
-    const beforeDocument = await documents["1-word-start-4"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["1-word-start-4-word-start-backward-5"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      |{0}the {0}quick brown fox
-    `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward", { count: 5 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:58:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-word-start-4-word-start-backward-5"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-word-start-4-word-start-backward-5"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("1 > word-start-5", async function () {
-    const beforeDocument = await documents["1"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["1-word-start-5"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
       the quick brown {0}fox|{0}
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward", { count: 4 });
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word", { count: 5 });
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:49:1", 6, String.raw`
+      |{0}the {0}quick brown fox
+    `);
+  });
 
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:69:1");
+  test("1 > word-start-4 > word-start-backward-5", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      the quick brown {0}fox|{0}
+    `);
 
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-word-start-5"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-word-start-5"](undefined);
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward", { count: 5 });
 
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:58:1", 6, String.raw`
+      |{0}the {0}quick brown fox
+    `);
+  });
+
+  test("1 > word-start-5", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      |{0}th{0}e quick brown fox
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek.word", { count: 5 });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:69:1", 6, String.raw`
+      the quick brown {0}fox|{0}
+    `);
   });
 
   test("2 > word-start-backward", async function () {
-    const beforeDocument = await documents["2"];
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo bar{0}
+      |{0}baz
+    `);
 
-    if (beforeDocument === undefined) {
-      notifyDependents["2-word-start-backward"](undefined);
-      this.skip();
-    }
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward");
 
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:87:1", 6, String.raw`
       foo |{0}bar{0}
       baz
     `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:87:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["2-word-start-backward"](afterDocument);
-    } catch (e) {
-      notifyDependents["2-word-start-backward"](undefined);
-
-      throw e;
-    }
   });
 
   test("3 > word-start-backward", async function () {
-    const beforeDocument = await documents["3"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["3-word-start-backward"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      the |{0}qui{0}ck brown fox
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      |{0}the {0}qu|{1}ic{1}k brown fox
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward");
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:103:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["3-word-start-backward"](afterDocument);
-    } catch (e) {
-      notifyDependents["3-word-start-backward"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:103:1", 6, String.raw`
+      the |{0}qui{0}ck brown fox
+    `);
   });
 
   test("3 > word-start-backward-9", async function () {
-    const beforeDocument = await documents["3"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["3-word-start-backward-9"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      |{0}|{1}the {0}{1}quick brown fox
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      |{0}the {0}qu|{1}ic{1}k brown fox
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward", { count: 9 });
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward", { count: 9 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:114:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["3-word-start-backward-9"](afterDocument);
-    } catch (e) {
-      notifyDependents["3-word-start-backward-9"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:114:1", 6, String.raw`
+      |{0}|{1}the {0}{1}quick brown fox
+    `);
   });
 
   test("3 > word-end-4", async function () {
-    const beforeDocument = await documents["3"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["3-word-end-4"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      the quick brown{0} fox|{0}
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      |{0}the {0}qu|{1}ic{1}k brown fox
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.wordEnd", { count: 4 });
 
-      // Perform all operations.
-      await executeCommand("dance.seek.wordEnd", { count: 4 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:126:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["3-word-end-4"](afterDocument);
-    } catch (e) {
-      notifyDependents["3-word-end-4"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:126:1", 6, String.raw`
+      the quick brown{0} fox|{0}
+    `);
   });
 
   test("3 > word-end-5", async function () {
-    const beforeDocument = await documents["3"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["3-word-end-5"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      the quick brown{0}{1} fox|{0}|{1}
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      |{0}the {0}qu|{1}ic{1}k brown fox
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.wordEnd", { count: 5 });
 
-      // Perform all operations.
-      await executeCommand("dance.seek.wordEnd", { count: 5 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:137:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["3-word-end-5"](afterDocument);
-    } catch (e) {
-      notifyDependents["3-word-end-5"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:137:1", 6, String.raw`
+      the quick brown{0}{1} fox|{0}|{1}
+    `);
   });
 
   test("4 > word-start-backward", async function () {
-    const beforeDocument = await documents["4"];
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
 
-    if (beforeDocument === undefined) {
-      notifyDependents["4-word-start-backward"](undefined);
-      this.skip();
-    }
+      |{0}there{0} is a blank line before me
+    `);
 
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:156:1", 6, String.raw`
       {0}
       t|{0}here is a blank line before me
     `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:156:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["4-word-start-backward"](afterDocument);
-    } catch (e) {
-      notifyDependents["4-word-start-backward"](undefined);
-
-      throw e;
-    }
   });
 
   test("4 > word-start-backward > x", async function () {
-    const beforeDocument = await documents["4-word-start-backward"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["4-word-start-backward-x"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
       {0}
       t|{0}here is a blank line before me
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward");
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:169:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["4-word-start-backward-x"](afterDocument);
-    } catch (e) {
-      notifyDependents["4-word-start-backward-x"](undefined);
-
-      throw e;
-    }
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:169:1", 6, String.raw`
+      {0}
+      t|{0}here is a blank line before me
+    `);
   });
 
   test("4 > word-start-backward-4", async function () {
-    const beforeDocument = await documents["4"];
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
 
-    if (beforeDocument === undefined) {
-      notifyDependents["4-word-start-backward-4"](undefined);
-      this.skip();
-    }
+      |{0}there{0} is a blank line before me
+    `);
 
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward", { count: 9 });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:181:1", 6, String.raw`
       {0}
       t|{0}here is a blank line before me
     `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward", { count: 9 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:181:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["4-word-start-backward-4"](afterDocument);
-    } catch (e) {
-      notifyDependents["4-word-start-backward-4"](undefined);
-
-      throw e;
-    }
   });
 
   test("5 > word-start-backward", async function () {
-    const beforeDocument = await documents["5"];
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
 
-    if (beforeDocument === undefined) {
-      notifyDependents["5-word-start-backward"](undefined);
-      this.skip();
-    }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+      |{0}there{0} are two blank lines before me
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:201:1", 6, String.raw`
       {0}
 
       |{0}there are two blank lines before me
     `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:201:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["5-word-start-backward"](afterDocument);
-    } catch (e) {
-      notifyDependents["5-word-start-backward"](undefined);
-
-      throw e;
-    }
   });
 
   test("5 > word-start-backward > x", async function () {
-    const beforeDocument = await documents["5-word-start-backward"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["5-word-start-backward-x"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
       {0}
 
       |{0}there are two blank lines before me
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward");
 
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward");
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:215:1", 6, String.raw`
+      {0}
 
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:215:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["5-word-start-backward-x"](afterDocument);
-    } catch (e) {
-      notifyDependents["5-word-start-backward-x"](undefined);
-
-      throw e;
-    }
+      |{0}there are two blank lines before me
+    `);
   });
 
   test("5 > word-start-backward-9", async function () {
-    const beforeDocument = await documents["5"];
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
 
-    if (beforeDocument === undefined) {
-      notifyDependents["5-word-start-backward-9"](undefined);
-      this.skip();
-    }
 
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+      |{0}there{0} are two blank lines before me
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek.word.backward", { count: 9 });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:228:1", 6, String.raw`
       {0}
 
       |{0}there are two blank lines before me
     `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.seek.word.backward", { count: 9 });
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-edge.md:228:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["5-word-start-backward-9"](afterDocument);
-    } catch (e) {
-      notifyDependents["5-word-start-backward-9"](undefined);
-
-      throw e;
-    }
   });
 
-  addDepthToCommandTests(this);
+  groupTestsByParentName(this);
 });

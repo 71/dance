@@ -12,12 +12,12 @@ export async function build() {
   for (const file of fileNames.filter((f) => f.endsWith(".md"))) {
     const filePath = path.resolve(commandsDir, file),
           contents = await fs.readFile(filePath, "utf-8"),
-          { setups, tests } = parseMarkdownTests(contents);
+          { tests } = parseMarkdownTests(contents);
 
     await fs.writeFile(filePath.replace(/\.md$/, ".test.ts"), unindent(6, `\
       import * as vscode from "vscode";
 
-      import { addDepthToCommandTests, ExpectedDocument } from "../utils";
+      import { ExpectedDocument, groupTestsByParentName } from "../utils";
 
       const executeCommand = vscode.commands.executeCommand;
 
@@ -36,55 +36,23 @@ export async function build() {
         this.afterAll(async () => {
           await executeCommand("workbench.action.closeActiveEditor");
         });
-
-        // Each test sets up using its previous document, and notifies its
-        // dependents that it is done by writing its document to \`documents\`.
-        // This ensures that tests are executed in the right order, and that we skip
-        // tests whose dependencies failed.
-        const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
-              documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-                ${setups.map(({ title, code }) =>
-                  `"${title}": Promise.resolve(${stringifyExpectedDocument(code, 18, 12)}),`,
-                ).join("\n" + " ".repeat(16))}
-
-                ${tests.map(({ title }) =>
-                  `"${title}": new Promise((resolve) => notifyDependents["${title}"] = resolve),`,
-                ).join("\n" + " ".repeat(16))}
-              };
         ${tests.map((test) => {
           return unindent(4, `
             test("${test.titleParts.join(" > ")}", async function () {
-              const beforeDocument = await documents["${test.comesAfter.title}"];
+              // Set-up document to be in expected initial state.
+              await ExpectedDocument.apply(editor, ${replaceInTest(
+                test.comesAfter, stringifyExpectedDocument(test.comesAfter.code, 16, 6))});
 
-              if (beforeDocument === undefined) {
-                notifyDependents["${test.title}"](undefined);
-                this.skip();
-              }
-
-              const afterDocument = ${
-                replaceInTest(test, stringifyExpectedDocument(test.code, 16, 6))};
-
-              try {
-                // Set-up document to be in expected initial state.
-                await beforeDocument.apply(editor);
-
-                // Perform all operations.${"\n"
-                  + stringifyOperations(test).replace(/^/gm, " ".repeat(16))}
-                // Ensure document is as expected.
-                afterDocument.assertEquals(editor, "./test/suite/commands/${
-                  path.basename(file)}:${test.line + 1}:1");
-
-                // Test passed, allow dependent tests to run.
-                notifyDependents["${test.title}"](afterDocument);
-              } catch (e) {
-                notifyDependents["${test.title}"](undefined);
-
-                throw e;
-              }
+              // Perform all operations.${"\n"
+                + stringifyOperations(test).replace(/^/gm, " ".repeat(14))}
+              // Ensure document is as expected.
+              ExpectedDocument.assertEquals(editor, "./test/suite/commands/${
+                path.basename(file)}:${test.line + 1}:1", ${replaceInTest(
+                test, stringifyExpectedDocument(test.code, 16, 6))});
             });`);
         }).join("\n")}
 
-        addDepthToCommandTests(this);
+        groupTestsByParentName(this);
       });
     `));
   }

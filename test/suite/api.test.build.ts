@@ -29,6 +29,8 @@ export async function build(builder: Builder) {
 
     const examplesPerFunction = new Map<string, number>();
 
+    // Note: we use the name starting with ./ below to make sure the filename is
+    // clickeable.
     return unindent(4, `
       suite(${JSON.stringify(module.path.replace(/^dance/, "."))}, function () {
         ${examples.map((example) => {
@@ -51,7 +53,8 @@ export async function build(builder: Builder) {
             const code = example[name];
 
             if (code !== undefined) {
-              decls.push(`${name} = ${stringifyExpectedDocument(code, 22, 14)}`);
+              decls.push(`${name} = ExpectedDocument.parseIndented(${
+                stringifyExpectedDocument(code, 22, 14)})`);
             }
           }
 

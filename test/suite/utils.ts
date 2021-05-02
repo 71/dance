@@ -59,24 +59,16 @@ export function resolve(subpath: string) {
 /**
  * Add depth to command-like suites for nicer reporting.
  */
-export function addDepthToCommandTests(toplevel: Mocha.Suite) {
+export function groupTestsByParentName(toplevel: Mocha.Suite) {
   for (const test of toplevel.tests) {
     const parts = test.title.split(" > "),
-          testTitle = parts.pop()!;
-    let suite = toplevel;
-
-    for (const part of parts) {
-      let partSuite = suite.suites.find((s) => s.title === part);
-
-      if (partSuite === undefined) {
-        partSuite = Mocha.Suite.create(suite, part);
-      }
-
-      suite = partSuite;
-    }
+          testName = parts.pop()!,
+          suiteName = parts.join(" "),
+          suite = toplevel.suites.find((s) => s.title === suiteName)
+            ?? Mocha.Suite.create(toplevel, suiteName);
 
     suite.addTest(test);
-    test.title = "→ " + testTitle;
+    test.title = testName;
   }
 
   toplevel.tests.splice(0);
@@ -246,6 +238,19 @@ export class ExpectedDocument {
     public readonly text: string,
     public readonly selections: vscode.Selection[] = [],
   ) {}
+
+  public static apply(editor: vscode.TextEditor, indent: number, text: string) {
+    return this.parseIndented(indent, text).apply(editor);
+  }
+
+  public static assertEquals(
+    editor: vscode.TextEditor,
+    message: string | undefined,
+    indent: number,
+    text: string,
+  ) {
+    return this.parseIndented(indent, text).assertEquals(editor, message);
+  }
 
   public static parseIndented(indent: number, text: string) {
     text = text.slice(1);  // Remove first line break.

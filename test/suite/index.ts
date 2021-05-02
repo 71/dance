@@ -38,14 +38,7 @@ export async function run(testsRoot: string) {
                 match = /^#+ (.+)$/.exec(line);
 
           if (match !== null) {
-            const parts = match[1].split(" "),
-                  dependencies = [parts[0] + "$"];
-
-            for (let i = 1; i < parts.length; i++) {
-              dependencies.push(parts.slice(0, i).join(" ") + " → " + parts[i] + "$");
-            }
-
-            mocha.grep(new RegExp(dependencies.join("|")));
+            mocha.grep(match[1] + "$");
             break;
           }
         }

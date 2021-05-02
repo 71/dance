@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { addDepthToCommandTests, ExpectedDocument } from "../utils";
+import { ExpectedDocument, groupTestsByParentName } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
@@ -20,164 +20,92 @@ suite("./test/suite/commands/edit-paste.md", function () {
     await executeCommand("workbench.action.closeActiveEditor");
   });
 
-  // Each test sets up using its previous document, and notifies its
-  // dependents that it is done by writing its document to `documents`.
-  // This ensures that tests are executed in the right order, and that we skip
-  // tests whose dependencies failed.
-  const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
-        documents: Record<string, Promise<ExpectedDocument | undefined>> = {
-          "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-            foo
-            ^^^^ 0
-            bar
-          `)),
-
-          "1-paste": new Promise((resolve) => notifyDependents["1-paste"] = resolve),
-          "1-paste-x": new Promise((resolve) => notifyDependents["1-paste-x"] = resolve),
-          "1-move-then-paste": new Promise((resolve) => notifyDependents["1-move-then-paste"] = resolve),
-          "1-move-then-paste-move-2-then-paste": new Promise((resolve) => notifyDependents["1-move-then-paste-move-2-then-paste"] = resolve),
-        };
-
   test("1 > paste", async function () {
-    const beforeDocument = await documents["1"];
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      ^^^^ 0
+      bar
+    `);
 
-    if (beforeDocument === undefined) {
-      notifyDependents["1-paste"](undefined);
-      this.skip();
-    }
+    // Perform all operations.
+    await executeCommand("dance.selections.saveText");
+    await executeCommand("dance.edit.paste.after");
 
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:9:1", 6, String.raw`
       foo
       ^^^^ 0
       foo
       bar
     `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.selections.saveText");
-      await executeCommand("dance.edit.paste.after");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:9:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-paste"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-paste"](undefined);
-
-      throw e;
-    }
   });
 
   test("1 > paste > x", async function () {
-    const beforeDocument = await documents["1-paste"];
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      ^^^^ 0
+      foo
+      bar
+    `);
 
-    if (beforeDocument === undefined) {
-      notifyDependents["1-paste-x"](undefined);
-      this.skip();
-    }
+    // Perform all operations.
+    await executeCommand("dance.edit.paste.after");
 
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:22:1", 6, String.raw`
       foo
       ^^^^ 0
       foo
       foo
       bar
     `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.edit.paste.after");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:22:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-paste-x"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-paste-x"](undefined);
-
-      throw e;
-    }
   });
 
   test("1 > move-then-paste", async function () {
-    const beforeDocument = await documents["1"];
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      ^^^^ 0
+      bar
+    `);
 
-    if (beforeDocument === undefined) {
-      notifyDependents["1-move-then-paste"](undefined);
-      this.skip();
-    }
+    // Perform all operations.
+    await executeCommand("dance.select.left.jump");
+    await executeCommand("dance.edit.paste.after");
 
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:35:1", 6, String.raw`
+      foo
+         | 0
+      foo
+      bar
+    `);
+  });
+
+  test("1 > move-then-paste > move-2-then-paste", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
       foo
          | 0
       foo
       bar
     `);
 
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
+    // Perform all operations.
+    await executeCommand("dance.select.left.extend", { count: 2 });
+    await executeCommand("dance.selections.saveText");
+    await executeCommand("dance.edit.paste.after");
 
-      // Perform all operations.
-      await executeCommand("dance.select.left.jump");
-      await executeCommand("dance.edit.paste.after");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:35:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-move-then-paste"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-move-then-paste"](undefined);
-
-      throw e;
-    }
-  });
-
-  test("1 > move-then-paste > move-2-then-paste", async function () {
-    const beforeDocument = await documents["1-move-then-paste"];
-
-    if (beforeDocument === undefined) {
-      notifyDependents["1-move-then-paste-move-2-then-paste"](undefined);
-      this.skip();
-    }
-
-    const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:48:1", 6, String.raw`
       foooo
        ^^ 0
       foo
       bar
     `);
-
-    try {
-      // Set-up document to be in expected initial state.
-      await beforeDocument.apply(editor);
-
-      // Perform all operations.
-      await executeCommand("dance.select.left.extend", { count: 2 });
-      await executeCommand("dance.selections.saveText");
-      await executeCommand("dance.edit.paste.after");
-
-      // Ensure document is as expected.
-      afterDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:48:1");
-
-      // Test passed, allow dependent tests to run.
-      notifyDependents["1-move-then-paste-move-2-then-paste"](afterDocument);
-    } catch (e) {
-      notifyDependents["1-move-then-paste-move-2-then-paste"](undefined);
-
-      throw e;
-    }
   });
 
-  addDepthToCommandTests(this);
+  groupTestsByParentName(this);
 });

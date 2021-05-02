@@ -294,7 +294,7 @@ a b c d
 
 ```
 a b c d
-   ^^ 0
+   ^ 0
 ```
 
 ## 6 word-start-backward

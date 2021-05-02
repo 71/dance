@@ -190,7 +190,7 @@ export function word(
   const charset = ws ? CharSet.NonBlank : CharSet.Word;
 
   Selections.update.byIndex((_i, selection) => {
-    const anchor = selection.anchor;
+    const anchor = Selections.seekFrom(selection, direction, selection.anchor, _);
     let active = Selections.seekFrom(selection, direction, selection.active, _);
 
     for (let i = 0; i < repetitions; i++) {

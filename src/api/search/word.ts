@@ -58,8 +58,6 @@ export function wordBoundary(
     }
 
     anchor = afterEmptyLines;
-  } else if (direction === Direction.Backward && active.character >= text.length) {
-    anchor = new vscode.Position(active.line, text.length - 1);
   } else {
     let shouldSkip: boolean;
 
@@ -71,6 +69,11 @@ export function wordBoundary(
             nextCharacterCategory = categorize(text.charCodeAt(col + direction), isBlank, isWord);
 
       shouldSkip = characterCategory !== nextCharacterCategory;
+
+      if (shouldSkip && stopAtEnd === (direction === Direction.Forward)
+          && (characterCategory === WordCategory.Blank)) {
+        shouldSkip = false;
+      }
     } else {
       // Ignore the character on the right of the caret.
       shouldSkip = direction === Direction.Backward;
@@ -89,7 +92,7 @@ export function wordBoundary(
     nextCol--;
   }
 
-  if (stopAtEnd) {
+  if (stopAtEnd === (direction === Direction.Forward)) {
     // Select the whitespace before word, if any.
     while (nextCol >= 0 && nextCol < curLineText.length
            && isBlank(curLineText.charCodeAt(nextCol))) {
@@ -107,7 +110,7 @@ export function wordBoundary(
     }
   }
 
-  if (!stopAtEnd) {
+  if (stopAtEnd === (direction === Direction.Backward)) {
     // Select the whitespace after word, if any.
     while (nextCol >= 0 && nextCol < curLineText.length
            && isBlank(curLineText.charCodeAt(nextCol))) {
