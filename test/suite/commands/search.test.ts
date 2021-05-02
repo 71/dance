@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("search.md", function () {
+suite("./test/suite/commands/search.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -73,7 +73,7 @@ suite("search.md", function () {
           "2-search-backward-extend-wrap": new Promise((resolve) => notifyDependents["2-search-backward-extend-wrap"] = resolve),
         };
 
-  test("transition easy > easy-search-b                           ", async function () {
+  test("easy > search-b", async function () {
     const beforeDocument = await documents["easy"];
 
     if (beforeDocument === undefined) {
@@ -94,7 +94,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "b" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:8:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["easy-search-b"](afterDocument);
@@ -105,7 +105,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search                                ", async function () {
+  test("1 > search", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -128,7 +128,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "brown" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:27:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search"](afterDocument);
@@ -139,7 +139,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-repeat                         ", async function () {
+  test("1 > search-repeat", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -162,7 +162,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "o", count: 2 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:39:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-repeat"](afterDocument);
@@ -173,7 +173,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-start                          ", async function () {
+  test("1 > search-start", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -196,7 +196,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "quick" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:51:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-start"](afterDocument);
@@ -207,7 +207,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-start-wrap                     ", async function () {
+  test("1 > search-start-wrap", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -230,7 +230,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "quick " });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:65:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-start-wrap"](afterDocument);
@@ -241,7 +241,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-wrap                           ", async function () {
+  test("1 > search-wrap", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -264,7 +264,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "Th" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:79:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-wrap"](afterDocument);
@@ -275,7 +275,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-not-found                      ", async function () {
+  test("1 > search-not-found", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -298,7 +298,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "pig" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:91:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-not-found"](afterDocument);
@@ -309,7 +309,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward                       ", async function () {
+  test("1 > search-backward", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -332,7 +332,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "Th", direction: -1 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:106:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward"](afterDocument);
@@ -343,7 +343,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward-wrap                  ", async function () {
+  test("1 > search-backward-wrap", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -366,7 +366,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "he", direction: -1 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:120:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward-wrap"](afterDocument);
@@ -377,7 +377,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward-wrap-other            ", async function () {
+  test("1 > search-backward-wrap-other", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -400,7 +400,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "he q", direction: -1 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:134:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward-wrap-other"](afterDocument);
@@ -411,7 +411,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward-not-found             ", async function () {
+  test("1 > search-backward-not-found", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -434,7 +434,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "pig", direction: -1 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:148:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward-not-found"](afterDocument);
@@ -445,7 +445,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-extend                         ", async function () {
+  test("1 > search-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -469,7 +469,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "quick", shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:163:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-extend"](afterDocument);
@@ -480,7 +480,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-extend-wrap                    ", async function () {
+  test("1 > search-extend-wrap", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -503,7 +503,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "T", shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:176:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-extend-wrap"](afterDocument);
@@ -514,7 +514,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward-extend                ", async function () {
+  test("1 > search-backward-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -537,7 +537,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "T", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:192:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward-extend"](afterDocument);
@@ -548,7 +548,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward-extend-character      ", async function () {
+  test("1 > search-backward-extend-character", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -573,7 +573,7 @@ suite("search.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:206:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward-extend-character"](afterDocument);
@@ -584,7 +584,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward-extend-other          ", async function () {
+  test("1 > search-backward-extend-other", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -607,7 +607,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "Th", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:222:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward-extend-other"](afterDocument);
@@ -618,7 +618,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward-extend-character-other", async function () {
+  test("1 > search-backward-extend-character-other", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -643,7 +643,7 @@ suite("search.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:236:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward-extend-character-other"](afterDocument);
@@ -654,7 +654,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 1    > 1-search-backward-extend-wrap           ", async function () {
+  test("1 > search-backward-extend-wrap", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -677,7 +677,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "lazy", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:252:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-backward-extend-wrap"](afterDocument);
@@ -688,7 +688,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search                                ", async function () {
+  test("2 > search", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -711,7 +711,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "o" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:281:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search"](afterDocument);
@@ -722,7 +722,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search-extend                         ", async function () {
+  test("2 > search-extend", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -745,7 +745,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "o", shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:295:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search-extend"](afterDocument);
@@ -756,7 +756,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search-extend-character               ", async function () {
+  test("2 > search-extend-character", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -781,7 +781,7 @@ suite("search.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:309:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search-extend-character"](afterDocument);
@@ -792,7 +792,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search-wrap                           ", async function () {
+  test("2 > search-wrap", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -815,7 +815,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "he" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:325:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search-wrap"](afterDocument);
@@ -826,7 +826,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search-extend-wrap                    ", async function () {
+  test("2 > search-extend-wrap", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -850,7 +850,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "he", shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:339:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search-extend-wrap"](afterDocument);
@@ -861,7 +861,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search-backward                       ", async function () {
+  test("2 > search-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -884,7 +884,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "u", direction: -1 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:355:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search-backward"](afterDocument);
@@ -895,7 +895,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search-backward-extend                ", async function () {
+  test("2 > search-backward-extend", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -919,7 +919,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "u", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:369:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search-backward-extend"](afterDocument);
@@ -930,7 +930,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search-backward-wrap                  ", async function () {
+  test("2 > search-backward-wrap", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -953,7 +953,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "o", direction: -1 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:384:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search-backward-wrap"](afterDocument);
@@ -964,7 +964,7 @@ suite("search.md", function () {
     }
   });
 
-  test("transition 2    > 2-search-backward-extend-wrap           ", async function () {
+  test("2 > search-backward-extend-wrap", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -988,7 +988,7 @@ suite("search.md", function () {
       await executeCommand("dance.search", { input: "o", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search.md:398:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-search-backward-extend-wrap"](afterDocument);
@@ -998,4 +998,6 @@ suite("search.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

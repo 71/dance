@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("seek-object-between.md", function () {
+suite("./test/suite/commands/seek-object-between.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -52,7 +52,7 @@ suite("seek-object-between.md", function () {
           "1-select-inner": new Promise((resolve) => notifyDependents["1-select-inner"] = resolve),
         };
 
-  test("transition 1 > 1-to-end               ", async function () {
+  test("1 > to-end", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -79,11 +79,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end" });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "end" });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:20:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-end"](afterDocument);
@@ -94,7 +94,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-end-extend        ", async function () {
+  test("1 > to-end-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -121,11 +121,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", shift: "extend" });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "end", shift: "extend" });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:42:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-end-extend"](afterDocument);
@@ -136,7 +136,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-end-inner         ", async function () {
+  test("1 > to-end-inner", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -163,11 +163,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", inner: true });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "end", inner: true });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:64:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-end-inner"](afterDocument);
@@ -178,7 +178,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-end-inner-extend  ", async function () {
+  test("1 > to-end-inner-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -205,11 +205,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", inner: true, shift: "extend" });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "end", inner: true, shift: "extend" });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:86:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-end-inner-extend"](afterDocument);
@@ -220,7 +220,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-start             ", async function () {
+  test("1 > to-start", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -247,11 +247,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start" });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "start" });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:108:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-start"](afterDocument);
@@ -262,7 +262,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-start-extend      ", async function () {
+  test("1 > to-start-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -289,11 +289,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", shift: "extend" });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "start", shift: "extend" });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:130:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-start-extend"](afterDocument);
@@ -304,7 +304,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-start-inner       ", async function () {
+  test("1 > to-start-inner", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -331,11 +331,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", inner: true });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "start", inner: true });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:152:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-start-inner"](afterDocument);
@@ -346,7 +346,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-start-inner-extend", async function () {
+  test("1 > to-start-inner-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -373,11 +373,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", inner: true, shift: "extend" });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "start", inner: true, shift: "extend" });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:174:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-start-inner-extend"](afterDocument);
@@ -388,7 +388,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-select               ", async function () {
+  test("1 > select", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -416,11 +416,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)" });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:196:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select"](afterDocument);
@@ -431,7 +431,7 @@ suite("seek-object-between.md", function () {
     }
   });
 
-  test("transition 1 > 1-select-inner         ", async function () {
+  test("1 > select-inner", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -459,11 +459,11 @@ suite("seek-object-between.md", function () {
 
       // Perform all operations.
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-      await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", inner: true });
+      await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, inner: true });
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:217:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-inner"](afterDocument);
@@ -473,4 +473,6 @@ suite("seek-object-between.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

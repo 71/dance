@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("seek.md", function () {
+suite("./test/suite/commands/seek.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -56,7 +56,7 @@ suite("seek.md", function () {
           "2-extend-to-b-backward": new Promise((resolve) => notifyDependents["2-extend-to-b-backward"] = resolve),
         };
 
-  test("transition 1                                                > 1-select-to-included                                                 ", async function () {
+  test("1 > select-to-included", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -77,7 +77,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "c", include: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:8:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-included"](afterDocument);
@@ -88,7 +88,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 1-select-to-included                             > 1-select-to-included-select-to                                       ", async function () {
+  test("1 > select-to-included > select-to", async function () {
     const beforeDocument = await documents["1-select-to-included"];
 
     if (beforeDocument === undefined) {
@@ -109,7 +109,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "c" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:18:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-included-select-to"](afterDocument);
@@ -120,7 +120,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 1-select-to-included                             > 1-select-to-included-select-to-character                             ", async function () {
+  test("1 > select-to-included > select-to-character", async function () {
     const beforeDocument = await documents["1-select-to-included"];
 
     if (beforeDocument === undefined) {
@@ -143,7 +143,7 @@ suite("seek.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:28:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-included-select-to-character"](afterDocument);
@@ -154,7 +154,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 1                                                > 1-select-to-c-2                                                      ", async function () {
+  test("1 > select-to-c-2", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -175,7 +175,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "c", count: 2 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:40:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-c-2"](afterDocument);
@@ -186,7 +186,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 1-select-to-c-2                                  > 1-select-to-c-2-select-to-c                                          ", async function () {
+  test("1 > select-to-c-2 > select-to-c", async function () {
     const beforeDocument = await documents["1-select-to-c-2"];
 
     if (beforeDocument === undefined) {
@@ -207,7 +207,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "c" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:50:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-c-2-select-to-c"](afterDocument);
@@ -218,7 +218,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 1-select-to-c-2-select-to-c                      > 1-select-to-c-2-select-to-c-select-to-b-backward                     ", async function () {
+  test("1 > select-to-c-2 > select-to-c > select-to-b-backward", async function () {
     const beforeDocument = await documents["1-select-to-c-2-select-to-c"];
 
     if (beforeDocument === undefined) {
@@ -239,7 +239,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "b", direction: -1 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:60:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward"](afterDocument);
@@ -250,7 +250,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 1-select-to-c-2-select-to-c-select-to-b-backward > 1-select-to-c-2-select-to-c-select-to-b-backward-select-to-a-backward", async function () {
+  test("1 > select-to-c-2 > select-to-c > select-to-b-backward > select-to-a-backward", async function () {
     const beforeDocument = await documents["1-select-to-c-2-select-to-c-select-to-b-backward"];
 
     if (beforeDocument === undefined) {
@@ -271,7 +271,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "a", direction: -1 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:70:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-c-2-select-to-c-select-to-b-backward-select-to-a-backward"](afterDocument);
@@ -282,7 +282,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 1-select-to-c-2                                  > 1-select-to-c-2-select-to-c-character                                ", async function () {
+  test("1 > select-to-c-2 > select-to-c-character", async function () {
     const beforeDocument = await documents["1-select-to-c-2"];
 
     if (beforeDocument === undefined) {
@@ -305,7 +305,7 @@ suite("seek.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:80:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-c-2-select-to-c-character"](afterDocument);
@@ -316,7 +316,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 1-select-to-c-2-select-to-c-character            > 1-select-to-c-2-select-to-c-character-select-to-b-character          ", async function () {
+  test("1 > select-to-c-2 > select-to-c-character > select-to-b-character", async function () {
     const beforeDocument = await documents["1-select-to-c-2-select-to-c-character"];
 
     if (beforeDocument === undefined) {
@@ -339,7 +339,7 @@ suite("seek.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:92:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-to-c-2-select-to-c-character-select-to-b-character"](afterDocument);
@@ -350,7 +350,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-e-included-backward                                      ", async function () {
+  test("2 > extend-to-e-included-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -371,7 +371,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "e", direction: -1, shift: "extend", include: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:109:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-e-included-backward"](afterDocument);
@@ -382,7 +382,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-g-included-backward                                      ", async function () {
+  test("2 > extend-to-g-included-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -403,7 +403,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "g", direction: -1, shift: "extend", include: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:119:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-g-included-backward"](afterDocument);
@@ -414,7 +414,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-d-included-backward                                      ", async function () {
+  test("2 > extend-to-d-included-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -435,7 +435,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "d", direction: -1, shift: "extend", include: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:131:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-d-included-backward"](afterDocument);
@@ -446,7 +446,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-b-included-backward                                      ", async function () {
+  test("2 > extend-to-b-included-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -467,7 +467,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "b", direction: -1, shift: "extend", include: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:141:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-b-included-backward"](afterDocument);
@@ -478,7 +478,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-b-backward-character                                     ", async function () {
+  test("2 > extend-to-b-backward-character", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -501,7 +501,7 @@ suite("seek.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:151:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-b-backward-character"](afterDocument);
@@ -512,7 +512,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-g-backward                                               ", async function () {
+  test("2 > extend-to-g-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -533,7 +533,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "g", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:163:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-g-backward"](afterDocument);
@@ -544,7 +544,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-f-backward                                               ", async function () {
+  test("2 > extend-to-f-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -565,7 +565,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "f", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:175:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-f-backward"](afterDocument);
@@ -576,7 +576,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-e-backward                                               ", async function () {
+  test("2 > extend-to-e-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -597,7 +597,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "e", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:185:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-e-backward"](afterDocument);
@@ -608,7 +608,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-c-backward                                               ", async function () {
+  test("2 > extend-to-c-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -629,7 +629,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "c", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:195:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-c-backward"](afterDocument);
@@ -640,7 +640,7 @@ suite("seek.md", function () {
     }
   });
 
-  test("transition 2                                                > 2-extend-to-b-backward                                               ", async function () {
+  test("2 > extend-to-b-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -661,7 +661,7 @@ suite("seek.md", function () {
       await executeCommand("dance.seek", { input: "b", direction: -1, shift: "extend" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek.md:205:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-extend-to-b-backward"](afterDocument);
@@ -671,4 +671,6 @@ suite("seek.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

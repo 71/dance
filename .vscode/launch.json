@@ -15,6 +15,7 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
+        "--disable-extensions",
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
       ],
@@ -26,12 +27,29 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
+        "--disable-extensions",
         "--extensionDevelopmentPath=${workspaceFolder}",
         "--extensionTestsPath=${workspaceFolder}/out/test/suite",
       ],
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
       "env": {
         "CURRENT_FILE": "${relativeFile}",
+      },
+    },
+    {
+      "name": "Run test on this line",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "--disable-extensions",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionTestsPath=${workspaceFolder}/out/test/suite",
+      ],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+      "env": {
+        "CURRENT_FILE": "${relativeFile}",
+        "CURRENT_LINE": "${lineNumber}",
       },
     },
   ],

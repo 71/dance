@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("select-line-end.md", function () {
+suite("./test/suite/commands/select-line-end.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -39,7 +39,7 @@ suite("select-line-end.md", function () {
           "1-line-end-extend": new Promise((resolve) => notifyDependents["1-line-end-extend"] = resolve),
         };
 
-  test("transition 1 > 1-line-start                 ", async function () {
+  test("1 > line-start", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -60,7 +60,7 @@ suite("select-line-end.md", function () {
       await executeCommand("dance.select.lineStart");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-line-end.md:8:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-line-start"](afterDocument);
@@ -71,7 +71,7 @@ suite("select-line-end.md", function () {
     }
   });
 
-  test("transition 1 > 1-line-start-extend          ", async function () {
+  test("1 > line-start-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -92,7 +92,7 @@ suite("select-line-end.md", function () {
       await executeCommand("dance.select.lineStart.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-line-end.md:18:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-line-start-extend"](afterDocument);
@@ -103,7 +103,7 @@ suite("select-line-end.md", function () {
     }
   });
 
-  test("transition 1 > 1-line-start-extend-character", async function () {
+  test("1 > line-start-extend-character", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -126,7 +126,7 @@ suite("select-line-end.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-line-end.md:28:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-line-start-extend-character"](afterDocument);
@@ -137,7 +137,7 @@ suite("select-line-end.md", function () {
     }
   });
 
-  test("transition 1 > 1-line-end                   ", async function () {
+  test("1 > line-end", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -158,7 +158,7 @@ suite("select-line-end.md", function () {
       await executeCommand("dance.select.lineEnd");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-line-end.md:40:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-line-end"](afterDocument);
@@ -169,7 +169,7 @@ suite("select-line-end.md", function () {
     }
   });
 
-  test("transition 1 > 1-line-end-character         ", async function () {
+  test("1 > line-end-character", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -192,7 +192,7 @@ suite("select-line-end.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-line-end.md:50:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-line-end-character"](afterDocument);
@@ -203,7 +203,7 @@ suite("select-line-end.md", function () {
     }
   });
 
-  test("transition 1 > 1-line-end-extend            ", async function () {
+  test("1 > line-end-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -224,7 +224,7 @@ suite("select-line-end.md", function () {
       await executeCommand("dance.select.lineEnd.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-line-end.md:62:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-line-end-extend"](afterDocument);
@@ -234,4 +234,6 @@ suite("select-line-end.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

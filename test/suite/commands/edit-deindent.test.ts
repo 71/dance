@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("edit-deindent.md", function () {
+suite("./test/suite/commands/edit-deindent.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -39,7 +39,7 @@ suite("edit-deindent.md", function () {
           "1-deindent-alt": new Promise((resolve) => notifyDependents["1-deindent-alt"] = resolve),
         };
 
-  test("transition 1 > 1-deindent    ", async function () {
+  test("1 > deindent", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -64,7 +64,7 @@ suite("edit-deindent.md", function () {
       await executeCommand("dance.edit.deindent.withIncomplete");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-deindent.md:12:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-deindent"](afterDocument);
@@ -75,7 +75,7 @@ suite("edit-deindent.md", function () {
     }
   });
 
-  test("transition 1 > 1-deindent-alt", async function () {
+  test("1 > deindent-alt", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -100,7 +100,7 @@ suite("edit-deindent.md", function () {
       await executeCommand("dance.edit.deindent");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-deindent.md:26:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-deindent-alt"](afterDocument);
@@ -110,4 +110,6 @@ suite("edit-deindent.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

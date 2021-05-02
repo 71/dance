@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("selections-copy.md", function () {
+suite("./test/suite/commands/selections-copy.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -60,7 +60,7 @@ suite("selections-copy.md", function () {
           "3-copy-x": new Promise((resolve) => notifyDependents["3-copy-x"] = resolve),
         };
 
-  test("transition 1        > 1-copy    ", async function () {
+  test("1 > copy", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -85,7 +85,7 @@ suite("selections-copy.md", function () {
       await executeCommand("dance.selections.copy");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-copy.md:11:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-copy"](afterDocument);
@@ -96,7 +96,7 @@ suite("selections-copy.md", function () {
     }
   });
 
-  test("transition 1-copy   > 1-copy-x  ", async function () {
+  test("1 > copy > x", async function () {
     const beforeDocument = await documents["1-copy"];
 
     if (beforeDocument === undefined) {
@@ -122,7 +122,7 @@ suite("selections-copy.md", function () {
       await executeCommand("dance.selections.copy");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-copy.md:25:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-copy-x"](afterDocument);
@@ -133,7 +133,7 @@ suite("selections-copy.md", function () {
     }
   });
 
-  test("transition 2        > 2-copy    ", async function () {
+  test("2 > copy", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -161,7 +161,7 @@ suite("selections-copy.md", function () {
       await executeCommand("dance.selections.copy");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-copy.md:53:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-copy"](afterDocument);
@@ -172,7 +172,7 @@ suite("selections-copy.md", function () {
     }
   });
 
-  test("transition 2-copy   > 2-copy-x  ", async function () {
+  test("2 > copy > x", async function () {
     const beforeDocument = await documents["2-copy"];
 
     if (beforeDocument === undefined) {
@@ -202,7 +202,7 @@ suite("selections-copy.md", function () {
       await executeCommand("dance.selections.copy");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-copy.md:72:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-copy-x"](afterDocument);
@@ -213,7 +213,7 @@ suite("selections-copy.md", function () {
     }
   });
 
-  test("transition 2-copy-x > 2-copy-x-x", async function () {
+  test("2 > copy > x > x", async function () {
     const beforeDocument = await documents["2-copy-x"];
 
     if (beforeDocument === undefined) {
@@ -244,7 +244,7 @@ suite("selections-copy.md", function () {
       await executeCommand("dance.selections.copy");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-copy.md:93:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-copy-x-x"](afterDocument);
@@ -255,7 +255,7 @@ suite("selections-copy.md", function () {
     }
   });
 
-  test("transition 3        > 3-copy    ", async function () {
+  test("3 > copy", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -280,7 +280,7 @@ suite("selections-copy.md", function () {
       await executeCommand("dance.selections.copy");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-copy.md:125:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-copy"](afterDocument);
@@ -291,7 +291,7 @@ suite("selections-copy.md", function () {
     }
   });
 
-  test("transition 3-copy   > 3-copy-x  ", async function () {
+  test("3 > copy > x", async function () {
     const beforeDocument = await documents["3-copy"];
 
     if (beforeDocument === undefined) {
@@ -317,7 +317,7 @@ suite("selections-copy.md", function () {
       await executeCommand("dance.selections.copy");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-copy.md:139:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-copy-x"](afterDocument);
@@ -327,4 +327,6 @@ suite("selections-copy.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

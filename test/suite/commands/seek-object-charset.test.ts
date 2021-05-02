@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("seek-object-charset.md", function () {
+suite("./test/suite/commands/seek-object-charset.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -27,23 +27,25 @@ suite("seek-object-charset.md", function () {
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
           "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-            he|{0}l{0}lo world
+            hello world
+              ^ 0
           `)),
 
-          "1-word": new Promise((resolve) => notifyDependents["1-word"] = resolve),
-          "1-word-x": new Promise((resolve) => notifyDependents["1-word-x"] = resolve),
+          "1-select-inner": new Promise((resolve) => notifyDependents["1-select-inner"] = resolve),
+          "1-select-inner-x": new Promise((resolve) => notifyDependents["1-select-inner-x"] = resolve),
         };
 
-  test("transition 1      > 1-word  ", async function () {
+  test("1 > select-inner", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["1-word"](undefined);
+      notifyDependents["1-select-inner"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      {0}hello|{0} world
+      hello world
+      ^^^^^ 0
     `);
 
     try {
@@ -51,30 +53,31 @@ suite("seek-object-charset.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "word", "action": "select", "inner": true });
+      await executeCommand("dance.seek.object", { input: /[\p{L}]+(?<after>[^\S\n]+)/u.source, inner: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-charset.md:10:1");
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["1-word"](afterDocument);
+      notifyDependents["1-select-inner"](afterDocument);
     } catch (e) {
-      notifyDependents["1-word"](undefined);
+      notifyDependents["1-select-inner"](undefined);
 
       throw e;
     }
   });
 
-  test("transition 1-word > 1-word-x", async function () {
-    const beforeDocument = await documents["1-word"];
+  test("1 > select-inner > x", async function () {
+    const beforeDocument = await documents["1-select-inner"];
 
     if (beforeDocument === undefined) {
-      notifyDependents["1-word-x"](undefined);
+      notifyDependents["1-select-inner-x"](undefined);
       this.skip();
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      {0}hello|{0} world
+      hello world
+      ^^^^^ 0
     `);
 
     try {
@@ -82,17 +85,19 @@ suite("seek-object-charset.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "word", "action": "select", "inner": true });
+      await executeCommand("dance.seek.object", { input: /[\p{L}]+(?<after>[^\S\n]+)/u.source, inner: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-charset.md:19:1");
 
       // Test passed, allow dependent tests to run.
-      notifyDependents["1-word-x"](afterDocument);
+      notifyDependents["1-select-inner-x"](afterDocument);
     } catch (e) {
-      notifyDependents["1-word-x"](undefined);
+      notifyDependents["1-select-inner-x"](undefined);
 
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

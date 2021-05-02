@@ -30,7 +30,7 @@ export async function build(builder: Builder) {
     const examplesPerFunction = new Map<string, number>();
 
     return unindent(4, `
-      suite(${JSON.stringify(module.path)}, function () {
+      suite(${JSON.stringify(module.path.replace(/^dance/, "."))}, function () {
         ${examples.map((example) => {
           let testName = `function ${example.functionName}`;
           const examplesForFunction = examplesPerFunction.get(example.functionName);

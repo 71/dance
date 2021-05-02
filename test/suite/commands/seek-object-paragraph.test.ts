@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("seek-object-paragraph.md", function () {
+suite("./test/suite/commands/seek-object-paragraph.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -27,23 +27,32 @@ suite("seek-object-paragraph.md", function () {
   const notifyDependents: Record<string, (document: ExpectedDocument | undefined) => void> = {},
         documents: Record<string, Promise<ExpectedDocument | undefined>> = {
           "1": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-            {0}f|{0}oo{1}
-            |{1}bar{2}
-            |{2}{3}
-            |{3}{4}b|{4}az
+            foo
+            ^ 0
+               ^ 1
+            bar
+               ^ 2
 
-            {5}
-            |{5}
+            ^ 3
+            baz
+            ^ 4
+
+            ^ 5
 
             qux
           `)),
           "2": Promise.resolve(ExpectedDocument.parseIndented(12, String.raw`
-            paragraph 1{0}
-            |{0}{1}
-            |{1}{2}
-            |{2}{3}
-            |{3}{4}
-            |{4}paragraph 2
+            paragraph 1
+            ^^^^^^^^^^^^ 0
+
+            ^ 1
+
+            ^ 2
+
+            ^ 3
+
+            ^ 4
+            paragraph 2
           `)),
 
           "1-to-start": new Promise((resolve) => notifyDependents["1-to-start"] = resolve),
@@ -54,7 +63,7 @@ suite("seek-object-paragraph.md", function () {
           "2-to-end-inner": new Promise((resolve) => notifyDependents["2-to-end-inner"] = resolve),
         };
 
-  test("transition 1 > 1-to-start    ", async function () {
+  test("1 > to-start", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -63,13 +72,16 @@ suite("seek-object-paragraph.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      {0}|{1}|{2}|{3}|{4}f|{0}oo
-      {1}bar
-      {2}
-      {3}{4}|{5}baz
+      foo
+      ^^^^ 0
+      bar
+      ^^^^ 0
 
-      {5}
+      ^ 0
+      baz
+      |^^^ 1
 
+      ^ 1
 
       qux
     `);
@@ -79,10 +91,10 @@ suite("seek-object-paragraph.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "paragraph", "action": "selectToStart" });
+      await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "start" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:21:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-start"](afterDocument);
@@ -93,7 +105,7 @@ suite("seek-object-paragraph.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-end      ", async function () {
+  test("1 > to-end", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -102,15 +114,18 @@ suite("seek-object-paragraph.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      {0}foo{1}
-      bar{2}
+      foo
+      ^^^^ 0
+      bar
+      ^^^^ 0
 
-      |{0}|{1}|{2}{3}{4}baz
+      baz
+      ^^^^ 1
 
+      ^ 1
 
-      {5}
-
-      |{3}|{4}|{5}qux
+      ^ 1
+      qux
     `);
 
     try {
@@ -118,10 +133,10 @@ suite("seek-object-paragraph.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "paragraph", "action": "selectToEnd" });
+      await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "end" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:45:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-end"](afterDocument);
@@ -132,7 +147,7 @@ suite("seek-object-paragraph.md", function () {
     }
   });
 
-  test("transition 1 > 1-to-end-inner", async function () {
+  test("1 > to-end-inner", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -141,14 +156,16 @@ suite("seek-object-paragraph.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      {0}foo{1}
-      bar{2}
-      |{0}|{1}|{2}
-      {3}{4}baz
-      |{3}|{4}
+      foo
+      ^^^^ 0
+      bar
+      ^^^^ 0
 
-      {5}
-      |{5}
+      baz
+      ^^^^ 1
+
+      ^ 2
+
       qux
     `);
 
@@ -157,10 +174,10 @@ suite("seek-object-paragraph.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "paragraph", "action": "selectToEnd", "inner": true });
+      await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "end", inner: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:68:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-to-end-inner"](afterDocument);
@@ -171,7 +188,7 @@ suite("seek-object-paragraph.md", function () {
     }
   });
 
-  test("transition 1 > 1-select      ", async function () {
+  test("1 > select", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -180,15 +197,18 @@ suite("seek-object-paragraph.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      {0}{1}{2}foo
+      foo
+      ^^^^ 0
       bar
+      ^^^^ 0
 
-      |{0}|{1}|{2}{3}{4}{5}baz
+      baz
+      ^^^^ 1
 
+      ^ 1
 
-
-
-      |{3}|{4}|{5}qux
+      ^ 1
+      qux
     `);
 
     try {
@@ -196,10 +216,10 @@ suite("seek-object-paragraph.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "paragraph", "action": "select" });
+      await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:90:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select"](afterDocument);
@@ -210,7 +230,7 @@ suite("seek-object-paragraph.md", function () {
     }
   });
 
-  test("transition 2 > 2-select      ", async function () {
+  test("2 > select", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -219,12 +239,14 @@ suite("seek-object-paragraph.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      {0}{1}{2}{3}paragraph 1
-      |{0}|{1}|{2}|{3}|{3}
+      paragraph 1
+      ^^^^^^^^^^^^ 0
 
 
 
-      {4}paragraph 2|{4}
+
+      paragraph 2
+      ^^^^^^^^^^^ 1
     `);
 
     try {
@@ -232,10 +254,10 @@ suite("seek-object-paragraph.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "paragraph", "action": "select", "inner": true });
+      await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", inner: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:132:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-select"](afterDocument);
@@ -246,7 +268,7 @@ suite("seek-object-paragraph.md", function () {
     }
   });
 
-  test("transition 2 > 2-to-end-inner", async function () {
+  test("2 > to-end-inner", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -255,12 +277,17 @@ suite("seek-object-paragraph.md", function () {
     }
 
     const afterDocument = ExpectedDocument.parseIndented(6, String.raw`
-      paragraph 1{0}
-      |{0}
-      {1}
-      |{1}{2}
-      |{2}{3}
-      {4}paragraph 2|{4}|{3}
+      paragraph 1
+                 ^ 0
+
+
+      ^ 1
+
+      ^ 2
+
+      ^ 3
+      paragraph 2
+      ^^^^^^^^^^^ 3
     `);
 
     try {
@@ -268,10 +295,10 @@ suite("seek-object-paragraph.md", function () {
       await beforeDocument.apply(editor);
 
       // Perform all operations.
-      await executeCommand("dance.seek.object", { "object": "paragraph", "action": "selectToEnd", "inner": true });
+      await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "end", inner: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:152:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-to-end-inner"](afterDocument);
@@ -281,4 +308,6 @@ suite("seek-object-paragraph.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

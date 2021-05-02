@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("seek-word-end.md", function () {
+suite("./test/suite/commands/seek-word-end.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -36,7 +36,7 @@ suite("seek-word-end.md", function () {
           "1-word-end-2": new Promise((resolve) => notifyDependents["1-word-end-2"] = resolve),
         };
 
-  test("transition 1          > 1-word-end  ", async function () {
+  test("1 > word-end", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -57,7 +57,7 @@ suite("seek-word-end.md", function () {
       await executeCommand("dance.seek.wordEnd");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-end.md:8:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end"](afterDocument);
@@ -68,7 +68,7 @@ suite("seek-word-end.md", function () {
     }
   });
 
-  test("transition 1-word-end > 1-word-end-x", async function () {
+  test("1 > word-end > x", async function () {
     const beforeDocument = await documents["1-word-end"];
 
     if (beforeDocument === undefined) {
@@ -89,7 +89,7 @@ suite("seek-word-end.md", function () {
       await executeCommand("dance.seek.wordEnd");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-end.md:18:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-x"](afterDocument);
@@ -100,7 +100,7 @@ suite("seek-word-end.md", function () {
     }
   });
 
-  test("transition 1          > 1-word-end-2", async function () {
+  test("1 > word-end-2", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -121,7 +121,7 @@ suite("seek-word-end.md", function () {
       await executeCommand("dance.seek.wordEnd", { count: 2 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word-end.md:28:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-2"](afterDocument);
@@ -131,4 +131,6 @@ suite("seek-word-end.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

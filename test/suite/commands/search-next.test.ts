@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("search-next.md", function () {
+suite("./test/suite/commands/search-next.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -46,7 +46,7 @@ suite("search-next.md", function () {
           "1-search-apple-previous-add-2": new Promise((resolve) => notifyDependents["1-search-apple-previous-add-2"] = resolve),
         };
 
-  test("transition 1              > 1-search-apple               ", async function () {
+  test("1 > search-apple", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -69,7 +69,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search", { input: "apple" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:10:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple"](afterDocument);
@@ -80,7 +80,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-next          ", async function () {
+  test("1 > search-apple > next", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -103,7 +103,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.next");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:22:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-next"](afterDocument);
@@ -114,7 +114,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-next-add      ", async function () {
+  test("1 > search-apple > next-add", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -138,7 +138,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.next.add");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:34:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-next-add"](afterDocument);
@@ -149,7 +149,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-next-3        ", async function () {
+  test("1 > search-apple > next-3", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -172,7 +172,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.next", { count: 3 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:47:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-next-3"](afterDocument);
@@ -183,7 +183,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-next-add-3    ", async function () {
+  test("1 > search-apple > next-add-3", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -208,7 +208,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.next.add", { count: 3 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:61:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-next-add-3"](afterDocument);
@@ -219,7 +219,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-next-4        ", async function () {
+  test("1 > search-apple > next-4", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -242,7 +242,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.next", { count: 4 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:77:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-next-4"](afterDocument);
@@ -253,7 +253,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-next-add-4    ", async function () {
+  test("1 > search-apple > next-add-4", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -278,7 +278,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.next.add", { count: 4 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:91:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-next-add-4"](afterDocument);
@@ -289,7 +289,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-previous      ", async function () {
+  test("1 > search-apple > previous", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -312,7 +312,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.previous");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:108:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-previous"](afterDocument);
@@ -323,7 +323,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-previous-add  ", async function () {
+  test("1 > search-apple > previous-add", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -346,7 +346,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.previous.add");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:120:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-previous-add"](afterDocument);
@@ -357,7 +357,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-previous-2    ", async function () {
+  test("1 > search-apple > previous-2", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -380,7 +380,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.previous", { count: 2 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:132:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-previous-2"](afterDocument);
@@ -391,7 +391,7 @@ suite("search-next.md", function () {
     }
   });
 
-  test("transition 1-search-apple > 1-search-apple-previous-add-2", async function () {
+  test("1 > search-apple > previous-add-2", async function () {
     const beforeDocument = await documents["1-search-apple"];
 
     if (beforeDocument === undefined) {
@@ -415,7 +415,7 @@ suite("search-next.md", function () {
       await executeCommand("dance.search.previous.add", { count: 2 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/search-next.md:146:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-search-apple-previous-add-2"](afterDocument);
@@ -425,4 +425,6 @@ suite("search-next.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

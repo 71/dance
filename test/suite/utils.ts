@@ -3,10 +3,12 @@
 import "source-map-support/register";
 
 import * as assert from "assert";
+import * as Mocha  from "mocha";
 import * as path   from "path";
 // @ts-expect-error
 import * as unexpected from "unexpected";
 import * as vscode from "vscode";
+
 import { Context, Selections } from "../../src/api";
 import { SelectionBehavior } from "../../src/state/modes";
 
@@ -52,6 +54,32 @@ namespace Expect {
 export function resolve(subpath: string) {
   // Current path is dance/out/test/suite/utils
   return path.join(__dirname, "../../..", subpath);
+}
+
+/**
+ * Add depth to command-like suites for nicer reporting.
+ */
+export function addDepthToCommandTests(toplevel: Mocha.Suite) {
+  for (const test of toplevel.tests) {
+    const parts = test.title.split(" > "),
+          testTitle = parts.pop()!;
+    let suite = toplevel;
+
+    for (const part of parts) {
+      let partSuite = suite.suites.find((s) => s.title === part);
+
+      if (partSuite === undefined) {
+        partSuite = Mocha.Suite.create(suite, part);
+      }
+
+      suite = partSuite;
+    }
+
+    suite.addTest(test);
+    test.title = "→ " + testTitle;
+  }
+
+  toplevel.tests.splice(0);
 }
 
 export const expect: Expect = unexpected.clone();
@@ -289,13 +317,13 @@ export class ExpectedDocument {
     }
   }
 
-  public assertEquals(editor: vscode.TextEditor) {
+  public assertEquals(editor: vscode.TextEditor, message = "") {
     const document = editor.document;
 
     assert.strictEqual(
       document.getText(),
       this.text,
-      `Document text is not as expected.`,
+      message + `Document text is not as expected.`,
     );
 
     const expectedSelections = this.selections.slice() as (vscode.Selection | undefined)[];
@@ -329,7 +357,7 @@ export class ExpectedDocument {
       return;
     }
 
-    const commonText: string[] = ["Selections are not as expected."],
+    const commonText: string[] = [message === "" ? "Selections are not as expected." : message],
           expectedText: string[] = [],
           actualText: string[] = [];
 

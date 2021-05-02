@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("seek-object-quoted.md", function () {
+suite("./test/suite/commands/seek-object-quoted.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -35,7 +35,7 @@ suite("seek-object-quoted.md", function () {
           "1-select-inner": new Promise((resolve) => notifyDependents["1-select-inner"] = resolve),
         };
 
-  test("transition 1 > 1-select      ", async function () {
+  test("1 > select", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -56,7 +56,7 @@ suite("seek-object-quoted.md", function () {
       await executeCommand("dance.seek.object", { input: "(?#noescape)\"(?#inner)(?#noescape)\"" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-quoted.md:13:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select"](afterDocument);
@@ -67,7 +67,7 @@ suite("seek-object-quoted.md", function () {
     }
   });
 
-  test("transition 1 > 1-select-inner", async function () {
+  test("1 > select-inner", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -88,7 +88,7 @@ suite("seek-object-quoted.md", function () {
       await executeCommand("dance.seek.object", { input: "(?#noescape)\"(?#inner)(?#noescape)\"", inner: true });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-object-quoted.md:23:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-inner"](afterDocument);
@@ -98,4 +98,6 @@ suite("seek-object-quoted.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

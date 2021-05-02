@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("edit-paste.md", function () {
+suite("./test/suite/commands/edit-paste.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -38,7 +38,7 @@ suite("edit-paste.md", function () {
           "1-move-then-paste-move-2-then-paste": new Promise((resolve) => notifyDependents["1-move-then-paste-move-2-then-paste"] = resolve),
         };
 
-  test("transition 1                 > 1-paste                            ", async function () {
+  test("1 > paste", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -62,7 +62,7 @@ suite("edit-paste.md", function () {
       await executeCommand("dance.edit.paste.after");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:9:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-paste"](afterDocument);
@@ -73,7 +73,7 @@ suite("edit-paste.md", function () {
     }
   });
 
-  test("transition 1-paste           > 1-paste-x                          ", async function () {
+  test("1 > paste > x", async function () {
     const beforeDocument = await documents["1-paste"];
 
     if (beforeDocument === undefined) {
@@ -97,7 +97,7 @@ suite("edit-paste.md", function () {
       await executeCommand("dance.edit.paste.after");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:22:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-paste-x"](afterDocument);
@@ -108,7 +108,7 @@ suite("edit-paste.md", function () {
     }
   });
 
-  test("transition 1                 > 1-move-then-paste                  ", async function () {
+  test("1 > move-then-paste", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -132,7 +132,7 @@ suite("edit-paste.md", function () {
       await executeCommand("dance.edit.paste.after");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:35:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-move-then-paste"](afterDocument);
@@ -143,7 +143,7 @@ suite("edit-paste.md", function () {
     }
   });
 
-  test("transition 1-move-then-paste > 1-move-then-paste-move-2-then-paste", async function () {
+  test("1 > move-then-paste > move-2-then-paste", async function () {
     const beforeDocument = await documents["1-move-then-paste"];
 
     if (beforeDocument === undefined) {
@@ -168,7 +168,7 @@ suite("edit-paste.md", function () {
       await executeCommand("dance.edit.paste.after");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:48:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-move-then-paste-move-2-then-paste"](afterDocument);
@@ -178,4 +178,6 @@ suite("edit-paste.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

@@ -1,22 +1,27 @@
 # 1
 
+> /\$object/\/[\p{L}]+(?<after>[^\S\n]+)\/u.source/g
+
 ```
-he|{0}l{0}lo world
+hello world
+  ^ 0
 ```
 
-## 1 word
+## 1 select-inner
 [up](#1)
 
-- .seek.object { "object": "word", "action": "select", "inner": true }
+- .seek.object { input: $object, inner: true }
 ```
-{0}hello|{0} world
+hello world
+^^^^^ 0
 ```
 
-### 1 word x
-[up](#1-word)
+### 1 select-inner x
+[up](#1-select-inner)
 
-- .seek.object { "object": "word", "action": "select", "inner": true }
+- .seek.object { input: $object, inner: true }
 
 ```
-{0}hello|{0} world
+hello world
+^^^^^ 0
 ```

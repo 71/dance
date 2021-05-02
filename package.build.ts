@@ -125,7 +125,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "typescript": "^4.2.4",
     "unexpected": "^12.0.0",
     "vsce": "^1.87.0",
-    "vscode-test": "^1.3.0",
+    "vscode-test": "^1.5.2",
   },
 
   // VS Code-specific properties.

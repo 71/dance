@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("select-lines.md", function () {
+suite("./test/suite/commands/select-lines.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -92,7 +92,7 @@ suite("select-lines.md", function () {
           "6-line-extend": new Promise((resolve) => notifyDependents["6-line-extend"] = resolve),
         };
 
-  test("transition 1             > 1-whole-buffer    ", async function () {
+  test("1 > whole-buffer", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -117,7 +117,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.buffer");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:10:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-whole-buffer"](afterDocument);
@@ -128,7 +128,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 1             > 1-select-line     ", async function () {
+  test("1 > select-line", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -151,7 +151,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:24:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-line"](afterDocument);
@@ -162,7 +162,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 1-select-line > 1-select-line-x   ", async function () {
+  test("1 > select-line > x", async function () {
     const beforeDocument = await documents["1-select-line"];
 
     if (beforeDocument === undefined) {
@@ -185,7 +185,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:36:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-select-line-x"](afterDocument);
@@ -196,7 +196,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 1             > 1-extend-line     ", async function () {
+  test("1 > extend-line", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -219,7 +219,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:48:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-extend-line"](afterDocument);
@@ -230,7 +230,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 1-extend-line > 1-extend-line-x   ", async function () {
+  test("1 > extend-line > x", async function () {
     const beforeDocument = await documents["1-extend-line"];
 
     if (beforeDocument === undefined) {
@@ -254,7 +254,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:60:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-extend-line-x"](afterDocument);
@@ -265,7 +265,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 2             > 2-line            ", async function () {
+  test("2 > line", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -290,7 +290,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:86:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-line"](afterDocument);
@@ -301,7 +301,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 2             > 2-line-extend     ", async function () {
+  test("2 > line-extend", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -328,7 +328,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:100:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-line-extend"](afterDocument);
@@ -339,7 +339,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 2             > 2-line-2          ", async function () {
+  test("2 > line-2", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -364,7 +364,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below", { count: 2 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:116:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-line-2"](afterDocument);
@@ -375,7 +375,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 2             > 2-line-extend-2   ", async function () {
+  test("2 > line-extend-2", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -403,7 +403,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below.extend", { count: 2 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:130:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-line-extend-2"](afterDocument);
@@ -414,7 +414,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 3             > 3-line            ", async function () {
+  test("3 > line", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -439,7 +439,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:158:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-line"](afterDocument);
@@ -450,7 +450,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 3             > 3-line-2          ", async function () {
+  test("3 > line-2", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -475,7 +475,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below", { count: 2 });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:174:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-line-2"](afterDocument);
@@ -486,7 +486,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 3-line-2      > 3-line-2-line     ", async function () {
+  test("3 > line-2 > line", async function () {
     const beforeDocument = await documents["3-line-2"];
 
     if (beforeDocument === undefined) {
@@ -511,7 +511,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:190:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-line-2-line"](afterDocument);
@@ -522,7 +522,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 3-line-2-line > 3-line-2-line-x   ", async function () {
+  test("3 > line-2 > line > x", async function () {
     const beforeDocument = await documents["3-line-2-line"];
 
     if (beforeDocument === undefined) {
@@ -547,7 +547,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:206:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-line-2-line-x"](afterDocument);
@@ -558,7 +558,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 4             > 4-line            ", async function () {
+  test("4 > line", async function () {
     const beforeDocument = await documents["4"];
 
     if (beforeDocument === undefined) {
@@ -580,7 +580,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:230:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["4-line"](afterDocument);
@@ -591,7 +591,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 5             > 5-line-extend     ", async function () {
+  test("5 > line-extend", async function () {
     const beforeDocument = await documents["5"];
 
     if (beforeDocument === undefined) {
@@ -613,7 +613,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:252:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["5-line-extend"](afterDocument);
@@ -624,7 +624,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 5-line-extend > 5-line-extend-x   ", async function () {
+  test("5 > line-extend > x", async function () {
     const beforeDocument = await documents["5-line-extend"];
 
     if (beforeDocument === undefined) {
@@ -646,7 +646,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:265:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["5-line-extend-x"](afterDocument);
@@ -657,7 +657,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 6             > 6-line            ", async function () {
+  test("6 > line", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -681,7 +681,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:286:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-line"](afterDocument);
@@ -692,7 +692,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 6-line        > 6-line-x          ", async function () {
+  test("6 > line > x", async function () {
     const beforeDocument = await documents["6-line"];
 
     if (beforeDocument === undefined) {
@@ -716,7 +716,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:299:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-line-x"](afterDocument);
@@ -727,7 +727,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 6-line-x      > 6-line-x-x        ", async function () {
+  test("6 > line > x > x", async function () {
     const beforeDocument = await documents["6-line-x"];
 
     if (beforeDocument === undefined) {
@@ -751,7 +751,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:312:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-line-x-x"](afterDocument);
@@ -762,7 +762,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 6-line        > 6-line-line-extend", async function () {
+  test("6 > line > line-extend", async function () {
     const beforeDocument = await documents["6-line"];
 
     if (beforeDocument === undefined) {
@@ -787,7 +787,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:325:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-line-line-extend"](afterDocument);
@@ -798,7 +798,7 @@ suite("select-lines.md", function () {
     }
   });
 
-  test("transition 6             > 6-line-extend     ", async function () {
+  test("6 > line-extend", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -822,7 +822,7 @@ suite("select-lines.md", function () {
       await executeCommand("dance.select.line.below.extend");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:339:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-line-extend"](afterDocument);
@@ -832,4 +832,6 @@ suite("select-lines.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

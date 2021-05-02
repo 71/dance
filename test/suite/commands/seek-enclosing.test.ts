@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("seek-enclosing.md", function () {
+suite("./test/suite/commands/seek-enclosing.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -55,7 +55,7 @@ suite("seek-enclosing.md", function () {
           "2-enclosing": new Promise((resolve) => notifyDependents["2-enclosing"] = resolve),
         };
 
-  test("transition 1           > 1-enclosing  ", async function () {
+  test("1 > enclosing", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -84,7 +84,7 @@ suite("seek-enclosing.md", function () {
       await executeCommand("dance.seek.enclosing");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-enclosing.md:16:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-enclosing"](afterDocument);
@@ -95,7 +95,7 @@ suite("seek-enclosing.md", function () {
     }
   });
 
-  test("transition 1-enclosing > 1-enclosing-x", async function () {
+  test("1 > enclosing > x", async function () {
     const beforeDocument = await documents["1-enclosing"];
 
     if (beforeDocument === undefined) {
@@ -124,7 +124,7 @@ suite("seek-enclosing.md", function () {
       await executeCommand("dance.seek.enclosing");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-enclosing.md:39:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-enclosing-x"](afterDocument);
@@ -135,7 +135,7 @@ suite("seek-enclosing.md", function () {
     }
   });
 
-  test("transition 2           > 2-enclosing  ", async function () {
+  test("2 > enclosing", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -164,7 +164,7 @@ suite("seek-enclosing.md", function () {
       await executeCommand("dance.seek.enclosing");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-enclosing.md:75:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-enclosing"](afterDocument);
@@ -174,4 +174,6 @@ suite("seek-enclosing.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

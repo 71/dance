@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("edit-indent.md", function () {
+suite("./test/suite/commands/edit-indent.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -73,7 +73,7 @@ suite("edit-indent.md", function () {
           "6-indent": new Promise((resolve) => notifyDependents["6-indent"] = resolve),
         };
 
-  test("transition 1 > 1-indent", async function () {
+  test("1 > indent", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -97,7 +97,7 @@ suite("edit-indent.md", function () {
       await executeCommand("dance.edit.indent");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-indent.md:11:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-indent"](afterDocument);
@@ -108,7 +108,7 @@ suite("edit-indent.md", function () {
     }
   });
 
-  test("transition 2 > 2-indent", async function () {
+  test("2 > indent", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -132,7 +132,7 @@ suite("edit-indent.md", function () {
       await executeCommand("dance.edit.indent");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-indent.md:34:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-indent"](afterDocument);
@@ -143,7 +143,7 @@ suite("edit-indent.md", function () {
     }
   });
 
-  test("transition 3 > 3-indent", async function () {
+  test("3 > indent", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -166,7 +166,7 @@ suite("edit-indent.md", function () {
       await executeCommand("dance.edit.indent");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-indent.md:56:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-indent"](afterDocument);
@@ -177,7 +177,7 @@ suite("edit-indent.md", function () {
     }
   });
 
-  test("transition 4 > 4-indent", async function () {
+  test("4 > indent", async function () {
     const beforeDocument = await documents["4"];
 
     if (beforeDocument === undefined) {
@@ -200,7 +200,7 @@ suite("edit-indent.md", function () {
       await executeCommand("dance.edit.indent");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-indent.md:77:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["4-indent"](afterDocument);
@@ -211,7 +211,7 @@ suite("edit-indent.md", function () {
     }
   });
 
-  test("transition 5 > 5-indent", async function () {
+  test("5 > indent", async function () {
     const beforeDocument = await documents["5"];
 
     if (beforeDocument === undefined) {
@@ -234,7 +234,7 @@ suite("edit-indent.md", function () {
       await executeCommand("dance.edit.indent");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-indent.md:98:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["5-indent"](afterDocument);
@@ -245,7 +245,7 @@ suite("edit-indent.md", function () {
     }
   });
 
-  test("transition 6 > 6-indent", async function () {
+  test("6 > indent", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -268,7 +268,7 @@ suite("edit-indent.md", function () {
       await executeCommand("dance.edit.indent");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-indent.md:120:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-indent"](afterDocument);
@@ -278,4 +278,6 @@ suite("edit-indent.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

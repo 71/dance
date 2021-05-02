@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("select-lateral.md", function () {
+suite("./test/suite/commands/select-lateral.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -66,7 +66,7 @@ suite("select-lateral.md", function () {
           "3-down-up-extend-x": new Promise((resolve) => notifyDependents["3-down-up-extend-x"] = resolve),
         };
 
-  test("transition 1                > 1-left            ", async function () {
+  test("1 > left", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -92,7 +92,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:13:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-left"](afterDocument);
@@ -103,7 +103,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 1                > 1-right           ", async function () {
+  test("1 > right", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -129,7 +129,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:26:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-right"](afterDocument);
@@ -140,7 +140,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 1                > 1-up              ", async function () {
+  test("1 > up", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -166,7 +166,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:39:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-up"](afterDocument);
@@ -177,7 +177,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 1                > 1-up-skip-eol     ", async function () {
+  test("1 > up-skip-eol", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -203,7 +203,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:52:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-up-skip-eol"](afterDocument);
@@ -214,7 +214,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 1                > 1-down            ", async function () {
+  test("1 > down", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -240,7 +240,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:69:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-down"](afterDocument);
@@ -251,7 +251,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 1                > 1-down-skip-eol   ", async function () {
+  test("1 > down-skip-eol", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -277,7 +277,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:82:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-down-skip-eol"](afterDocument);
@@ -288,7 +288,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 1                > 1-down-skip-eol-2 ", async function () {
+  test("1 > down-skip-eol-2", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -314,7 +314,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:98:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-down-skip-eol-2"](afterDocument);
@@ -325,7 +325,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 2                > 2-up              ", async function () {
+  test("2 > up", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -351,7 +351,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:126:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-up"](afterDocument);
@@ -362,7 +362,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 2                > 2-up-skip-eol-2   ", async function () {
+  test("2 > up-skip-eol-2", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -388,7 +388,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:141:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-up-skip-eol-2"](afterDocument);
@@ -399,7 +399,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 3                > 3-left            ", async function () {
+  test("3 > left", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -425,7 +425,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:166:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-left"](afterDocument);
@@ -436,7 +436,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 3                > 3-right           ", async function () {
+  test("3 > right", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -462,7 +462,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:179:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-right"](afterDocument);
@@ -473,7 +473,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 3                > 3-up              ", async function () {
+  test("3 > up", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -499,7 +499,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:192:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-up"](afterDocument);
@@ -510,7 +510,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 3                > 3-down            ", async function () {
+  test("3 > down", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -536,7 +536,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:205:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-down"](afterDocument);
@@ -547,7 +547,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 3-down           > 3-down-up         ", async function () {
+  test("3 > down > up", async function () {
     const beforeDocument = await documents["3-down"];
 
     if (beforeDocument === undefined) {
@@ -573,7 +573,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:218:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-down-up"](afterDocument);
@@ -584,7 +584,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 3-down           > 3-down-up-extend  ", async function () {
+  test("3 > down > up-extend", async function () {
     const beforeDocument = await documents["3-down"];
 
     if (beforeDocument === undefined) {
@@ -611,7 +611,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:231:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-down-up-extend"](afterDocument);
@@ -622,7 +622,7 @@ suite("select-lateral.md", function () {
     }
   });
 
-  test("transition 3-down-up-extend > 3-down-up-extend-x", async function () {
+  test("3 > down > up-extend > x", async function () {
     const beforeDocument = await documents["3-down-up-extend"];
 
     if (beforeDocument === undefined) {
@@ -650,7 +650,7 @@ suite("select-lateral.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:245:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-down-up-extend-x"](afterDocument);
@@ -660,4 +660,6 @@ suite("select-lateral.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

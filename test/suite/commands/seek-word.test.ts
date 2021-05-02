@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("seek-word.md", function () {
+suite("./test/suite/commands/seek-word.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -85,7 +85,7 @@ suite("seek-word.md", function () {
           "6-word-start-extend-backward": new Promise((resolve) => notifyDependents["6-word-start-extend-backward"] = resolve),
         };
 
-  test("transition 1                                    > 1-word-end                            ", async function () {
+  test("1 > word-end", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -108,7 +108,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:10:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end"](afterDocument);
@@ -119,7 +119,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1-word-end                           > 1-word-end-x                          ", async function () {
+  test("1 > word-end > x", async function () {
     const beforeDocument = await documents["1-word-end"];
 
     if (beforeDocument === undefined) {
@@ -142,7 +142,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:20:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-x"](afterDocument);
@@ -153,7 +153,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1-word-end-x                         > 1-word-end-x-x                        ", async function () {
+  test("1 > word-end > x > x", async function () {
     const beforeDocument = await documents["1-word-end-x"];
 
     if (beforeDocument === undefined) {
@@ -176,7 +176,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:30:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-x-x"](afterDocument);
@@ -187,7 +187,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1-word-end-x-x                       > 1-word-end-x-x-word-start-backward    ", async function () {
+  test("1 > word-end > x > x > word-start-backward", async function () {
     const beforeDocument = await documents["1-word-end-x-x"];
 
     if (beforeDocument === undefined) {
@@ -210,7 +210,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:40:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-x-x-word-start-backward"](afterDocument);
@@ -221,7 +221,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1-word-end-x-x-word-start-backward   > 1-word-end-x-x-word-start-backward-x  ", async function () {
+  test("1 > word-end > x > x > word-start-backward > x", async function () {
     const beforeDocument = await documents["1-word-end-x-x-word-start-backward"];
 
     if (beforeDocument === undefined) {
@@ -244,7 +244,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:50:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-x-x-word-start-backward-x"](afterDocument);
@@ -255,7 +255,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1-word-end-x-x-word-start-backward-x > 1-word-end-x-x-word-start-backward-x-x", async function () {
+  test("1 > word-end > x > x > word-start-backward > x > x", async function () {
     const beforeDocument = await documents["1-word-end-x-x-word-start-backward-x"];
 
     if (beforeDocument === undefined) {
@@ -278,7 +278,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:60:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-x-x-word-start-backward-x-x"](afterDocument);
@@ -289,7 +289,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1                                    > 1-word-end-extend                     ", async function () {
+  test("1 > word-end-extend", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -312,7 +312,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:70:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-extend"](afterDocument);
@@ -323,7 +323,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1-word-end-extend                    > 1-word-end-extend-x                   ", async function () {
+  test("1 > word-end-extend > x", async function () {
     const beforeDocument = await documents["1-word-end-extend"];
 
     if (beforeDocument === undefined) {
@@ -346,7 +346,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:80:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-extend-x"](afterDocument);
@@ -357,7 +357,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1-word-end-extend-x                  > 1-word-end-extend-x-x                 ", async function () {
+  test("1 > word-end-extend > x > x", async function () {
     const beforeDocument = await documents["1-word-end-extend-x"];
 
     if (beforeDocument === undefined) {
@@ -380,7 +380,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:90:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-extend-x-x"](afterDocument);
@@ -391,7 +391,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 1-word-end-extend-x                  > 1-word-end-extend-x-word-end          ", async function () {
+  test("1 > word-end-extend > x > word-end", async function () {
     const beforeDocument = await documents["1-word-end-extend-x"];
 
     if (beforeDocument === undefined) {
@@ -414,7 +414,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:100:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-word-end-extend-x-word-end"](afterDocument);
@@ -425,7 +425,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 2                                    > 2-word-start-backward                 ", async function () {
+  test("2 > word-start-backward", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -450,7 +450,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:121:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-word-start-backward"](afterDocument);
@@ -461,7 +461,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 3                                    > 3-word-end                            ", async function () {
+  test("3 > word-end", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -484,7 +484,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:144:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-word-end"](afterDocument);
@@ -495,7 +495,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 3-word-end                           > 3-word-end-x                          ", async function () {
+  test("3 > word-end > x", async function () {
     const beforeDocument = await documents["3-word-end"];
 
     if (beforeDocument === undefined) {
@@ -518,7 +518,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:154:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-word-end-x"](afterDocument);
@@ -529,7 +529,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 3-word-end-x                         > 3-word-end-x-word-start-backward      ", async function () {
+  test("3 > word-end > x > word-start-backward", async function () {
     const beforeDocument = await documents["3-word-end-x"];
 
     if (beforeDocument === undefined) {
@@ -552,7 +552,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:164:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-word-end-x-word-start-backward"](afterDocument);
@@ -563,7 +563,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 3-word-end-x                         > 3-word-end-x-word-start-backward-2    ", async function () {
+  test("3 > word-end > x > word-start-backward-2", async function () {
     const beforeDocument = await documents["3-word-end-x"];
 
     if (beforeDocument === undefined) {
@@ -586,7 +586,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:174:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-word-end-x-word-start-backward-2"](afterDocument);
@@ -597,7 +597,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 4                                    > 4-word-start                          ", async function () {
+  test("4 > word-start", async function () {
     const beforeDocument = await documents["4"];
 
     if (beforeDocument === undefined) {
@@ -620,7 +620,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.seek.word");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:193:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["4-word-start"](afterDocument);
@@ -631,7 +631,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 4-word-start                         > 4-word-start-word-end                 ", async function () {
+  test("4 > word-start > word-end", async function () {
     const beforeDocument = await documents["4-word-start"];
 
     if (beforeDocument === undefined) {
@@ -654,7 +654,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.seek.wordEnd");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:205:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["4-word-start-word-end"](afterDocument);
@@ -665,7 +665,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 5                                    > 5-word-end                            ", async function () {
+  test("5 > word-end", async function () {
     const beforeDocument = await documents["5"];
 
     if (beforeDocument === undefined) {
@@ -689,7 +689,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:227:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["5-word-end"](afterDocument);
@@ -700,7 +700,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 5-word-end                           > 5-word-end-x                          ", async function () {
+  test("5 > word-end > x", async function () {
     const beforeDocument = await documents["5-word-end"];
 
     if (beforeDocument === undefined) {
@@ -724,7 +724,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:238:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["5-word-end-x"](afterDocument);
@@ -735,7 +735,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 5-word-end-x                         > 5-word-end-x-x                        ", async function () {
+  test("5 > word-end > x > x", async function () {
     const beforeDocument = await documents["5-word-end-x"];
 
     if (beforeDocument === undefined) {
@@ -759,7 +759,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:249:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["5-word-end-x-x"](afterDocument);
@@ -770,7 +770,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 5-word-end-x-x                       > 5-word-end-x-x-x                      ", async function () {
+  test("5 > word-end > x > x > x", async function () {
     const beforeDocument = await documents["5-word-end-x-x"];
 
     if (beforeDocument === undefined) {
@@ -794,7 +794,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:260:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["5-word-end-x-x-x"](afterDocument);
@@ -805,7 +805,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 6                                    > 6-word-end                            ", async function () {
+  test("6 > word-end", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -828,7 +828,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:280:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-word-end"](afterDocument);
@@ -839,7 +839,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 6                                    > 6-word-start                          ", async function () {
+  test("6 > word-start", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -862,7 +862,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:290:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-word-start"](afterDocument);
@@ -873,7 +873,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 6                                    > 6-word-start-backward                 ", async function () {
+  test("6 > word-start-backward", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -896,7 +896,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:300:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-word-start-backward"](afterDocument);
@@ -907,7 +907,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 6                                    > 6-word-end-extend                     ", async function () {
+  test("6 > word-end-extend", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -930,7 +930,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:310:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-word-end-extend"](afterDocument);
@@ -941,7 +941,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 6                                    > 6-word-start-extend                   ", async function () {
+  test("6 > word-start-extend", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -964,7 +964,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:320:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-word-start-extend"](afterDocument);
@@ -975,7 +975,7 @@ suite("seek-word.md", function () {
     }
   });
 
-  test("transition 6                                    > 6-word-start-extend-backward          ", async function () {
+  test("6 > word-start-extend-backward", async function () {
     const beforeDocument = await documents["6"];
 
     if (beforeDocument === undefined) {
@@ -998,7 +998,7 @@ suite("seek-word.md", function () {
       await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:330:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["6-word-start-extend-backward"](afterDocument);
@@ -1008,4 +1008,6 @@ suite("seek-word.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

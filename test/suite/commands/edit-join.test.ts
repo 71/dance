@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("edit-join.md", function () {
+suite("./test/suite/commands/edit-join.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -51,7 +51,7 @@ suite("edit-join.md", function () {
           "2-join-select": new Promise((resolve) => notifyDependents["2-join-select"] = resolve),
         };
 
-  test("transition 1 > 1-join       ", async function () {
+  test("1 > join", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -73,7 +73,7 @@ suite("edit-join.md", function () {
       await executeCommand("dance.edit.join");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-join.md:13:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-join"](afterDocument);
@@ -84,7 +84,7 @@ suite("edit-join.md", function () {
     }
   });
 
-  test("transition 1 > 1-join-select", async function () {
+  test("1 > join-select", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -106,7 +106,7 @@ suite("edit-join.md", function () {
       await executeCommand("dance.edit.join.select");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-join.md:24:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-join-select"](afterDocument);
@@ -117,7 +117,7 @@ suite("edit-join.md", function () {
     }
   });
 
-  test("transition 2 > 2-join       ", async function () {
+  test("2 > join", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -141,7 +141,7 @@ suite("edit-join.md", function () {
       await executeCommand("dance.edit.join");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-join.md:47:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-join"](afterDocument);
@@ -152,7 +152,7 @@ suite("edit-join.md", function () {
     }
   });
 
-  test("transition 2 > 2-join-select", async function () {
+  test("2 > join-select", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -176,7 +176,7 @@ suite("edit-join.md", function () {
       await executeCommand("dance.edit.join.select");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/edit-join.md:60:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-join-select"](afterDocument);
@@ -186,4 +186,6 @@ suite("edit-join.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });

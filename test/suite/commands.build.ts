@@ -3,7 +3,7 @@ import * as fs     from "fs/promises";
 import * as path   from "path";
 
 import { unindent } from "../../meta";
-import { execAll, longestStringLength, stringifyExpectedDocument } from "./build-utils";
+import { execAll, stringifyExpectedDocument } from "./build-utils";
 
 export async function build() {
   const commandsDir = path.join(__dirname, "commands"),
@@ -12,18 +12,16 @@ export async function build() {
   for (const file of fileNames.filter((f) => f.endsWith(".md"))) {
     const filePath = path.resolve(commandsDir, file),
           contents = await fs.readFile(filePath, "utf-8"),
-          { setups, tests } = parseMarkdownTests(contents),
-          testNamePadding = longestStringLength((x) => x.title, tests),
-          comesAfterPadding = longestStringLength((x) => x.comesAfter.title, tests);
+          { setups, tests } = parseMarkdownTests(contents);
 
     await fs.writeFile(filePath.replace(/\.md$/, ".test.ts"), unindent(6, `\
       import * as vscode from "vscode";
 
-      import { ExpectedDocument } from "../utils";
+      import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
       const executeCommand = vscode.commands.executeCommand;
 
-      suite("${path.basename(file)}", function () {
+      suite("./test/suite/commands/${path.basename(file)}", function () {
         // Set up document.
         let document: vscode.TextDocument,
             editor: vscode.TextEditor;
@@ -54,11 +52,8 @@ export async function build() {
                 ).join("\n" + " ".repeat(16))}
               };
         ${tests.map((test) => {
-          const paddedComesAfter = test.comesAfter.title.padEnd(comesAfterPadding),
-                paddedTitle = test.title.padEnd(testNamePadding);
-
           return unindent(4, `
-            test("transition ${paddedComesAfter} > ${paddedTitle}", async function () {
+            test("${test.titleParts.join(" > ")}", async function () {
               const beforeDocument = await documents["${test.comesAfter.title}"];
 
               if (beforeDocument === undefined) {
@@ -76,7 +71,8 @@ export async function build() {
                 // Perform all operations.${"\n"
                   + stringifyOperations(test).replace(/^/gm, " ".repeat(16))}
                 // Ensure document is as expected.
-                afterDocument.assertEquals(editor);
+                afterDocument.assertEquals(editor, "./test/suite/commands/${
+                  path.basename(file)}:${test.line + 1}:1");
 
                 // Test passed, allow dependent tests to run.
                 notifyDependents["${test.title}"](afterDocument);
@@ -87,6 +83,8 @@ export async function build() {
               }
             });`);
         }).join("\n")}
+
+        addDepthToCommandTests(this);
       });
     `));
   }
@@ -98,6 +96,7 @@ interface TestOperation {
 }
 
 interface Section {
+  line: number;
   title: string;
   code: string;
   debug?: boolean;
@@ -106,6 +105,7 @@ interface Section {
 }
 
 interface Test extends Section {
+  titleParts: string[];
   comesAfter: Section;
   operations: TestOperation[];
 }
@@ -118,19 +118,24 @@ function parseMarkdownTests(contents: string) {
         opre = /^- *([\w.:]+)( +.+)?$|^> *(.+)$/gm,
         initial = [] as InitialDocument[],
         tests = [] as Test[],
-        all = new Map<string, Test | InitialDocument>();
+        all = new Map<string, Test | InitialDocument>(),
+        lines = contents.split("\n");
+  let currentLine = 0;
 
   for (const [text, badTitle, comesAfterTitle, operationsText, after] of execAll(re, contents)) {
     const title = badTitle.replace(/\s/g, "-");
 
     assert(!all.has(title), `document state "${title}" is defined multiple times`);
 
-    const titleParts = badTitle.split(" ").length,
+    const titleParts = badTitle.split(" "),
           nesting = /^#+/.exec(text)![0].length;
 
-    if (titleParts !== nesting && titleParts <= 6) {
+    if (titleParts.length !== nesting && titleParts.length <= 6) {
       console.warn(`section "${title}" has ${titleParts} parts but a nesting of ${nesting}`);
     }
+
+    const line = lines.indexOf(text.slice(0, text.indexOf("\n")), currentLine);
+    currentLine = line + 1;
 
     if (comesAfterTitle === undefined) {
       if (nesting !== 1) {
@@ -139,7 +144,7 @@ function parseMarkdownTests(contents: string) {
 
       const flags = execAll(/^> *(.+)$/gm, operationsText).map(([_, flag]) => flag),
             behavior = getBehavior(flags) ?? "caret",
-            data: InitialDocument = { title, code: after, behavior };
+            data: InitialDocument = { title, code: after, behavior, line };
 
       applyFlags(flags, data);
 
@@ -175,7 +180,7 @@ function parseMarkdownTests(contents: string) {
     assert(comesAfter !== undefined, `test "${title}" depends on unknown test "${comesAfterTitle}"`);
 
     const behavior = getBehavior(flags) ?? comesAfter.behavior,
-          data: Test = { title, comesAfter, code: after, operations, behavior };
+          data: Test = { title, comesAfter, code: after, operations, behavior, titleParts, line };
 
     applyFlags(flags, data);
 
@@ -197,7 +202,7 @@ function applyFlags(flags: readonly string[], section: Section) {
     if (flag.startsWith("/")) {
       const split = flag.slice(1).split(/(?<!\\)\//),
             pattern = split[0],
-            replacement = split[1],
+            replacement = split[1].replace(/\\\//g, "/"),
             flags = split[2] ?? "gu",
             re = new RegExp(pattern, flags);
 

@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument } from "../utils";
+import { addDepthToCommandTests, ExpectedDocument } from "../utils";
 
 const executeCommand = vscode.commands.executeCommand;
 
-suite("selections-trim.md", function () {
+suite("./test/suite/commands/selections-trim.md", function () {
   // Set up document.
   let document: vscode.TextDocument,
       editor: vscode.TextEditor;
@@ -69,7 +69,7 @@ suite("selections-trim.md", function () {
           "3-trim": new Promise((resolve) => notifyDependents["3-trim"] = resolve),
         };
 
-  test("transition 1        > 1-trim-whitespace", async function () {
+  test("1 > trim-whitespace", async function () {
     const beforeDocument = await documents["1"];
 
     if (beforeDocument === undefined) {
@@ -97,7 +97,7 @@ suite("selections-trim.md", function () {
       await executeCommand("dance.selections.trimWhitespace");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-trim.md:18:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["1-trim-whitespace"](afterDocument);
@@ -108,7 +108,7 @@ suite("selections-trim.md", function () {
     }
   });
 
-  test("transition 2        > 2-trim           ", async function () {
+  test("2 > trim", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -133,7 +133,7 @@ suite("selections-trim.md", function () {
       await executeCommand("dance.selections.trimLines");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-trim.md:46:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-trim"](afterDocument);
@@ -144,7 +144,7 @@ suite("selections-trim.md", function () {
     }
   });
 
-  test("transition 2        > 2-expand         ", async function () {
+  test("2 > expand", async function () {
     const beforeDocument = await documents["2"];
 
     if (beforeDocument === undefined) {
@@ -169,7 +169,7 @@ suite("selections-trim.md", function () {
       await executeCommand("dance.selections.expandToLines");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-trim.md:63:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-expand"](afterDocument);
@@ -180,7 +180,7 @@ suite("selections-trim.md", function () {
     }
   });
 
-  test("transition 2-expand > 2-expand-x       ", async function () {
+  test("2 > expand > x", async function () {
     const beforeDocument = await documents["2-expand"];
 
     if (beforeDocument === undefined) {
@@ -205,7 +205,7 @@ suite("selections-trim.md", function () {
       await executeCommand("dance.selections.expandToLines");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-trim.md:77:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["2-expand-x"](afterDocument);
@@ -216,7 +216,7 @@ suite("selections-trim.md", function () {
     }
   });
 
-  test("transition 3        > 3-expand         ", async function () {
+  test("3 > expand", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -245,7 +245,7 @@ suite("selections-trim.md", function () {
       await executeCommand("dance.selections.expandToLines");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-trim.md:108:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-expand"](afterDocument);
@@ -256,7 +256,7 @@ suite("selections-trim.md", function () {
     }
   });
 
-  test("transition 3        > 3-trim           ", async function () {
+  test("3 > trim", async function () {
     const beforeDocument = await documents["3"];
 
     if (beforeDocument === undefined) {
@@ -281,7 +281,7 @@ suite("selections-trim.md", function () {
       await executeCommand("dance.selections.trimLines");
 
       // Ensure document is as expected.
-      afterDocument.assertEquals(editor);
+      afterDocument.assertEquals(editor, "./test/suite/commands/selections-trim.md:129:1");
 
       // Test passed, allow dependent tests to run.
       notifyDependents["3-trim"](afterDocument);
@@ -291,4 +291,6 @@ suite("selections-trim.md", function () {
       throw e;
     }
   });
+
+  addDepthToCommandTests(this);
 });
