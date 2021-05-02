@@ -317,30 +317,8 @@ export async function object(
 
     return shiftWhere(
       _,
-      (selection, _) => {
-        const startResult = p.searchOpening(Selections.activeStart(selection, _));
-
-        if (startResult === undefined) {
-          return undefined;
-        }
-
-        const endResult = p.searchClosing(Selections.activeEnd(selection, _));
-
-        if (endResult === undefined) {
-          return undefined;
-        }
-
-        let start = startResult[0],
-            end = endResult[0];
-
-        if (inner) {
-          start = Positions.offset(start, startResult[1][0].length, _.document)!;
-        } else {
-          end = Positions.offset(end, endResult[1][0].length, _.document)!;
-        }
-
-        return new vscode.Selection(start, end);
-      },
+      (selection, _) => surroundedBy(
+        [p], Direction.Backward, Selections.activeEnd(selection, _), !inner, _.document),
       shift,
       where,
     );

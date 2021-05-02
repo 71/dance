@@ -1,7 +1,7 @@
 # 1
 
 > behavior <- character
-> /\$object/\/\((?#inner)\)\/.source/g
+> /\$object/"\\((?#inner)\\)"/g
 
 ```
 if (ok) {

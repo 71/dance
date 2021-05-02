@@ -38,7 +38,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "end" });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end" });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -74,7 +74,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "end", shift: "extend" });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", shift: "extend" });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -110,7 +110,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "end", inner: true });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", inner: true });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -146,7 +146,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "end", inner: true, shift: "extend" });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "end", inner: true, shift: "extend" });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -182,7 +182,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "start" });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start" });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -218,7 +218,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "start", shift: "extend" });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", shift: "extend" });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -254,7 +254,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "start", inner: true });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", inner: true });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -290,7 +290,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, where: "start", inner: true, shift: "extend" });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", where: "start", inner: true, shift: "extend" });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -326,7 +326,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)" });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
@@ -363,7 +363,7 @@ suite("./test/suite/commands/seek-object-between.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek.object", { input: /\((?#inner)\)/.source, inner: true });
+    await executeCommand("dance.seek.object", { input: "\\((?#inner)\\)", inner: true });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
