@@ -11,6 +11,7 @@ import * as vscode from "vscode";
 
 import { Context, Selections } from "../../src/api";
 import { SelectionBehavior } from "../../src/state/modes";
+import { Extension } from "../../src/state/extension";
 
 interface Expect<T = any> {
   <T>(subject: T, assertion: string, ...args: readonly any[]): {
@@ -72,6 +73,43 @@ export function groupTestsByParentName(toplevel: Mocha.Suite) {
   }
 
   toplevel.tests.splice(0);
+}
+
+/**
+ * Executes a VS Code command, attempting to better recover errors.
+ */
+export async function executeCommand(command: string, ...args: readonly any[]) {
+  let error: Error | undefined;
+  const runPromiseSafely = Extension.prototype.runPromiseSafely;
+
+  Extension.prototype.runPromiseSafely = async (f) => {
+    try {
+      return await f();
+    } catch (e) {
+      error = e;
+      throw e;
+    }
+  };
+
+  try {
+    return await vscode.commands.executeCommand(command, ...args);
+  } catch (e) {
+    let err = e;
+
+    if (error !== undefined && e instanceof Error
+        && e.message.startsWith("Running the contributed command")
+        && e.message.endsWith("failed.")) {
+      err = error;
+    }
+
+    if (command.startsWith("dance") && args.length === 1 && args[0].$expect instanceof RegExp) {
+      assert.match("" + (err?.message ?? err), args[0].$expect);
+    } else {
+      throw err;
+    }
+  } finally {
+    Extension.prototype.runPromiseSafely = runPromiseSafely;
+  }
 }
 
 export const expect: Expect = unexpected.clone();
@@ -253,10 +291,15 @@ export class ExpectedDocument {
   }
 
   public static parseIndented(indent: number, text: string) {
+    if (text.length < indent) {
+      // Empty document.
+      return new ExpectedDocument("");
+    }
+
     // Remove first line break.
     text = text.slice(1);
 
-    // Remove final line break (indent - 1 indent + line break).
+    // Remove final line break (indent - (two spaces) + line break).
     text = text.slice(0, text.length - (indent - 2 + 1));
 
     // Remove indentation.

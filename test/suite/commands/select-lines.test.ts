@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument, groupTestsByParentName } from "../utils";
-
-const executeCommand = vscode.commands.executeCommand;
+import { executeCommand, ExpectedDocument, groupTestsByParentName } from "../utils";
 
 suite("./test/suite/commands/select-lines.md", function () {
   // Set up document.
@@ -39,7 +37,7 @@ suite("./test/suite/commands/select-lines.md", function () {
       bar
       ^^^^ 0
       baz
-      ^^^^ 0
+      ^^^ 0
     `);
   });
 

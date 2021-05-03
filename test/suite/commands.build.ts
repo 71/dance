@@ -17,9 +17,7 @@ export async function build() {
     await fs.writeFile(filePath.replace(/\.md$/, ".test.ts"), unindent(6, `\
       import * as vscode from "vscode";
 
-      import { ExpectedDocument, groupTestsByParentName } from "../utils";
-
-      const executeCommand = vscode.commands.executeCommand;
+      import { executeCommand, ExpectedDocument, groupTestsByParentName } from "../utils";
 
       suite("./test/suite/commands/${path.basename(file)}", function () {
         // Set up document.

@@ -1829,6 +1829,7 @@ export namespace Selections {
    * ```
    * a
    * b
+   *
    * ```
    */
   export function fromCharacterMode(

@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument, groupTestsByParentName } from "../utils";
-
-const executeCommand = vscode.commands.executeCommand;
+import { executeCommand, ExpectedDocument, groupTestsByParentName } from "../utils";
 
 suite("./test/suite/commands/seek.md", function () {
   // Set up document.
@@ -98,7 +96,7 @@ suite("./test/suite/commands/seek.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.seek", { input: "c" });
+    await executeCommand("dance.seek", { input: "c", $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek.md:50:1", 6, String.raw`
@@ -150,7 +148,7 @@ suite("./test/suite/commands/seek.md", function () {
 
     // Perform all operations.
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.seek", { input: "c" });
+    await executeCommand("dance.seek", { input: "c", $expect: /^no selections remain$/ });
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.

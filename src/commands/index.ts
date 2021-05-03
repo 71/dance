@@ -94,39 +94,55 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
   /**
    * Invokes the command with the given argument.
    */
+  public async invoke(extension: Extension, argument: unknown) {
+    const context = Context.create(extension, this);
+
+    if (this.requiresActiveEditor && !(context instanceof Context)) {
+      throw new EditorRequiredError();
+    }
+
+    const ownedArgument = Object.assign({}, argument) as Record<string, unknown>;
+
+    if (ownedArgument.count === undefined && extension.currentCount !== 0) {
+      ownedArgument.count = extension.currentCount;
+    }
+    if (ownedArgument.register === undefined && extension.currentRegister !== undefined) {
+      ownedArgument.register = extension.currentRegister;
+    }
+
+    extension.currentCount = 0;
+    extension.currentRegister = undefined;
+
+    let result: unknown;
+
+    try {
+      result = await this.handler(context as any, ownedArgument);
+    } catch (e) {
+      if ((ownedArgument as { readonly try: boolean }).try) {
+        return;
+      }
+
+      throw e;
+    }
+
+    // Record command *after* executing it, to ensure it did not encounter
+    // an error.
+    extension.recorder.recordCommand(this, ownedArgument);
+
+    if (this.requiresActiveEditor) {
+      await (context as Context).insertUndoStop();
+    }
+
+    return result;
+  }
+
+  /**
+   * Invokes the command with the given argument, ensuring that errors are
+   * reporting to the user instead of throwing them.
+   */
   public invokeSafely(extension: Extension, argument: unknown) {
     return extension.runPromiseSafely(
-      async () => {
-        const context = Context.create(extension, this);
-
-        if (this.requiresActiveEditor && !(context instanceof Context)) {
-          throw new EditorRequiredError();
-        }
-
-        const ownedArgument = Object.assign({}, argument) as Record<string, unknown>;
-
-        if (ownedArgument.count === undefined && extension.currentCount !== 0) {
-          ownedArgument.count = extension.currentCount;
-        }
-        if (ownedArgument.register === undefined && extension.currentRegister !== undefined) {
-          ownedArgument.register = extension.currentRegister;
-        }
-
-        extension.currentCount = 0;
-        extension.currentRegister = undefined;
-
-        const result = await this.handler(context as any, ownedArgument);
-
-        // Record command *after* executing it, to ensure it did not encounter
-        // an error.
-        extension.recorder.recordCommand(this, ownedArgument);
-
-        if (this.requiresActiveEditor) {
-          await (context as Context).insertUndoStop();
-        }
-
-        return result;
-      },
+      () => this.invoke(extension, argument),
       () => undefined,
       (e) => `error executing command "${this.identifier}": ${e.message}`,
     );

@@ -1323,6 +1323,7 @@ suite("API tests", function () {
             before = ExpectedDocument.parseIndented(14, String.raw`
               a
               b
+
             `);
 
       await before.apply(editor);

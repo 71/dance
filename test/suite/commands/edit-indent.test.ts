@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument, groupTestsByParentName } from "../utils";
-
-const executeCommand = vscode.commands.executeCommand;
+import { executeCommand, ExpectedDocument, groupTestsByParentName } from "../utils";
 
 suite("./test/suite/commands/edit-indent.md", function () {
   // Set up document.

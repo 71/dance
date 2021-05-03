@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import * as regexp from "../../utils/regexp";
+
 import { Context, Direction } from "..";
 import { Positions } from "../positions";
 

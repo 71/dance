@@ -18,7 +18,7 @@ foo
 bar
 ^^^^ 0
 baz
-^^^^ 0
+^^^ 0
 ```
 
 ## 1 select-line

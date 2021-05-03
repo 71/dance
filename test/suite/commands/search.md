@@ -91,7 +91,7 @@ lazy dog quickly.
 ## 1 search-not-found
 [up](#1)
 
-- .search { input: "pig" }
+- .search { input: "pig", $expect: /^no selections remain$/ }
 
 No matches found. Selection is left untouched because otherwise there would be
 no selection left.
@@ -148,7 +148,7 @@ lazy dog quickly.
 ## 1 search-backward-not-found
 [up](#1)
 
-- .search { input: "pig", direction: -1 }
+- .search { input: "pig", direction: -1, $expect: /^no selections remain$/ }
 
 No matches found. Selection is left untouched because otherwise there would be
 no selection left.
@@ -176,7 +176,7 @@ lazy dog quickly.
 ## 1 search-extend-wrap
 [up](#1)
 
-- .search { input: "T", shift: "extend" }
+- .search { input: "T", shift: "extend", $expect: /^no selections remain$/ }
 
 When extending, a selection is deleted if it would require wrapping to find the
 next match. In this case, the (only) main selection is left untouched because
@@ -252,7 +252,7 @@ lazy dog quickly.
 ## 1 search-backward-extend-wrap
 [up](#1)
 
-- .search { input: "lazy", direction: -1, shift: "extend" }
+- .search { input: "lazy", direction: -1, shift: "extend", $expect: /^no selections remain$/ }
 
 When extending, a selection is deleted if it would require wrapping to find the
 next match. In this case, the (only) main selection is left untouched because
@@ -325,7 +325,7 @@ lazy dog quickly.
 ## 2 search-wrap
 [up](#2)
 
-- .search { input: "he" }
+- .search { input: "he", $expect: /^no selections remain$/ }
 
 Forward search starts at "y" and wraps to "T**he**" instead of "t**he**".
 
@@ -339,7 +339,7 @@ lazy dog quickly.
 ## 2 search-extend-wrap
 [up](#2)
 
-- .search { input: "he", shift: "extend" }
+- .search { input: "he", shift: "extend", $expect: /^no selections remain$/ }
 
 When extending, Dance should not wrap around document edges to find "T**he**".
 "t**he**" is not considered at all. No-op due to no selections remaining.
@@ -398,7 +398,7 @@ lazy dog quickly.
 ## 2 search-backward-extend-wrap
 [up](#2)
 
-- .search { input: "o", direction: -1, shift: "extend" }
+- .search { input: "o", direction: -1, shift: "extend", $expect: /^no selections remain$/ }
 
 When extending, Dance should not wrap around document edges to find "d**o**g".
 "br**o**wn" is not considered at all. No-op due to no selections remaining.

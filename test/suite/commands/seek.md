@@ -50,7 +50,7 @@ abcabc
 ### 1 select-to-c-2 select-to-c
 [up](#1-select-to-c-2)
 
-- .seek { input: "c" }
+- .seek { input: "c", $expect: /^no selections remain$/ }
 
 ```
 abcabc
@@ -82,7 +82,7 @@ abcabc
 
 > behavior <- character
 
-- .seek { input: "c" }
+- .seek { input: "c", $expect: /^no selections remain$/ }
 
 ```
 abcabc

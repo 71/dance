@@ -46,7 +46,7 @@ friends
 ## 2 trim
 [up](#2)
 
-- .selections.trimLines
+- .selections.trimLines { $expect: /^no selections remain$/ }
 
 Neither selection contains a full line but deleting both would eliminate all
 selections. Thus leave everything unchanged.
@@ -123,7 +123,7 @@ my
 dear
 ^^^^^ 1
 friends
-^^^^^^^^ 1
+^^^^^^^ 1
 ```
 
 ## 3 trim

@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument, groupTestsByParentName } from "../utils";
-
-const executeCommand = vscode.commands.executeCommand;
+import { executeCommand, ExpectedDocument, groupTestsByParentName } from "../utils";
 
 suite("./test/suite/commands/selections-trim.md", function () {
   // Set up document.
@@ -66,7 +64,7 @@ suite("./test/suite/commands/selections-trim.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.selections.trimLines");
+    await executeCommand("dance.selections.trimLines", { $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/selections-trim.md:46:1", 6, String.raw`
@@ -158,7 +156,7 @@ suite("./test/suite/commands/selections-trim.md", function () {
       dear
       ^^^^^ 1
       friends
-      ^^^^^^^^ 1
+      ^^^^^^^ 1
     `);
   });
 

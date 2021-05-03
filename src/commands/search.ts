@@ -39,7 +39,6 @@ export function search(
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  // TODO: handle shift
   return manipulateSelectionsInteractively(_, input, setInput, interactive, {
     ...prompt.regexpOpts("mug"),
     value: lastSearchInput?.source,
@@ -54,13 +53,13 @@ export function search(
     const newSelections = add ? selections.slice() : [],
           regexpMatches = [] as RegExpMatchArray[];
 
-    newSelections.push(...Selections.map.byIndex((i, selection, document) => {
+    newSelections.push(...Selections.map.byIndex((_i, selection, document) => {
       let newSelection = selection;
 
       for (let j = 0; j < repetitions; j++) {
         const searchResult = nextImpl(
           input as RegExp, direction, newSelection, undefined, undefined, document,
-          /* allowWrapping= */ shift !== api.Shift.Extend, regexpMatches, i);
+          /* allowWrapping= */ shift !== api.Shift.Extend, regexpMatches, regexpMatches.length);
 
         if (searchResult === undefined) {
           return undefined;
@@ -159,11 +158,11 @@ export async function next(
         allRegexpMatches = [] as RegExpMatchArray[];
 
   if (!add) {
-    Selections.update.byIndex((i, selection) => {
+    Selections.update.byIndex((_i, selection) => {
       for (let j = 0; j < repetitions; j++) {
         const next = nextImpl(
           re, direction, selection, undefined, undefined, document, /* allowWrapping= */ true,
-          allRegexpMatches, i);
+          allRegexpMatches, allRegexpMatches.length);
 
         if (next === undefined) {
           return undefined;
@@ -190,7 +189,7 @@ export async function next(
       const selection = selections[j],
             next = nextImpl(
               re, direction, selection, undefined, undefined, document, /* allowWrapping= */ true,
-              regexpMatches, i);
+              regexpMatches, regexpMatches.length);
 
       if (next !== undefined) {
         selections[j] = next;

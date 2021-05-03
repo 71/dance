@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 
-import { ExpectedDocument, groupTestsByParentName } from "../utils";
-
-const executeCommand = vscode.commands.executeCommand;
+import { executeCommand, ExpectedDocument, groupTestsByParentName } from "../utils";
 
 suite("./test/suite/commands/search.md", function () {
   // Set up document.
@@ -152,7 +150,7 @@ suite("./test/suite/commands/search.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "pig" });
+    await executeCommand("dance.search", { input: "pig", $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search.md:91:1", 6, String.raw`
@@ -236,7 +234,7 @@ suite("./test/suite/commands/search.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "pig", direction: -1 });
+    await executeCommand("dance.search", { input: "pig", direction: -1, $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search.md:148:1", 6, String.raw`
@@ -279,7 +277,7 @@ suite("./test/suite/commands/search.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "T", shift: "extend" });
+    await executeCommand("dance.search", { input: "T", shift: "extend", $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search.md:176:1", 6, String.raw`
@@ -388,7 +386,7 @@ suite("./test/suite/commands/search.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "lazy", direction: -1, shift: "extend" });
+    await executeCommand("dance.search", { input: "lazy", direction: -1, shift: "extend", $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search.md:252:1", 6, String.raw`
@@ -478,7 +476,7 @@ suite("./test/suite/commands/search.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "he" });
+    await executeCommand("dance.search", { input: "he", $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search.md:325:1", 6, String.raw`
@@ -500,7 +498,7 @@ suite("./test/suite/commands/search.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "he", shift: "extend" });
+    await executeCommand("dance.search", { input: "he", shift: "extend", $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search.md:339:1", 6, String.raw`
@@ -590,7 +588,7 @@ suite("./test/suite/commands/search.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "o", direction: -1, shift: "extend" });
+    await executeCommand("dance.search", { input: "o", direction: -1, shift: "extend", $expect: /^no selections remain$/ });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search.md:398:1", 6, String.raw`
