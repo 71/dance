@@ -136,7 +136,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
       breaks) like this.       <== The white spaces before this sentence belongs to
       ^^^^^^^^^^^^^^^^^^ 2     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
-      the outer previous sentence.|{4}{5}
+      the outer previous sentence.
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
                                   ^ 5
          <- White spaces here and the line break before them belongs to this sentence,
@@ -438,8 +438,8 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:372:1", 6, String.raw`
-      I'm a sentence term{0}inated by two line breaks plus one more
-      |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
+      I'm a sentence terminated by two line breaks plus one more
+      |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
       ^ 1
 

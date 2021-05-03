@@ -380,7 +380,7 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
-      "dance.history.repeat.objectSelection",
+      "dance.history.repeat.seek",
       (_, argument) => _.runAsync(() => commands([".history.repeat", { include: "dance\\.seek\\..+", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),

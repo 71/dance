@@ -421,7 +421,7 @@ export async function object(
       Selections.update.byIndex((_i, selection, document) =>
         Selections.shift(
           selection,
-          f.end(Selections.activePosition(selection, _.document), inner, document),
+          f.end(selection.active, inner, document),
           shift,
           _,
         ),

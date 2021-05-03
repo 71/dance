@@ -253,11 +253,16 @@ export class ExpectedDocument {
   }
 
   public static parseIndented(indent: number, text: string) {
-    text = text.slice(1);  // Remove first line break.
+    // Remove first line break.
+    text = text.slice(1);
 
-    return ExpectedDocument.parse(
-      text.replace(new RegExp(`^ {${indent}}`, "gm"), "").replace(/ +$/, ""),
-    );
+    // Remove final line break (indent - 1 indent + line break).
+    text = text.slice(0, text.length - (indent - 2 + 1));
+
+    // Remove indentation.
+    text = text.replace(new RegExp(`^ {${indent}}`, "gm"), "");
+
+    return ExpectedDocument.parse(text);
   }
 
   public static parse(text: string) {
@@ -291,7 +296,7 @@ export class ExpectedDocument {
         }
         hasIndicator = true;
 
-        return " ".repeat(match[0].length);
+        return " ".repeat(match.length);
       });
 
       if (hasIndicator && /^ +$/.test(line)) {

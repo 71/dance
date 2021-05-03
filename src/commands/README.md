@@ -40,7 +40,7 @@
     <tr><td><a href="#editnewLineabove"><code>edit.newLine.above</code></a></td><td>Insert new line above each selection</td><td><code>Shift+Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editnewLinebelow"><code>edit.newLine.below</code></a></td><td>Insert new line below each selection</td><td><code>Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editreplaceCharacters"><code>edit.replaceCharacters</code></a></td><td>Replace characters</td><td><code>R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=11><a href="#history"><code>history</code></a></td><td><a href="./history.ts#L57"><code>history.repeat.objectSelection</code></a></td><td>Repeat last object selection</td><td><code>Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=11><a href="#history"><code>history</code></a></td><td><a href="./history.ts#L57"><code>history.repeat.seek</code></a></td><td>Repeat last seek</td><td><code>Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./history.ts#L56"><code>history.repeat.selection</code></a></td><td>Repeat last selection change</td><td></td></tr>
     <tr><td><a href="#historyrecordingplay"><code>history.recording.play</code></a></td><td>Replay recording</td><td><code>Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#historyrecordingstart"><code>history.recording.start</code></a></td><td>Start recording</td><td><code>Shift+Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -408,10 +408,10 @@ This command:
 Repeat last change.
 
 
-| Title                        | Identifier               | Keybinding     | Commands                                                                    |
-| ---------------------------- | ------------------------ | -------------- | --------------------------------------------------------------------------- |
-| Repeat last selection change | `repeat.selection`       |                | `[".history.repeat", { include: "dance\\.(seek|select|selections)\\..+" }]` |
-| Repeat last object selection | `repeat.objectSelection` | `a-.` (normal) | `[".history.repeat", { include: "dance\\.seek\\..+" }]`                     |
+| Title                        | Identifier         | Keybinding     | Commands                                                                    |
+| ---------------------------- | ------------------ | -------------- | --------------------------------------------------------------------------- |
+| Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { include: "dance\\.(seek|select|selections)\\..+" }]` |
+| Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { include: "dance\\.seek\\..+" }]`                     |
 
 This command:
 - may be repeated with a given number of repetitions.

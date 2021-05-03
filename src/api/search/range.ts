@@ -158,7 +158,7 @@ export namespace Range {
       _inner: boolean,
       document = Context.current.document,
     ) {
-      if (position.line > 0 && position.character === 0 && Lines.isEmpty(position.line, document)) {
+      if (position.line > 0 && Lines.isEmpty(position.line, document)) {
         position = Positions.lineStart(position.line - 1);  // Re-anchor to the previous line.
       }
 
@@ -177,10 +177,6 @@ export namespace Range {
       if (start !== undefined) {
         // It's much easier to check from start.
         position = start;
-      }
-
-      while (position.line + 1 < document.lineCount && Lines.isEmpty(position.line, document)) {
-        position = Positions.lineStart(position.line + 1);
       }
 
       return toParagraphEnd(position, inner, document);
@@ -472,7 +468,7 @@ function toParagraphEnd(
       line--;
     }
 
-    return Positions.lineEnd(line, document);
+    return Positions.lineBreak(line, document);
   }
 
   // Then move to the last trailing empty line.
@@ -480,7 +476,7 @@ function toParagraphEnd(
     line++;
   }
 
-  return Positions.lineEnd(line, document);
+  return Positions.lineBreak(line, document);
 }
 
 function toBeforeBlank(

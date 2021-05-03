@@ -467,18 +467,42 @@ export function updateSelections(
 }
 
 function mapFallbackSelections(values: (vscode.Selection | readonly [vscode.Selection])[]) {
-  const selections: vscode.Selection[] = [],
-        fallbackSelections: vscode.Selection[] = [];
+  let selectionsCount = 0,
+      fallbackSelectionsCount = 0;
 
   for (const value of values) {
     if (Array.isArray(value)) {
-      fallbackSelections.push(value[0]);
-    } else {
-      selections.push(value as vscode.Selection);
+      fallbackSelectionsCount++;
+    } else if (value !== undefined) {
+      selectionsCount++;
     }
   }
 
-  return selections.length === 0 ? fallbackSelections : selections;
+  if (selectionsCount > 0) {
+    const selections: vscode.Selection[] = [];
+
+    for (const value of values) {
+      if (value !== undefined && !Array.isArray(value)) {
+        selections.push(value as vscode.Selection);
+      }
+    }
+
+    return selections;
+  }
+
+  if (fallbackSelectionsCount > 0) {
+    const selections: vscode.Selection[] = [];
+
+    for (const value of values) {
+      if (Array.isArray(value)) {
+        selections.push(value[0]);
+      }
+    }
+
+    return selections;
+  }
+
+  return [];
 }
 
 export namespace updateSelections {
@@ -883,7 +907,7 @@ export function mergeOverlappingSelections(
           aStart = bStart;
         }
       } else if ((aEnd.isAfter(bStart) || (alsoMergeConsecutiveSelections && aEnd.isEqual(bStart)))
-                 && aEnd.isBefore(bEnd)) {
+                 && aEnd.isBeforeOrEqual(bEnd)) {
         // Selection A ends within selection B. Furthermore, we know that
         // selection A does not start within selection B, so it starts before
         // selection B.

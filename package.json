@@ -872,8 +872,8 @@
         "category": "Dance"
       },
       {
-        "command": "dance.history.repeat.objectSelection",
-        "title": "Repeat last object selection",
+        "command": "dance.history.repeat.seek",
+        "title": "Repeat last seek",
         "category": "Dance"
       },
       {
@@ -1750,7 +1750,7 @@
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.history.repeat.objectSelection",
+          "command": "dance.history.repeat.seek",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -2547,8 +2547,8 @@
       {
         "key": "Alt+.",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Repeat last object selection",
-        "command": "dance.history.repeat.objectSelection"
+        "title": "Repeat last seek",
+        "command": "dance.history.repeat.seek"
       },
       {
         "key": "U",

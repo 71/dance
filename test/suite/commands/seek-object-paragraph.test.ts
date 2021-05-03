@@ -24,7 +24,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       foo
-      ^ 0
+      | 0
          ^ 1
       bar
          ^ 2
@@ -33,7 +33,9 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
       baz
       ^ 4
 
+
       ^ 5
+
 
       qux
     `);
@@ -42,7 +44,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "start" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:21:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:23:1", 6, String.raw`
       foo
       ^^^^ 0
       bar
@@ -54,6 +56,9 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
 
       ^ 1
 
+      ^ 1
+
+
       qux
     `);
   });
@@ -62,7 +67,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       foo
-      ^ 0
+      | 0
          ^ 1
       bar
          ^ 2
@@ -71,7 +76,9 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
       baz
       ^ 4
 
+
       ^ 5
+
 
       qux
     `);
@@ -80,14 +87,19 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "end" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:45:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:50:1", 6, String.raw`
       foo
       ^^^^ 0
       bar
       ^^^^ 0
 
+      ^ 0
       baz
       ^^^^ 1
+
+      ^ 1
+
+      ^ 1
 
       ^ 1
 
@@ -100,7 +112,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       foo
-      ^ 0
+      | 0
          ^ 1
       bar
          ^ 2
@@ -109,7 +121,9 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
       baz
       ^ 4
 
+
       ^ 5
+
 
       qux
     `);
@@ -118,7 +132,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "end", inner: true });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:68:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:78:1", 6, String.raw`
       foo
       ^^^^ 0
       bar
@@ -127,7 +141,9 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
       baz
       ^^^^ 1
 
+
       ^ 2
+
 
       qux
     `);
@@ -137,7 +153,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       foo
-      ^ 0
+      | 0
          ^ 1
       bar
          ^ 2
@@ -146,7 +162,9 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
       baz
       ^ 4
 
+
       ^ 5
+
 
       qux
     `);
@@ -155,14 +173,19 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:90:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:102:1", 6, String.raw`
       foo
       ^^^^ 0
       bar
       ^^^^ 0
 
+      ^ 0
       baz
       ^^^^ 1
+
+      ^ 1
+
+      ^ 1
 
       ^ 1
 
@@ -191,7 +214,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", inner: true });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:132:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:149:1", 6, String.raw`
       paragraph 1
       ^^^^^^^^^^^^ 0
 
@@ -223,7 +246,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "end", inner: true });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:152:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:169:1", 6, String.raw`
       paragraph 1
                  ^ 0
 

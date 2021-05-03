@@ -209,8 +209,8 @@ const builtinKeybindings = [
   {
     key: "Alt+.",
     when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Repeat last object selection",
-    command: "dance.history.repeat.objectSelection",
+    title: "Repeat last seek",
+    command: "dance.history.repeat.seek",
   },
   {
     key: "U",
