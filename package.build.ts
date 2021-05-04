@@ -77,7 +77,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   name: "dance",
   description: "Make those cursors dance with Kakoune-inspired keybindings.",
-  version: "0.5.0-rc",
+  version: "0.5.0",
   license: "ISC",
 
   author: {
