@@ -22,7 +22,7 @@ jobs:
         run: yarn run ts-node ./meta.ts --ensure-up-to-date --check
 
       - name: Check tests
-        run: yarn run test
+        run: xvfb-run -a yarn run test
 
       - uses: butlerlogic/action-autotag@ade8d2e19bfcd1e6a91272e2849b4bf4c37a67f1
         with:
