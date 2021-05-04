@@ -88,6 +88,6 @@ export async function run(testsRoot: string) {
   const failures = await new Promise<number>((resolve) => mocha.run(resolve));
 
   if (failures > 0) {
-    process.exit(1);
+    process.exitCode = 1;
   }
 }
