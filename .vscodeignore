@@ -1,6 +1,7 @@
+.github/**
 .vscode/**
 .vscode-test/**
-commands/**
+assets/dance.afdesign
 src/**
 test/**
 .gitignore
@@ -9,4 +10,4 @@ test/**
 **/*.map
 **/*.ts
 **/*.lock
-out/src/build.js
+out/**/*.build.js
