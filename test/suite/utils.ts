@@ -11,7 +11,7 @@ import * as vscode from "vscode";
 
 import { Context, Selections } from "../../src/api";
 import { SelectionBehavior } from "../../src/state/modes";
-import { Extension } from "../../src/state/extension";
+import type { Extension } from "../../src/state/extension";
 
 interface Expect<T = any> {
   <T>(subject: T, assertion: string, ...args: readonly any[]): {
@@ -79,9 +79,10 @@ export function groupTestsByParentName(toplevel: Mocha.Suite) {
  * Executes a VS Code command, attempting to better recover errors.
  */
 export async function executeCommand(command: string, ...args: readonly any[]) {
-  const runPromiseSafely = Extension.prototype.runPromiseSafely;
+  const extension =
+    vscode.extensions.getExtension<{ extension: Extension }>("gregoire.dance")!.exports.extension;
 
-  Extension.prototype.runPromiseSafely = async (f) => {
+  extension.runPromiseSafely = async (f) => {
     try {
       return await f();
     } catch (e) {
@@ -103,7 +104,8 @@ export async function executeCommand(command: string, ...args: readonly any[]) {
       error = e;
     }
   } finally {
-    Extension.prototype.runPromiseSafely = runPromiseSafely;
+    // @ts-expect-error
+    delete extension.runPromiseSafely;
   }
 
   if (command.startsWith("dance") && args.length === 1 && args[0].$expect instanceof RegExp) {

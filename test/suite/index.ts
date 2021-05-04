@@ -85,5 +85,9 @@ export async function run(testsRoot: string) {
   files.forEach((f) => mocha.addFile(path.resolve(testsRoot, f)));
 
   // Run the mocha test.
-  await new Promise<number>((resolve) => mocha.run(resolve));
+  const failures = await new Promise<number>((resolve) => mocha.run(resolve));
+
+  if (failures > 0) {
+    process.exit(1);
+  }
 }
