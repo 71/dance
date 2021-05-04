@@ -563,6 +563,59 @@
                   "command": "dance.select.lastModification"
                 }
               }
+            },
+            "view": {
+              "items": {
+                "vc": {
+                  "text": "center cursor vertically",
+                  "command": "dance.view.line",
+                  "args": [
+                    {
+                      "at": "center"
+                    }
+                  ]
+                },
+                "t": {
+                  "text": "cursor on top",
+                  "command": "dance.view.line",
+                  "args": [
+                    {
+                      "at": "top"
+                    }
+                  ]
+                },
+                "b": {
+                  "text": "cursor on bottom",
+                  "command": "dance.view.line",
+                  "args": [
+                    {
+                      "at": "bottom"
+                    }
+                  ]
+                },
+                "j": {
+                  "text": "scroll down",
+                  "command": "editorScroll",
+                  "args": [
+                    {
+                      "to": "down",
+                      "by": "line",
+                      "revealCursor": true
+                    }
+                  ]
+                },
+                "k": {
+                  "text": "scroll up",
+                  "command": "editorScroll",
+                  "args": [
+                    {
+                      "to": "up",
+                      "by": "line",
+                      "revealCursor": true
+                    }
+                  ]
+                }
+              }
             }
           }
         },
@@ -1605,6 +1658,11 @@
         "command": "dance.selections.rotate.selections.reverse",
         "title": "Rotate selections counter-clockwise (selections only)",
         "category": "Dance"
+      },
+      {
+        "command": "dance.view.line",
+        "title": "Reveals a position based on the main cursor",
+        "category": "Dance"
       }
     ],
     "menus": {
@@ -2335,6 +2393,10 @@
         },
         {
           "command": "dance.selections.rotate.selections.reverse",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.view.line",
           "when": "dance.mode == 'normal'"
         }
       ]
@@ -3434,18 +3496,27 @@
         "command": "dance.selections.rotate.selections.reverse"
       },
       {
-        "command": "dance.ignore",
         "key": "V",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Show view menu",
+        "command": "dance.openMenu",
+        "args": {
+          "input": "view"
+        }
+      },
+      {
+        "key": "Shift+V",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Show view menu (locked)",
+        "command": "dance.openMenu",
+        "args": {
+          "input": "view",
+          "locked": true
+        }
       },
       {
         "command": "dance.ignore",
         "key": "Shift+D",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+V",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {

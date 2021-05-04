@@ -4,9 +4,9 @@
 
 ```
 A sentence starts with a non-blank character or a line break. <== It ends with a
-^ 0
+| 0
 punctuation mark like the previous one, or two consecutive line breaks like this
-                                   ^ 1
+                                   | 1
 
 An outer sentence also contains the trailing blank characters (but never line
 |^^^^^^^^^^^^^^^^ 2
@@ -34,11 +34,11 @@ An outer sentence also contains the trailing blank characters (but never line
 ^ 2
 breaks) like this.       <== The white spaces before this sentence belongs to
 the outer previous sentence.
-                           ^ 2
+                            ^ 2
    <- White spaces here and the line break before them belongs to this sentence,
-      ^ 5
+      ^ 3
 not the previous one, since the previous trailing cannot contain line breaks.
-                                                                            ^ 5
+                                                                            ^ 3
 ```
 
 ## 1 to-start
@@ -48,18 +48,18 @@ not the previous one, since the previous trailing cannot contain line breaks.
 
 ```
 A sentence starts with a non-blank character or a line break. <== It ends with a
-^ 0                                                           |^^^^^^^^^^^^^^^^^^ 1
+| 0                                                           |^^^^^^^^^^^^^^^^^^ 1
 punctuation mark like the previous one, or two consecutive line breaks like this
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1
 
 An outer sentence also contains the trailing blank characters (but never line
-|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 3
+|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
 breaks) like this.       <== The white spaces before this sentence belongs to
-^^^^^^^^^^^^^^^^^^ 3     |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
+^^^^^^^^^^^^^^^^^^^^^^ 2 |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 3
 the outer previous sentence.
-^^^^^^^^^^^^^^^^^^ 4        | 5
+^^^^^^^^^^^^^^^^^^ 3        | 4
    <- White spaces here and the line break before them belongs to this sentence,
-^^^^^^^ 5
+^^^^^^ 4
 not the previous one, since the previous trailing cannot contain line breaks.
 ```
 
@@ -70,22 +70,22 @@ not the previous one, since the previous trailing cannot contain line breaks.
 
 ```
 A sentence starts with a non-blank character or a line break. <== It ends with a
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
                                                               ^^^^^^^^^^^^^^^^^^^ 1
 punctuation mark like the previous one, or two consecutive line breaks like this
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1
 
 An outer sentence also contains the trailing blank characters (but never line
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
 breaks) like this.       <== The white spaces before this sentence belongs to
-^^^^^^^^^^^^^^^^^^ 2     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
+^^^^^^^^^^^^^^^^^ 2      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 3
 the outer previous sentence.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
-                            ^ 5
+^^^^^^^^^^^^^^^^^^^^^^^^^^^ 3
+                            ^ 4
    <- White spaces here and the line break before them belongs to this sentence,
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 5
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
 not the previous one, since the previous trailing cannot contain line breaks.
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 5
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
 ```
 
 And now, some edge cases...
@@ -96,7 +96,7 @@ And now, some edge cases...
 
 ```
         I'm a sentence   .        I'm another sentence.
-    ^ 0 ^ 1      |^^^ 2
+    | 0 ^ 1      |^^^ 2
 ```
 
 ````
@@ -113,7 +113,8 @@ belong to any sentence. First sentence starts at "I".
 
 ```
         I'm a sentence   .        I'm another sentence.
-    ^^^^^^^^^^^^^^ 0
+    ^^^^ 0
+        ^^^^^^^^^ 1
 ```
 
 ## 2 to-end
@@ -157,7 +158,7 @@ current sentence (outer and inner) because the previous sentence's inner end is
 the previous period and it's outer end can only cover trailing blank chars
 but not the line break (or anything after the line break).
 
-## 3 select
+## 3 select-inner
 [up](#3)
 
 - .seek.object { input: $object, inner: true }
@@ -168,9 +169,9 @@ selection was active on. Just remember that the previous sentence ends
 
 ```
 I'm a previous sentence.    
-^^^^^^^^^^^^^^^^^^^^^^^^ 1  ^ 0
+^^^^^^^^^^^^^^^^^^^^^^^ 0   ^ 1
         I'm a sentence   .        I'm another sentence.
-^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
+^^^^^^^^^^^^^^^^^^^^^^^^^ 1
 ```
 
 ## 3 to-start
@@ -180,9 +181,9 @@ I'm a previous sentence.
 
 ```
 I'm a previous sentence.    
-|^^^^^^^^^^^^^^^^^^^^^^^ 0  | 1
+|^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
         I'm a sentence   .        I'm another sentence.
-^^^^^^^^^^^^^^^^^^ 1
+^^^^^^^^^^^^^^^^^ 0
 ```
 
 Note that selections #0, #1, #5 are sent to the **previous** sentence since they
@@ -201,9 +202,9 @@ the inner sentence.
 
 ```
 I'm a previous sentence.    
-|^^^^^^^^^^^^^^^^^^^^^^^ 0  | 1
+|^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
         I'm a sentence   .        I'm another sentence.
-^^^^^^^^^^^^^^^^^^ 1
+^^^^^^^^^^^^^^^^^ 0
 ```
 
 ## 3 to-end
@@ -230,7 +231,7 @@ Similarly, selection #0 still anchors to the leading blank.
 
 ```
 I'm a sentence.I'm another sentence
-       ^^^^ 0 ^ 1       ^ 3        ^ 4
+       ^^^^ 0 ^ 1       ^ 3        | 4
                ^ 2
 
 ```
@@ -242,7 +243,7 @@ I'm a sentence.I'm another sentence
 ## 4 select
 [up](#4)
 
-- .seek.object { input: $object, inner: true }
+- .seek.object { input: $object }
 
 ```
 I'm a sentence.I'm another sentence
@@ -262,7 +263,7 @@ considered to be inner sentence. There is no trailing for either sentence.
 ```
 I'm a sentence.I'm another sentence
 |^^^^^^^^^^^^^^ 0
-               |^^^^^^^^^^^^^^^^^^^^ 1
+               |^^^^^^^^^^^^^^^^^^^ 1
 
 ```
 
@@ -277,7 +278,7 @@ instead of old active. That's right: `to-start` has tons of special cases.
 
 ```
 I'm a sentence.I'm another sentence
-          ^^^^^ 0
+           ^^^^ 0
                ^^^^^^^^^^^^^^^^^^^^^ 1
 
 ```
@@ -326,9 +327,9 @@ I'm a sentence terminated by two line breaks
 I'm a sentence terminated by two line breaks
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
-^ 1
     I'm another sentence
-^^^^^^^^^^^^^^ 1
+^^^^ 1
+    ^^^^^^^^^ 2
 ```
 
 More special cases: selection #2 was on an empty line so it does not belong to
@@ -366,7 +367,7 @@ I'm a sentence terminated by two line breaks plus one more
 
 ^ 2
 
-^ 3
+| 3
 ```
 
 ## 6 to-start
@@ -378,9 +379,8 @@ I'm a sentence terminated by two line breaks plus one more
 I'm a sentence terminated by two line breaks plus one more
 |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
-^ 1
 
-^ 1
+| 1
 ```
 
 ## 6 to-end
@@ -392,9 +392,9 @@ I'm a sentence terminated by two line breaks plus one more
 I'm a sentence terminated by two line breaks plus one more
                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
-^ 1
+| 1
 
-^ 1
+| 2
 ```
 
 ## 6 select
@@ -406,13 +406,13 @@ I'm a sentence terminated by two line breaks plus one more
 I'm a sentence terminated by two line breaks plus one more
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
-^ 1
 
-^ 1
+| 1
 ```
 
 # 7
 
+> behavior <- character
 > /\$object/"(?#predefined=sentence)"/g
 
 ```

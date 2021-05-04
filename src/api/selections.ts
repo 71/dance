@@ -856,6 +856,10 @@ export function mergeOverlappingSelections(
         changed = false;
 
     for (let j = i + 1; j < len; j++) {
+      if (ignoreSelections[j] === 1) {
+        continue;
+      }
+
       const b = selections[j],
             bStart = b.start,
             bEnd = b.end;
@@ -918,8 +922,12 @@ export function mergeOverlappingSelections(
         continue;
       }
 
+      // B is NOT included in A; we must look at selections we previously saw
+      // again since they may now overlap with the new selection we will create.
       changed = true;
       ignoreSelections[j] = 1;
+
+      j = i;  // `j++` above will set `j` to `i + 1`.
     }
 
     if (changed) {

@@ -79,7 +79,6 @@ export function groupTestsByParentName(toplevel: Mocha.Suite) {
  * Executes a VS Code command, attempting to better recover errors.
  */
 export async function executeCommand(command: string, ...args: readonly any[]) {
-  let error: Error | undefined;
   const runPromiseSafely = Extension.prototype.runPromiseSafely;
 
   Extension.prototype.runPromiseSafely = async (f) => {
@@ -91,25 +90,38 @@ export async function executeCommand(command: string, ...args: readonly any[]) {
     }
   };
 
+  let result: unknown,
+      error: unknown;
+
   try {
-    return await vscode.commands.executeCommand(command, ...args);
+    result = await vscode.commands.executeCommand(command, ...args);
   } catch (e) {
-    let err = e;
-
-    if (error !== undefined && e instanceof Error
-        && e.message.startsWith("Running the contributed command")
-        && e.message.endsWith("failed.")) {
-      err = error;
-    }
-
-    if (command.startsWith("dance") && args.length === 1 && args[0].$expect instanceof RegExp) {
-      assert.match("" + (err?.message ?? err), args[0].$expect);
-    } else {
-      throw err;
+    if (error === undefined
+        || !(e instanceof Error
+             && e.message.startsWith("Running the contributed command")
+             && e.message.endsWith("failed."))) {
+      error = e;
     }
   } finally {
     Extension.prototype.runPromiseSafely = runPromiseSafely;
   }
+
+  if (command.startsWith("dance") && args.length === 1 && args[0].$expect instanceof RegExp) {
+    assert.notStrictEqual(error, undefined, "an error was expected, but no error was raised");
+
+    const pattern = args[0].$expect,
+          message = "" + ((error as any)?.message ?? error);
+
+    assert.match(
+      message,
+      pattern,
+      `error ${JSON.stringify(message)} does not match expected pattern ${pattern}`,
+    );
+  } else if (error !== undefined) {
+    throw error;
+  }
+
+  return result;
 }
 
 export const expect: Expect = unexpected.clone();
@@ -275,7 +287,13 @@ export class ExpectedDocument {
   public constructor(
     public readonly text: string,
     public readonly selections: vscode.Selection[] = [],
-  ) {}
+  ) {
+    const lineCount = text.split("\n").length;
+
+    for (const selection of selections) {
+      expect(selection.end.line, "to be less than", lineCount);
+    }
+  }
 
   public static apply(editor: vscode.TextEditor, indent: number, text: string) {
     return this.parseIndented(indent, text).apply(editor);
@@ -385,6 +403,12 @@ export class ExpectedDocument {
       return;
     }
 
+    expect(editor.selections, "to have items satisfying", expect.it("to satisfy", {
+      end: expect.it("to satisfy", {
+        line: expect.it("to be less than", document.lineCount),
+      }),
+    }));
+
     // Ensure resulting selections are right.
     let mergedSelections = Selections.mergeOverlapping(editor.selections).slice();
 
@@ -488,6 +512,8 @@ export class ExpectedDocument {
       commonText.join("\n"),
     );
 
-    assert.fail("Internal error.");
+    // Sometimes the error messages end up being the same; ensure this isn't the
+    // case below.
+    assert.fail(commonText.join("\n") + "\n" + actualText.join("\n"));
   }
 }

@@ -1,7 +1,7 @@
 import * as api from "../api";
 
 import { Argument, InputOr } from ".";
-import { Context, InputError, keypress, Menu, prompt, showMenu, validateMenu } from "../api";
+import { Context, InputError, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
 import { Extension } from "../state/extension";
 import { Register } from "../state/registers";
 
@@ -180,12 +180,17 @@ export async function openMenu(
   menu?: Argument<Menu>,
   prefix?: Argument<string>,
   pass: Argument<any[]> = [],
+  locked: Argument<boolean> = false,
 ) {
   if (typeof menu === "object") {
     const errors = validateMenu(menu);
 
     if (errors.length > 0) {
       throw new Error(`invalid menu: ${errors.join(", ")}`);
+    }
+
+    if (locked) {
+      return showLockedMenu(menu, pass);
     }
 
     return showMenu(menu, pass, prefix);
@@ -205,6 +210,10 @@ export async function openMenu(
     placeHolder: [...menus.keys()].sort().join(", ") || "no menu defined",
     value: lastPickedMenu,
   }, _));
+
+  if (locked) {
+    return showLockedMenu.byName(input, pass);
+  }
 
   return showMenu.byName(input, pass, prefix);
 }

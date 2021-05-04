@@ -435,7 +435,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.openMenu",
-      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.pass)),
+      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.pass, argument.locked)),
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
@@ -1248,6 +1248,23 @@ async function loadSelectionsRotateModule(): Promise<CommandDescriptor[]> {
 }
 
 /**
+ * Loads the "view" module and returns its defined commands.
+ */
+async function loadViewModule(): Promise<CommandDescriptor[]> {
+  const {
+    line,
+  } = await import("./view");
+
+  return [
+    new CommandDescriptor(
+      "dance.view.line",
+      (_, argument) => _.runAsync((_) => line(_, argument.at)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+  ];
+}
+
+/**
  * Loads and returns all defined commands.
  */
 export async function loadCommands(): Promise<Commands> {
@@ -1263,6 +1280,7 @@ export async function loadCommands(): Promise<Commands> {
     loadSelectModule(),
     loadSelectionsModule(),
     loadSelectionsRotateModule(),
+    loadViewModule(),
   ]);
 
   return Object.freeze(

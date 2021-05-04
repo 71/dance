@@ -476,7 +476,7 @@ suite("./test/suite/commands/search.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "he", $expect: /^no selections remain$/ });
+    await executeCommand("dance.search", { input: "he" });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search.md:325:1", 6, String.raw`

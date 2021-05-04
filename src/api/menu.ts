@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { Context, prompt } from ".";
 
 export interface Menu {
@@ -94,21 +95,8 @@ export async function showMenu(
     return;
   }
 
-  const pickedItem = entries[choice][1];
-
-  let args = pickedItem.args as readonly any[];
-
-  if (args == null) {
-    args = additionalArgs;
-  } else if (additionalArgs.length > 0) {
-    args = args.length > additionalArgs.length
-      ? args.map((arg, i) =>
-        i < additionalArgs.length && additionalArgs[i]
-          ? Object.assign({}, additionalArgs[i], arg)
-          : arg)
-      : additionalArgs.map((arg, i) =>
-        i < args.length ? Object.assign({}, arg, args[i]) : arg);
-  }
+  const pickedItem = entries[choice][1],
+        args = mergeArgs(pickedItem.args, additionalArgs);
 
   return Context.WithoutActiveEditor.wrap(
     vscode.commands.executeCommand(pickedItem.command, ...args),
@@ -130,6 +118,56 @@ export namespace showMenu {
       return Promise.reject(new Error(`menu ${JSON.stringify(menuName)} does not exist`));
     }
 
-    return showMenu(menu, additionalArgs);
+    return showMenu(menu, additionalArgs, prefix);
+  }
+}
+
+/**
+ * Shows the given menu to the user, not dismissing it when a key is pressed.
+ */
+export async function showLockedMenu(
+  menu: Menu,
+  additionalArgs: readonly any[] = [],
+) {
+  const entries = Object.entries(menu.items),
+        items = entries.map(([keys, item]) =>
+          [keys, item.text, () =>
+            vscode.commands.executeCommand(
+              item.command, ...mergeArgs(item.args, additionalArgs))] as const);
+
+  await prompt.one.locked(items);
+}
+
+export namespace showLockedMenu {
+  /**
+   * Shows the menu with the given name.
+   */
+  export function byName(
+    menuName: string,
+    additionalArgs: readonly any[] = [],
+  ) {
+    const menu = Context.WithoutActiveEditor.current.extension.menus.get(menuName);
+
+    if (menu === undefined) {
+      return Promise.reject(new Error(`menu ${JSON.stringify(menuName)} does not exist`));
+    }
+
+    return showLockedMenu(menu, additionalArgs);
+  }
+}
+
+function mergeArgs(args: readonly any[] | undefined, additionalArgs: readonly any[]) {
+  if (args == null) {
+    return additionalArgs;
+  } else if (additionalArgs.length > 0) {
+    return args.length > additionalArgs.length
+      ? args.map((arg, i) =>
+        i < additionalArgs.length && additionalArgs[i]
+          ? Object.assign({}, additionalArgs[i], arg)
+          : arg)
+      : additionalArgs.map((arg, i) =>
+        i < args.length ? Object.assign({}, arg, args[i]) : arg);
+  } else {
+    return args;
   }
 }

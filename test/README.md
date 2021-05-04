@@ -43,13 +43,13 @@ foo bar
 </details>
 
 <details>
-  <summary><b>Example</b> with "before" section</summary>
+  <summary><b>Example</b> with "with" section</summary>
 
 ### Example
 
 ```js
 expect(
-  Context.current.document.getText(Selections.current[0]),
+  text(Selections.current[0]),
   "to be",
   "bar",
 );
@@ -138,6 +138,10 @@ foo bar
   default to having that same behavior. Use `behavior <- caret` to undo this.
 - `/<pattern>/<replacement>/<flags>`: Replaces the given pattern by the given
   replacement string in all sections that inherit from the current section.
+
+When executing Dance commands, you may also pass an `$expect` argument with a
+`RegExp` to check that the error throws an error whose message matches the
+regular expression.
 
 ### Naming and organization
 
@@ -266,6 +270,13 @@ active position).
     ^^^^ 0
     def
     ^^^ 1
+    ```
+14. Equivalent to [1:2 → 0:3]:
+    ```
+    abc
+       | 0
+    def
+    ^^ 0
     ```
 
 </details>

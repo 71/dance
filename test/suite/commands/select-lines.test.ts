@@ -393,7 +393,7 @@ suite("./test/suite/commands/select-lines.md", function () {
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:265:1", 6, String.raw`
       hello
       world
-      ^^^^^^ 0
+      ^^^^^ 0
     `);
   });
 

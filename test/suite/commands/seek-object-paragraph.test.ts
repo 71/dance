@@ -127,7 +127,9 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     `);
 
     // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "end", inner: true });
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:78:1", 6, String.raw`
@@ -136,6 +138,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
       bar
       ^^^^ 0
 
+      ^ 1
       baz
       ^^^^ 1
 
@@ -171,7 +174,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:102:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:105:1", 6, String.raw`
       foo
       ^^^^ 0
       bar
@@ -212,7 +215,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", inner: true });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:149:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:152:1", 6, String.raw`
       paragraph 1
       ^^^^^^^^^^^^ 0
 
@@ -241,21 +244,24 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     `);
 
     // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
     await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "end", inner: true });
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:169:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:172:1", 6, String.raw`
       paragraph 1
                  ^ 0
-
 
       ^ 1
 
       ^ 2
 
       ^ 3
+
+      ^ 4
       paragraph 2
-      ^^^^^^^^^^^ 3
+      ^^^^^^^^^^^ 4
     `);
   });
 

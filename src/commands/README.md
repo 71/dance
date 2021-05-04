@@ -194,6 +194,7 @@
     <tr><td><a href="./selections.rotate.ts#L18"><code>selections.rotate.both.reverse</code></a></td><td>Rotate selections counter-clockwise</td><td><code>Shift+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.rotate.ts#L35"><code>selections.rotate.contents.reverse</code></a></td><td>Rotate selections counter-clockwise (contents only)</td><td></td></tr>
     <tr><td><a href="./selections.rotate.ts#L54"><code>selections.rotate.selections.reverse</code></a></td><td>Rotate selections counter-clockwise (selections only)</td><td><code>Shift+Alt+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=1><a href="#view"><code>view</code></a></td><td><a href="#viewline"><code>view.line</code></a></td><td>Reveals a position based on the main cursor</td><td></td></tr>
   </tbody>
 </table>
 
@@ -530,7 +531,7 @@ This command:
 - takes an argument `addDigits` of type `number`.
 - takes an input of type `number`.
 
-### [`openMenu`](./misc.ts#L165-L183)
+### [`openMenu`](./misc.ts#L165-L184)
 
 Open menu.
 
@@ -544,6 +545,7 @@ like `jj`.
 
 This command:
 - does not require an active text editor.
+- takes an argument `locked` of type `boolean`.
 - takes an argument `menu` of type `Menu`.
 - takes an argument `pass` of type `any[]`.
 - takes an argument `prefix` of type `string`.
@@ -1186,3 +1188,21 @@ The following keybinding is also available:
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `reverse` of type `boolean`.
+
+## [`view`](./view.ts)
+
+Moving the editor view.
+
+#### Predefined keybindings
+
+| Title                   | Keybinding     | Command                                          |
+| ----------------------- | -------------- | ------------------------------------------------ |
+| Show view menu          | `v` (normal)   | `[".openMenu", { input: "view"               }]` |
+| Show view menu (locked) | `s-v` (normal) | `[".openMenu", { input: "view", locked: true }]` |
+
+### [`view.line`](./view.ts#L18-L24)
+
+Reveals a position based on the main cursor.
+
+This command:
+- takes an argument `at` of type `"top" | "center" | "bottom"`.

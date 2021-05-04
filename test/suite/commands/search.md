@@ -325,7 +325,7 @@ lazy dog quickly.
 ## 2 search-wrap
 [up](#2)
 
-- .search { input: "he", $expect: /^no selections remain$/ }
+- .search { input: "he" }
 
 Forward search starts at "y" and wraps to "T**he**" instead of "t**he**".
 

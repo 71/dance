@@ -420,8 +420,9 @@ export namespace Context {
  * const start = new vscode.Position(0, 0),
  *       end = new vscode.Position(0, 3);
  *
- * assert.strictEqual(
+ * expect(
  *   text(new vscode.Range(start, end)),
+ *   "to be",
  *   "foo",
  * );
  * ```
@@ -443,8 +444,9 @@ export function text(range: vscode.Range): string;
  *       start2 = new vscode.Position(0, 4),
  *       end2 = new vscode.Position(0, 7);
  *
- * assert.deepStrictEqual(
+ * expect(
  *   text([new vscode.Range(start1, end1), new vscode.Range(start2, end2)]),
+ *   "to equal",
  *   ["foo", "bar"],
  * );
  * ```

@@ -156,6 +156,90 @@ export namespace prompt {
     return promptInList(false, items, init ?? (() => {}), context.cancellationToken);
   }
 
+  export namespace one {
+    /**
+     * Prompts the user for actions in a menu, only hiding it when a
+     * cancellation is requested or `Escape` pressed.
+     */
+    export function locked(
+      items: readonly (readonly [string, string, () => void])[],
+      init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
+      cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
+    ) {
+      const itemsKeys = items.map(([k, _]) => k.includes(", ") ? k.split(", ") : [...k]);
+
+      return new Promise<void>((resolve, reject) => {
+        const quickPick = vscode.window.createQuickPick(),
+              quickPickItems = [] as vscode.QuickPickItem[];
+
+        let isCaseSignificant = false;
+
+        for (let i = 0; i < items.length; i++) {
+          const [label, description] = items[i];
+
+          quickPickItems.push({ label, description });
+          isCaseSignificant = isCaseSignificant || label.toLowerCase() !== label;
+        }
+
+        quickPick.items = quickPickItems;
+        quickPick.placeholder = "Press one of the below keys.";
+
+        const subscriptions = [
+          quickPick.onDidChangeValue((rawKey) => {
+            quickPick.value = "";
+
+            // This causes the menu to disappear and reappear for a frame, but
+            // without this the shown items don't get refreshed after the value
+            // change above.
+            quickPick.items = quickPickItems;
+
+            let key = rawKey;
+
+            if (!isCaseSignificant) {
+              key = key.toLowerCase();
+            }
+
+            const index = itemsKeys.findIndex((x) => x.includes(key));
+
+            if (index !== -1) {
+              items[index][2]();
+            }
+          }),
+
+          quickPick.onDidHide(() => {
+            subscriptions.splice(0).forEach((s) => s.dispose());
+
+            resolve();
+          }),
+
+          quickPick.onDidAccept(() => {
+            subscriptions.splice(0).forEach((s) => s.dispose());
+
+            const picked = quickPick.selectedItems[0];
+
+            try {
+              items.find((x) => x[1] === picked.description)![2]();
+            } finally {
+              resolve();
+            }
+          }),
+
+          cancellationToken?.onCancellationRequested(() => {
+            subscriptions.splice(0).forEach((s) => s.dispose());
+
+            reject(new CancellationError(CancellationError.Reason.CancellationToken));
+          }),
+
+          quickPick,
+        ];
+
+        init?.(quickPick);
+
+        quickPick.show();
+      });
+    }
+  }
+
   /**
    * Prompts the user to choose many items among a list of items, and returns a
    * list of indices of picked items.
@@ -259,6 +343,7 @@ function promptInList(
 
     quickPick.items = quickPickItems;
     quickPick.placeholder = "Press one of the below keys.";
+    quickPick.canSelectMany = canPickMany;
 
     const subscriptions = [
       quickPick.onDidChangeValue((rawKey) => {
@@ -309,6 +394,16 @@ function promptInList(
         } else {
           resolve(items.findIndex((x) => x[1] === picked[0].description));
         }
+      }),
+
+      quickPick.onDidHide(() => {
+        if (subscriptions.length === 0) {
+          return;
+        }
+
+        subscriptions.splice(0).forEach((s) => s.dispose());
+
+        reject(new CancellationError(CancellationError.Reason.PressedEscape));
       }),
 
       cancellationToken?.onCancellationRequested(() => {

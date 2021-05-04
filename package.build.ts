@@ -443,6 +443,41 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 },
               },
             },
+
+            "view": {
+              items: {
+                // AFAIK, we can't implement these yet since VS Code only
+                // exposes vertical view ranges:
+                // - m, center cursor horizontally
+                // - h, scroll left
+                // - l, scroll right
+                "vc": {
+                  text: "center cursor vertically",
+                  command: "dance.view.line",
+                  args: [{ at: "center" }],
+                },
+                "t": {
+                  text: "cursor on top",
+                  command: "dance.view.line",
+                  args: [{ at: "top" }],
+                },
+                "b": {
+                  text: "cursor on bottom",
+                  command: "dance.view.line",
+                  args: [{ at: "bottom" }],
+                },
+                "j": {
+                  text: "scroll down",
+                  command: "editorScroll",
+                  args: [{ to: "down", by: "line", revealCursor: true }],
+                },
+                "k": {
+                  text: "scroll up",
+                  command: "editorScroll",
+                  args: [{ to: "up", by: "line", revealCursor: true }],
+                },
+              },
+            },
           } as Record<string,
                       { items: Record<string, { text: string; command: string; args?: any[] }>}>,
         },

@@ -1095,4 +1095,23 @@ const builtinKeybindings = [
     title: "Rotate selections counter-clockwise (selections only)",
     command: "dance.selections.rotate.selections.reverse",
   },
+  {
+    key: "V",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Show view menu",
+    command: "dance.openMenu",
+    args: {
+      input: "view",
+    },
+  },
+  {
+    key: "Shift+V",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Show view menu (locked)",
+    command: "dance.openMenu",
+    args: {
+      input: "view",
+      locked: true,
+    },
+  },
 ];

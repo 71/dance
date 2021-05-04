@@ -274,7 +274,11 @@ export namespace Range {
       // If a sentence ends with two LFs in a row, then the first LF is part of
       // the inner & outer sentence while the second LF should be excluded.
       if (hadLf) {
-        return Positions.previous(innerEnd, document)!;
+        if (inner) {
+          return Positions.previous(innerEnd, document)!;
+        }
+
+        return innerEnd;
       }
 
       if (inner) {
@@ -290,7 +294,11 @@ export namespace Range {
         col++;
       }
 
-      return new vscode.Position(innerEnd.line, col - 1);
+      if (col >= text.length) {
+        return Positions.lineBreak(innerEnd.line, document);
+      }
+
+      return new vscode.Position(innerEnd.line, col);
     }
   }
 }
@@ -487,7 +495,6 @@ function toBeforeBlank(
   const isBlank = getCharSetFunction(CharSet.Blank, document);
 
   let jumpedOverBlankLine = false,
-      skipCurrent = canSkipToPrevious,
       hadLf = true;
 
   const beforeBlank = moveWhile.byCharCode.backward(
@@ -500,17 +507,10 @@ function toBeforeBlank(
         }
 
         hadLf = true;
-        skipCurrent = false;
 
         return true;
       } else {
         hadLf = false;
-
-        if (skipCurrent) {
-          skipCurrent = false;
-
-          return true;
-        }
 
         return isBlank(charCode);
       }
@@ -611,7 +611,7 @@ function toSentenceStart(
 
   // If we hit two LFs or document start, the current sentence starts at the
   // first non-blank character after that.
-  if (hadLf || !afterSkip) {
+  if (hadLf || moveWhile.reachedDocumentEdge) {
     const start = moveWhile.byCharCode.forward(isBlank, afterSkip, document);
 
     if (moveWhile.reachedDocumentEdge) {
@@ -623,7 +623,7 @@ function toSentenceStart(
 
   // If we hit a punct char, then the current sentence starts on the first
   // non-blank character on the same line, or the line break.
-  let col = afterSkip.character + 1;
+  let col = afterSkip.character;
   const text = document.lineAt(afterSkip.line).text;
 
   while (col < text.length && isBlank(text.charCodeAt(col))) {

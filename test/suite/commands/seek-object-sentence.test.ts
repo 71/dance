@@ -22,9 +22,9 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       A sentence starts with a non-blank character or a line break. <== It ends with a
-      ^ 0
+      | 0
       punctuation mark like the previous one, or two consecutive line breaks like this
-                                         ^ 1
+                                         | 1
 
       An outer sentence also contains the trailing blank characters (but never line
       |^^^^^^^^^^^^^^^^ 2
@@ -51,11 +51,11 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
       ^ 2
       breaks) like this.       <== The white spaces before this sentence belongs to
       the outer previous sentence.
-                                 ^ 2
+                                  ^ 2
          <- White spaces here and the line break before them belongs to this sentence,
-            ^ 5
+            ^ 3
       not the previous one, since the previous trailing cannot contain line breaks.
-                                                                                  ^ 5
+                                                                                  ^ 3
     `);
   });
 
@@ -63,9 +63,9 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       A sentence starts with a non-blank character or a line break. <== It ends with a
-      ^ 0
+      | 0
       punctuation mark like the previous one, or two consecutive line breaks like this
-                                         ^ 1
+                                         | 1
 
       An outer sentence also contains the trailing blank characters (but never line
       |^^^^^^^^^^^^^^^^ 2
@@ -84,18 +84,18 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:44:1", 6, String.raw`
       A sentence starts with a non-blank character or a line break. <== It ends with a
-      ^ 0                                                           |^^^^^^^^^^^^^^^^^^ 1
+      | 0                                                           |^^^^^^^^^^^^^^^^^^ 1
       punctuation mark like the previous one, or two consecutive line breaks like this
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1
 
       An outer sentence also contains the trailing blank characters (but never line
-      |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 3
+      |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
       breaks) like this.       <== The white spaces before this sentence belongs to
-      ^^^^^^^^^^^^^^^^^^ 3     |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
+      ^^^^^^^^^^^^^^^^^^^^^^ 2 |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 3
       the outer previous sentence.
-      ^^^^^^^^^^^^^^^^^^ 4        | 5
+      ^^^^^^^^^^^^^^^^^^ 3        | 4
          <- White spaces here and the line break before them belongs to this sentence,
-      ^^^^^^^ 5
+      ^^^^^^ 4
       not the previous one, since the previous trailing cannot contain line breaks.
     `);
   });
@@ -104,9 +104,9 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       A sentence starts with a non-blank character or a line break. <== It ends with a
-      ^ 0
+      | 0
       punctuation mark like the previous one, or two consecutive line breaks like this
-                                         ^ 1
+                                         | 1
 
       An outer sentence also contains the trailing blank characters (but never line
       |^^^^^^^^^^^^^^^^ 2
@@ -125,22 +125,22 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:66:1", 6, String.raw`
       A sentence starts with a non-blank character or a line break. <== It ends with a
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
                                                                     ^^^^^^^^^^^^^^^^^^^ 1
       punctuation mark like the previous one, or two consecutive line breaks like this
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 1
 
       An outer sentence also contains the trailing blank characters (but never line
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 2
       breaks) like this.       <== The white spaces before this sentence belongs to
-      ^^^^^^^^^^^^^^^^^^ 2     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
+      ^^^^^^^^^^^^^^^^^ 2      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 3
       the outer previous sentence.
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
-                                  ^ 5
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^ 3
+                                  ^ 4
          <- White spaces here and the line break before them belongs to this sentence,
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 5
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
       not the previous one, since the previous trailing cannot contain line breaks.
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 5
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 4
     `);
   });
 
@@ -148,7 +148,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
               I'm a sentence   .        I'm another sentence.
-          ^ 0 ^ 1      |^^^ 2
+          | 0 ^ 1      |^^^ 2
     `);
 
     // Perform all operations.
@@ -157,7 +157,8 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:109:1", 6, String.raw`
               I'm a sentence   .        I'm another sentence.
-          ^^^^^^^^^^^^^^ 0
+          ^^^^ 0
+              ^^^^^^^^^ 1
     `);
   });
 
@@ -165,14 +166,14 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
               I'm a sentence   .        I'm another sentence.
-          ^ 0 ^ 1      |^^^ 2
+          | 0 ^ 1      |^^^ 2
     `);
 
     // Perform all operations.
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "end" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:119:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:120:1", 6, String.raw`
               I'm a sentence   .        I'm another sentence.
           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
     `);
@@ -182,20 +183,20 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
               I'm a sentence   .        I'm another sentence.
-          ^ 0 ^ 1      |^^^ 2
+          | 0 ^ 1      |^^^ 2
     `);
 
     // Perform all operations.
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:129:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:130:1", 6, String.raw`
               I'm a sentence   .        I'm another sentence.
               ^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
     `);
   });
 
-  test("3 > select", async function () {
+  test("3 > select-inner", async function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       I'm a previous sentence.    
@@ -209,11 +210,11 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", inner: true });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:160:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:161:1", 6, String.raw`
       I'm a previous sentence.    
-      ^^^^^^^^^^^^^^^^^^^^^^^^ 1  ^ 0
+      ^^^^^^^^^^^^^^^^^^^^^^^ 0   ^ 1
               I'm a sentence   .        I'm another sentence.
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
+      ^^^^^^^^^^^^^^^^^^^^^^^^^ 1
     `);
   });
 
@@ -231,11 +232,11 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "start" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:176:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:177:1", 6, String.raw`
       I'm a previous sentence.    
-      |^^^^^^^^^^^^^^^^^^^^^^^ 0  | 1
+      |^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
               I'm a sentence   .        I'm another sentence.
-      ^^^^^^^^^^^^^^^^^^ 1
+      ^^^^^^^^^^^^^^^^^ 0
     `);
   });
 
@@ -253,11 +254,11 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "start", inner: true });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:194:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:195:1", 6, String.raw`
       I'm a previous sentence.    
-      |^^^^^^^^^^^^^^^^^^^^^^^ 0  | 1
+      |^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
               I'm a sentence   .        I'm another sentence.
-      ^^^^^^^^^^^^^^^^^^ 1
+      ^^^^^^^^^^^^^^^^^ 0
     `);
   });
 
@@ -275,7 +276,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "end" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:209:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:210:1", 6, String.raw`
       I'm a previous sentence.    
                          ^^^^^^^^^^ 0
               I'm a sentence   .        I'm another sentence.
@@ -287,16 +288,16 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       I'm a sentence.I'm another sentence
-             ^^^^ 0 ^ 1       ^ 3        ^ 4
+             ^^^^ 0 ^ 1       ^ 3        | 4
                      ^ 2
 
     `);
 
     // Perform all operations.
-    await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", inner: true });
+    await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:242:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:243:1", 6, String.raw`
       I'm a sentence.I'm another sentence
       ^^^^^^^^^^^^^^^ 0
                      ^^^^^^^^^^^^^^^^^^^^^ 1
@@ -308,7 +309,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       I'm a sentence.I'm another sentence
-             ^^^^ 0 ^ 1       ^ 3        ^ 4
+             ^^^^ 0 ^ 1       ^ 3        | 4
                      ^ 2
 
     `);
@@ -317,10 +318,10 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "start" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:257:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:258:1", 6, String.raw`
       I'm a sentence.I'm another sentence
       |^^^^^^^^^^^^^^ 0
-                     |^^^^^^^^^^^^^^^^^^^^ 1
+                     |^^^^^^^^^^^^^^^^^^^ 1
 
     `);
   });
@@ -329,7 +330,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       I'm a sentence.I'm another sentence
-             ^^^^ 0 ^ 1       ^ 3        ^ 4
+             ^^^^ 0 ^ 1       ^ 3        | 4
                      ^ 2
 
     `);
@@ -338,9 +339,9 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "end" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:273:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:274:1", 6, String.raw`
       I'm a sentence.I'm another sentence
-                ^^^^^ 0
+                 ^^^^ 0
                      ^^^^^^^^^^^^^^^^^^^^^ 1
 
     `);
@@ -361,7 +362,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:307:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:308:1", 6, String.raw`
       I'm a sentence terminated by two line breaks
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
@@ -385,13 +386,13 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "start" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:320:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:321:1", 6, String.raw`
       I'm a sentence terminated by two line breaks
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
-      ^ 1
           I'm another sentence
-      ^^^^^^^^^^^^^^ 1
+      ^^^^ 1
+          ^^^^^^^^^ 2
     `);
   });
 
@@ -410,7 +411,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "end" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:337:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:338:1", 6, String.raw`
       I'm a sentence terminated by two line breaks
                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
@@ -428,20 +429,19 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
 
       ^ 2
 
-      ^ 3
+      | 3
     `);
 
     // Perform all operations.
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "start" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:372:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:373:1", 6, String.raw`
       I'm a sentence terminated by two line breaks plus one more
       |^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
-      ^ 1
 
-      ^ 1
+      | 1
     `);
   });
 
@@ -453,7 +453,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
 
       ^ 2
 
-      ^ 3
+      | 3
     `);
 
     // Perform all operations.
@@ -464,9 +464,9 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
       I'm a sentence terminated by two line breaks plus one more
                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
-      ^ 1
+      | 1
 
-      ^ 1
+      | 2
     `);
   });
 
@@ -478,7 +478,7 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
 
       ^ 2
 
-      ^ 3
+      | 3
     `);
 
     // Perform all operations.
@@ -489,9 +489,8 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
       I'm a sentence terminated by two line breaks plus one more
       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 0
 
-      ^ 1
 
-      ^ 1
+      | 1
     `);
   });
 
@@ -504,7 +503,9 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     `);
 
     // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "start" });
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:424:1", 6, String.raw`
@@ -523,7 +524,9 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     `);
 
     // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)", where: "end" });
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:435:1", 6, String.raw`
@@ -542,7 +545,9 @@ suite("./test/suite/commands/seek-object-sentence.md", function () {
     `);
 
     // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
     await executeCommand("dance.seek.object", { input: "(?#predefined=sentence)" });
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-sentence.md:446:1", 6, String.raw`

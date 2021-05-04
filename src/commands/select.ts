@@ -313,14 +313,14 @@ export function line_below(_: Context, count: number) {
  */
 export function line_below_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {
-    Selections.update.byIndex((_, selection) => {
+    Selections.update.byIndex((_, selection, document) => {
       const isFullLine = Selections.isEntireLine(selection),
             isSameLine = Selections.isSingleLine(selection),
             isFullLineDiff = isFullLine && !(isSameLine && selection.isReversed) ? 1 : 0,
             activeLine = Selections.activeLine(selection);
 
       const anchor = isSameLine ? Positions.lineStart(activeLine) : selection.anchor,
-            active = Positions.lineStart(activeLine + 1 + isFullLineDiff);
+            active = Positions.lineBreak(activeLine + isFullLineDiff, document);
 
       return new vscode.Selection(anchor, active);
     });
@@ -331,7 +331,7 @@ export function line_below_extend(_: Context, count: number) {
             isSameLine = Selections.isSingleLine(selection);
 
       const anchor = isSameLine ? Positions.lineStart(activeLine) : selection.anchor,
-            active = Positions.lineStart(line + 1);
+            active = Positions.lineBreak(line, document);
 
       return new vscode.Selection(anchor, active);
     });

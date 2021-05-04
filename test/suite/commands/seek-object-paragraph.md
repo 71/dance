@@ -78,6 +78,8 @@ qux
 ## 1 to-end-inner
 [up](#1)
 
+> behavior <- character
+
 - .seek.object { input: $object, where: "end", inner: true }
 
 Paragraph inner end does not include blank lines (but includes the last line
@@ -89,6 +91,7 @@ foo
 bar
 ^^^^ 0
 
+^ 1
 baz
 ^^^^ 1
 
@@ -169,6 +172,8 @@ paragraph 2
 ## 2 to-end-inner
 [up](#2)
 
+> behavior <- character
+
 - .seek.object { input: $object, where: "end", inner: true }
 
 In Kakoune, if a selection is on an empty line (L), it always re-anchors to the
@@ -180,12 +185,13 @@ Selections #1-3 were only reanchored. Selection #0 was at the end of 1st line.
 paragraph 1
            ^ 0
 
-
 ^ 1
 
 ^ 2
 
 ^ 3
+
+^ 4
 paragraph 2
-^^^^^^^^^^^ 3
+^^^^^^^^^^^ 4
 ```
