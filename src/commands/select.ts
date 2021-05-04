@@ -315,7 +315,7 @@ export function line_below(_: Context, count: number) {
 export function line_below_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {
     Selections.update.byIndex((_, selection, document) => {
-      const isFullLine = Selections.isEntireLine(selection),
+      const isFullLine = Selections.endsWithEntireLine(selection),
             isSameLine = Selections.isSingleLine(selection),
             isFullLineDiff = isFullLine && !(isSameLine && selection.isReversed) ? 1 : 0,
             activeLine = Selections.activeLine(selection);
