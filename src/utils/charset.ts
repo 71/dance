@@ -4,7 +4,10 @@ import * as vscode from "vscode";
 // ==  CHARACTER SETS  ===========================================================================
 // ===============================================================================================
 
-const blankCharacters
+/**
+ * A list containing all blank characters.
+ */
+export const blankCharacters
   = "\r\n\t "
   + String.fromCharCode(
     0xa0,

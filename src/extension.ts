@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
 
+import * as api from "./api";
+import { loadCommands } from "./commands/load-all";
 import { Extension } from "./state/extension";
 
 /**
@@ -10,37 +12,41 @@ export const extensionName = "dance";
 /**
  * Global state of the extension.
  */
-export let extensionState: Extension;
+export let extensionState: Extension | undefined;
+
+let isActivated = false;
 
 /**
  * Function called by VS Code to activate the extension.
  */
-export function activate(context: vscode.ExtensionContext) {
-  extensionState = new Extension();
+export function activate() {
+  isActivated = true;
 
-  context.subscriptions.push(
-    vscode.commands.registerCommand(extensionName + ".toggle", () =>
-      extensionState.setEnabled(!extensionState.enabled, false),
-    ),
-  );
+  const extensionData = vscode.extensions.getExtension(`gregoire.${extensionName}`),
+        extensionPackageJSON = extensionData?.packageJSON;
 
-  if (process.env.VERBOSE_LOGGING === "true") {
-    // Log all commands we need to implement
-    Promise.all([vscode.commands.getCommands(true), import("../commands/index")]).then(
-      ([registeredCommands, { commands }]) => {
-        for (const command of Object.values(commands)) {
-          if (registeredCommands.indexOf(command.id) === -1) {
-            console.warn("Command", command.id, "is defined but not implemented.");
-          }
-        }
-      },
-    );
+  if (extensionPackageJSON?.[`${extensionName}.disableArbitraryCodeExecution`]) {
+    api.run.disable();
   }
+
+  if (extensionPackageJSON?.[`${extensionName}.disableArbitraryCommandExecution`]) {
+    api.execute.disable();
+  }
+
+  return loadCommands().then((commands) => {
+    if (isActivated) {
+      return { api, extension: (extensionState = new Extension(commands)) };
+    }
+    return;
+  });
 }
 
 /**
  * Function called by VS Code to deactivate the extension.
  */
 export function deactivate() {
-  extensionState.dispose();
+  isActivated = false;
+  extensionState?.dispose();
 }
+
+export { api };

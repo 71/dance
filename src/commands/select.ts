@@ -1,713 +1,585 @@
-// Select / extend
-// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#movement
 import * as vscode from "vscode";
+import * as api from "../api";
 
-import { Command, CommandFlags, CommandState, InputKind, registerCommand } from ".";
-import { EditorState } from "../state/editor";
-import { SelectionBehavior } from "../state/extension";
-import { CharSet, getCharSetFunction } from "../utils/charset";
-import {
-  Backward,
-  Coord,
-  CoordMapper,
-  Direction,
-  DoNotExtend,
-  Extend,
-  ExtendBehavior,
-  Forward,
-  RemoveSelection,
-  SelectionHelper,
-  SelectionMapper,
-  moveActiveCoord,
-  seekToRange,
-} from "../utils/selectionHelper";
+import { Argument } from ".";
+import { column, columns, Context, Direction, Lines, Positions, Selections, Shift, showMenu, todo } from "../api";
+import { SelectionBehavior } from "../state/modes";
+import { PerEditorState } from "../state/editors";
 
-// Move / extend to character (f, t, F, T, Alt+[ft], Alt+[FT])
-// ===============================================================================================
+/**
+ * Update selections based on their position in the document.
+ */
+declare module "./select";
 
-function toNextCharacter(direction: Direction, include: boolean): CoordMapper {
-  return (from, helper) => {
-    const key = helper.state.input as string;
-    const active = from;
-
-    let line = active.line;
-    let character: number | undefined = active.character;
-
-    for (let i = helper.state.repetitions; i > 0; i--) {
-      for (;;) {
-        const text = helper.editor.document.lineAt(line).text;
-        if (character === undefined) {
-          character = text.length;
-        }
-        const idx: number
-          = direction === Backward
-            ? text.lastIndexOf(key, character - 1)
-            : text.indexOf(key, character + 1);
-
-        if (idx !== -1) {
-          character = idx;
-
-          break;
-        }
-
-        // No match on this line, let's keep going.
-        const isDocumentEdge
-          = direction === Backward ? line-- === 0 : ++line === helper.editor.document.lineCount;
-
-        if (isDocumentEdge) {
-          // ... except if we've reached the start or end of the document.
-          return RemoveSelection;
-        }
-
-        character = direction === Backward ? undefined : 0;
-      }
-    }
-    if (!include) {
-      character += direction === Backward ? 1 : -1;
-    }
-    return new Coord(line, character);
-  };
+/**
+ * Select whole buffer.
+ *
+ * @keys `%` (normal)
+ */
+export function buffer(_: Context) {
+  Selections.set([Selections.wholeBuffer()]);
 }
 
-function registerSelectTo(
-  commandName: Command,
-  include: boolean,
-  extend: ExtendBehavior,
-  direction: Direction,
+interface PreferredColumnsState {
+  disposable: vscode.Disposable;
+  expectedSelections: readonly vscode.Selection[];
+  preferredColumns: number[];
+}
+
+const preferredColumnsToken =
+  PerEditorState.registerState<PreferredColumnsState>(/* isDisposable= */ false);
+
+/**
+ * Select vertically.
+ *
+ * @param avoidEol If `true`, selections will not select the line break
+ *   character but will instead move to the last character.
+ *
+ * #### Variants
+ *
+ * | Title       | Identifier    | Keybinding                        | Command                                                      |
+ * | ----------- | ------------- | --------------------------------- | ------------------------------------------------------------ |
+ * | Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"   }]` |
+ * | Extend down | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend" }]` |
+ * | Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"   }]` |
+ * | Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend" }]` |
+ *
+ * The following keybindings are also defined:
+ *
+ * | Keybinding                     | Command                                                     |
+ * | ------------------------------ | ----------------------------------------------------------- |
+ * | `c-f` (normal), `c-f` (insert) | `[".select.vertically", { direction:  1, by: "page"     }]` |
+ * | `c-d` (normal), `c-d` (insert) | `[".select.vertically", { direction:  1, by: "halfPage" }]` |
+ * | `c-b` (normal), `c-b` (insert) | `[".select.vertically", { direction: -1, by: "page"     }]` |
+ * | `c-u` (normal), `c-u` (insert) | `[".select.vertically", { direction: -1, by: "halfPage" }]` |
+ */
+export function vertically(
+  _: Context,
+  selections: readonly vscode.Selection[],
+
+  avoidEol: Argument<boolean> = false,
+  repetitions: number,
+  direction = Direction.Forward,
+  shift = Shift.Select,
+  by?: Argument<"page" | "halfPage">,
 ) {
-  const mapper = moveActiveCoord(toNextCharacter(direction, include), extend);
-  registerCommand(
-    commandName,
-    CommandFlags.ChangeSelections,
-    InputKind.Key,
-    () => void 0,
-    (editorState, state) => {
-      SelectionHelper.for(editorState, state).mapEach(mapper);
-      // TODO: Reveal
-    },
-  );
-}
+  // Adjust repetitions if a `by` parameter is given.
+  if (by !== undefined) {
+    const visibleRange = _.editor.visibleRanges[0];
 
-registerSelectTo(Command.selectToIncluded, true, DoNotExtend, Forward);
-registerSelectTo(Command.selectToIncludedExtend, true, Extend, Forward);
-registerSelectTo(Command.selectToExcluded, false, DoNotExtend, Forward);
-registerSelectTo(Command.selectToExcludedExtend, false, Extend, Forward);
-
-registerSelectTo(Command.selectToIncludedBackwards, true, DoNotExtend, Backward);
-registerSelectTo(Command.selectToIncludedExtendBackwards, true, Extend, Backward);
-registerSelectTo(Command.selectToExcludedBackwards, false, DoNotExtend, Backward);
-registerSelectTo(Command.selectToExcludedExtendBackwards, false, Extend, Backward);
-
-// Move / extend to word begin / end (w, b, e, W, B, E, alt+[wbe], alt+[WBE])
-// ===============================================================================================
-
-function skipEmptyLines(
-  coord: Coord,
-  document: vscode.TextDocument,
-  direction: Direction,
-): Coord | undefined {
-  let { line } = coord;
-
-  line += direction;
-  while (line >= 0 && line < document.lineCount) {
-    const textLine = document.lineAt(line);
-    if (textLine.text.length > 0) {
-      const edge = direction === Backward ? textLine.text.length - 1 : 0;
-      return new Coord(line, edge);
+    if (by === "page") {
+      repetitions *= visibleRange.end.line - visibleRange.start.line;
+    } else if (by === "halfPage") {
+      repetitions *= ((visibleRange.end.line - visibleRange.start.line) / 2) | 0;
     }
-    line += direction;
   }
-  return undefined;
-}
 
-function categorize(
-  charCode: number,
-  isBlank: (charCode: number) => boolean,
-  isWord: (charCode: number) => boolean,
-) {
-  return isWord(charCode) ? "word" : charCode === 0 || isBlank(charCode) ? "blank" : "punct";
-}
+  const document = _.document,
+        isCharacterMode = _.selectionBehavior === SelectionBehavior.Character;
 
-function selectByWord(
-  editorState: EditorState,
-  state: CommandState,
-  extend: ExtendBehavior,
-  direction: Direction,
-  end: boolean,
-  wordCharset: CharSet,
-) {
-  const helper = SelectionHelper.for(editorState, state);
-  const { repetitions } = state;
-  const document = editorState.editor.document;
-  const isWord = getCharSetFunction(wordCharset, document),
-        isBlank = getCharSetFunction(CharSet.Blank, document),
-        isPunctuation = getCharSetFunction(CharSet.Punctuation, document);
+  // TODO: test logic with tabs
+  const activeEnd = (selection: vscode.Selection) => {
+    const active = selection.active;
 
-  for (let i = repetitions; i > 0; i--) {
-    helper.mapEach(
-      seekToRange(
-        (from) => {
-          let anchor = undefined,
-              active = from;
-          const text = document.lineAt(active.line).text;
-          const lineEndCol = helper.selectionBehavior === SelectionBehavior.Caret
-            ? text.length
-            : text.length - 1;
-            // 1. Starting from active, try to seek to the word start.
-          const isAtLineBoundary = direction === Forward
-            ? (active.character >= lineEndCol)
-            : (active.character === 0);
-          if (isAtLineBoundary) {
-            const afterEmptyLines = skipEmptyLines(active, document, direction);
-            if (afterEmptyLines === undefined) {
-              if (direction === Backward && active.line > 0) {
-                // This is a special case in Kakoune and we try to mimic it
-                // here.
-                // Instead of overflowing, put anchor at document start and
-                // active always on the first character on the second line.
-                return [new Coord(0, 0), new Coord(1, 0)];
-              } else {
-                // Otherwise the selection overflows.
-                return { remove: true, fallback: [anchor, active] };
-              }
-            }
-            anchor = afterEmptyLines;
-          } else if (direction === Backward && active.character >= text.length) {
-            anchor = new Coord(active.line, text.length - 1);
-          } else {
-            let shouldSkip;
-            if (helper.selectionBehavior === SelectionBehavior.Character) {
-              // Skip current character if it is at boundary.
-              // (e.g. "ab[c]  " =>`w`)
-              const column = active.character;
-              shouldSkip
-                  = categorize(text.charCodeAt(column), isBlank, isWord)
-                  !== categorize(text.charCodeAt(column + direction), isBlank, isWord);
-            } else {
-              // Ignore the character on the right of the caret.
-              shouldSkip = direction === Backward;
-            }
-            anchor = shouldSkip ? new Coord(active.line, active.character + direction) : active;
-          }
+    if (active === selection.end && Selections.endsWithEntireLine(selection)) {
+      return columns(active.line - 1, _.editor) + 1;
+    } else if (active === selection.start && isCharacterMode) {
+      return column(active.line, active.character, _.editor) + 1;
+    }
 
-          active = anchor;
+    return column(active.line, active.character, _.editor);
+  };
 
-          // 2. Then scan within the current line until the word ends.
+  // Get or create the `PreferredColumnsState` for this editor.
+  const editorState = _.getState();
+  let preferredColumnsState = editorState.get(preferredColumnsToken);
 
-          const curLineText = document.lineAt(active).text;
-          let nextCol = active.character; // The next character to be tested.
-          if (end) {
-            // Select the whitespace before word, if any.
-            while (
-              nextCol >= 0
-                && nextCol < curLineText.length
-                && isBlank(curLineText.charCodeAt(nextCol))
-            ) {
-              nextCol += direction;
-            }
-          }
-          if (nextCol >= 0 && nextCol < curLineText.length) {
-            const startCharCode = curLineText.charCodeAt(nextCol);
-            const isSameCategory = isWord(startCharCode) ? isWord : isPunctuation;
-            while (
-              nextCol >= 0
-                && nextCol < curLineText.length
-                && isSameCategory(curLineText.charCodeAt(nextCol))
-            ) {
-              nextCol += direction;
-            }
-          }
-          if (!end) {
-            // Select the whitespace after word, if any.
-            while (
-              nextCol >= 0
-                && nextCol < curLineText.length
-                && isBlank(curLineText.charCodeAt(nextCol))
-            ) {
-              nextCol += direction;
-            }
-          }
-          // If we reach here, nextCol must be the first character we encounter
-          // that does not belong to the current word (or -1 / line break).
-          // Exclude it.
-          active = new Coord(active.line, nextCol - direction);
-          return [anchor!, active];
-        },
-        extend,
-        /* singleCharDirection = */ direction,
-      ),
+  if (preferredColumnsState === undefined) {
+    // That disposable will be automatically disposed of when the selections in
+    // the editor change due to an action outside of the current command. When
+    // it is disposed, it will clear the preferred columns for this editor.
+    const disposable = _.extension
+      .createAutoDisposable()
+      .disposeOnEvent(editorState.onEditorWasClosed)
+      .addDisposable(vscode.window.onDidChangeTextEditorSelection((e) => {
+        if (editorState.editor !== e.textEditor) {
+          return;
+        }
+
+        const expectedSelections = preferredColumnsState!.expectedSelections;
+
+        if (e.selections.length === expectedSelections.length
+            && e.selections.every((sel, i) => sel.isEqual(expectedSelections[i]))) {
+          return;
+        }
+
+        editorState.store(preferredColumnsToken, undefined);
+        disposable.dispose();
+      }));
+
+    editorState.store(
+      preferredColumnsToken,
+      preferredColumnsState = {
+        disposable,
+        expectedSelections: [],
+        preferredColumns: selections.map((sel) => activeEnd(sel)),
+      },
     );
   }
+
+  Selections.update.byIndex((i, selection) => {
+    // TODO: handle tab characters
+    const activeLine = Selections.activeLine(selection),
+          targetLine = Lines.clamp(activeLine + repetitions * direction, document),
+          targetLineLength = columns(targetLine, _.editor);
+
+    if (targetLineLength === 0) {
+      let targetPosition = Positions.lineStart(targetLine);
+
+      if (isCharacterMode) {
+        if (direction === Direction.Forward || shift === Shift.Jump) {
+          targetPosition = Positions.next(targetPosition, document) ?? targetPosition;
+        }
+
+        if (direction === Direction.Backward && shift === Shift.Extend
+            && Selections.isSingleCharacter(selection, document)) {
+          selection = new vscode.Selection(
+            Positions.next(selection.anchor, document) ?? selection.anchor, selection.active);
+        }
+      }
+
+      return Selections.shift(selection, targetPosition, shift);
+    }
+
+    let targetColumn: number;
+
+    const preferredColumns = preferredColumnsState!.preferredColumns,
+          preferredColumn = i < preferredColumns.length
+            ? preferredColumns[i]
+            : activeEnd(selection);
+
+    if (preferredColumn <= targetLineLength) {
+      targetColumn = preferredColumn;
+    } else if (isCharacterMode && targetLine + 1 < document.lineCount && !avoidEol) {
+      return Selections.shift(selection, new vscode.Position(targetLine + 1, 0), shift);
+    } else {
+      targetColumn = targetLineLength;
+    }
+
+    let newPosition = new vscode.Position(
+      targetLine, column.character(targetLine, targetColumn, _.editor));
+
+    if (isCharacterMode && shift !== Shift.Jump) {
+      const edge = shift === Shift.Extend ? selection.anchor : selection.active;
+
+      if (newPosition.isBefore(edge)) {
+        // Selection is going up or down above the cursor: we must account for
+        // the translation to character mode.
+        newPosition = Positions.previous(newPosition, document) ?? newPosition;
+      }
+    }
+
+    return Selections.shift(selection, newPosition, shift);
+  });
+
+  preferredColumnsState.expectedSelections = editorState.editor.selections;
 }
 
-registerCommand(Command.selectWord, CommandFlags.ChangeSelections, (editorState, state) =>
-  selectByWord(editorState, state, DoNotExtend, Forward, false, CharSet.Word),
-);
-registerCommand(Command.selectWordExtend, CommandFlags.ChangeSelections, (editorState, state) =>
-  selectByWord(editorState, state, Extend, Forward, false, CharSet.Word),
-);
-registerCommand(Command.selectWordAlt, CommandFlags.ChangeSelections, (editorState, state) =>
-  selectByWord(editorState, state, DoNotExtend, Forward, false, CharSet.NonBlank),
-);
-registerCommand(Command.selectWordAltExtend, CommandFlags.ChangeSelections, (editorState, state) =>
-  selectByWord(editorState, state, Extend, Forward, false, CharSet.NonBlank),
-);
-registerCommand(Command.selectWordEnd, CommandFlags.ChangeSelections, (editorState, state) =>
-  selectByWord(editorState, state, DoNotExtend, Forward, true, CharSet.Word),
-);
-registerCommand(Command.selectWordEndExtend, CommandFlags.ChangeSelections, (editorState, state) =>
-  selectByWord(editorState, state, Extend, Forward, true, CharSet.Word),
-);
-registerCommand(Command.selectWordAltEnd, CommandFlags.ChangeSelections, (editorState, state) =>
-  selectByWord(editorState, state, DoNotExtend, Forward, true, CharSet.NonBlank),
-);
-registerCommand(
-  Command.selectWordAltEndExtend,
-  CommandFlags.ChangeSelections,
-  (editorState, state) => selectByWord(editorState, state, Extend, Forward, true, CharSet.NonBlank),
-);
-registerCommand(Command.selectWordPrevious, CommandFlags.ChangeSelections, (editorState, state) =>
-  selectByWord(editorState, state, DoNotExtend, Backward, true, CharSet.Word),
-);
-registerCommand(
-  Command.selectWordPreviousExtend,
-  CommandFlags.ChangeSelections,
-  (editorState, state) => selectByWord(editorState, state, Extend, Backward, true, CharSet.Word),
-);
-registerCommand(
-  Command.selectWordAltPrevious,
-  CommandFlags.ChangeSelections,
-  (editorState, state) =>
-    selectByWord(editorState, state, DoNotExtend, Backward, true, CharSet.NonBlank),
-);
-registerCommand(
-  Command.selectWordAltPreviousExtend,
-  CommandFlags.ChangeSelections,
-  (editorState, state) =>
-    selectByWord(editorState, state, Extend, Backward, true, CharSet.NonBlank),
-);
+/**
+ * Select horizontally.
+ *
+ * @param avoidEol If `true`, selections will automatically skip to the next
+ *   line instead of going after the last character. Does not skip empty lines.
+ *
+ * #### Variants
+ *
+ * | Title        | Identifier     | Keybinding                         | Command                                                        |
+ * | ------------ | -------------- | ---------------------------------- | -------------------------------------------------------------- |
+ * | Jump right   | `right.jump`   | `l` (normal)  , `right` (normal)   | `[".select.horizontally", { direction:  1, shift: "jump"   }]` |
+ * | Extend right | `right.extend` | `s-l` (normal), `s-right` (normal) | `[".select.horizontally", { direction:  1, shift: "extend" }]` |
+ * | Jump left    | `left.jump`    | `h` (normal)  , `left` (normal)    | `[".select.horizontally", { direction: -1, shift: "jump"   }]` |
+ * | Extend left  | `left.extend`  | `s-h` (normal), `s-left` (normal)  | `[".select.horizontally", { direction: -1, shift: "extend" }]` |
+ */
+export function horizontally(
+  _: Context,
 
-// Line selecting key bindings (x, X, alt+[xX], home, end)
-// ===============================================================================================
+  avoidEol: Argument<boolean> = false,
+  repetitions: number,
+  direction = Direction.Forward,
+  shift = Shift.Select,
+) {
+  const mayNeedAdjustment = direction === Direction.Backward
+                         && _.selectionBehavior === SelectionBehavior.Character;
 
-registerCommand(
-  Command.selectLine,
-  CommandFlags.ChangeSelections,
-  (editorState, { currentCount }) => {
-    const editor = editorState.editor,
-          selections = editor.selections,
-          len = selections.length,
-          selectionHelper = SelectionHelper.for(editorState);
+  Selections.update.byIndex((_i, selection, document) => {
+    let active = selection.active === selection.start
+      ? Selections.activeStart(selection, _)
+      : Selections.activeEnd(selection, _);
 
-    if (currentCount === 0 || currentCount === 1) {
-      for (let i = 0; i < len; i++) {
-        const selection = selections[i],
-              isFullLine = selectionHelper.isEntireLines(selection);
-        let line = selectionHelper.activeLine(selection);
+    if (mayNeedAdjustment) {
+      if (shift === Shift.Extend && Selections.isSingleCharacter(selection)) {
+        active = selection.start;
+      } else if (shift === Shift.Jump && selection.active === selection.start) {
+        active = Positions.next(active, _.document) ?? active;
+      }
+    }
 
-        if (isFullLine) {
+    let target = Positions.offset(active, direction * repetitions, document) ?? active;
+
+    if (avoidEol) {
+      switch (_.selectionBehavior) {
+      case SelectionBehavior.Caret:
+        if (target.character === Lines.length(target.line, document) && target.character > 0) {
+          target = Positions.offset(target, direction, document) ?? target;
+        }
+        break;
+
+      case SelectionBehavior.Character:
+        if (target.character === 0
+            && (direction === Direction.Forward || target.line === 0
+                || !Lines.isEmpty(target.line - 1, document))) {
+          target = Positions.offset(target, direction, document) ?? target;
+        }
+        break;
+      }
+    }
+
+    return Selections.shift(selection, target, shift);
+  });
+}
+
+/**
+ * Select to.
+ *
+ * If a count is specified, this command will shift to the start of the given
+ * line. If no count is specified, this command will shift open the `goto` menu.
+ *
+ * #### Variants
+ *
+ * | Title     | Identifier  | Keybinding     | Command                               |
+ * | --------- | ----------- | -------------- | ------------------------------------- |
+ * | Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { shift: "jump"   }]` |
+ * | Extend to | `to.extend` | `s-g` (normal) | `[".select.to", { shift: "extend" }]` |
+ */
+export function to(
+  _: Context,
+  count: number,
+  argument: object,
+  shift = Shift.Select,
+) {
+  if (count === 0) {
+    // TODO: Make just merely opening the menu not count as a command execution
+    // and do not record it.
+    return showMenu.byName("goto", [argument]);
+  }
+
+  return lineStart(_, count, shift);
+}
+
+/**
+ * Select line below.
+ *
+ * @keys `x` (normal)
+ */
+export function line_below(_: Context, count: number) {
+  if (count === 0 || count === 1) {
+    Selections.update.byIndex((_, selection) => {
+      let line = Selections.activeLine(selection);
+
+      if (Selections.isEntireLines(selection) && !selection.isReversed) {
+        line++;
+      }
+
+      return new vscode.Selection(line, 0, line + 1, 0);
+    });
+  } else {
+    Selections.update.byIndex((_, selection, document) => {
+      const lastLine = document.lineCount - 1;
+      let line = Math.min(Selections.activeLine(selection) + count - 1, lastLine);
+
+      if (Selections.isEntireLines(selection) && line < lastLine) {
+        line++;
+      }
+
+      return new vscode.Selection(line, 0, line + 1, 0);
+    });
+  }
+}
+
+/**
+ * Extend to line below.
+ *
+ * @keys `s-x` (normal)
+ */
+export function line_below_extend(_: Context, count: number) {
+  if (count === 0 || count === 1) {
+    Selections.update.byIndex((_, selection, document) => {
+      const isFullLine = Selections.isEntireLine(selection),
+            isSameLine = Selections.isSingleLine(selection),
+            isFullLineDiff = isFullLine && !(isSameLine && selection.isReversed) ? 1 : 0,
+            activeLine = Selections.activeLine(selection);
+
+      const anchor = isSameLine ? Positions.lineStart(activeLine) : selection.anchor,
+            active = Positions.lineBreak(activeLine + isFullLineDiff, document);
+
+      return new vscode.Selection(anchor, active);
+    });
+  } else {
+    Selections.update.byIndex((_, selection, document) => {
+      const activeLine = Selections.activeLine(selection),
+            line = Math.min(activeLine + count - 1, document.lineCount - 1),
+            isSameLine = Selections.isSingleLine(selection);
+
+      const anchor = isSameLine ? Positions.lineStart(activeLine) : selection.anchor,
+            active = Positions.lineBreak(line, document);
+
+      return new vscode.Selection(anchor, active);
+    });
+  }
+}
+
+/**
+ * Select line above.
+ */
+export function line_above(_: Context, count: number) {
+  if (count === 0 || count === 1) {
+    Selections.update.byIndex((_, selection) => {
+      let line = Selections.activeLine(selection);
+
+      if (!Selections.isEntireLines(selection)) {
+        line++;
+      }
+
+      return new vscode.Selection(line, 0, line - 1, 0);
+    });
+  } else {
+    Selections.update.byIndex((_, selection) => {
+      let line = Math.max(Selections.activeLine(selection) - count + 1, 0);
+
+      if (!Selections.isEntireLines(selection)) {
+        line++;
+      }
+
+      return new vscode.Selection(line, 0, line - 1, 0);
+    });
+  }
+}
+
+/**
+ * Extend to line above.
+ */
+export function line_above_extend(_: Context, count: number) {
+  if (count === 0 || count === 1) {
+    Selections.update.byIndex((_, selection) => {
+      if (selection.isSingleLine) {
+        let line = Selections.activeLine(selection);
+
+        if (!Selections.isEntireLines(selection)) {
           line++;
         }
 
-        selections[i] = new vscode.Selection(line, 0, line + 1, 0);
+        return new vscode.Selection(line, 0, line - 1, 0);
       }
-    } else {
-      for (let i = 0; i < len; i++) {
-        const selection = selections[i],
-              targetLine = Math.min(
-                selectionHelper.activeLine(selection) + currentCount - 1,
-                editor.document.lineCount - 1,
-              );
 
-        selections[i] = new vscode.Selection(targetLine, 0, targetLine + 1, 0);
+      if (selection.active === selection.end && Selections.isEntireLine(selection)) {
+        const line = Selections.activeLine(selection);
+
+        return new vscode.Selection(line + 1, 0, line - 1, 0);
       }
-    }
 
-    editor.selections = selections;
-  },
-);
+      const isFullLine = Selections.activeLineIsFullySelected(selection),
+            isFullLineDiff = isFullLine ? -1 : 0,
+            active = new vscode.Position(Selections.activeLine(selection) + isFullLineDiff, 0);
 
-registerCommand(
-  Command.selectLineExtend,
-  CommandFlags.ChangeSelections,
-  (editorState, { currentCount, selectionBehavior }) => {
-    const editor = editorState.editor,
-          selections = editor.selections,
-          len = selections.length,
-          selectionHelper = SelectionHelper.for(editorState);
-
-    if (currentCount === 0 || currentCount === 1) {
-      for (let i = 0; i < len; i++) {
-        const selection = selections[i],
-              isSameLine = selectionHelper.isSingleLine(selection),
-              isFullLineDiff = selectionHelper.isEntireLine(selection) ? 1 : 0;
-
-        const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor;
-        const active
-          = selection.active.character === 0 && !selection.isReversed && !isSameLine
-            ? selection.active.translate(1 + isFullLineDiff)
-            : new vscode.Position(selectionHelper.activeLine(selection) + 1 + isFullLineDiff, 0);
-
-        selections[i] = new vscode.Selection(anchor, active);
-      }
-    } else {
-      for (let i = 0; i < len; i++) {
-        const selection = selections[i],
-              targetLine = Math.min(
-                selectionHelper.activeLine(selection) + currentCount - 1,
-                editor.document.lineCount - 1,
-              ),
-              isSameLine = selectionHelper.isSingleLine(selection);
-
-        const anchor = isSameLine ? selection.anchor.with(undefined, 0) : selection.anchor;
-        const active = new vscode.Position(targetLine + 1, 0);
-
-        selections[i] = new vscode.Selection(anchor, active);
-      }
-    }
-
-    editor.selections = selections;
-  },
-);
-
-const toLineBegin: CoordMapper = (from) => from.with(undefined, 0);
-
-const selectToLineBegin = moveActiveCoord(toLineBegin, DoNotExtend);
-registerCommand(Command.selectToLineBegin, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).mapEach(selectToLineBegin);
-});
-
-const selectToLineBeginExtend = moveActiveCoord(toLineBegin, Extend);
-registerCommand(
-  Command.selectToLineBeginExtend,
-  CommandFlags.ChangeSelections,
-  (editorState, state) => {
-    SelectionHelper.for(editorState, state).mapEach(selectToLineBeginExtend);
-  },
-);
-
-const toLineEnd: CoordMapper = (from, helper) => {
-  let newCol = helper.editor.document.lineAt(from.line).text.length;
-  if (newCol > 0 && helper.selectionBehavior === SelectionBehavior.Character) {
-    newCol--;
-  }
-  return from.with(undefined, newCol);
-};
-
-const selectToLineEnd = moveActiveCoord(toLineEnd, DoNotExtend);
-registerCommand(Command.selectToLineEnd, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).mapEach(selectToLineEnd);
-});
-
-const selectToLineEndExtend = moveActiveCoord(toLineEnd, Extend);
-registerCommand(
-  Command.selectToLineEndExtend,
-  CommandFlags.ChangeSelections,
-  (editorState, state) => {
-    SelectionHelper.for(editorState, state).mapEach(selectToLineEndExtend);
-  },
-);
-
-const expandLine: SelectionMapper = (selection, helper) => {
-  // This command is idempotent. state.currentCount is intentionally ignored.
-  const { start, end } = selection,
-        document = helper.editor.document;
-  // Move start to line start and end to include line break.
-  const newStart = start.with(undefined, 0);
-  let newEnd;
-  if (end.character === 0) {
-    // End is next line start, which means the selection already includes
-    // the line break of last line.
-    newEnd = end;
-  } else if (end.line + 1 < document.lineCount) {
-    // Move end to the next line start to include the line break.
-    newEnd = new vscode.Position(end.line + 1, 0);
+      return new vscode.Selection(selection.anchor, active);
+    });
   } else {
-    // End is at the last line, so try to include all text.
-    const textLen = document.lineAt(end.line).text.length;
-    newEnd = end.with(undefined, textLen);
-  }
-  // After expanding, the selection should be in the same direction as before.
-  if (selection.isReversed) {
-    return new vscode.Selection(newEnd, newStart);
-  } else {
-    return new vscode.Selection(newStart, newEnd);
-  }
-};
+    Selections.update.byIndex((_, selection, document) => {
+      let line = Math.max(Selections.activeLine(selection) - count, 0),
+          anchor = selection.anchor;
 
-registerCommand(Command.expandLines, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).mapEach(expandLine);
-});
-
-const trimToFullLines: SelectionMapper = (selection, helper) => {
-  // This command is idempotent. state.currentCount is intentionally ignored.
-  const { start, end } = selection;
-  // If start is not at line start, move it to the next line start.
-  const newStart = start.character === 0 ? start : new vscode.Position(start.line + 1, 0);
-  // Move end to the line start, so that the selection ends with a line break.
-  const newEnd = end.with(undefined, 0);
-
-  if (newStart.isAfterOrEqual(newEnd)) {
-    return RemoveSelection;
-  } // No full line contained.
-
-  // After trimming, the selection should be in the same direction as before.
-  // Except when selecting only one empty line in non-directional mode, prefer
-  // to keep the selection facing forward.
-  if (selection.isReversed
-      && !(helper.selectionBehavior === SelectionBehavior.Character
-           && newStart.line + 1 === newEnd.line)) {
-    return new vscode.Selection(newEnd, newStart);
-  } else {
-    return new vscode.Selection(newStart, newEnd);
-  }
-};
-
-registerCommand(Command.trimLines, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).mapEach(trimToFullLines);
-});
-
-/**
- * Starting from `current` (inclusive), find the first character that does not
- * satisfy `condition` in the direction and return its Coord.
- *
- * @param current Coord of the first character to test
- * @param condition will be only executed on character codes, not line breaks
- * @returns the Coord of the first character that does not satisfy condition,
- *          which may be `current`. Or `undefined` if document edge is reached.
- */
-export function skipWhile(
-  direction: Direction,
-  current: Coord,
-  condition: (charCode: number) => boolean,
-  document: vscode.TextDocument,
-  endLine?: number,
-): Coord | undefined {
-  let col = current.character,
-      line = current.line,
-      text = document.lineAt(line).text;
-  if (endLine === undefined) {
-    endLine = direction === Forward ? document.lineCount - 1 : 0;
-  }
-
-  while (col < 0 || col >= text.length || condition(text.charCodeAt(col))) {
-    col += direction;
-    if (col < 0 || col >= text.length) {
-      line += direction;
-      if (line < 0 || line * direction > endLine * direction) {
-        return undefined;
+      if (selection.active === selection.end) {
+        anchor = selection.active;
       }
-      text = document.lineAt(line).text;
-      col = direction === Forward ? 0 : text.length - 1;
-    }
+
+      if (selection.isSingleLine) {
+        anchor = Positions.lineBreak(selection.anchor.line, document);
+        line++;
+      } else if (!Selections.startsWithEntireLine(selection)) {
+        line++;
+      }
+
+      return new vscode.Selection(anchor, new vscode.Position(line, 0));
+    });
   }
-  return new Coord(line, col);
 }
 
-const LF = "\n".charCodeAt(0);
 /**
- * Starting from `current` (inclusive), find the first character or line break
- * that does not satisfy `condition` in the direction and return its Coord.
+ * Select to line start.
  *
- * @param current Coord of the first character to test
- * @param condition will be called with charCode (or LF for line break).
- * @returns the Coord of the first character/LF that does not satisfy condition,
- *          which may be `current`. Or `undefined` if document edge is reached.
- */
-export function skipWhileX(
-  direction: Direction,
-  current: Coord,
-  condition: (charCode: number) => boolean,
-  document: vscode.TextDocument,
-  endLine?: number,
-): Coord | undefined {
-  let col = current.character,
-      line = current.line;
-  if (endLine === undefined) {
-    endLine = direction === Forward ? document.lineCount - 1 : 0;
-  }
-
-  while (line >= 0 && line * direction <= endLine * direction) {
-    const text = document.lineAt(line).text;
-    if (direction === Backward && col >= text.length) {
-      if (!condition(LF)) {
-        return new Coord(line, text.length);
-      }
-      col = text.length - 1;
-    }
-    while (col >= 0 && col < text.length) {
-      if (!condition(text.charCodeAt(col))) {
-        return new Coord(line, col);
-      }
-      col += direction;
-    }
-
-    if (direction === Forward && !condition(LF)) {
-      return new Coord(line, text.length);
-    }
-    col = direction === Forward ? 0 : Number.MAX_SAFE_INTEGER;
-    line += direction;
-  }
-  return undefined;
-}
-
-const trimSelections: SelectionMapper = (selection, helper) => {
-  // This command is idempotent. state.currentCount is intentionally ignored.
-  const document = helper.editor.document;
-  const isBlank = getCharSetFunction(CharSet.Blank, document);
-
-  const firstCharacter = selection.start;
-  const lastCharacter = helper.coordAt(helper.offsetAt(selection.end) - 1);
-
-  const start = skipWhile(Forward, firstCharacter, isBlank, document, lastCharacter.line);
-  const end = skipWhile(Backward, lastCharacter, isBlank, document, firstCharacter.line);
-  if (!start || !end || start.isAfter(end)) {
-    return RemoveSelection;
-  }
-
-  if (selection.isReversed) {
-    return helper.selectionBetween(end, start, /* singleCharDirection = */ Backward);
-  } else {
-    return helper.selectionBetween(start, end, /* singleCharDirection = */ Forward);
-  }
-};
-
-registerCommand(Command.trimSelections, CommandFlags.ChangeSelections, (editorState, state) => {
-  SelectionHelper.for(editorState, state).mapEach(trimSelections);
-});
-
-// Select enclosing (m, M, alt+[mM])
-// ===============================================================================================
-
-const enclosingChars = new Uint8Array(Array.from("(){}[]<>", (ch) => ch.charCodeAt(0)));
-const isNotEnclosingChar = (charCode: number) => enclosingChars.indexOf(charCode) === -1;
-
-/**
- * Find the matching matchingChar, balanced by balancingChar.
+ * @keys `a-h` (normal), `home` (normal)
  *
- * The character at start does not contribute to balance, and will not be
- * returned as result either. Every other balancingChar will cause the next
- * matchingChar to be ignored.
+ * #### Variants
+ *
+ * | Title                             | Identifier                   | Keybinding                          | Command                                                       |
+ * | --------------------              | ------------------           | ----------------------------------- | ------------------------------------------------------------- |
+ * | Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", {                  shift: "jump"   }]` |
+ * | Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", {                  shift: "extend" }]` |
+ * | Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { skipBlank: true, shift: "jump"   }]` |
+ * | Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                     | `[".select.lineStart", { skipBlank: true, shift: "extend" }]` |
+ * | Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { count: 0,        shift: "jump"   }]` |
+ * | Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { count: 0,        shift: "extend" }]` |
  */
-export function findMatching(
-  direction: Direction,
-  start: Coord,
-  matchingChar: number,
-  balancingChar: number,
-  document: vscode.TextDocument,
+export function lineStart(
+  _: Context,
+
+  count: number,
+  shift = Shift.Select,
+  skipBlank = false,
 ) {
-  let isStart = true;
-  let balance = 0;
-  const active = skipWhile(
-    direction,
-    start,
-    (charCode) => {
-      if (isStart) {
-        isStart = false;
-        return true;
-      }
-      if (charCode === matchingChar) {
-        if (balance === 0) {
-          return false;
-        }
-        balance--;
-      } else if (charCode === balancingChar) {
-        balance++;
-      }
-      return true;
-    },
-    document,
+  if (count > 0) {
+    const selection = _.selections[0],
+          newLine = Math.min(_.document.lineCount, count) - 1,
+          newPosition = skipBlank
+            ? Positions.nonBlankLineStart(newLine, _.document)
+            : Positions.lineStart(newLine),
+          newSelection = Selections.shift(selection, newPosition, shift);
+
+    Selections.set([newSelection]);
+
+    return;
+  }
+
+  Selections.update.byIndex((_, selection) =>
+    Selections.shift(
+      selection,
+      skipBlank
+        ? Positions.nonBlankLineStart(Selections.activeLine(selection))
+        : Positions.lineStart(Selections.activeLine(selection)),
+      shift,
+    ),
   );
-  return active;
 }
 
-function selectEnclosing(extend: ExtendBehavior, direction: Direction) {
-  // This command intentionally ignores repetitions to be consistent with
-  // Kakoune.
-  // It only finds one next enclosing character and drags only once to its
-  // matching counterpart. Repetitions > 1 does exactly the same with rep=1,
-  // even though executing the command again will jump back and forth.
+/**
+ * Select to line end.
+ *
+ * @keys `a-l` (normal), `end` (normal)
+ *
+ * #### Variants
+ *
+ * | Title                    | Identifier           | Keybinding                         | Command                                                    |
+ * | ------------------------ | -------------------- | ---------------------------------- | ---------------------------------------------------------- |
+ * | Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", {                 shift: "extend" }]` |
+ * | Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "jump"   }]` |
+ * | Extend to last character | `documentEnd.extend` |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "extend" }]` |
+ */
+export function lineEnd(
+  _: Context,
 
-  const mapper = seekToRange(
-    (from, helper, i) => {
-      const document = helper.editor.document;
-      // First, find an enclosing char (which may be the current character).
-      let currentCharacter = from;
-      if (helper.selectionBehavior === SelectionBehavior.Caret) {
-        // When moving backwards, the first character to consider is the
-        // character to the left, not the right. However, we hackily special
-        // case `|[foo]>` (> is anchor, | is active) to jump to the end in the
-        // current group.
-        const selection = helper.editor.selections[i];
-        if (direction === Backward && selection.isReversed) {
-          currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1);
-        }
-        // Similarly, we special case `<[foo]|` to jump back in the current
-        // group.
-        if (direction === Forward && !selection.isReversed && !selection.isEmpty) {
-          currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1);
-        }
-      }
-      if (helper.selectionBehavior === SelectionBehavior.Caret && direction === Backward) {
-        // When moving backwards, the first character to consider is the
-        // character to the left, not the right.
-        currentCharacter = helper.coordAt(helper.offsetAt(currentCharacter) - 1);
-      }
-      const anchor = skipWhile(direction, currentCharacter, isNotEnclosingChar, document);
-      if (!anchor) {
-        return RemoveSelection;
-      }
+  count: number,
+  shift = Shift.Select,
+) {
+  if (count > 0) {
+    const selection = _.selections[0],
+          newLine = Math.min(_.document.lineCount, count) - 1,
+          newSelection = Selections.shift(selection, Positions.lineEnd(newLine), shift);
 
-      // Then, find the matching char of the anchor.
-      const enclosingChar = document.lineAt(anchor.line).text.charCodeAt(anchor.character),
-            idxOfEnclosingChar = enclosingChars.indexOf(enclosingChar);
+    Selections.set([newSelection]);
 
-      let active;
-      if (idxOfEnclosingChar & 1) {
-        // Odd enclosingChar index
-        //     <=> enclosingChar is closing character
-        //     <=> we go backward looking for the opening character
-        const matchingChar = enclosingChars[idxOfEnclosingChar - 1];
-        active = findMatching(Backward, anchor, matchingChar, enclosingChar, document);
-      } else {
-        // Even enclosingChar index
-        //     <=> enclosingChar is opening character
-        //     <=> we go forward looking for the closing character
-        const matchingChar = enclosingChars[idxOfEnclosingChar + 1];
-        active = findMatching(Forward, anchor, matchingChar, enclosingChar, document);
-      }
+    return;
+  }
 
-      if (!active) {
-        return RemoveSelection;
-      }
-      return [anchor, active];
-    },
-    extend,
-    /* singleCharDirection = */ direction,
+  Selections.update.byIndex((_, selection, doc) =>
+    Selections.shift(selection, Positions.lineEnd(Selections.activeLine(selection), doc), shift),
   );
-
-  return (editorState: EditorState, state: CommandState) => {
-    SelectionHelper.for(editorState, state).mapEach(mapper);
-  };
 }
 
-registerCommand(
-  Command.selectEnclosing,
-  CommandFlags.ChangeSelections,
-  selectEnclosing(DoNotExtend, Forward),
-);
-registerCommand(
-  Command.selectEnclosingExtend,
-  CommandFlags.ChangeSelections,
-  selectEnclosing(Extend, Forward),
-);
-registerCommand(
-  Command.selectEnclosingBackwards,
-  CommandFlags.ChangeSelections,
-  selectEnclosing(DoNotExtend, Backward),
-);
-registerCommand(
-  Command.selectEnclosingExtendBackwards,
-  CommandFlags.ChangeSelections,
-  selectEnclosing(Extend, Backward),
-);
+/**
+ * Select to last line.
+ *
+ * #### Variants
+ *
+ * | Title               | Identifier        | Command                                     |
+ * | ------------------- | ----------------- | ------------------------------------------- |
+ * | Jump to last line   | `lastLine.jump`   | `[".select.lastLine", { shift: "jump"   }]` |
+ * | Extend to last line | `lastLine.extend` | `[".select.lastLine", { shift: "extend" }]` |
+ */
+export function lastLine(_: Context, document: vscode.TextDocument, shift = Shift.Select) {
+  let line = document.lineCount - 1;
+
+  // In case of trailing line break, go to the second last line.
+  if (line > 0 && document.lineAt(document.lineCount - 1).text.length === 0) {
+    line--;
+  }
+
+  Selections.set([Selections.shift(_.mainSelection, Positions.lineStart(line), shift)]);
+}
+
+/**
+ * Select to first visible line.
+ *
+ * #### Variants
+ *
+ * | Title                        | Identifier                | Command                                             |
+ * | ---------------------------- | ------------------------- | --------------------------------------------------- |
+ * | Jump to first visible line   | `firstVisibleLine.jump`   | `[".select.firstVisibleLine", { shift: "jump"   }]` |
+ * | Extend to first visible line | `firstVisibleLine.extend` | `[".select.firstVisibleLine", { shift: "extend" }]` |
+ */
+export function firstVisibleLine(_: Context, shift = Shift.Select) {
+  const selection = _.mainSelection,
+        toPosition = Positions.lineStart(api.firstVisibleLine(_.editor));
+
+  Selections.set([Selections.shift(selection, toPosition, shift)]);
+}
+
+/**
+ * Select to middle visible line.
+ *
+ * #### Variants
+ *
+ * | Title                         | Identifier                 | Command                                              |
+ * | ----------------------------- | -------------------------- | ---------------------------------------------------- |
+ * | Jump to middle visible line   | `middleVisibleLine.jump`   | `[".select.middleVisibleLine", { shift: "jump"   }]` |
+ * | Extend to middle visible line | `middleVisibleLine.extend` | `[".select.middleVisibleLine", { shift: "extend" }]` |
+ */
+export function middleVisibleLine(_: Context, shift = Shift.Select) {
+  const selection = _.mainSelection,
+        toPosition = Positions.lineStart(api.middleVisibleLine(_.editor));
+
+  Selections.set([Selections.shift(selection, toPosition, shift)]);
+}
+
+/**
+ * Select to last visible line.
+ *
+ * #### Variants
+ *
+ * | Title                       | Identifier               | Command                                            |
+ * | --------------------------- | ------------------------ | -------------------------------------------------- |
+ * | Jump to last visible line   | `lastVisibleLine.jump`   | `[".select.lastVisibleLine", { shift: "jump"   }]` |
+ * | Extend to last visible line | `lastVisibleLine.extend` | `[".select.lastVisibleLine", { shift: "extend" }]` |
+ */
+export function lastVisibleLine(_: Context, shift = Shift.Select) {
+  const selection = _.mainSelection,
+        toPosition = Positions.lineStart(api.lastVisibleLine(_.editor));
+
+  Selections.set([Selections.shift(selection, toPosition, shift)]);
+}
+
+/**
+ * Select to last modification.
+ *
+ * #### Variants
+ *
+ * | Title                       | Identifier                | Command                                             |
+ * | --------------------------- | ------------------------- | --------------------------------------------------- |
+ * | Jump to last modification   | `lastModification.jump`   | `[".select.lastModification", { shift: "jump"   }]` |
+ * | Extend to last modification | `lastModification.extend` | `[".select.lastModification", { shift: "extend" }]` |
+ */
+export function lastModification(_: Context, shift = Shift.Select) {
+  const selection = _.mainSelection,
+        toPosition = todo();
+
+  Selections.set([Selections.shift(selection, toPosition, shift)]);
+}

@@ -9,3 +9,4 @@ test/**
 **/*.map
 **/*.ts
 **/*.lock
+out/src/build.js

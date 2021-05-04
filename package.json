@@ -1,10 +1,8 @@
 {
   "name": "dance",
-  "displayName": "Dance",
   "description": "Make those cursors dance with Kakoune-inspired keybindings.",
-  "version": "0.4.2",
+  "version": "0.5.0-rc",
   "license": "ISC",
-  "publisher": "gregoire",
   "author": {
     "name": "Grégoire Geis",
     "email": "opensource@gregoirege.is"
@@ -13,11 +11,6 @@
     "type": "git",
     "url": "https://github.com/71/dance.git"
   },
-  "readme": "README.md",
-  "categories": [
-    "Keymaps",
-    "Other"
-  ],
   "main": "./out/src/extension.js",
   "engines": {
     "vscode": "^1.44.0"
@@ -25,44 +18,612 @@
   "scripts": {
     "check": "eslint .",
     "format": "eslint . --fix",
-    "generate": "ts-node ./commands/generate.ts && ts-node package.ts",
+    "generate": "ts-node ./meta.ts",
+    "generate:watch": "ts-node ./meta.ts --watch",
     "vscode:prepublish": "yarn run generate && yarn run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "compile:watch": "tsc -watch -p ./",
     "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package",
     "publish": "vsce publish"
   },
   "devDependencies": {
     "@types/glob": "^7.1.1",
-    "@types/js-yaml": "^3.12.3",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.6.0",
     "@types/vscode": "^1.44.0",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
+    "chokidar": "^3.5.1",
     "eslint": "^7.22.0",
     "glob": "^7.1.6",
-    "js-yaml": "^3.13.0",
     "mocha": "^8.1.1",
     "source-map-support": "^0.5.19",
     "ts-node": "^9.1.1",
-    "typescript": "^4.2.3",
+    "typescript": "^4.2.4",
+    "unexpected": "^12.0.0",
     "vsce": "^1.87.0",
-    "vscode-test": "^1.3.0"
+    "vscode-test": "^1.5.2"
   },
+  "displayName": "Dance",
+  "publisher": "gregoire",
+  "categories": [
+    "Keymaps",
+    "Other"
+  ],
+  "readme": "README.md",
+  "icon": "assets/dance.png",
   "activationEvents": [
     "*"
   ],
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "dance.disableArbitraryCodeExecution": false,
+  "dance.disableArbitraryCommandExecution": false,
   "contributes": {
     "configuration": {
       "type": "object",
       "title": "Dance",
       "properties": {
+        "dance.defaultMode": {
+          "type": "string",
+          "scope": "language-overridable",
+          "default": "normal",
+          "description": "Controls which mode is set by default when an editor is opened.",
+          "pattern": "^[a-zA-Z]\\w*$",
+          "patternErrorMessage": ""
+        },
+        "dance.modes": {
+          "type": "object",
+          "scope": "language-overridable",
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "pattern": "^[a-zA-Z]\\w*$",
+              "patternErrorMessage": ""
+            },
+            "properties": {
+              "inheritFrom": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Controls how default configuration options are obtained for this mode. Specify a string to inherit from the mode with the given name, and null to inherit from the VS Code configuration.",
+                "pattern": "^[a-zA-Z]\\w*$",
+                "patternErrorMessage": ""
+              },
+              "cursorStyle": {
+                "enum": [
+                  "line",
+                  "block",
+                  "underline",
+                  "line-thin",
+                  "block-outline",
+                  "underline-thin",
+                  "inherit",
+                  null
+                ],
+                "description": "Controls the cursor style."
+              },
+              "lineHighlight": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "markdownDescription": "Controls the line highlighting applied to active lines. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.",
+                "pattern": "^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\\$([a-zA-Z]+(\\.[a-zA-Z]+)+))$",
+                "patternErrorMessage": "Color should be an hex color or a '$' sign followed by a color identifier."
+              },
+              "lineNumbers": {
+                "enum": [
+                  "off",
+                  "on",
+                  "relative",
+                  "inherit",
+                  null
+                ],
+                "description": "Controls the display of line numbers.",
+                "enumDescriptions": [
+                  "No line numbers.",
+                  "Absolute line numbers.",
+                  "Relative line numbers.",
+                  "Inherit from `editor.lineNumbers`."
+                ]
+              },
+              "onEnterMode": {
+                "type": "array",
+                "items": {
+                  "type": [
+                    "array",
+                    "object",
+                    "string"
+                  ],
+                  "properties": {
+                    "command": {
+                      "type": "string"
+                    },
+                    "args": {}
+                  },
+                  "required": [
+                    "command"
+                  ]
+                },
+                "description": "Controls what commands should be executed upon entering this mode."
+              },
+              "onLeaveMode": {
+                "type": "array",
+                "items": {
+                  "type": [
+                    "array",
+                    "object",
+                    "string"
+                  ],
+                  "properties": {
+                    "command": {
+                      "type": "string"
+                    },
+                    "args": {}
+                  },
+                  "required": [
+                    "command"
+                  ]
+                },
+                "description": "Controls what commands should be executed upon leaving this mode."
+              },
+              "selectionBehavior": {
+                "enum": [
+                  "caret",
+                  "character",
+                  null
+                ],
+                "default": "caret",
+                "description": "Controls how selections behave within VS Code.",
+                "markdownEnumDescriptions": [
+                  "Selections are anchored to carets, which is the native VS Code behavior; that is, they are positioned *between* characters and can therefore be empty.",
+                  "Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. Additionally, one-character selections will behave as if they were non-directional, like Kakoune."
+                ]
+              },
+              "decorations": {
+                "type": [
+                  "array",
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "applyTo": {
+                    "enum": [
+                      "all",
+                      "main",
+                      "secondary"
+                    ],
+                    "default": "all",
+                    "description": "The selections to apply this style to.",
+                    "enumDescriptions": [
+                      "Apply to all selections.",
+                      "Apply to main selection only.",
+                      "Apply to all selections except main selection."
+                    ]
+                  },
+                  "backgroundColor": {
+                    "type": "string",
+                    "pattern": "^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\\$([a-zA-Z]+(\\.[a-zA-Z]+)+))$",
+                    "patternErrorMessage": "Color should be an hex color or a '$' sign followed by a color identifier."
+                  },
+                  "borderColor": {
+                    "type": "string",
+                    "pattern": "^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\\$([a-zA-Z]+(\\.[a-zA-Z]+)+))$",
+                    "patternErrorMessage": "Color should be an hex color or a '$' sign followed by a color identifier."
+                  },
+                  "borderStyle": {
+                    "type": "string"
+                  },
+                  "borderWidth": {
+                    "type": "string"
+                  },
+                  "borderRadius": {
+                    "type": "string"
+                  },
+                  "isWholeLine": {
+                    "type": "boolean",
+                    "default": false
+                  }
+                },
+                "description": "The decorations to apply to selections.",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "applyTo": {
+                      "enum": [
+                        "all",
+                        "main",
+                        "secondary"
+                      ],
+                      "default": "all",
+                      "description": "The selections to apply this style to.",
+                      "enumDescriptions": [
+                        "Apply to all selections.",
+                        "Apply to main selection only.",
+                        "Apply to all selections except main selection."
+                      ]
+                    },
+                    "backgroundColor": {
+                      "type": "string",
+                      "pattern": "^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\\$([a-zA-Z]+(\\.[a-zA-Z]+)+))$",
+                      "patternErrorMessage": "Color should be an hex color or a '$' sign followed by a color identifier."
+                    },
+                    "borderColor": {
+                      "type": "string",
+                      "pattern": "^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\\$([a-zA-Z]+(\\.[a-zA-Z]+)+))$",
+                      "patternErrorMessage": "Color should be an hex color or a '$' sign followed by a color identifier."
+                    },
+                    "borderStyle": {
+                      "type": "string"
+                    },
+                    "borderWidth": {
+                      "type": "string"
+                    },
+                    "borderRadius": {
+                      "type": "string"
+                    },
+                    "isWholeLine": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  }
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "default": {
+            "insert": {},
+            "normal": {
+              "lineNumbers": "relative",
+              "decorations": {
+                "applyTo": "main",
+                "backgroundColor": "$editor.hoverHighlightBackground",
+                "isWholeLine": true
+              },
+              "onEnterMode": [
+                [
+                  ".selections.restore",
+                  {
+                    "register": " ^",
+                    "try": true
+                  }
+                ]
+              ],
+              "onLeaveMode": [
+                [
+                  ".selections.save",
+                  {
+                    "register": " ^",
+                    "style": {
+                      "borderColor": "$editor.selectionBackground",
+                      "borderStyle": "solid",
+                      "borderWidth": "2px",
+                      "borderRadius": "1px"
+                    },
+                    "until": [
+                      [
+                        "mode-did-change",
+                        {
+                          "include": "normal"
+                        }
+                      ],
+                      [
+                        "selections-did-change"
+                      ]
+                    ]
+                  }
+                ]
+              ]
+            }
+          },
+          "description": "Controls the different modes available in Dance."
+        },
+        "dance.menus": {
+          "type": "object",
+          "scope": "language-overridable",
+          "description": "Controls the different menus available in Dance.",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "description": "Text shown in the menu."
+                    },
+                    "command": {
+                      "type": "string",
+                      "description": "Command to execute on item selection."
+                    },
+                    "args": {
+                      "type": "array",
+                      "description": "Arguments to the command to execute."
+                    }
+                  },
+                  "required": [
+                    "command"
+                  ]
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "default": {
+            "object": {
+              "items": {
+                "b()": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "\\((?#inner)\\)"
+                    }
+                  ],
+                  "text": "parenthesis block"
+                },
+                "B{}": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "\\{(?#inner)\\}"
+                    }
+                  ],
+                  "text": "braces block"
+                },
+                "r[]": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "\\[(?#inner)\\]"
+                    }
+                  ],
+                  "text": "brackets block"
+                },
+                "a<>": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "<(?#inner)>"
+                    }
+                  ],
+                  "text": "angle block"
+                },
+                "Q\"": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?#noescape)\"(?#inner)(?#noescape)\""
+                    }
+                  ],
+                  "text": "double quote string"
+                },
+                "q'": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?#noescape)'(?#inner)(?#noescape)'"
+                    }
+                  ],
+                  "text": "single quote string"
+                },
+                "g`": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?#noescape)`(?#inner)(?#noescape)`"
+                    }
+                  ],
+                  "text": "grave quote string"
+                },
+                "w": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "[\\p{L}]+(?<after>[^\\S\\n]+)"
+                    }
+                  ],
+                  "text": "word"
+                },
+                "W": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "[\\S]+(?<after>[^\\S\\n]+)"
+                    }
+                  ],
+                  "text": "WORD"
+                },
+                "s": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?#predefined=sentence)"
+                    }
+                  ],
+                  "text": "sentence"
+                },
+                "p": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?#predefined=paragraph)"
+                    }
+                  ],
+                  "text": "paragraph"
+                },
+                " ": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?<before>[\\s]+)[^\\S\\n]+(?<after>[\\s]+)"
+                    }
+                  ],
+                  "text": "whitespaces"
+                },
+                "i": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?#predefined=indent)"
+                    }
+                  ],
+                  "text": "indent"
+                },
+                "n": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?#singleline)-?[\\d_]+(\\.[0-9]+)?([eE]\\d+)?"
+                    }
+                  ],
+                  "text": "number"
+                },
+                "u": {
+                  "command": "dance.seek.object",
+                  "args": [
+                    {
+                      "input": "(?#predefined=argument)"
+                    }
+                  ],
+                  "text": "argument"
+                },
+                "c": {
+                  "command": "dance.seek.object",
+                  "text": "custom object desc"
+                }
+              }
+            },
+            "goto": {
+              "items": {
+                "h": {
+                  "text": "to line start",
+                  "command": "dance.select.lineStart"
+                },
+                "l": {
+                  "text": "to line end",
+                  "command": "dance.select.lineEnd"
+                },
+                "i": {
+                  "text": "to non-blank line start",
+                  "command": "dance.select.lineStart",
+                  "args": [
+                    {
+                      "skipBlank": true
+                    }
+                  ]
+                },
+                "gk": {
+                  "text": "to first line",
+                  "command": "dance.select.lineStart",
+                  "args": [
+                    {
+                      "count": 0
+                    }
+                  ]
+                },
+                "j": {
+                  "text": "to last line",
+                  "command": "dance.select.lastLine"
+                },
+                "e": {
+                  "text": "to last char of last line",
+                  "command": "dance.select.lineEnd",
+                  "args": [
+                    {
+                      "count": 2147483647
+                    }
+                  ]
+                },
+                "t": {
+                  "text": "to first displayed line",
+                  "command": "dance.select.firstVisibleLine"
+                },
+                "c": {
+                  "text": "to middle displayed line",
+                  "command": "dance.select.middleVisibleLine"
+                },
+                "b": {
+                  "text": "to last displayed line",
+                  "command": "dance.select.lastVisibleLine"
+                },
+                "f": {
+                  "text": "to file whose name is selected",
+                  "command": "dance.selections.open"
+                },
+                ".": {
+                  "text": "to last buffer modification position",
+                  "command": "dance.select.lastModification"
+                }
+              }
+            },
+            "view": {
+              "items": {
+                "vc": {
+                  "text": "center cursor vertically",
+                  "command": "dance.view.line",
+                  "args": [
+                    {
+                      "at": "center"
+                    }
+                  ]
+                },
+                "t": {
+                  "text": "cursor on top",
+                  "command": "dance.view.line",
+                  "args": [
+                    {
+                      "at": "top"
+                    }
+                  ]
+                },
+                "b": {
+                  "text": "cursor on bottom",
+                  "command": "dance.view.line",
+                  "args": [
+                    {
+                      "at": "bottom"
+                    }
+                  ]
+                },
+                "j": {
+                  "text": "scroll down",
+                  "command": "editorScroll",
+                  "args": [
+                    {
+                      "to": "down",
+                      "by": "line",
+                      "revealCursor": true
+                    }
+                  ]
+                },
+                "k": {
+                  "text": "scroll up",
+                  "command": "editorScroll",
+                  "args": [
+                    {
+                      "to": "up",
+                      "by": "line",
+                      "revealCursor": true
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
         "dance.enabled": {
           "type": "boolean",
           "default": true,
-          "description": "Controls whether the Dance keybindings are enabled."
+          "description": "Controls whether the Dance keybindings are enabled.",
+          "deprecationMessage": "dance.enabled is deprecated; disable the Dance extension instead."
         },
         "dance.normalMode.lineHighlight": {
           "type": [
@@ -70,7 +631,8 @@
             "null"
           ],
           "default": "editor.hoverHighlightBackground",
-          "markdownDescription": "Controls the line highlighting applied to active lines in normal mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null."
+          "markdownDescription": "Controls the line highlighting applied to active lines in normal mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.",
+          "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         },
         "dance.insertMode.lineHighlight": {
           "type": [
@@ -78,7 +640,8 @@
             "null"
           ],
           "default": null,
-          "markdownDescription": "Controls the line highlighting applied to active lines in insert mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null."
+          "markdownDescription": "Controls the line highlighting applied to active lines in insert mode. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.",
+          "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         },
         "dance.normalMode.lineNumbers": {
           "enum": [
@@ -94,7 +657,8 @@
             "Absolute line numbers.",
             "Relative line numbers.",
             "Inherit from `editor.lineNumbers`."
-          ]
+          ],
+          "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         },
         "dance.insertMode.lineNumbers": {
           "enum": [
@@ -110,7 +674,8 @@
             "Absolute line numbers.",
             "Relative line numbers.",
             "Inherit from `editor.lineNumbers`."
-          ]
+          ],
+          "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         },
         "dance.normalMode.cursorStyle": {
           "enum": [
@@ -123,7 +688,8 @@
             "inherit"
           ],
           "default": "inherit",
-          "description": "Controls the cursor style in normal mode."
+          "description": "Controls the cursor style in normal mode.",
+          "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         },
         "dance.insertMode.cursorStyle": {
           "enum": [
@@ -136,7 +702,8 @@
             "inherit"
           ],
           "default": "inherit",
-          "description": "Controls the cursor style in insert mode."
+          "description": "Controls the cursor style in insert mode.",
+          "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         },
         "dance.insertMode.selectionStyle": {
           "type": "object",
@@ -163,7 +730,8 @@
             "borderRadius": {
               "type": "string"
             }
-          }
+          },
+          "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         },
         "dance.selectionBehavior": {
           "enum": [
@@ -175,1388 +743,1993 @@
           "markdownEnumDescriptions": [
             "Selections are anchored to carets, which is the native VS Code behavior; that is, they are positioned *between* characters and can therefore be empty.",
             "Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. Additionally, one-character selections will behave as if they were non-directional, like Kakoune."
-          ]
-        },
-        "dance.menus": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "object",
-            "properties": {
-              "items": {
-                "type": "object",
-                "additionalProperties": {
-                  "type": [
-                    "object",
-                    "null"
-                  ],
-                  "properties": {
-                    "text": {
-                      "type": "string"
-                    },
-                    "command": {
-                      "type": "string"
-                    },
-                    "args": {
-                      "type": "array"
-                    }
-                  }
-                }
-              }
-            },
-            "additionalProperties": false
-          },
-          "default": {
-            "object": {
-              "items": {
-                "b()": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "parens"
-                    }
-                  ],
-                  "text": "parenthesis block"
-                },
-                "B{}": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "braces"
-                    }
-                  ],
-                  "text": "braces block"
-                },
-                "r[]": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "brackets"
-                    }
-                  ],
-                  "text": "brackets block"
-                },
-                "a<>": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "angleBrackets"
-                    }
-                  ],
-                  "text": "angle block"
-                },
-                "Q\"": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "doubleQuoteString"
-                    }
-                  ],
-                  "text": "double quote string"
-                },
-                "q'": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "singleQuoteString"
-                    }
-                  ],
-                  "text": "single quote string"
-                },
-                "g`": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "graveQuoteString"
-                    }
-                  ],
-                  "text": "grave quote string"
-                },
-                "w": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "word"
-                    }
-                  ],
-                  "text": "word"
-                },
-                "W": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "WORD"
-                    }
-                  ],
-                  "text": "WORD"
-                },
-                "s": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "sentence"
-                    }
-                  ],
-                  "text": "sentence"
-                },
-                "p": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "paragraph"
-                    }
-                  ],
-                  "text": "paragraph"
-                },
-                " ": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "whitespaces"
-                    }
-                  ],
-                  "text": "whitespaces"
-                },
-                "i": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "indent"
-                    }
-                  ],
-                  "text": "indent"
-                },
-                "n": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "number"
-                    }
-                  ],
-                  "text": "number"
-                },
-                "u": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "argument"
-                    }
-                  ],
-                  "text": "argument"
-                },
-                "c": {
-                  "command": "dance.objects.performSelection",
-                  "args": [
-                    {
-                      "object": "custom"
-                    }
-                  ],
-                  "text": "custom object desc"
-                }
-              }
-            },
-            "goto": {
-              "items": {
-                "h": {
-                  "text": "go to line start",
-                  "command": "dance.goto.lineStart"
-                },
-                "l": {
-                  "text": "go to line end",
-                  "command": "dance.goto.lineEnd"
-                },
-                "i": {
-                  "text": "go to non-blank line start",
-                  "command": "dance.goto.lineStart.nonBlank"
-                },
-                "g": {
-                  "text": "go to first line",
-                  "command": "dance.goto.firstLine"
-                },
-                "k": {
-                  "text": "go to first line",
-                  "command": "dance.goto.firstLine"
-                },
-                "j": {
-                  "text": "go to last line",
-                  "command": "dance.goto.lastLine"
-                },
-                "e": {
-                  "text": "go to last char of last line",
-                  "command": "dance.goto.lastCharacter"
-                },
-                "t": {
-                  "text": "go to the first displayed line",
-                  "command": "dance.goto.firstVisibleLine"
-                },
-                "c": {
-                  "text": "go to the middle displayed line",
-                  "command": "dance.goto.middleVisibleLine"
-                },
-                "b": {
-                  "text": "go to the last displayed line",
-                  "command": "dance.goto.lastVisibleLine"
-                },
-                "f": {
-                  "text": "go to file whose name is selected",
-                  "command": "dance.goto.selectedFile"
-                },
-                ".": {
-                  "text": "go to last buffer modification position",
-                  "command": "dance.goto.lastModification"
-                }
-              }
-            },
-            "goto.extend": {
-              "items": {
-                "h": {
-                  "text": "extend to line start",
-                  "command": "dance.goto.lineStart.extend"
-                },
-                "l": {
-                  "text": "extend to line end",
-                  "command": "dance.goto.lineEnd.extend"
-                },
-                "i": {
-                  "text": "extend to non-blank line start",
-                  "command": "dance.goto.lineStart.nonBlank.extend"
-                },
-                "g": {
-                  "text": "extend to first line",
-                  "command": "dance.goto.firstLine.extend"
-                },
-                "k": {
-                  "text": "extend to first line",
-                  "command": "dance.goto.firstLine.extend"
-                },
-                "j": {
-                  "text": "extend to last line",
-                  "command": "dance.goto.lastLine.extend"
-                },
-                "e": {
-                  "text": "extend to last char of last line",
-                  "command": "dance.goto.lastCharacter.extend"
-                },
-                "t": {
-                  "text": "extend to the first displayed line",
-                  "command": "dance.goto.firstVisibleLine.extend"
-                },
-                "c": {
-                  "text": "extend to the middle displayed line",
-                  "command": "dance.goto.middleVisibleLine.extend"
-                },
-                "b": {
-                  "text": "extend to the last displayed line",
-                  "command": "dance.goto.lastVisibleLine.extend"
-                },
-                "f": {
-                  "text": "extend to file whose name is selected",
-                  "command": "dance.goto.selectedFile.extend"
-                },
-                ".": {
-                  "text": "extend to last buffer modification position",
-                  "command": "dance.goto.lastModification.extend"
-                }
-              }
-            }
-          }
+          ],
+          "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         }
       }
     },
     "commands": [
       {
-        "command": "dance.toggle",
-        "title": "Toggle",
-        "description": "Toggles Dance key bindings.",
+        "command": "dance.dev.setSelectionBehavior",
+        "title": "Set the selection behavior of the specified mode",
         "category": "Dance"
       },
       {
-        "command": "dance.set.normal",
-        "title": "Set mode to Normal",
-        "description": "Set Dance mode to Normal.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.set.insert",
-        "title": "Set mode to Insert",
-        "description": "Set Dance mode to Insert.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.tmp.normal",
-        "title": "Temporary normal mode",
-        "description": "Switches to normal mode temporarily.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.tmp.insert",
-        "title": "Temporary insert mode",
-        "description": "Switches to insert mode temporarily.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.insert.before",
-        "title": "Insert before",
-        "description": "Start insert before the current selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.insert.after",
-        "title": "Insert after",
-        "description": "Start insert after the current selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.insert.lineStart",
-        "title": "Insert at line start",
-        "description": "Start insert at line start of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.insert.lineEnd",
-        "title": "Insert at line end",
-        "description": "Start insert at line end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.insert.newLine.below",
-        "title": "Insert new line below",
-        "description": "Create new line and start insert below.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.insert.newLine.above",
-        "title": "Insert new line above",
-        "description": "Create new line and start insert above.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.newLine.below",
-        "title": "Add new line below",
-        "description": "Add a new line below, without entering insert mode.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.newLine.above",
-        "title": "Add new line above",
-        "description": "Add a new line above, without entering insert mode.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.repeat.insert",
-        "title": "Repeat last insert-mode change",
-        "description": "Repeat last insert-mode change.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.repeat.objectOrSelectTo",
-        "title": "Repeat last object select / character find",
-        "description": "Repeat last object select / character find.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.left",
-        "title": "Move left",
-        "description": "Move left.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.right",
-        "title": "Move right",
-        "description": "Move right.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.up",
-        "title": "Move up",
-        "description": "Move up.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.down",
-        "title": "Move down",
-        "description": "Move down.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.up.page",
-        "title": "Scroll one page up",
-        "description": "Scroll one page up.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.down.page",
-        "title": "Scroll one page down",
-        "description": "Scroll one page down.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.up.halfPage",
-        "title": "Scroll half a page up",
-        "description": "Scroll half a page up.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.down.halfPage",
-        "title": "Scroll half a page down",
-        "description": "Scroll half a page down.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.to.included",
-        "title": "Select to",
-        "description": "Select to the next character pressed, including it.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.to.excluded",
-        "title": "Select until",
-        "description": "Select until the next character pressed, excluding it.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.buffer",
-        "title": "Select whole buffer",
-        "description": "Select whole buffer.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.line",
-        "title": "Select line",
-        "description": "Select line on which the end of each selection lies (or next line when end lies on an end-of-line).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.toLineBegin",
-        "title": "Select to line beginning",
-        "description": "Select to line beginning.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.toLineEnd",
-        "title": "Select to line end",
-        "description": "Select to line end.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.enclosing",
-        "title": "Select enclosing characters",
-        "description": "Select enclosing characters.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.expandLines",
-        "title": "Extend lines",
-        "description": "Extend selections to contain full lines (including end-of-lines).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.trimLines",
-        "title": "Trim lines",
-        "description": "Trim selections to only contain full lines (from start to line break).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.trimSelections",
-        "title": "Trim selections",
-        "description": "Trim whitespace at beginning and end of selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.word",
-        "title": "Select to next word start",
-        "description": "Select the word and following whitespaces on the right of the end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.word.previous",
-        "title": "Select to previous word start",
-        "description": "Select preceding whitespaces and the word on the left of the end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.word.end",
-        "title": "Select to next word end",
-        "description": "Select preceding whitespaces and the word on the right of the end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.word.alt",
-        "title": "Select to next non-whitespace word start",
-        "description": "Select the non-whitespace word and following whitespaces on the right of the end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.word.alt.previous",
-        "title": "Select to previous non-whitespace word start",
-        "description": "Select preceding whitespaces and the non-whitespace word on the left of the end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.word.alt.end",
-        "title": "Select to next non-whitespace word end",
-        "description": "Select preceding whitespaces and the non-whitespace word on the right of the end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select",
-        "title": "Select",
-        "description": "Select within current selections according to a RegExp.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.split",
-        "title": "Split",
-        "description": "Split within current selections according to a RegExp.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.split.lines",
-        "title": "Split lines",
-        "description": "Split selections into lines.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.firstLast",
-        "title": "Select first and last characters",
-        "description": "Select first and last characters of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.copy",
-        "title": "Copy selection to next line",
-        "description": "Copy selection to next line.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.copy.backwards",
-        "title": "Copy selection to previous line",
-        "description": "Copy selection to previous line.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.reduce",
-        "title": "Reduce selections",
-        "description": "Reduce selections to their cursor.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.flip",
-        "title": "Flip selections",
-        "description": "Flip the direction of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.forward",
-        "title": "Forward selections",
-        "description": "Ensure selections are in forward direction (the active cursor is after the anchor).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.backward",
-        "title": "Backward selections",
-        "description": "Ensure selections are in backward direction (the active cursor is before the anchor).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.clear",
-        "title": "Clear selections",
-        "description": "Clear selections (except main)",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.clearMain",
-        "title": "Clear main selection",
-        "description": "Clear main selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.keepMatching",
-        "title": "Keep matching selections",
-        "description": "Keep selections that match a RegExp.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.clearMatching",
-        "title": "Clear matching selections",
-        "description": "Clear selections that match a RegExp.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.merge",
-        "title": "Merge contiguous selections",
-        "description": "Merge contiguous selections together, including across lines.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.selections.align",
+        "command": "dance.edit.align",
         "title": "Align selections",
-        "description": "Align selections, aligning the cursor of each selection by inserting spaces before the first character of each selection.",
         "category": "Dance"
       },
       {
-        "command": "dance.selections.align.copy",
-        "title": "Copy indentation",
-        "description": "Copy the indentation of the main selection (or the count one if a count is given) to all other ones.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.delete.yank",
-        "title": "Yank and delete",
-        "description": "Yank and delete selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.delete.insert.yank",
-        "title": "Yank, delete and insert",
-        "description": "Yank, delete and enter insert mode.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.delete.noYank",
-        "title": "Delete without yank",
-        "description": "Delete selections without yanking.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.delete.insert.noYank",
-        "title": "Delete and insert without yank",
-        "description": "Delete selections without yanking and enter insert mode.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.yank",
-        "title": "Yank",
-        "description": "Yank selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.paste.after",
-        "title": "Paste after",
-        "description": "Paste after the end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.paste.before",
-        "title": "Paste before",
-        "description": "Paste before the start of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.paste.select.after",
-        "title": "Paste after and select",
-        "description": "Paste after the end of each selection and select pasted text.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.paste.select.before",
-        "title": "Paste before and select",
-        "description": "Paste before the start of each selection and select pasted text.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.paste.replace",
-        "title": "Replace",
-        "description": "Replace selections with yanked text.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.paste.replace.every",
-        "title": "Replace with every",
-        "description": "Replace selections with every yanked text.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.replace.characters",
-        "title": "Replace character",
-        "description": "Replace each selected character with the next entered one.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.join",
-        "title": "Join lines",
-        "description": "Join selected lines.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.join.select",
-        "title": "Join lines and select spaces",
-        "description": "Join selected lines and select spaces inserted in place of line breaks.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.indent",
-        "title": "Indent",
-        "description": "Indent selected lines.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.indent.withEmpty",
-        "title": "Indent (including empty)",
-        "description": "Indent selected lines (including empty lines).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.deindent",
-        "title": "Deindent",
-        "description": "Deindent selected lines.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.deindent.further",
-        "title": "Deindent (including incomplete indent)",
-        "description": "Deindent selected lines (and remove additional incomplete indent).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.toLowerCase",
-        "title": "Transform to lowercase",
-        "description": "Transform to lowercase.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.toUpperCase",
-        "title": "Transform to uppercase",
-        "description": "Transform to uppercase.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.swapCase",
+        "command": "dance.edit.case.swap",
         "title": "Swap case",
-        "description": "Swap case.",
         "category": "Dance"
       },
       {
-        "command": "dance.pipe.filter",
-        "title": "Filter through pipe",
-        "description": "Pipe each selection to a program, and keeps it if the program returns 0.",
+        "command": "dance.edit.case.toLower",
+        "title": "Transform to lower case",
         "category": "Dance"
       },
       {
-        "command": "dance.pipe.replace",
-        "title": "Pipe and replace",
-        "description": "Pipe each selection to a command, and replaces it with its output.",
+        "command": "dance.edit.case.toUpper",
+        "title": "Transform to upper case",
         "category": "Dance"
       },
       {
-        "command": "dance.pipe.ignore",
-        "title": "Pipe",
-        "description": "Pipe each selection to a command, ignoring their results.",
+        "command": "dance.edit.copyIndentation",
+        "title": "Copy indentation",
         "category": "Dance"
       },
       {
-        "command": "dance.pipe.append",
-        "title": "Pipe and append",
-        "description": "Pipe each selection to a command, appending the output after the selection.",
+        "command": "dance.edit.deindent",
+        "title": "Deindent selected lines",
         "category": "Dance"
       },
       {
-        "command": "dance.pipe.prepend",
-        "title": "Pipe and prepend",
-        "description": "Pipe each selection to a command, prepending the output before the selection.",
+        "command": "dance.edit.deindent.withIncomplete",
+        "title": "Deindent selected lines (including incomplete indent)",
         "category": "Dance"
       },
       {
-        "command": "dance.history.undo",
-        "title": "Undo",
-        "description": "Undo.",
+        "command": "dance.edit.delete",
+        "title": "Delete",
         "category": "Dance"
       },
       {
-        "command": "dance.history.backward",
-        "title": "Move backward in history",
-        "description": "Move backward in history.",
+        "command": "dance.edit.delete-insert",
+        "title": "Delete and switch to Insert",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.indent",
+        "title": "Indent selected lines",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.indent.withEmpty",
+        "title": "Indent selected lines (including empty lines)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.insert",
+        "title": "Insert contents of register",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.join",
+        "title": "Join lines",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.join.select",
+        "title": "Join lines and select inserted separators",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.newLine.above",
+        "title": "Insert new line above each selection",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.newLine.above.insert",
+        "title": "Insert new line above and switch to insert",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.newLine.below",
+        "title": "Insert new line below each selection",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.newLine.below.insert",
+        "title": "Insert new line below and switch to insert",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.paste.after",
+        "title": "Paste after",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.paste.after.select",
+        "title": "Paste after and select",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.paste.before",
+        "title": "Paste before",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.paste.before.select",
+        "title": "Paste before and select",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.replaceCharacters",
+        "title": "Replace characters",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.selectRegister-insert",
+        "title": "Pick register and replace",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.yank-delete",
+        "title": "Copy and delete",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.yank-delete-insert",
+        "title": "Copy, delete and switch to Insert",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.yank-replace",
+        "title": "Copy and replace",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.recording.play",
+        "title": "Replay recording",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.recording.start",
+        "title": "Start recording",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.recording.stop",
+        "title": "Stop recording",
         "category": "Dance"
       },
       {
         "command": "dance.history.redo",
         "title": "Redo",
-        "description": "Redo.",
         "category": "Dance"
       },
       {
-        "command": "dance.history.forward",
-        "title": "Move forward in history",
-        "description": "Move forward in history.",
+        "command": "dance.history.redo.selections",
+        "title": "Redo a change of selections",
         "category": "Dance"
       },
       {
         "command": "dance.history.repeat",
         "title": "Repeat last change",
-        "description": "Repeat last change.",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.repeat.edit",
+        "title": "Repeat last edit without a command",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.history.repeat.seek",
+        "title": "Repeat last seek",
         "category": "Dance"
       },
       {
         "command": "dance.history.repeat.selection",
         "title": "Repeat last selection change",
-        "description": "Repeat last selection change.",
         "category": "Dance"
       },
       {
-        "command": "dance.history.repeat.edit",
-        "title": "Repeat last edit change",
-        "description": "Repeat last edit change.",
+        "command": "dance.history.undo",
+        "title": "Undo",
         "category": "Dance"
       },
       {
-        "command": "dance.macros.record.start",
-        "title": "Start recording macro",
-        "description": "Start recording macro.",
+        "command": "dance.history.undo.selections",
+        "title": "Undo a change of selections",
         "category": "Dance"
       },
       {
-        "command": "dance.macros.record.stop",
-        "title": "Stop recording macro",
-        "description": "Stop recording macro.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.macros.play",
-        "title": "Play macro",
-        "description": "Play macro.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.rotate",
-        "title": "Rotate",
-        "description": "Rotate each selection clockwise.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.rotate.backwards",
-        "title": "Rotate backwards",
-        "description": "Rotate each selection counter-clockwise.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.rotate.content",
-        "title": "Rotate selection content",
-        "description": "Rotate each selection (as well as its content) clockwise.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.rotate.content.backwards",
-        "title": "Rotate selection content backwards",
-        "description": "Rotate each selection (as well as its content) counter-clockwise.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.rotate.contentOnly",
-        "title": "Rotate content only",
-        "description": "Rotate each selection content clockwise, without changing selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.rotate.contentOnly.backwards",
-        "title": "Rotate content only backwards",
-        "description": "Rotate each selection content counter-clockwise, without changing selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.search",
-        "title": "Search",
-        "description": "Search for the given input string.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.search.backwards",
-        "title": "Search backwards",
-        "description": "Search for the given input string before the current selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.search.selection.smart",
-        "title": "Search current selections (smart)",
-        "description": "Search current selections (smart).",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.search.selection",
-        "title": "Search current selections",
-        "description": "Search current selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.search.next",
-        "title": "Select next match",
-        "description": "Select next match after the main selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.search.next.add",
-        "title": "Add next match",
-        "description": "Add a new selection with the next match after the main selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.search.previous",
-        "title": "Select previous match",
-        "description": "Select previous match before the main selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.search.previous.add",
-        "title": "Add previous match",
-        "description": "Add a new selection with the previous match before the main selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.objects.performSelection",
-        "title": "Perform selections specified in the arguments.",
-        "description": "Perform selections specified in the arguments..",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto",
-        "title": "Go to...",
-        "description": "Shows prompt to jump somewhere",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.lineStart",
-        "title": "Go to line start",
-        "description": "Go to line start.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.lineStart.nonBlank",
-        "title": "Go to non-blank line start",
-        "description": "Go to first non-whitespace character of the line",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.lineEnd",
-        "title": "Go to line end",
-        "description": "Go to line end.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.firstLine",
-        "title": "Go to first line",
-        "description": "Go to first line.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.lastLine",
-        "title": "Go to last line",
-        "description": "Go to last line.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.lastCharacter",
-        "title": "Go to last character of the document",
-        "description": "Go to last character of the document.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.firstVisibleLine",
-        "title": "Go to first visible line",
-        "description": "Go to first visible line.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.middleVisibleLine",
-        "title": "Go to middle visible line",
-        "description": "Go to middle visible line.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.lastVisibleLine",
-        "title": "Go to last visible line",
-        "description": "Go to last visible line.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.selectedFile",
-        "title": "Open file under selection",
-        "description": "Open file under selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.goto.lastModification",
-        "title": "Go to last buffer modification position",
-        "description": "Go to last buffer modification position.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.openMenu",
-        "title": "Open quick-jump menu",
-        "description": "Open quick-jump menu.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.registers.insert",
-        "title": "Insert value in register",
-        "description": "Insert value in register.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.registers.select",
-        "title": "Select register for next command",
-        "description": "Select register for next command.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.marks.saveSelections",
-        "title": "Save selections",
-        "description": "Save selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.marks.restoreSelections",
-        "title": "Restore selections",
-        "description": "Restore selections.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.marks.combineSelections.fromCurrent",
-        "title": "Combine current selections with ones from register",
-        "description": "Combine current selections with ones from register.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.marks.combineSelections.fromRegister",
-        "title": "Combine register selections with current ones",
-        "description": "Combine register selections with current ones.",
+        "command": "dance.keybindings.setup",
+        "title": "Set up Dance keybindings",
         "category": "Dance"
       },
       {
         "command": "dance.cancel",
-        "title": "Cancel operation",
-        "description": "Cancels waiting for input from the user",
+        "title": "Cancel Dance operation",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.ignore",
+        "title": "Ignore key",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.openMenu",
+        "title": "Open menu",
         "category": "Dance"
       },
       {
         "command": "dance.run",
         "title": "Run code",
-        "description": "Runs JavaScript code passed in a 'code' argument",
         "category": "Dance"
       },
       {
-        "command": "dance.left.extend",
-        "title": "Move left (extend)",
-        "description": "Move left (extend).",
+        "command": "dance.selectRegister",
+        "title": "Select register for next command",
         "category": "Dance"
       },
       {
-        "command": "dance.right.extend",
-        "title": "Move right (extend)",
-        "description": "Move right (extend).",
+        "command": "dance.updateCount",
+        "title": "Update Dance count",
         "category": "Dance"
       },
       {
-        "command": "dance.up.extend",
-        "title": "Move up (extend)",
-        "description": "Move up (extend).",
+        "command": "dance.modes.insert.after",
+        "title": "Insert after",
         "category": "Dance"
       },
       {
-        "command": "dance.down.extend",
-        "title": "Move down (extend)",
-        "description": "Move down (extend).",
+        "command": "dance.modes.insert.before",
+        "title": "Insert before",
         "category": "Dance"
       },
       {
-        "command": "dance.select.to.included.extend",
-        "title": "Extend to",
-        "description": "Extend to the next character pressed, including it.",
+        "command": "dance.modes.insert.lineEnd",
+        "title": "Insert at line end",
         "category": "Dance"
       },
       {
-        "command": "dance.select.to.excluded.extend",
-        "title": "Extend until",
-        "description": "Extend with until the next character pressed, excluding it.",
+        "command": "dance.modes.insert.lineStart",
+        "title": "Insert at line start",
         "category": "Dance"
       },
       {
-        "command": "dance.select.line.extend",
-        "title": "Extend with line",
-        "description": "Extend with line on which the end of each selection lies (or next line when end lies on an end-of-line).",
+        "command": "dance.modes.set",
+        "title": "Set Dance mode",
         "category": "Dance"
       },
       {
-        "command": "dance.select.toLineBegin.extend",
-        "title": "Extend to line beginning",
-        "description": "Extend to line beginning.",
+        "command": "dance.modes.set.insert",
+        "title": "Set mode to Insert",
         "category": "Dance"
       },
       {
-        "command": "dance.select.toLineEnd.extend",
-        "title": "Extend to line end",
-        "description": "Extend to line end.",
+        "command": "dance.modes.set.normal",
+        "title": "Set mode to Normal",
         "category": "Dance"
       },
       {
-        "command": "dance.select.enclosing.extend",
-        "title": "Extend with enclosing characters",
-        "description": "Extend with enclosing characters.",
+        "command": "dance.modes.set.temporarily",
+        "title": "Set Dance mode temporarily",
         "category": "Dance"
       },
       {
-        "command": "dance.select.word.extend",
-        "title": "Extend to next word start",
-        "description": "Extend with the word and following whitespaces on the right of the end of each selection.",
+        "command": "dance.modes.set.temporarily.insert",
+        "title": "Temporart Insert mode",
         "category": "Dance"
       },
       {
-        "command": "dance.select.word.previous.extend",
-        "title": "Extend to previous word start",
-        "description": "Extend with preceding whitespaces and the word on the left of the end of each selection.",
+        "command": "dance.modes.set.temporarily.normal",
+        "title": "Temporary Normal mode",
         "category": "Dance"
       },
       {
-        "command": "dance.select.word.end.extend",
-        "title": "Extend to next word end",
-        "description": "Extend with preceding whitespaces and the word on the right of the end of each selection.",
+        "command": "dance.search",
+        "title": "Search",
         "category": "Dance"
       },
       {
-        "command": "dance.select.word.alt.extend",
-        "title": "Extend to next non-whitespace word start",
-        "description": "Extend with the non-whitespace word and following whitespaces on the right of the end of each selection.",
+        "command": "dance.search.backward",
+        "title": "Search backward",
         "category": "Dance"
       },
       {
-        "command": "dance.select.word.alt.previous.extend",
-        "title": "Extend to previous non-whitespace word start",
-        "description": "Extend with preceding whitespaces and the non-whitespace word on the left of the end of each selection.",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.word.alt.end.extend",
-        "title": "Extend to next non-whitespace word end",
-        "description": "Extend with preceding whitespaces and the non-whitespace word on the right of the end of each selection.",
+        "command": "dance.search.backward.extend",
+        "title": "Search backward (extend)",
         "category": "Dance"
       },
       {
         "command": "dance.search.extend",
         "title": "Search (extend)",
-        "description": "Search for the given input string (extend).",
         "category": "Dance"
       },
       {
-        "command": "dance.search.backwards.extend",
-        "title": "Search backwards (extend)",
-        "description": "Search for the given input string before the current selections (extend).",
+        "command": "dance.search.next",
+        "title": "Select next match",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.extend",
-        "title": "Go to... (extend)",
-        "description": "Shows prompt to jump somewhere",
+        "command": "dance.search.next.add",
+        "title": "Add next match",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.lineStart.extend",
-        "title": "Go to line start (extend)",
-        "description": "Go to line start (extend).",
+        "command": "dance.search.previous",
+        "title": "Select previous match",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.lineStart.nonBlank.extend",
-        "title": "Go to non-blank line start (extend)",
-        "description": "Go to first non-whitespace character of the line",
+        "command": "dance.search.previous.add",
+        "title": "Add previous match",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.lineEnd.extend",
-        "title": "Go to line end (extend)",
-        "description": "Go to line end (extend).",
+        "command": "dance.search.selection",
+        "title": "Search current selection",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.firstLine.extend",
-        "title": "Go to first line (extend)",
-        "description": "Go to first line (extend).",
+        "command": "dance.search.selection.smart",
+        "title": "Search current selection (smart)",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.lastLine.extend",
-        "title": "Go to last line (extend)",
-        "description": "Go to last line (extend).",
+        "command": "dance.seek",
+        "title": "Select to character (excluded)",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.lastCharacter.extend",
-        "title": "Go to last character of the document (extend)",
-        "description": "Go to last character of the document (extend).",
+        "command": "dance.seek.askObject",
+        "title": "Select whole object",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.firstVisibleLine.extend",
-        "title": "Go to first visible line (extend)",
-        "description": "Go to first visible line (extend).",
+        "command": "dance.seek.askObject.end",
+        "title": "Select to whole object end",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.middleVisibleLine.extend",
-        "title": "Go to middle visible line (extend)",
-        "description": "Go to middle visible line (extend).",
+        "command": "dance.seek.askObject.end",
+        "title": "Extend to whole object end",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.lastVisibleLine.extend",
-        "title": "Go to last visible line (extend)",
-        "description": "Go to last visible line (extend).",
+        "command": "dance.seek.askObject.inner",
+        "title": "Select inner object",
         "category": "Dance"
       },
       {
-        "command": "dance.goto.lastModification.extend",
-        "title": "Go to last buffer modification position (extend)",
-        "description": "Go to last buffer modification position (extend).",
+        "command": "dance.seek.askObject.inner.end",
+        "title": "Select to inner object end",
         "category": "Dance"
       },
       {
-        "command": "dance.select.to.included.backwards",
-        "title": "Select to (backwards)",
-        "description": "Select to the next character pressed, including it. (backwards)",
+        "command": "dance.seek.askObject.inner.end.extend",
+        "title": "Extend to inner object end",
         "category": "Dance"
       },
       {
-        "command": "dance.select.to.excluded.backwards",
-        "title": "Select until (backwards)",
-        "description": "Select until the next character pressed, excluding it. (backwards)",
+        "command": "dance.seek.askObject.inner.start",
+        "title": "Select to inner object start",
         "category": "Dance"
       },
       {
-        "command": "dance.select.enclosing.backwards",
-        "title": "Select enclosing characters (backwards)",
-        "description": "Select enclosing characters. (backwards)",
+        "command": "dance.seek.askObject.inner.start.extend",
+        "title": "Extend to inner object start",
         "category": "Dance"
       },
       {
-        "command": "dance.select.to.included.extend.backwards",
-        "title": "Extend to (backwards)",
-        "description": "Extend to the next character pressed, including it. (backwards)",
+        "command": "dance.seek.askObject.start",
+        "title": "Select to whole object start",
         "category": "Dance"
       },
       {
-        "command": "dance.select.to.excluded.extend.backwards",
-        "title": "Extend until (backwards)",
-        "description": "Extend with until the next character pressed, excluding it. (backwards)",
+        "command": "dance.seek.askObject.start",
+        "title": "Extend to whole object start",
         "category": "Dance"
       },
       {
-        "command": "dance.select.enclosing.extend.backwards",
-        "title": "Extend with enclosing characters (backwards)",
-        "description": "Extend with enclosing characters. (backwards)",
+        "command": "dance.seek.backward",
+        "title": "Select to character (excluded, backward)",
         "category": "Dance"
       },
       {
-        "command": "dance.count.0",
-        "title": "Count 0",
-        "description": "Adds 0 to the current counter for the next operation.",
+        "command": "dance.seek.enclosing",
+        "title": "Select to next enclosing character",
         "category": "Dance"
       },
       {
-        "command": "dance.count.1",
-        "title": "Count 1",
-        "description": "Adds 1 to the current counter for the next operation.",
+        "command": "dance.seek.enclosing.backward",
+        "title": "Select to previous enclosing character",
         "category": "Dance"
       },
       {
-        "command": "dance.count.2",
-        "title": "Count 2",
-        "description": "Adds 2 to the current counter for the next operation.",
+        "command": "dance.seek.enclosing.extend",
+        "title": "Extend to next enclosing character",
         "category": "Dance"
       },
       {
-        "command": "dance.count.3",
-        "title": "Count 3",
-        "description": "Adds 3 to the current counter for the next operation.",
+        "command": "dance.seek.enclosing.extend.backward",
+        "title": "Extend to previous enclosing character",
         "category": "Dance"
       },
       {
-        "command": "dance.count.4",
-        "title": "Count 4",
-        "description": "Adds 4 to the current counter for the next operation.",
+        "command": "dance.seek.extend",
+        "title": "Extend to character (excluded)",
         "category": "Dance"
       },
       {
-        "command": "dance.count.5",
-        "title": "Count 5",
-        "description": "Adds 5 to the current counter for the next operation.",
+        "command": "dance.seek.extend.backward",
+        "title": "Extend to character (excluded, backward)",
         "category": "Dance"
       },
       {
-        "command": "dance.count.6",
-        "title": "Count 6",
-        "description": "Adds 6 to the current counter for the next operation.",
+        "command": "dance.seek.included",
+        "title": "Select to character (included)",
         "category": "Dance"
       },
       {
-        "command": "dance.count.7",
-        "title": "Count 7",
-        "description": "Adds 7 to the current counter for the next operation.",
+        "command": "dance.seek.included.backward",
+        "title": "Select to character (included, backward)",
         "category": "Dance"
       },
       {
-        "command": "dance.count.8",
-        "title": "Count 8",
-        "description": "Adds 8 to the current counter for the next operation.",
+        "command": "dance.seek.included.extend",
+        "title": "Extend to character (included)",
         "category": "Dance"
       },
       {
-        "command": "dance.count.9",
-        "title": "Count 9",
-        "description": "Adds 9 to the current counter for the next operation.",
+        "command": "dance.seek.included.extend.backward",
+        "title": "Extend to character (included, backward)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.object",
+        "title": "Select object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word",
+        "title": "Select to next word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.backward",
+        "title": "Select to previous word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.extend",
+        "title": "Extend to next word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.extend.backward",
+        "title": "Extend to previous word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.ws",
+        "title": "Select to next non-whitespace word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.ws.backward",
+        "title": "Select to previous non-whitespace word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.ws.extend",
+        "title": "Extend to next non-whitespace word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.word.ws.extend.backward",
+        "title": "Extend to previous non-whitespace word start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.wordEnd",
+        "title": "Select to next word end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.wordEnd.extend",
+        "title": "Extend to next word end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.wordEnd.ws",
+        "title": "Select to next non-whitespace word end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.wordEnd.ws.extend",
+        "title": "Extend to next non-whitespace word end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.buffer",
+        "title": "Select whole buffer",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.documentEnd.extend",
+        "title": "Extend to last character",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.documentEnd.jump",
+        "title": "Jump to last character",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.down.extend",
+        "title": "Extend down",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.down.jump",
+        "title": "Jump down",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.firstLine.extend",
+        "title": "Extend to first line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.firstLine.jump",
+        "title": "Jump to first line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.firstVisibleLine",
+        "title": "Select to first visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.firstVisibleLine.extend",
+        "title": "Extend to first visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.firstVisibleLine.jump",
+        "title": "Jump to first visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.horizontally",
+        "title": "Select horizontally",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastLine",
+        "title": "Select to last line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastLine.extend",
+        "title": "Extend to last line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastLine.jump",
+        "title": "Jump to last line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastModification",
+        "title": "Select to last modification",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastModification.extend",
+        "title": "Extend to last modification",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastModification.jump",
+        "title": "Jump to last modification",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastVisibleLine",
+        "title": "Select to last visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastVisibleLine.extend",
+        "title": "Extend to last visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lastVisibleLine.jump",
+        "title": "Jump to last visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.left.extend",
+        "title": "Extend left",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.left.jump",
+        "title": "Jump left",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.line.above",
+        "title": "Select line above",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.line.above.extend",
+        "title": "Extend to line above",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.line.below",
+        "title": "Select line below",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.line.below.extend",
+        "title": "Extend to line below",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lineEnd",
+        "title": "Select to line end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lineEnd.extend",
+        "title": "Extend to line end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lineStart",
+        "title": "Select to line start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lineStart.extend",
+        "title": "Extend to line start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lineStart.jump",
+        "title": "Jump to line start",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lineStart.skipBlank.extend",
+        "title": "Extend to line start (skip blank)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.lineStart.skipBlank.jump",
+        "title": "Jump to line start (skip blank)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.middleVisibleLine",
+        "title": "Select to middle visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.middleVisibleLine.extend",
+        "title": "Extend to middle visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.middleVisibleLine.jump",
+        "title": "Jump to middle visible line",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.right.extend",
+        "title": "Extend right",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.right.jump",
+        "title": "Jump right",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to",
+        "title": "Select to",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.extend",
+        "title": "Extend to",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.to.jump",
+        "title": "Go to",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.up.extend",
+        "title": "Extend up",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.up.jump",
+        "title": "Jump up",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.select.vertically",
+        "title": "Select vertically",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.changeDirection",
+        "title": "Change direction of selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.clear.main",
+        "title": "Clear main selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.clear.secondary",
+        "title": "Clear secondary selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.copy",
+        "title": "Copy selections below",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.copy.above",
+        "title": "Copy selections above",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.expandToLines",
+        "title": "Expand to lines",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.faceBackward",
+        "title": "Backward selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.faceForward",
+        "title": "Forward selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.filter",
+        "title": "Filter selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.filter.regexp",
+        "title": "Keep matching selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.filter.regexp.inverse",
+        "title": "Clear matching selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.hideIndices",
+        "title": "Hide selection indices",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.merge",
+        "title": "Merge contiguous selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.open",
+        "title": "Open selected file",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.pipe",
+        "title": "Pipe selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.pipe.append",
+        "title": "Pipe and append",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.pipe.prepend",
+        "title": "Pipe and prepend",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.pipe.replace",
+        "title": "Pipe and replace",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.reduce",
+        "title": "Reduce selections to their cursor",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.reduce.edges",
+        "title": "Reduce selections to their ends",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.restore",
+        "title": "Restore selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.restore.withCurrent",
+        "title": "Combine register selections with current ones",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.save",
+        "title": "Save selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.saveText",
+        "title": "Copy selections text",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.select",
+        "title": "Select within selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.showIndices",
+        "title": "Show selection indices",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.split",
+        "title": "Split selections",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.splitLines",
+        "title": "Split selections at line boundaries",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.toggleIndices",
+        "title": "Toggle selection indices",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.trimLines",
+        "title": "Trim lines",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.trimWhitespace",
+        "title": "Trim whitespace",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.rotate.both",
+        "title": "Rotate selections clockwise",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.rotate.both.reverse",
+        "title": "Rotate selections counter-clockwise",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.rotate.contents",
+        "title": "Rotate selections clockwise (contents only)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.rotate.contents.reverse",
+        "title": "Rotate selections counter-clockwise (contents only)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.rotate.selections",
+        "title": "Rotate selections clockwise (selections only)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.rotate.selections.reverse",
+        "title": "Rotate selections counter-clockwise (selections only)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.view.line",
+        "title": "Reveals a position based on the main cursor",
         "category": "Dance"
       }
     ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "dance.dev.setSelectionBehavior",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.align",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.case.swap",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.case.toLower",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.case.toUpper",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.copyIndentation",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.deindent",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.deindent.withIncomplete",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.delete",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.delete-insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.indent",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.indent.withEmpty",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.join",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.join.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.newLine.above",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.newLine.above.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.newLine.below",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.newLine.below.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.paste.after",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.paste.after.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.paste.before",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.paste.before.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.replaceCharacters",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.selectRegister-insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.yank-delete",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.yank-delete-insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.yank-replace",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.recording.play",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.recording.start",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.recording.stop",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.redo",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.redo.selections",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.repeat",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.repeat.edit",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.repeat.seek",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.repeat.selection",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.undo",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.history.undo.selections",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.keybindings.setup",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.cancel",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.ignore",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.openMenu",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.run",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selectRegister",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.updateCount",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.insert.after",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.insert.before",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.insert.lineEnd",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.insert.lineStart",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.normal",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.temporarily",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.temporarily.insert",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.modes.set.temporarily.normal",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.backward.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.next",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.next.add",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.previous",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.previous.add",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.selection",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.search.selection.smart",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.end",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.end",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner.end",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner.end.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner.start",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.inner.start.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.start",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.askObject.start",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.enclosing",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.enclosing.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.enclosing.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.enclosing.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.included",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.included.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.included.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.included.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.object",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.ws",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.ws.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.ws.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.word.ws.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordEnd",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordEnd.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordEnd.ws",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.wordEnd.ws.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.buffer",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.documentEnd.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.documentEnd.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.down.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.down.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstVisibleLine",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstVisibleLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.firstVisibleLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.horizontally",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastLine",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastModification",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastModification.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastModification.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastVisibleLine",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastVisibleLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lastVisibleLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.left.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.left.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.line.above",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.line.above.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.line.below",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.line.below.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineEnd",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineEnd.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart.skipBlank.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.lineStart.skipBlank.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.middleVisibleLine",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.middleVisibleLine.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.middleVisibleLine.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.right.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.right.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.to",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.to.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.to.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.up.extend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.up.jump",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.select.vertically",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.changeDirection",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.clear.main",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.clear.secondary",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.copy",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.copy.above",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.expandToLines",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.faceBackward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.faceForward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.filter",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.filter.regexp",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.filter.regexp.inverse",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.hideIndices",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.merge",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.open",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.pipe",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.pipe.append",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.pipe.prepend",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.pipe.replace",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.reduce",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.reduce.edges",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.restore",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.restore.withCurrent",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.save",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.saveText",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.showIndices",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.split",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.splitLines",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.toggleIndices",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.trimLines",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.trimWhitespace",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.both",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.both.reverse",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.contents",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.contents.reverse",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.selections",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.rotate.selections.reverse",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.view.line",
+          "when": "dance.mode == 'normal'"
+        }
+      ]
+    },
     "keybindings": [
       {
-        "key": "Alt+a",
+        "key": "Shift+7",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "select"
-        }
+        "title": "Align selections",
+        "command": "dance.edit.align"
       },
       {
-        "key": "Alt+a",
+        "key": "Alt+`",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Swap case",
+        "command": "dance.edit.case.swap"
+      },
+      {
+        "key": "`",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Transform to lower case",
+        "command": "dance.edit.case.toLower"
+      },
+      {
+        "key": "Shift+`",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Transform to upper case",
+        "command": "dance.edit.case.toUpper"
+      },
+      {
+        "key": "Shift+Alt+7",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Copy indentation",
+        "command": "dance.edit.copyIndentation"
+      },
+      {
+        "key": "Shift+Alt+,",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Deindent selected lines",
+        "command": "dance.edit.deindent"
+      },
+      {
+        "key": "Shift+,",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Deindent selected lines (including incomplete indent)",
+        "command": "dance.edit.deindent.withIncomplete"
+      },
+      {
+        "key": "Alt+D",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Delete",
+        "command": "dance.edit.delete"
+      },
+      {
+        "key": "Alt+C",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Delete and switch to Insert",
+        "command": "dance.edit.delete-insert"
+      },
+      {
+        "key": "Shift+.",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Indent selected lines",
+        "command": "dance.edit.indent"
+      },
+      {
+        "key": "Shift+Alt+.",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Indent selected lines (including empty lines)",
+        "command": "dance.edit.indent.withEmpty"
+      },
+      {
+        "key": "Shift+Alt+R",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Insert contents of register",
+        "command": "dance.edit.insert"
+      },
+      {
+        "key": "Alt+J",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Join lines",
+        "command": "dance.edit.join"
+      },
+      {
+        "key": "Shift+Alt+J",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Join lines and select inserted separators",
+        "command": "dance.edit.join.select"
+      },
+      {
+        "key": "Shift+Alt+O",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Insert new line above each selection",
+        "command": "dance.edit.newLine.above"
+      },
+      {
+        "key": "Shift+O",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Insert new line above and switch to insert",
+        "command": "dance.edit.newLine.above.insert"
+      },
+      {
+        "key": "Alt+O",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Insert new line below each selection",
+        "command": "dance.edit.newLine.below"
+      },
+      {
+        "key": "O",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Insert new line below and switch to insert",
+        "command": "dance.edit.newLine.below.insert"
+      },
+      {
+        "key": "P",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Paste after",
+        "command": "dance.edit.paste.after"
+      },
+      {
+        "key": "Alt+P",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Paste after and select",
+        "command": "dance.edit.paste.after.select"
+      },
+      {
+        "key": "Shift+P",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Paste before",
+        "command": "dance.edit.paste.before"
+      },
+      {
+        "key": "Shift+Alt+P",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Paste before and select",
+        "command": "dance.edit.paste.before.select"
+      },
+      {
+        "key": "R",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Replace characters",
+        "command": "dance.edit.replaceCharacters"
+      },
+      {
+        "key": "Ctrl+R",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Pick register and replace",
+        "command": "dance.edit.selectRegister-insert"
+      },
+      {
+        "key": "Ctrl+R",
         "when": "editorTextFocus && dance.mode == 'insert'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "select"
-        }
+        "title": "Pick register and replace",
+        "command": "dance.edit.selectRegister-insert"
       },
       {
-        "key": "Alt+i",
+        "key": "D",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "select",
-          "inner": true
-        }
+        "title": "Copy and delete",
+        "command": "dance.edit.yank-delete"
       },
       {
-        "key": "Alt+i",
-        "when": "editorTextFocus && dance.mode == 'insert'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "select",
-          "inner": true
-        }
-      },
-      {
-        "key": "[",
+        "key": "C",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
+        "title": "Copy, delete and switch to Insert",
+        "command": "dance.edit.yank-delete-insert"
+      },
+      {
+        "key": "Shift+R",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Copy and replace",
+        "command": "dance.edit.yank-replace"
+      },
+      {
+        "key": "Q",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Replay recording",
+        "command": "dance.history.recording.play"
+      },
+      {
+        "key": "Shift+Q",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Start recording",
+        "command": "dance.history.recording.start"
+      },
+      {
+        "key": "Escape",
+        "when": "editorTextFocus && dance.mode == 'normal' && dance.isRecording",
+        "title": "Stop recording",
+        "command": "dance.history.recording.stop"
+      },
+      {
+        "key": "Shift+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Redo",
+        "command": "dance.history.redo"
+      },
+      {
+        "key": "Shift+Alt+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Redo a change of selections",
+        "command": "dance.history.redo.selections"
+      },
+      {
+        "key": ".",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Repeat last edit without a command",
+        "command": "dance.history.repeat.edit"
+      },
+      {
+        "key": "Alt+.",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Repeat last seek",
+        "command": "dance.history.repeat.seek"
+      },
+      {
+        "key": "U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Undo",
+        "command": "dance.history.undo"
+      },
+      {
+        "key": "Alt+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Undo a change of selections",
+        "command": "dance.history.undo.selections"
+      },
+      {
+        "key": "Escape",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Cancel Dance operation",
+        "command": "dance.cancel"
+      },
+      {
+        "key": "Escape",
+        "when": "editorTextFocus && dance.mode == 'input'",
+        "title": "Cancel Dance operation",
+        "command": "dance.cancel"
+      },
+      {
+        "key": "Shift+'",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select register for next command",
+        "command": "dance.selectRegister"
+      },
+      {
+        "key": "0",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 0 to the counter",
+        "command": "dance.updateCount",
         "args": {
-          "menu": "object",
-          "action": "selectToStart"
+          "addDigits": 0
         }
       },
       {
-        "key": "]",
+        "key": "1",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
+        "title": "Add the digit 1 to the counter",
+        "command": "dance.updateCount",
         "args": {
-          "menu": "object",
-          "action": "selectToEnd"
+          "addDigits": 1
+        }
+      },
+      {
+        "key": "2",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 2 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 2
+        }
+      },
+      {
+        "key": "3",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 3 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 3
+        }
+      },
+      {
+        "key": "4",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 4 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 4
+        }
+      },
+      {
+        "key": "5",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 5 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 5
+        }
+      },
+      {
+        "key": "6",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 6 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 6
+        }
+      },
+      {
+        "key": "7",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 7 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 7
+        }
+      },
+      {
+        "key": "8",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 8 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 8
+        }
+      },
+      {
+        "key": "9",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add the digit 9 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 9
         }
       },
       {
@@ -1565,899 +2738,814 @@
         "command": "workbench.action.showCommands"
       },
       {
-        "key": "Shift+[",
+        "key": "A",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "selectToStart",
-          "extend": true
-        }
+        "title": "Insert after",
+        "command": "dance.modes.insert.after"
+      },
+      {
+        "key": "I",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Insert before",
+        "command": "dance.modes.insert.before"
+      },
+      {
+        "key": "Shift+A",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Insert at line end",
+        "command": "dance.modes.insert.lineEnd"
+      },
+      {
+        "key": "Shift+I",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Insert at line start",
+        "command": "dance.modes.insert.lineStart"
+      },
+      {
+        "key": "Escape",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "title": "Set mode to Normal",
+        "command": "dance.modes.set.normal"
+      },
+      {
+        "key": "Ctrl+V",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Temporart Insert mode",
+        "command": "dance.modes.set.temporarily.insert"
+      },
+      {
+        "key": "Ctrl+V",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "title": "Temporary Normal mode",
+        "command": "dance.modes.set.temporarily.normal"
+      },
+      {
+        "key": "/",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Search",
+        "command": "dance.search"
+      },
+      {
+        "key": "Alt+/",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Search backward",
+        "command": "dance.search.backward"
+      },
+      {
+        "key": "Shift+Alt+/",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Search backward (extend)",
+        "command": "dance.search.backward.extend"
+      },
+      {
+        "key": "Shift+/",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Search (extend)",
+        "command": "dance.search.extend"
+      },
+      {
+        "key": "N",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select next match",
+        "command": "dance.search.next"
+      },
+      {
+        "key": "Shift+N",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add next match",
+        "command": "dance.search.next.add"
+      },
+      {
+        "key": "Alt+N",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select previous match",
+        "command": "dance.search.previous"
+      },
+      {
+        "key": "Shift+Alt+N",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Add previous match",
+        "command": "dance.search.previous.add"
+      },
+      {
+        "key": "Shift+Alt+8",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Search current selection",
+        "command": "dance.search.selection"
+      },
+      {
+        "key": "Shift+8",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Search current selection (smart)",
+        "command": "dance.search.selection.smart"
+      },
+      {
+        "key": "T",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to character (excluded)",
+        "command": "dance.seek"
+      },
+      {
+        "key": "Alt+A",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select whole object",
+        "command": "dance.seek.askObject"
+      },
+      {
+        "key": "Alt+A",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "title": "Select whole object",
+        "command": "dance.seek.askObject"
+      },
+      {
+        "key": "]",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to whole object end",
+        "command": "dance.seek.askObject.end"
       },
       {
         "key": "Shift+]",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "selectToEnd",
-          "extend": true
-        }
+        "title": "Extend to whole object end",
+        "command": "dance.seek.askObject.end"
       },
       {
-        "key": "Alt+[",
+        "key": "Alt+I",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "selectToStart",
-          "inner": true
-        }
+        "title": "Select inner object",
+        "command": "dance.seek.askObject.inner"
+      },
+      {
+        "key": "Alt+I",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "title": "Select inner object",
+        "command": "dance.seek.askObject.inner"
       },
       {
         "key": "Alt+]",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "selectToEnd",
-          "inner": true
-        }
+        "title": "Select to inner object end",
+        "command": "dance.seek.askObject.inner.end"
       },
       {
-        "key": "Alt+Shift+[",
+        "key": "Shift+Alt+]",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "selectToStart",
-          "extend": true,
-          "inner": true
-        }
+        "title": "Extend to inner object end",
+        "command": "dance.seek.askObject.inner.end.extend"
       },
       {
-        "key": "Alt+Shift+]",
+        "key": "Alt+[",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "object",
-          "action": "selectToEnd",
-          "extend": true,
-          "inner": true
-        }
+        "title": "Select to inner object start",
+        "command": "dance.seek.askObject.inner.start"
       },
       {
-        "command": "dance.set.normal",
-        "key": "escape",
-        "when": "editorTextFocus && dance.mode == 'insert'"
+        "key": "Shift+Alt+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to inner object start",
+        "command": "dance.seek.askObject.inner.start.extend"
       },
       {
-        "command": "dance.tmp.normal",
-        "key": "Ctrl+v",
-        "when": "editorTextFocus && dance.mode == 'insert'"
+        "key": "[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to whole object start",
+        "command": "dance.seek.askObject.start"
       },
       {
-        "command": "dance.tmp.insert",
-        "key": "Ctrl+v",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+[",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to whole object start",
+        "command": "dance.seek.askObject.start"
       },
       {
-        "command": "dance.insert.before",
-        "key": "i",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Alt+T",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to character (excluded, backward)",
+        "command": "dance.seek.backward"
       },
       {
-        "command": "dance.insert.after",
-        "key": "a",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "M",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to next enclosing character",
+        "command": "dance.seek.enclosing"
       },
       {
-        "command": "dance.insert.lineStart",
-        "key": "Shift+i",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Alt+M",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to previous enclosing character",
+        "command": "dance.seek.enclosing.backward"
       },
       {
-        "command": "dance.insert.lineEnd",
-        "key": "Shift+a",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+M",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to next enclosing character",
+        "command": "dance.seek.enclosing.extend"
       },
       {
-        "command": "dance.insert.newLine.below",
-        "key": "o",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+M",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to previous enclosing character",
+        "command": "dance.seek.enclosing.extend.backward"
       },
       {
-        "command": "dance.insert.newLine.above",
-        "key": "Shift+o",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+T",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to character (excluded)",
+        "command": "dance.seek.extend"
       },
       {
-        "command": "dance.newLine.below",
-        "key": "Alt+o",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+T",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to character (excluded, backward)",
+        "command": "dance.seek.extend.backward"
       },
       {
-        "command": "dance.newLine.above",
-        "key": "Shift+Alt+o",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to character (included)",
+        "command": "dance.seek.included"
       },
       {
-        "command": "dance.repeat.insert",
-        "key": ".",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Alt+F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to character (included, backward)",
+        "command": "dance.seek.included.backward"
       },
       {
-        "command": "dance.repeat.objectOrSelectTo",
-        "key": "Alt+.",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to character (included)",
+        "command": "dance.seek.included.extend"
       },
       {
-        "command": "dance.left",
-        "key": "left",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to character (included, backward)",
+        "command": "dance.seek.included.extend.backward"
       },
       {
-        "command": "dance.left",
-        "key": "h",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "W",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to next word start",
+        "command": "dance.seek.word"
       },
       {
-        "command": "dance.right",
-        "key": "right",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to previous word start",
+        "command": "dance.seek.word.backward"
       },
       {
-        "command": "dance.right",
-        "key": "l",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+W",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to next word start",
+        "command": "dance.seek.word.extend"
       },
       {
-        "command": "dance.up",
-        "key": "up",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to previous word start",
+        "command": "dance.seek.word.extend.backward"
       },
       {
-        "command": "dance.up",
-        "key": "k",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Alt+W",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to next non-whitespace word start",
+        "command": "dance.seek.word.ws"
       },
       {
-        "command": "dance.down",
-        "key": "down",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Alt+B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to previous non-whitespace word start",
+        "command": "dance.seek.word.ws.backward"
       },
       {
-        "command": "dance.down",
-        "key": "j",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+W",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to next non-whitespace word start",
+        "command": "dance.seek.word.ws.extend"
       },
       {
-        "command": "dance.up.page",
-        "key": "Ctrl+b",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to previous non-whitespace word start",
+        "command": "dance.seek.word.ws.extend.backward"
       },
       {
-        "command": "dance.up.page",
-        "key": "Ctrl+b",
-        "when": "editorTextFocus && dance.mode == 'insert'"
+        "key": "E",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to next word end",
+        "command": "dance.seek.wordEnd"
       },
       {
-        "command": "dance.down.page",
-        "key": "Ctrl+f",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+E",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to next word end",
+        "command": "dance.seek.wordEnd.extend"
       },
       {
-        "command": "dance.down.page",
-        "key": "Ctrl+f",
-        "when": "editorTextFocus && dance.mode == 'insert'"
+        "key": "Alt+E",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to next non-whitespace word end",
+        "command": "dance.seek.wordEnd.ws"
       },
       {
-        "command": "dance.up.halfPage",
-        "key": "Ctrl+u",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+E",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to next non-whitespace word end",
+        "command": "dance.seek.wordEnd.ws.extend"
       },
       {
-        "command": "dance.up.halfPage",
-        "key": "Ctrl+u",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.down.halfPage",
-        "key": "Ctrl+d",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down.halfPage",
-        "key": "Ctrl+d",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.select.to.included",
-        "key": "f",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.to.excluded",
-        "key": "t",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.buffer",
         "key": "Shift+5",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select whole buffer",
+        "command": "dance.select.buffer"
       },
       {
-        "command": "dance.select.line",
-        "key": "x",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+J",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend down",
+        "command": "dance.select.down.extend"
       },
       {
-        "command": "dance.select.toLineBegin",
-        "key": "Alt+h",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Down",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend down",
+        "command": "dance.select.down.extend"
       },
       {
-        "command": "dance.select.toLineBegin",
-        "key": "home",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "J",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Jump down",
+        "command": "dance.select.down.jump"
       },
       {
-        "command": "dance.select.toLineEnd",
-        "key": "Alt+l",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Down",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Jump down",
+        "command": "dance.select.down.jump"
       },
       {
-        "command": "dance.select.toLineEnd",
-        "key": "end",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+H",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend left",
+        "command": "dance.select.left.extend"
       },
       {
-        "command": "dance.select.enclosing",
-        "key": "m",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Left",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend left",
+        "command": "dance.select.left.extend"
       },
       {
-        "command": "dance.expandLines",
-        "key": "Alt+x",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "H",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Jump left",
+        "command": "dance.select.left.jump"
       },
       {
-        "command": "dance.trimLines",
-        "key": "Shift+Alt+x",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Left",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Jump left",
+        "command": "dance.select.left.jump"
       },
       {
-        "command": "dance.trimSelections",
-        "key": "Shift+-",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "X",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select line below",
+        "command": "dance.select.line.below"
       },
       {
-        "command": "dance.select.word",
-        "key": "w",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+X",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to line below",
+        "command": "dance.select.line.below.extend"
       },
       {
-        "command": "dance.select.word.previous",
-        "key": "b",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Alt+L",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to line end",
+        "command": "dance.select.lineEnd"
       },
       {
-        "command": "dance.select.word.end",
-        "key": "e",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "End",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to line end",
+        "command": "dance.select.lineEnd"
       },
       {
-        "command": "dance.select.word.alt",
-        "key": "Alt+w",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+L",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to line end",
+        "command": "dance.select.lineEnd.extend"
       },
       {
-        "command": "dance.select.word.alt.previous",
-        "key": "Alt+b",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+End",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to line end",
+        "command": "dance.select.lineEnd.extend"
       },
       {
-        "command": "dance.select.word.alt.end",
-        "key": "Alt+e",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Alt+H",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to line start",
+        "command": "dance.select.lineStart"
       },
       {
-        "command": "dance.select",
-        "key": "s",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Home",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select to line start",
+        "command": "dance.select.lineStart"
       },
       {
-        "command": "dance.split",
-        "key": "Shift+s",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+H",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to line start",
+        "command": "dance.select.lineStart.extend"
       },
       {
-        "command": "dance.split.lines",
-        "key": "Alt+s",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Home",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to line start",
+        "command": "dance.select.lineStart.extend"
       },
       {
-        "command": "dance.select.firstLast",
-        "key": "Shift+Alt+s",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+L",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend right",
+        "command": "dance.select.right.extend"
       },
       {
-        "command": "dance.select.copy",
-        "key": "Shift+c",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Right",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend right",
+        "command": "dance.select.right.extend"
       },
       {
-        "command": "dance.select.copy.backwards",
-        "key": "Shift+Alt+c",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "L",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Jump right",
+        "command": "dance.select.right.jump"
       },
       {
-        "command": "dance.selections.reduce",
-        "key": ";",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Right",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Jump right",
+        "command": "dance.select.right.jump"
       },
       {
-        "command": "dance.selections.flip",
+        "key": "Shift+G",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to",
+        "command": "dance.select.to.extend"
+      },
+      {
+        "key": "G",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Go to",
+        "command": "dance.select.to.jump"
+      },
+      {
+        "key": "Shift+K",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend up",
+        "command": "dance.select.up.extend"
+      },
+      {
+        "key": "Shift+Up",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend up",
+        "command": "dance.select.up.extend"
+      },
+      {
+        "key": "K",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Jump up",
+        "command": "dance.select.up.jump"
+      },
+      {
+        "key": "Up",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Jump up",
+        "command": "dance.select.up.jump"
+      },
+      {
+        "key": "Ctrl+F",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "page"
+        }
+      },
+      {
+        "key": "Ctrl+F",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "page"
+        }
+      },
+      {
+        "key": "Ctrl+D",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "halfPage"
+        }
+      },
+      {
+        "key": "Ctrl+D",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "halfPage"
+        }
+      },
+      {
+        "key": "Ctrl+B",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "page"
+        }
+      },
+      {
+        "key": "Ctrl+B",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "page"
+        }
+      },
+      {
+        "key": "Ctrl+U",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "halfPage"
+        }
+      },
+      {
+        "key": "Ctrl+U",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "halfPage"
+        }
+      },
+      {
         "key": "Alt+;",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Change direction of selections",
+        "command": "dance.selections.changeDirection"
       },
       {
-        "command": "dance.selections.forward",
+        "key": "Alt+Space",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Clear main selections",
+        "command": "dance.selections.clear.main"
+      },
+      {
+        "key": "Space",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Clear secondary selections",
+        "command": "dance.selections.clear.secondary"
+      },
+      {
+        "key": "Shift+C",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Copy selections below",
+        "command": "dance.selections.copy"
+      },
+      {
+        "key": "Shift+Alt+C",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Copy selections above",
+        "command": "dance.selections.copy.above"
+      },
+      {
+        "key": "Alt+X",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Expand to lines",
+        "command": "dance.selections.expandToLines"
+      },
+      {
         "key": "Shift+Alt+;",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Forward selections",
+        "command": "dance.selections.faceForward"
       },
       {
-        "command": "dance.selections.clear",
-        "key": "space",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.selections.clearMain",
-        "key": "Alt+space",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.selections.keepMatching",
-        "key": "Alt+k",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.selections.clearMatching",
-        "key": "Shift+Alt+k",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.selections.merge",
-        "key": "Shift+Alt+-",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.selections.align",
-        "key": "Shift+7",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.selections.align.copy",
-        "key": "Shift+Alt+7",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.delete.yank",
-        "key": "d",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.delete.insert.yank",
-        "key": "c",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.delete.noYank",
-        "key": "Alt+d",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.delete.insert.noYank",
-        "key": "Alt+c",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.yank",
-        "key": "y",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.paste.after",
-        "key": "p",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.paste.before",
-        "key": "Shift+p",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.paste.select.after",
-        "key": "Alt+p",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.paste.select.before",
-        "key": "Shift+Alt+p",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.paste.replace",
-        "key": "Shift+r",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.paste.replace.every",
-        "key": "Shift+Alt+r",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.replace.characters",
-        "key": "r",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.join",
-        "key": "Alt+j",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.join.select",
-        "key": "Shift+Alt+j",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.indent",
-        "key": "Shift+.",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.indent.withEmpty",
-        "key": "Shift+Alt+.",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.deindent",
-        "key": "Shift+Alt+,",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.deindent.further",
-        "key": "Shift+,",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.toLowerCase",
-        "key": "`",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.toUpperCase",
-        "key": "Shift+`",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.swapCase",
-        "key": "Alt+`",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.pipe.filter",
         "key": "Shift+4",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Filter selections",
+        "command": "dance.selections.filter"
       },
       {
-        "command": "dance.pipe.replace",
-        "key": "Shift+\\",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Alt+K",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Keep matching selections",
+        "command": "dance.selections.filter.regexp"
       },
       {
-        "command": "dance.pipe.ignore",
+        "key": "Shift+Alt+K",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Clear matching selections",
+        "command": "dance.selections.filter.regexp.inverse"
+      },
+      {
+        "key": "Shift+Alt+-",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Merge contiguous selections",
+        "command": "dance.selections.merge"
+      },
+      {
         "key": "Shift+Alt+\\",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Pipe selections",
+        "command": "dance.selections.pipe"
       },
       {
-        "command": "dance.pipe.append",
         "key": "Shift+1",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Pipe and append",
+        "command": "dance.selections.pipe.append"
       },
       {
-        "command": "dance.pipe.prepend",
         "key": "Shift+Alt+1",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Pipe and prepend",
+        "command": "dance.selections.pipe.prepend"
       },
       {
-        "command": "dance.history.undo",
-        "key": "u",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+\\",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Pipe and replace",
+        "command": "dance.selections.pipe.replace"
       },
       {
-        "command": "dance.history.backward",
-        "key": "Alt+u",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": ";",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Reduce selections to their cursor",
+        "command": "dance.selections.reduce"
       },
       {
-        "command": "dance.history.redo",
-        "key": "Shift+u",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+S",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Reduce selections to their ends",
+        "command": "dance.selections.reduce.edges"
       },
       {
-        "command": "dance.history.forward",
-        "key": "Shift+Alt+u",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Z",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Restore selections",
+        "command": "dance.selections.restore"
       },
       {
-        "command": "dance.macros.record.start",
-        "key": "Shift+q",
-        "when": "editorTextFocus && dance.mode == 'normal' && !dance.recordingMacro"
+        "key": "Alt+Z",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Combine register selections with current ones",
+        "command": "dance.selections.restore.withCurrent"
       },
       {
-        "command": "dance.macros.record.stop",
-        "key": "escape",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Alt+Z",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "command": "dance.selections.restore.withCurrent",
+        "args": {
+          "reverse": true
+        }
       },
       {
-        "command": "dance.macros.play",
-        "key": "q",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "key": "Shift+Z",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Save selections",
+        "command": "dance.selections.save"
       },
       {
-        "command": "dance.rotate",
+        "key": "Y",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Copy selections text",
+        "command": "dance.selections.saveText"
+      },
+      {
+        "key": "S",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Select within selections",
+        "command": "dance.selections.select"
+      },
+      {
+        "key": "Shift+S",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Split selections",
+        "command": "dance.selections.split"
+      },
+      {
+        "key": "Alt+S",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Split selections at line boundaries",
+        "command": "dance.selections.splitLines"
+      },
+      {
+        "key": "Enter",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Toggle selection indices",
+        "command": "dance.selections.toggleIndices"
+      },
+      {
+        "key": "Shift+Alt+X",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Trim lines",
+        "command": "dance.selections.trimLines"
+      },
+      {
+        "key": "Shift+-",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Trim whitespace",
+        "command": "dance.selections.trimWhitespace"
+      },
+      {
         "key": "Shift+9",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Rotate selections clockwise",
+        "command": "dance.selections.rotate.both"
       },
       {
-        "command": "dance.rotate.backwards",
         "key": "Shift+0",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Rotate selections counter-clockwise",
+        "command": "dance.selections.rotate.both.reverse"
       },
       {
-        "command": "dance.rotate.content",
         "key": "Shift+Alt+9",
-        "when": "editorTextFocus && dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Rotate selections clockwise (selections only)",
+        "command": "dance.selections.rotate.selections"
       },
       {
-        "command": "dance.rotate.content.backwards",
         "key": "Shift+Alt+0",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Rotate selections counter-clockwise (selections only)",
+        "command": "dance.selections.rotate.selections.reverse"
+      },
+      {
+        "key": "V",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Show view menu",
+        "command": "dance.openMenu",
+        "args": {
+          "input": "view"
+        }
+      },
+      {
+        "key": "Shift+V",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Show view menu (locked)",
+        "command": "dance.openMenu",
+        "args": {
+          "input": "view",
+          "locked": true
+        }
+      },
+      {
+        "command": "dance.ignore",
+        "key": "Shift+D",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.search",
-        "key": "/",
+        "command": "dance.ignore",
+        "key": "Shift+Y",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.search.backwards",
-        "key": "Alt+/",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.search.selection.smart",
-        "key": "Shift+8",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.search.selection",
-        "key": "Shift+Alt+8",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.search.next",
-        "key": "n",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.search.next.add",
-        "key": "Shift+n",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.search.previous",
-        "key": "Alt+n",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.search.previous.add",
-        "key": "Shift+Alt+n",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.goto",
-        "key": "g",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.registers.insert",
-        "key": "Ctrl+r",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.registers.insert",
-        "key": "Ctrl+r",
-        "when": "editorTextFocus && dance.mode == 'insert'"
-      },
-      {
-        "command": "dance.registers.select",
-        "key": "Shift+\\'",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.marks.saveSelections",
-        "key": "Shift+z",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.marks.restoreSelections",
-        "key": "z",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.marks.combineSelections.fromCurrent",
-        "key": "Shift+Alt+z",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.marks.combineSelections.fromRegister",
-        "key": "Alt+z",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.cancel",
-        "key": "escape",
-        "when": "editorTextFocus && dance.mode == 'awaiting'"
-      },
-      {
-        "command": "dance.left.extend",
-        "key": "Shift+left",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.left.extend",
-        "key": "Shift+h",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.right.extend",
-        "key": "Shift+right",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.right.extend",
-        "key": "Shift+l",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.up.extend",
-        "key": "Shift+up",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.up.extend",
-        "key": "Shift+k",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down.extend",
-        "key": "Shift+down",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.down.extend",
-        "key": "Shift+j",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.to.included.extend",
-        "key": "Shift+f",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.to.excluded.extend",
-        "key": "Shift+t",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.line.extend",
-        "key": "Shift+x",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.toLineBegin.extend",
-        "key": "Shift+Alt+h",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.toLineBegin.extend",
-        "key": "Shift+home",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.toLineEnd.extend",
-        "key": "Shift+Alt+l",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.toLineEnd.extend",
-        "key": "Shift+end",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.enclosing.extend",
-        "key": "Shift+m",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.word.extend",
-        "key": "Shift+w",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.word.previous.extend",
-        "key": "Shift+b",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.word.end.extend",
-        "key": "Shift+e",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.word.alt.extend",
-        "key": "Shift+Alt+w",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.word.alt.previous.extend",
-        "key": "Shift+Alt+b",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.word.alt.end.extend",
-        "key": "Shift+Alt+e",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.search.extend",
-        "key": "Shift+/",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.search.backwards.extend",
-        "key": "Shift+Alt+/",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.goto.extend",
-        "key": "Shift+g",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.to.included.backwards",
-        "key": "Alt+f",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.to.excluded.backwards",
-        "key": "Alt+t",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.enclosing.backwards",
-        "key": "Alt+m",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.to.included.extend.backwards",
-        "key": "Alt+Shift+f",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.to.excluded.extend.backwards",
-        "key": "Alt+Shift+t",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.select.enclosing.extend.backwards",
-        "key": "Alt+Shift+m",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.0",
-        "key": "0",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.1",
-        "key": "1",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.2",
-        "key": "2",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.3",
-        "key": "3",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.4",
-        "key": "4",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.5",
-        "key": "5",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.6",
-        "key": "6",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.7",
-        "key": "7",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.8",
-        "key": "8",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.count.9",
-        "key": "9",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.cancel",
-        "key": "v",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.cancel",
-        "key": "Shift+d",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.cancel",
-        "key": "Shift+v",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.cancel",
-        "key": "Shift+y",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.cancel",
+        "command": "dance.ignore",
         "key": "Shift+2",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.cancel",
+        "command": "dance.ignore",
         "key": "Shift+3",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.cancel",
+        "command": "dance.ignore",
         "key": "Shift+6",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.cancel",
+        "command": "dance.ignore",
         "key": ",",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.cancel",
+        "command": "dance.ignore",
         "key": "'",
         "when": "editorTextFocus && dance.mode == 'normal'"
       }

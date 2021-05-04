@@ -16,6 +16,12 @@ module.exports = {
         "max-len": "off",
       },
     },
+    {
+      files: ["test/suite/commands/*.ts"],
+      rules: {
+        "no-useless-escape": "off",
+      },
+    }
   ],
   rules: {
     "indent": ["error", 2, {
@@ -25,6 +31,7 @@ module.exports = {
       "VariableDeclarator": "first",
       "flatTernaryExpressions": true,
       "offsetTernaryExpressions": true,
+      "ignoredNodes": ["TemplateLiteral *"],
     }],
     "curly": ["error", "all"],
     "dot-location": ["error", "property"],
@@ -41,7 +48,7 @@ module.exports = {
       {
         code: 100,
         comments: 80,
-        ignorePattern: "^ *(\\*|//) ([sS]ee )?http\\S+\\)?.?$|^ *// =+(  [^=]+  =+)?$",
+        ignorePattern: "^ *(\\*|//) ([sS]ee )?http\\S+\\)?.?$|^ *// =+(  [^=]+  =+)?$|\|$",
       },
     ],
     "multiline-ternary": ["error", "always-multiline"],
@@ -50,21 +57,19 @@ module.exports = {
     "no-unexpected-multiline": "error",
     "no-unneeded-ternary": "error",
     "object-curly-spacing": ["error", "always"],
-    "operator-linebreak": ["error", "before"],
+    "operator-linebreak": ["error", "before", { overrides: { "=": "after" } }],
     "object-shorthand": "error",
     "quotes": ["error", "double", { avoidEscape: true, allowTemplateLiterals: true }],
     "semi": ["error", "always"],
     "sort-imports": [
       "error",
       {
+        ignoreCase: true,
         ignoreDeclarationSort: true,
         memberSyntaxSortOrder: ["none", "all", "single", "multiple"],
       },
     ],
-    "space-before-function-paren": [
-      "error",
-      { anonymous: "always", named: "never", asyncArrow: "always" },
-    ],
+    "space-before-function-paren": "off",
     "space-before-blocks": "error",
     "space-infix-ops": "error",
     "unicode-bom": "error",
@@ -73,5 +78,9 @@ module.exports = {
     "no-case-declarations": "off",
     "no-cond-assign": "off",
     "@typescript-eslint/explicit-member-accessibility": ["error"],
+    "@typescript-eslint/space-before-function-paren": [
+      "error",
+      { anonymous: "always", named: "never", asyncArrow: "always" },
+    ],
   },
 };

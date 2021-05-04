@@ -1,128 +1,219 @@
-import * as vscode from "vscode";
-import {
-  Command,
-  CommandDescriptor,
-  CommandFlags,
-  CommandState,
-  InputKind,
-  commandsByName,
-  registerCommand,
-} from ".";
+import * as api from "../api";
 
-registerCommand(Command.cancel, CommandFlags.IgnoreInHistory, () => {
-  // Nop, because the caller cancels everything before calling us.
-});
+import { Argument, InputOr } from ".";
+import { Context, InputError, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
+import { Extension } from "../state/extension";
+import { Register } from "../state/registers";
 
-type RunFunction = (vscodeObj: typeof vscode, danceObj: object, args: any) => Promise<any> | any;
-type RunFunctionConstructor =
-  (vscodeObj: "vscode", danceObj: "dance", args: "args", code: string) => RunFunction;
+/**
+ * Miscellaneous commands that don't deserve their own category.
+ *
+ * By default, Dance also exports the following keybindings for existing
+ * commands:
+ *
+ * | Keybinding     | Command                             |
+ * | -------------- | ----------------------------------- |
+ * | `s-;` (normal) | `["workbench.action.showCommands"]` |
+ */
+declare module "./misc";
 
-const AsyncFunction = async function () {}.constructor as RunFunctionConstructor;
+/**
+ * Cancel Dance operation.
+ *
+ * @keys `escape` (normal), `escape` (input)
+ */
+export function cancel(extension: Extension) {
+  // Calling a new command resets pending operations, so we don't need to do
+  // anything special here.
+  extension.cancelLastOperation();
+}
 
-registerCommand(Command.run, CommandFlags.IgnoreInHistory, async (editorState, state) => {
-  let code = state.argument?.code;
+/**
+ * Ignore key.
+ */
+export function ignore() {
+  // Used to intercept and ignore key presses in a given mode.
+}
+
+let lastRunCode: string | undefined;
+
+/**
+ * Run code.
+ */
+export async function run(
+  _: Context,
+  inputOr: InputOr<string | readonly string[]>,
+
+  commands?: Argument<api.command.Any[]>,
+) {
+  if (Array.isArray(commands)) {
+    return api.commands(...commands);
+  }
+
+  let code = await inputOr(() => prompt({
+    prompt: "Code to run",
+    validateInput(value) {
+      try {
+        api.run.compileFunction(value);
+
+        return;
+      } catch (e) {
+        if (e instanceof SyntaxError) {
+          return `invalid syntax: ${e.message}`;
+        }
+
+        return e?.message ?? `${e}`;
+      }
+    },
+    value: lastRunCode,
+    valueSelection: lastRunCode === undefined ? undefined : [0, lastRunCode.length],
+  }, _));
 
   if (Array.isArray(code)) {
     code = code.join("\n");
   } else if (typeof code !== "string") {
-    throw new Error(`expected code to be a string or an array, but it was ${code}`);
+    return new InputError(`expected code to be a string or an array, but it was ${code}`);
   }
 
-  let func: RunFunction;
+  return _.run(() => api.run(code as string));
+}
 
-  try {
-    func = AsyncFunction("vscode", "dance", "args", code) as any;
-  } catch (e) {
-    throw new Error(`cannot parse function body: ${code}: ${e}`);
+/**
+ * Select register for next command.
+ *
+ * When selecting a register, the next key press is used to determine what
+ * register is selected. If this key is a `space` character, then a new key
+ * press is awaited again and the returned register will be specific to the
+ * current document.
+ *
+ * @keys `"` (normal)
+ */
+export async function selectRegister(_: Context, inputOr: InputOr<string | Register>) {
+  const input = await inputOr(() => keypress.forRegister(_));
+
+  if (typeof input === "string") {
+    if (input.length === 0) {
+      return;
+    }
+
+    const extension = _.extension,
+          registers = extension.registers;
+
+    extension.currentRegister = input.startsWith(" ")
+      ? registers.forDocument(_.document).get(input.slice(1))
+      : registers.get(input);
+  } else {
+    _.extension.currentRegister = input;
+  }
+}
+
+/**
+ * Update Dance count.
+ *
+ * Update the current counter used to repeat the next command.
+ *
+ * #### Additional keybindings
+ *
+ * | Title                          | Keybinding   | Command                              |
+ * | ------------------------------ | ------------ | ------------------------------------ |
+ * | Add the digit 0 to the counter | `0` (normal) | `[".updateCount", { addDigits: 0 }]` |
+ * | Add the digit 1 to the counter | `1` (normal) | `[".updateCount", { addDigits: 1 }]` |
+ * | Add the digit 2 to the counter | `2` (normal) | `[".updateCount", { addDigits: 2 }]` |
+ * | Add the digit 3 to the counter | `3` (normal) | `[".updateCount", { addDigits: 3 }]` |
+ * | Add the digit 4 to the counter | `4` (normal) | `[".updateCount", { addDigits: 4 }]` |
+ * | Add the digit 5 to the counter | `5` (normal) | `[".updateCount", { addDigits: 5 }]` |
+ * | Add the digit 6 to the counter | `6` (normal) | `[".updateCount", { addDigits: 6 }]` |
+ * | Add the digit 7 to the counter | `7` (normal) | `[".updateCount", { addDigits: 7 }]` |
+ * | Add the digit 8 to the counter | `8` (normal) | `[".updateCount", { addDigits: 8 }]` |
+ * | Add the digit 9 to the counter | `9` (normal) | `[".updateCount", { addDigits: 9 }]` |
+ */
+export async function updateCount(
+  _: Context,
+  count: number,
+  extension: Extension,
+  inputOr: InputOr<number>,
+
+  addDigits?: Argument<number>,
+) {
+  if (typeof addDigits === "number") {
+    let nextPowerOfTen = 1;
+
+    if (addDigits <= 0) {
+      addDigits = 0;
+      nextPowerOfTen = 10;
+    }
+
+    while (nextPowerOfTen <= addDigits) {
+      nextPowerOfTen *= 10;
+    }
+
+    extension.currentCount = count * nextPowerOfTen + addDigits;
+
+    return;
   }
 
-  const danceInterface = Object.freeze({
-    async execute(...commands: any[]) {
-      const batches = [] as (readonly CommandState[] | [string, any])[],
-            currentBatch = [] as CommandState[],
-            extension = editorState.extension;
+  const input = +await inputOr(() => prompt.number({ integer: true, range: [0, 1_000_000] }, _));
 
-      if (commands.length === 2 && typeof commands[0] === "string") {
-        commands = [commands];
+  InputError.validateInput(!isNaN(input), "value is not a number");
+  InputError.validateInput(input >= 0, "value is negative");
+
+  extension.currentCount = input;
+}
+
+let lastPickedMenu: string | undefined;
+
+/**
+ * Open menu.
+ *
+ * If no input is specified, a prompt will ask for the name of the menu to open.
+ *
+ * Alternatively, a `menu` can be inlined in the arguments.
+ *
+ * Pass a `prefix` argument to insert the prefix string followed by the typed
+ * key if it does not match any menu entry. This can be used to implement chords
+ * like `jj`.
+ */
+export async function openMenu(
+  _: Context.WithoutActiveEditor,
+
+  inputOr: InputOr<string>,
+  menu?: Argument<Menu>,
+  prefix?: Argument<string>,
+  pass: Argument<any[]> = [],
+  locked: Argument<boolean> = false,
+) {
+  if (typeof menu === "object") {
+    const errors = validateMenu(menu);
+
+    if (errors.length > 0) {
+      throw new Error(`invalid menu: ${errors.join(", ")}`);
+    }
+
+    if (locked) {
+      return showLockedMenu(menu, pass);
+    }
+
+    return showMenu(menu, pass, prefix);
+  }
+
+  const menus = _.extension.menus;
+  const input = await inputOr(() => prompt({
+    prompt: "Menu name",
+    validateInput(value) {
+      if (menus.has(value)) {
+        lastPickedMenu = value;
+        return;
       }
 
-      // Build and validate commands.
-      for (let i = 0, len = commands.length; i < len; i++) {
-        let commandName: string,
-            commandArgument: any;
-
-        const command = commands[i];
-
-        if (typeof command === "string") {
-          commandName = command;
-          commandArgument = undefined;
-        } else if (Array.isArray(command) && command.length === 1) {
-          if (typeof command[0] !== "string") {
-            throw new Error("the first element of an execute tuple must be a command name");
-          }
-
-          commandName = command[0];
-          commandArgument = undefined;
-        } else if (Array.isArray(command) && command.length === 2) {
-          if (typeof command[0] !== "string") {
-            throw new Error("the first element of an execute tuple must be a command name");
-          }
-
-          commandName = command[0];
-          commandArgument = command[1];
-        } else {
-          throw new Error(
-            "execute arguments must be command names or [command name, argument] tuples",
-          );
-        }
-
-        if (commandName.startsWith(".")) {
-          commandName = `dance${commandName}`;
-        }
-
-        if (commandName in commandsByName) {
-          const descriptor = commandsByName[commandName as Command],
-                input = await descriptor.getInput(
-                  editorState,
-                  commandArgument,
-                  extension.cancellationTokenSource?.token);
-
-          if (descriptor.input !== InputKind.None && input === undefined) {
-            return;
-          }
-
-          currentBatch.push(new CommandState(descriptor, input, extension, commandArgument));
-        } else {
-          if (commandName.startsWith("dance.")) {
-            throw new Error(`Dance command ${JSON.stringify(commandName)} does not exist`);
-          }
-
-          if (currentBatch.length > 0) {
-            batches.push(currentBatch.splice(0));
-          }
-
-          batches.push([commandName, commandArgument]);
-        }
-      }
-
-      if (currentBatch.length > 0) {
-        batches.push(currentBatch);
-      }
-
-      // Execute all commands.
-      for (const batch of batches) {
-        if (typeof batch[0] === "string") {
-          await vscode.commands.executeCommand(batch[0], batch[1]);
-        } else {
-          await CommandDescriptor.executeMany(editorState, batch);
-        }
-      }
+      return `menu ${JSON.stringify(value)} does not exist`;
     },
-  });
+    placeHolder: [...menus.keys()].sort().join(", ") || "no menu defined",
+    value: lastPickedMenu,
+  }, _));
 
-  try {
-    await func(vscode, danceInterface, state.argument);
-  } catch (e) {
-    throw new Error(`code threw an exception: ${e}`);
+  if (locked) {
+    return showLockedMenu.byName(input, pass);
   }
-});
+
+  return showMenu.byName(input, pass, prefix);
+}

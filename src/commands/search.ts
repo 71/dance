@@ -1,371 +1,255 @@
-// Search
-// https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#searching
 import * as vscode from "vscode";
+import * as api from "../api";
 
-import { Command, CommandFlags, InputKind, registerCommand } from ".";
-import { Extension, SelectionBehavior } from "../state/extension";
-import { WritableRegister } from "../registers";
-import { SavedSelection } from "../utils/savedSelection";
-import {
-  Backward,
-  Coord,
-  Direction,
-  DoNotExtend,
-  DocumentStart,
-  Extend,
-  ExtendBehavior,
-  Forward,
-  SelectionHelper,
-} from "../utils/selectionHelper";
+import { Argument, Input, RegisterOr, SetInput } from ".";
+import { Context, Direction, EmptySelectionsError, Positions, prompt, Selections } from "../api";
+import { Register } from "../state/registers";
+import { manipulateSelectionsInteractively } from "../utils/misc";
+import { escapeForRegExp } from "../utils/regexp";
 import { CharSet, getCharSetFunction } from "../utils/charset";
 
-function isMultilineRegExp(regex: string) {
-  const len = regex.length;
-  let negate = false;
+/**
+ * Search for patterns and replace or add selections.
+ */
+declare module "./search";
 
-  for (let i = 0; i < len; i++) {
-    const ch = regex[i];
+let lastSearchInput: RegExp | undefined;
 
-    if (negate) {
-      if (ch === "]") {
-        negate = false;
-      } else if (ch === "\\") {
-        if (regex[i + 1] === "S") {
-          return true;
-        }
+/**
+ * Search.
+ *
+ * @keys `/` (normal)
+ *
+ * | Title                    | Identifier        | Keybinding     | Command                                           |
+ * | ------------------------ | ----------------- | -------------- | ------------------------------------------------- |
+ * | Search (extend)          | `extend`          | `?` (normal)   | `[".search", {                shift: "extend" }]` |
+ * | Search backward          | `backward`        | `a-/` (normal) | `[".search", { direction: -1                  }]` |
+ * | Search backward (extend) | `backward.extend` | `a-?` (normal) | `[".search", { direction: -1, shift: "extend" }]` |
+ */
+export function search(
+  _: Context,
+  register: RegisterOr<"slash", Register.Flags.CanWrite>,
+  repetitions: number,
 
-        i++; // Ignore next character
-      } else {
-        continue;
-      }
-    } else if (ch === "[" && regex[i + 1] === "^") {
-      negate = true;
-      i++;
-    } else if (ch === "\\") {
-      if (regex[i + 1] === "s" || regex[i + 1] === "n") {
-        return true;
-      }
+  add: Argument<boolean> = false,
+  direction: Direction = Direction.Forward,
+  interactive: Argument<boolean> = true,
+  shift: api.Shift = api.Shift.Jump,
 
-      i++; // Ignore next character
-    } else if (ch === "$" && i < len - 1) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-function execFromEnd(regex: RegExp, input: string) {
-  let match = regex.exec(input);
-
-  if (match === null || match[0].length === 0) {
-    return null;
-  }
-
-  for (;;) {
-    const newMatch = regex.exec(input);
-
-    if (newMatch === null) {
-      return match;
-    }
-    if (newMatch[0].length === 0) {
-      return null;
+  input: Input<string | RegExp>,
+  setInput: SetInput<RegExp>,
+) {
+  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
+    ...prompt.regexpOpts("mug"),
+    value: lastSearchInput?.source,
+  }, (input, selections) => {
+    if (typeof input === "string") {
+      input = new RegExp(input, "mug");
     }
 
-    match = newMatch;
-  }
-}
+    lastSearchInput = input;
+    register.set([]);
 
-function documentEnd(document: vscode.TextDocument) {
-  const lastLine = document.lineCount - 1;
-  return new vscode.Position(lastLine, document.lineAt(lastLine).text.length);
-}
+    const newSelections = add ? selections.slice() : [],
+          regexpMatches = [] as RegExpMatchArray[];
 
-function getSearchRange(
-  selection: vscode.Selection,
-  document: vscode.TextDocument,
-  direction: Direction,
-  isWrapped: boolean,
-): vscode.Range {
-  if (isWrapped) {
-    return new vscode.Range(DocumentStart, documentEnd(document));
-  } else if (direction === Forward) {
-    return new vscode.Range(selection.end, documentEnd(document));
-  } else {
-    return new vscode.Range(DocumentStart, selection.start);
-  }
-}
+    newSelections.push(...Selections.map.byIndex((_i, selection, document) => {
+      let newSelection = selection;
 
-interface SearchState {
-  selectionBehavior: SelectionBehavior;
-  regex?: RegExp;
-}
+      for (let j = 0; j < repetitions; j++) {
+        const searchResult = nextImpl(
+          input as RegExp, direction, newSelection, undefined, undefined, document,
+          /* allowWrapping= */ shift !== api.Shift.Extend, regexpMatches, regexpMatches.length);
 
-function needleInHaystack(
-  direction: Direction,
-  allowWrapping: boolean,
-): (
-  selection: vscode.Selection,
-  helper: SelectionHelper<SearchState>,
-) => [Coord, Coord] | undefined {
-  return (selection, helper) => {
-    const document = helper.editor.document;
-    const regex = helper.state.regex!;
-    // Try finding in the normal search range first, then the wrapped search
-    // range.
-    for (const isWrapped of [false, true]) {
-      const searchRange = getSearchRange(selection, document, direction, isWrapped);
-      const text = document.getText(searchRange);
-      regex.lastIndex = 0;
-      const match = direction === Forward ? regex.exec(text) : execFromEnd(regex, text);
-      if (match) {
-        const startOffset = helper.offsetAt(searchRange.start) + match.index;
-        const firstCharacter = helper.coordAt(startOffset);
-        const lastCharacter = helper.coordAt(startOffset + match[0].length - 1);
-        return [firstCharacter, lastCharacter];
-      }
-      if (!allowWrapping) {
-        break;
-      }
-    }
-    return undefined;
-  };
-}
-
-function moveToNeedleInHaystack(
-  direction: Direction,
-  extend: ExtendBehavior,
-): (
-  selection: vscode.Selection,
-  helper: SelectionHelper<SearchState>,
-) => vscode.Selection | undefined {
-  const find = needleInHaystack(direction, !extend);
-  return (selection, helper) => {
-    const result = find(selection, helper);
-    if (result === undefined) {
-      return undefined;
-    }
-    const [start, end] = result;
-    if (extend) {
-      return helper.extend(selection, direction === Forward ? end : start);
-    } else {
-      // When not extending, the result selection should always face forward,
-      // regardless of old selection or search direction.
-      return helper.selectionBetween(start, end);
-    }
-  };
-}
-
-function registerSearchCommand(command: Command, direction: Direction, extend: ExtendBehavior) {
-  let initialSelections: readonly SavedSelection[],
-      register: WritableRegister,
-      helper: SelectionHelper<SearchState>;
-
-  const mapper = moveToNeedleInHaystack(direction, extend);
-
-  registerCommand(
-    command,
-    CommandFlags.ChangeSelections,
-    InputKind.Text,
-    () => ({
-      prompt: "Search RegExp",
-
-      setup(editorState) {
-        const { documentState, editor, extension } = editorState;
-        helper = SelectionHelper.for(editorState, {
-          selectionBehavior: extension.selectionBehavior,
-        });
-        initialSelections = editor.selections.map((selection) =>
-          documentState.saveSelection(selection),
-        );
-
-        const targetRegister = extension.currentRegister;
-
-        if (targetRegister === undefined || !targetRegister.canWrite()) {
-          register = extension.registers.slash;
-        } else {
-          register = targetRegister;
-        }
-      },
-
-      validateInput(input: string) {
-        if (input.length === 0) {
-          return "RegExp cannot be empty";
-        }
-
-        const editor = helper.editor;
-        const selections = initialSelections.map((selection) =>
-          selection.selection(editor.document),
-        );
-
-        let regex: RegExp;
-        const flags = (isMultilineRegExp(input) ? "m" : "") + (direction === Backward ? "g" : "");
-
-        try {
-          regex = new RegExp(input, flags);
-        } catch {
-          editor.selections = selections;
-          return "invalid ECMA RegExp";
-        }
-        helper.state.regex = regex;
-
-        const newSelections = [];
-        const len = selections.length;
-        const repetitions = helper.editorState.extension.currentCount || 1;
-        for (let i = 0; i < len; i++) {
-          let newSelection: vscode.Selection | undefined = selections[i];
-          for (let r = 0; r < repetitions; r++) {
-            newSelection = mapper(newSelection, helper);
-            if (!newSelection) {
-              break;
-            }
-          }
-          if (newSelection) {
-            newSelections.push(newSelection);
-          }
-        }
-        if (newSelections.length === 0) {
-          editor.selections = selections;
-          editor.revealRange(editor.selection);
-          return "No matches found";
-        } else {
-          editor.selections = newSelections;
-          editor.revealRange(editor.selection);
+        if (searchResult === undefined) {
           return undefined;
         }
-      },
-      onDidCancel({ editor, documentState }) {
-        editor.selections = initialSelections.map((selection) =>
-          selection.selection(editor.document),
-        );
-        documentState.forgetSelections(initialSelections);
-      },
-    }),
-    ({ editor, documentState }) => {
-      register.set(editor, [helper.state.regex!.source]);
-      documentState.forgetSelections(initialSelections);
-    },
-  );
-}
 
-registerSearchCommand(Command.search, Forward, DoNotExtend);
-registerSearchCommand(Command.searchBackwards, Backward, DoNotExtend);
-registerSearchCommand(Command.searchExtend, Forward, Extend);
-registerSearchCommand(Command.searchBackwardsExtend, Backward, Extend);
-
-function setSearchSelection(source: string, editor: vscode.TextEditor, state: Extension) {
-  try {
-    new RegExp(source, "g");
-  } catch {
-    return Promise.reject(new Error(
-      "this should not happen -- please report this error along with the faulty RegExp"));
-  }
-
-  const register = state.currentRegister;
-
-  if (register === undefined || !register.canWrite()) {
-    state.registers.slash.set(editor, [source]);
-  } else {
-    register.set(editor, [source]);
-  }
-
-  return Promise.resolve();
-}
-
-function escapeRegExp(str: string) {
-  // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#Escaping
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-registerCommand(Command.searchSelection, CommandFlags.ChangeSelections, ({ editor, extension }) => {
-  const text = escapeRegExp(editor.document.getText(editor.selection));
-
-  return setSearchSelection(text, editor, extension);
-});
-
-registerCommand(
-  Command.searchSelectionSmart,
-  CommandFlags.ChangeSelections,
-  ({ editor, extension }) => {
-    const isWord = getCharSetFunction(CharSet.Word, editor.document),
-          firstLine = editor.document.lineAt(editor.selection.start).text,
-          firstLineStart = editor.selection.start.character;
-
-    let text = escapeRegExp(editor.document.getText(editor.selection));
-
-    if (firstLineStart === 0 || !isWord(firstLine.charCodeAt(firstLineStart - 1))) {
-      text = `\\b${text}`;
-    }
-
-    const lastLine = editor.document.lineAt(editor.selection.end).text,
-          lastLineEnd = editor.selection.end.character;
-
-    if (lastLineEnd >= lastLine.length || !isWord(lastLine.charCodeAt(lastLineEnd))) {
-      text = `${text}\\b`;
-    }
-
-    return setSearchSelection(text, editor, extension);
-  },
-);
-
-function nextNeedleInHaystack(
-  direction: Direction,
-): (
-  selection: vscode.Selection,
-  helper: SelectionHelper<SearchState>,
-) => vscode.Selection | undefined {
-  const find = needleInHaystack(direction, /* allowWrapping = */ true);
-  return (selection, helper) => {
-    const result = find(selection, helper);
-    if (result === undefined) {
-      return undefined;
-    }
-    const [start, end] = result;
-    // The result selection should always face forward,
-    // regardless of old selection or search direction.
-    return helper.selectionBetween(start, end);
-  };
-}
-
-function registerNextCommand(command: Command, direction: Direction, replace: boolean) {
-  const mapper = nextNeedleInHaystack(direction);
-  registerCommand(
-    command,
-    CommandFlags.ChangeSelections,
-    async (editorState, { currentRegister, selectionBehavior, repetitions }) => {
-      const { editor, extension } = editorState;
-      const regexStr = await (currentRegister ?? extension.registers.slash).get(editor);
-
-      if (regexStr === undefined || regexStr.length === 0) {
-        return;
+        newSelection = searchResult;
       }
 
-      const regex = new RegExp(regexStr[0], "g"),
-            selections = editor.selections;
-      const searchState = { selectionBehavior, regex };
-      const helper = SelectionHelper.for(editorState, searchState);
-      let cur = selections[0];
+      if (shift === api.Shift.Jump) {
+        return newSelection;
+      }
 
-      for (let i = repetitions; i > 0; i--) {
-        const next = mapper(cur, helper);
+      const position = direction === Direction.Forward ? newSelection.end : newSelection.start;
+
+      return Selections.shift(selection, position, shift, _);
+    }, selections));
+
+    Selections.set(newSelections);
+    _.extension.registers.updateRegExpMatches(regexpMatches);
+
+    return register.set([input.source]).then(() => input as RegExp);
+  });
+}
+
+/**
+ * Search current selection.
+ *
+ * @keys `a-*` (normal)
+ *
+ * | Title                            | Identifier        | Keybinding   | Command                                  |
+ * | -------------------------------- | ----------------- | ------------ | ---------------------------------------- |
+ * | Search current selection (smart) | `selection.smart` | `*` (normal) | `[".search.selection", { smart: true }]` |
+ */
+export function selection(
+  document: vscode.TextDocument,
+  selections: readonly vscode.Selection[],
+
+  register: RegisterOr<"slash", Register.Flags.CanWrite>,
+  smart: Argument<boolean> = false,
+) {
+  const texts = [] as string[],
+        isWord = smart ? getCharSetFunction(CharSet.Word, document) : undefined;
+
+  for (const selection of selections) {
+    let text = escapeForRegExp(document.getText(selection));
+
+    if (smart) {
+      const firstLine = document.lineAt(selection.start).text,
+            firstLineStart = selection.start.character;
+
+      if (firstLineStart === 0 || !isWord!(firstLine.charCodeAt(firstLineStart - 1))) {
+        text = `\\b${text}`;
+      }
+
+      const lastLine = selection.isSingleLine ? firstLine : document.lineAt(selection.end).text,
+            lastLineEnd = selection.end.character;
+
+      if (lastLineEnd >= lastLine.length || !isWord!(lastLine.charCodeAt(lastLineEnd))) {
+        text = `${text}\\b`;
+      }
+    }
+
+    texts.push(text);
+  }
+
+  register.set(texts);
+}
+
+/**
+ * Select next match.
+ *
+ * @keys `n` (normal)
+ *
+ * | Title                 | Identifier     | Keybinding       | Command                                          |
+ * | --------------------- | -------------- | ---------------- | ------------------------------------------------ |
+ * | Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", {                add: true }]` |
+ * | Select previous match | `previous`     | `a-n` (normal)   | `[".search.next", { direction: -1            }]` |
+ * | Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search.next", { direction: -1, add: true }]` |
+ */
+export async function next(
+  _: Context,
+  document: vscode.TextDocument,
+  register: RegisterOr<"slash", Register.Flags.CanRead>,
+  repetitions: number,
+
+  add: Argument<boolean> = false,
+  direction: Direction = Direction.Forward,
+) {
+  const reStrs = await register.get();
+
+  if (reStrs === undefined || reStrs.length === 0) {
+    return;
+  }
+
+  const re = new RegExp(reStrs[0], "mu"),
+        allRegexpMatches = [] as RegExpMatchArray[];
+
+  if (!add) {
+    Selections.update.byIndex((_i, selection) => {
+      for (let j = 0; j < repetitions; j++) {
+        const next = nextImpl(
+          re, direction, selection, undefined, undefined, document, /* allowWrapping= */ true,
+          allRegexpMatches, allRegexpMatches.length);
+
         if (next === undefined) {
-          throw new Error("no matches found");
+          return undefined;
         }
-        cur = next;
 
-        if (replace) {
-          selections[0] = cur;
-        } else {
-          selections.unshift(cur);
-        }
+        selection = next;
       }
 
-      editor.selections = selections;
-    },
-  );
+      return selection;
+    });
+
+    _.extension.registers.updateRegExpMatches(allRegexpMatches);
+    return;
+  }
+
+  const selections = _.selections.slice(),
+        allSelections = selections.slice();
+
+  for (let i = 0; i < repetitions; i++) {
+    const newSelections = [] as vscode.Selection[],
+          regexpMatches = [] as RegExpMatchArray[];
+
+    for (let j = 0; j < selections.length; j++) {
+      const selection = selections[j],
+            next = nextImpl(
+              re, direction, selection, undefined, undefined, document, /* allowWrapping= */ true,
+              regexpMatches, regexpMatches.length);
+
+      if (next !== undefined) {
+        selections[j] = next;
+        newSelections.push(next);
+      }
+    }
+
+    if (newSelections.length === 0) {
+      const target = direction === Direction.Backward ? "previous" : "next",
+            times = repetitions === 1 ? "time" : "times";
+
+      throw new EmptySelectionsError(
+        `no selection could advance to ${target} match ${repetitions} ${times}`,
+      );
+    }
+
+    allSelections.unshift(...newSelections);
+    allRegexpMatches.unshift(...regexpMatches);
+  }
+
+  Selections.set(allSelections);
+  _.extension.registers.updateRegExpMatches(allRegexpMatches);
 }
 
-registerNextCommand(Command.searchNext, Forward, true);
-registerNextCommand(Command.searchNextAdd, Forward, false);
-registerNextCommand(Command.searchPrevious, Backward, true);
-registerNextCommand(Command.searchPreviousAdd, Backward, false);
+function nextImpl(
+  re: RegExp,
+  direction: Direction,
+  selection: vscode.Selection,
+  searchStart: vscode.Position | undefined,
+  searchEnd: vscode.Position | undefined,
+  document: vscode.TextDocument,
+  allowWrapping: boolean,
+  matches: RegExpMatchArray[] | undefined,
+  matchesIndex: number,
+): vscode.Selection | undefined {
+  searchStart ??= direction === Direction.Backward ? selection.start : selection.end;
+
+  const searchResult = api.search(direction, re, searchStart, searchEnd);
+
+  if (searchResult === undefined) {
+    if (allowWrapping) {
+      if (direction === Direction.Backward) {
+        searchStart = Positions.last(document);
+        searchEnd = Positions.zero;
+      } else {
+        searchStart = Positions.zero;
+        searchEnd = Positions.last(document);
+      }
+
+      return nextImpl(
+        re, direction, selection, searchStart, searchEnd, document, false, matches, matchesIndex);
+    }
+
+    return;
+  }
+
+  if (matches !== undefined) {
+    matches[matchesIndex] = searchResult[1];
+  }
+
+  return Selections.fromLength(
+    searchResult[0], searchResult[1][0].length, /* isReversed= */ false, document);
+}

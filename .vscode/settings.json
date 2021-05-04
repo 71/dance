@@ -1,12 +1,31 @@
 {
-  "files.associations": {
-    "test/suite/commands/*": "text"
-  },
   "search.exclude": {
     "out": true
   },
-  "[typescript]": {
-    "editor.rulers": [80, 100]
+  "editor.rulers": [80, 100],
+  "typescript.tsdk": "node_modules/typescript/lib",
+
+  // Disable italic on doc comments since they contain a lot of Markdown:
+  "editor.tokenColorCustomizations": {
+    "textMateRules": [
+      {
+        "scope": "comment.block.documentation",
+        "settings": {
+          "fontStyle": "",
+        },
+      },
+    ],
   },
-  "typescript.tsdk": "node_modules/typescript/lib"
+
+  "dance.menus": {
+    "dancedev": {
+      "items": {
+        "b": {
+          "text": "toggle character selection behavior",
+          "command": "dance.dev.setSelectionBehavior",
+          "args": [{ "mode": "normal" }],
+        },
+      },
+    },
+  },
 }

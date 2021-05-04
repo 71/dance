@@ -1,9 +1,0 @@
-he|{0}l{0}lo world
-
-//== 0 > 1
-//= {"command": "dance.objects.performSelection", "args": [{"object": "word", "action": "select", "inner": true}]}
-{0}hello|{0} world
-
-//== 1 > 2
-//= {"command": "dance.objects.performSelection", "args": [{"object": "word", "action": "select", "inner": true}]}
-{0}hello|{0} world
