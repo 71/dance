@@ -60,7 +60,10 @@ export function save(
 
   const disposable = _.extension
     .createAutoDisposable()
-    .addNotifyingDisposable(trackedSelectionSet);
+    .addNotifyingDisposable(trackedSelectionSet)
+    .addDisposable(new vscode.Disposable(() => {
+      register.replaceSelectionSet()?.dispose();
+    }));
 
   if (Array.isArray(until)) {
     until.forEach((until) => disposable.disposeOnUserEvent(until, _));
