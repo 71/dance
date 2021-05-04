@@ -88,6 +88,8 @@ export async function run(testsRoot: string) {
   const failures = await new Promise<number>((resolve) => mocha.run(resolve));
 
   if (failures > 0) {
-    process.exitCode = 1;
+    // This causes the process to exit with a non-zero exit code, and to flush
+    // the error messages.
+    throw new Error();
   }
 }

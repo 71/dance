@@ -10,6 +10,8 @@ suite("./test/suite/commands/seek-word-end.md", function () {
   this.beforeAll(async () => {
     document = await vscode.workspace.openTextDocument();
     editor = await vscode.window.showTextDocument(document);
+    editor.options.insertSpaces = true;
+    editor.options.tabSize = 2;
 
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
   });

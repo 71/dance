@@ -2,7 +2,13 @@
   "search.exclude": {
     "out": true
   },
+
+  // 80 characters for comments and text, and 100 characters for code.
   "editor.rulers": [80, 100],
+
+  // Always use a tab size of 2.
+  "editor.tabSize": 2,
+
   "typescript.tsdk": "node_modules/typescript/lib",
 
   // Disable italic on doc comments since they contain a lot of Markdown:

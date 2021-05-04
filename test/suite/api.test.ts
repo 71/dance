@@ -25,6 +25,9 @@ suite("API tests", function () {
   this.beforeAll(async () => {
     document = await vscode.workspace.openTextDocument();
     editor = await vscode.window.showTextDocument(document);
+    editor.options.insertSpaces = true;
+    editor.options.tabSize = 2;
+
     extension = (await vscode.extensions.getExtension("gregoire.dance")!.activate()).extension;
   });
 
