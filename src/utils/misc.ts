@@ -26,6 +26,15 @@ export function performDummyEdit(editor: vscode.TextEditor) {
     .then(() => {});
 }
 
+/**
+ * Returns the selections of the given editor. **Selections are returned
+ * as-is**, with no processing related to `SelectionBehavior`s. In most cases,
+ * `Context.selections` or `Selections.current` is a better choice.
+ */
+export function unsafeSelections(editor: vscode.TextEditor) {
+  return editor.selections;
+}
+
 export async function manipulateSelectionsInteractively<I, R>(
   _: Context,
   input: Input<I>,

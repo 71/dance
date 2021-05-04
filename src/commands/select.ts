@@ -5,6 +5,7 @@ import { Argument } from ".";
 import { column, columns, Context, Direction, Lines, Positions, Selections, Shift, showMenu, todo } from "../api";
 import { SelectionBehavior } from "../state/modes";
 import { PerEditorState } from "../state/editors";
+import { unsafeSelections } from "../utils/misc";
 
 /**
  * Update selections based on their position in the document.
@@ -182,7 +183,7 @@ export function vertically(
     return Selections.shift(selection, newPosition, shift);
   });
 
-  preferredColumnsState.expectedSelections = editorState.editor.selections;
+  preferredColumnsState.expectedSelections = unsafeSelections(editorState.editor);
 }
 
 /**

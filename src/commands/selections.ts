@@ -7,7 +7,7 @@ import { Mode, SelectionBehavior } from "../state/modes";
 import { Register } from "../state/registers";
 import { CharSet, getCharacters } from "../utils/charset";
 import { AutoDisposable } from "../utils/disposables";
-import { manipulateSelectionsInteractively } from "../utils/misc";
+import { manipulateSelectionsInteractively, unsafeSelections } from "../utils/misc";
 import { SettingsValidator } from "../utils/settings-validator";
 import { TrackedSelection } from "../utils/tracked-selection";
 
@@ -772,7 +772,7 @@ export function toggleIndices(
   function onDidChangeSelection(editor: vscode.TextEditor) {
     // Collect selection indices for each line; keep the column of the cursor in
     // memory for later.
-    const selections = editor.selections,
+    const selections = unsafeSelections(editor),
           selectionsPerLine = new Map<number, [activeColumn: number, selectionIndex: number][]>();
 
     for (let i = 0; i < selections.length; i++) {
