@@ -742,9 +742,10 @@ export function selectWithinSelections(re: RegExp, selections = Context.current.
  * Reveals selections in the current editor.
  */
 export function revealSelections(selection?: vscode.Selection) {
-  const editor = Context.current.editor;
+  const editor = Context.current.editor,
+        active = (selection ?? (editor as vscode.TextEditor).selection).active;
 
-  editor.revealRange(selection ?? (editor as vscode.TextEditor).selection);
+  editor.revealRange(new vscode.Range(active, active));
 }
 
 /**
