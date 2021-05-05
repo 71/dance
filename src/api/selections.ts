@@ -721,12 +721,28 @@ export function splitSelections(re: RegExp, selections = Context.current.selecti
 /**
  * Returns the selections obtained by finding all the matches within the given
  * selections using the given RegExp.
+ *
+ * ### Example
+ *
+ * ```ts
+ * expect(Selections.selectWithin(/\d/).map(text), "to equal", [
+ *   "1",
+ *   "2",
+ *   "6",
+ *   "7",
+ *   "8",
+ * ]);
+ * ```
+ *
+ * With:
+ * ```
+ * a1b2c3d4
+ * ^^^^^ 0
+ * e5f6g7h8
+ *   ^^^^^^ 1
+ * ```
  */
 export function selectWithinSelections(re: RegExp, selections = Context.current.selections) {
-  if (!re.global) {
-    re = new RegExp(re.source, re.flags + "g");
-  }
-
   const document = Context.current.document;
 
   return Selections.map((text, selection) => {

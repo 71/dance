@@ -1656,6 +1656,8 @@ export function splitRange(text: string, re: RegExp) {
   const sections: [start: number, end: number][] = [];
 
   for (let start = 0;;) {
+    re.lastIndex = 0;
+
     const match = re.exec(text);
 
     if (match === null || text.length === 0) {
@@ -1673,8 +1675,6 @@ export function splitRange(text: string, re: RegExp) {
       text = text.slice(match.index + match[0].length);
       start += match.index + match[0].length;
     }
-
-    re.lastIndex = 0;
   }
 }
 
@@ -1683,6 +1683,8 @@ export function splitRange(text: string, re: RegExp) {
  * indices corresponding to each matched result.
  */
 export function execRange(text: string, re: RegExp) {
+  re.lastIndex = 0;
+
   const sections: [start: number, end: number, match: RegExpExecArray][] = [];
   let diff = 0;
 
@@ -1694,6 +1696,7 @@ export function execRange(text: string, re: RegExp) {
 
     text = text.slice(end);
     diff += end;
+    re.lastIndex = 0;
 
     if (start === end) {
       text = text.slice(1);

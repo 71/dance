@@ -40,11 +40,11 @@ export function search(
   setInput: SetInput<RegExp>,
 ) {
   return manipulateSelectionsInteractively(_, input, setInput, interactive, {
-    ...prompt.regexpOpts("mug"),
+    ...prompt.regexpOpts("mu"),
     value: lastSearchInput?.source,
   }, (input, selections) => {
     if (typeof input === "string") {
-      input = new RegExp(input, "mug");
+      input = new RegExp(input, "mu");
     }
 
     lastSearchInput = input;

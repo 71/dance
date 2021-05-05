@@ -1009,6 +1009,31 @@ suite("API tests", function () {
       // No expected end document.
     });
 
+    test("function selectWithinSelections", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              a1b2c3d4
+              ^^^^^ 0
+              e5f6g7h8
+                ^^^^^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.selectWithin(/\d/).map(text), "to equal", [
+          "1",
+          "2",
+          "6",
+          "7",
+          "8",
+        ]);
+      });
+
+      // No expected end document.
+    });
+
     test("function mergeOverlappingSelections", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
