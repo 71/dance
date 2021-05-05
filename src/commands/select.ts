@@ -510,7 +510,7 @@ export function lastLine(_: Context, document: vscode.TextDocument, shift = Shif
   let line = document.lineCount - 1;
 
   // In case of trailing line break, go to the second last line.
-  if (line > 0 && document.lineAt(document.lineCount - 1).text.length === 0) {
+  if (line > 0 && document.lineAt(line).text.length === 0) {
     line--;
   }
 

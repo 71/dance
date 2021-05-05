@@ -410,7 +410,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 "gk": {
                   text: "to first line",
                   command: "dance.select.lineStart",
-                  args: [{ count: 0 }],
+                  args: [{ count: 1 }],
                 },
                 "j": {
                   text: "to last line",

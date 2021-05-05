@@ -525,7 +525,7 @@
                   "command": "dance.select.lineStart",
                   "args": [
                     {
-                      "count": 0
+                      "count": 1
                     }
                   ]
                 },
