@@ -1022,7 +1022,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.selectWithin(/\d/).map(text), "to equal", [
+        expect(Selections.selectWithin(/\d/).map<string>(text), "to equal", [
           "1",
           "2",
           "6",

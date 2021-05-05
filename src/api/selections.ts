@@ -725,7 +725,7 @@ export function splitSelections(re: RegExp, selections = Context.current.selecti
  * ### Example
  *
  * ```ts
- * expect(Selections.selectWithin(/\d/).map(text), "to equal", [
+ * expect(Selections.selectWithin(/\d/).map<string>(text), "to equal", [
  *   "1",
  *   "2",
  *   "6",
