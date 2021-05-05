@@ -53,7 +53,7 @@ export async function insert(
   selections: readonly vscode.Selection[],
   register: RegisterOr<"dquote", Register.Flags.CanRead>,
 
-  adjust: Argument<boolean> = false,
+  adjust: Argument<boolean> = true,
   handleNewLine: Argument<boolean> = false,
   select: Argument<boolean> = false,
   where?: Argument<"active" | "anchor" | "start" | "end" | undefined>,
