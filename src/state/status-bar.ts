@@ -27,9 +27,9 @@ export class StatusBar implements vscode.Disposable {
       { command: "dance.selectRegister", arguments: [{ input: "" }], title: "" },
     );
     this.errorSegment = this.addSegment(
-      "Dance - Dismiss error",
+      "Dance - Copy and dismiss error",
       "error",
-      "dance.ignore",
+      "dance.dev.copyLastErrorMessage",
     );
     this.errorSegment.statusBarItem.backgroundColor =
       new vscode.ThemeColor("statusBarItem.errorBackground");

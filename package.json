@@ -750,6 +750,11 @@
     },
     "commands": [
       {
+        "command": "dance.dev.copyLastErrorMessage",
+        "title": "Copies the last encountered error message",
+        "category": "Dance"
+      },
+      {
         "command": "dance.dev.setSelectionBehavior",
         "title": "Set the selection behavior of the specified mode",
         "category": "Dance"
@@ -1667,6 +1672,10 @@
     ],
     "menus": {
       "commandPalette": [
+        {
+          "command": "dance.dev.copyLastErrorMessage",
+          "when": "dance.mode == 'normal'"
+        },
         {
           "command": "dance.dev.setSelectionBehavior",
           "when": "dance.mode == 'normal'"

@@ -144,10 +144,16 @@ function getInputOr(argument: { input?: any }): any {
  */
 async function loadDevModule(): Promise<CommandDescriptor[]> {
   const {
+    copyLastErrorMessage,
     setSelectionBehavior,
   } = await import("./dev");
 
   return [
+    new CommandDescriptor(
+      "dance.dev.copyLastErrorMessage",
+      (_) => _.runAsync((_) => copyLastErrorMessage(_.extension)),
+      CommandDescriptor.Flags.None,
+    ),
     new CommandDescriptor(
       "dance.dev.setSelectionBehavior",
       (_, argument) => _.runAsync((_) => setSelectionBehavior(_.extension, argument.mode, argument.value)),
@@ -1231,7 +1237,7 @@ async function loadSelectionsRotateModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.rotate.both.reverse",
-      (_, argument) => _.runAsync(() => commands([".selections.rotate", { reverse: true, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.rotate.both", { reverse: true, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(

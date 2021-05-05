@@ -13,9 +13,9 @@ declare module "./selections.rotate";
  *
  * The following keybinding is also available:
  *
- * | Title                               | Identifier     | Keybinding   | Command                                     |
- * | ----------------------------------- | -------------- | ------------ | ------------------------------------------- |
- * | Rotate selections counter-clockwise | `both.reverse` | `)` (normal) | `[".selections.rotate", { reverse: true }]` |
+ * | Title                               | Identifier     | Keybinding   | Command                                          |
+ * | ----------------------------------- | -------------- | ------------ | ------------------------------------------------ |
+ * | Rotate selections counter-clockwise | `both.reverse` | `)` (normal) | `[".selections.rotate.both", { reverse: true }]` |
  */
 export function both(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
   if (reverse) {

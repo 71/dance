@@ -1,3 +1,5 @@
+import * as vscode from "vscode";
+
 import { Argument } from ".";
 import { Extension } from "../state/extension";
 import { SelectionBehavior } from "../state/modes";
@@ -28,4 +30,15 @@ export function setSelectionBehavior(
       value === "character" ? SelectionBehavior.Character : SelectionBehavior.Caret,
     );
   }
+}
+
+/**
+ * Copies the last encountered error message.
+ */
+export function copyLastErrorMessage(extension: Extension) {
+  if (extension.lastErrorMessage === undefined) {
+    return Promise.resolve();
+  }
+
+  return vscode.env.clipboard.writeText(extension.lastErrorMessage);
 }

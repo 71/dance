@@ -12,7 +12,8 @@
     </tr>
   </thead>
   <tbody>
-    <tr><td rowspan=1><a href="#dev"><code>dev</code></a></td><td><a href="#devsetSelectionBehavior"><code>dev.setSelectionBehavior</code></a></td><td>Set the selection behavior of the specified mode</td><td></td></tr>
+    <tr><td rowspan=2><a href="#dev"><code>dev</code></a></td><td><a href="#devcopyLastErrorMessage"><code>dev.copyLastErrorMessage</code></a></td><td>Copies the last encountered error message</td><td></td></tr>
+    <tr><td><a href="#devsetSelectionBehavior"><code>dev.setSelectionBehavior</code></a></td><td>Set the selection behavior of the specified mode</td><td></td></tr>
     <tr><td rowspan=27><a href="#edit"><code>edit</code></a></td><td><a href="#editalign"><code>edit.align</code></a></td><td>Align selections</td><td><code>Shift+7</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editcaseswap"><code>edit.case.swap</code></a></td><td>Swap case</td><td><code>Alt+`</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#editcasetoLower"><code>edit.case.toLower</code></a></td><td>Transform to lower case</td><td><code>`</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -204,13 +205,20 @@
 
 Developer utilities for Dance.
 
-### [`dev.setSelectionBehavior`](./dev.ts#L10-L18)
+### [`dev.setSelectionBehavior`](./dev.ts#L12-L20)
 
 Set the selection behavior of the specified mode.
 
 This command:
 - does not require an active text editor.
 - takes an argument `value` of type `"caret" | "character"`.
+
+### [`dev.copyLastErrorMessage`](./dev.ts#L35-L38)
+
+Copies the last encountered error message.
+
+This command:
+- does not require an active text editor.
 
 ## [`edit`](./edit.ts)
 
@@ -1152,9 +1160,9 @@ Rotate selections clockwise.
 
 The following keybinding is also available:
 
-| Title                               | Identifier     | Keybinding   | Command                                     |
-| ----------------------------------- | -------------- | ------------ | ------------------------------------------- |
-| Rotate selections counter-clockwise | `both.reverse` | `)` (normal) | `[".selections.rotate", { reverse: true }]` |
+| Title                               | Identifier     | Keybinding   | Command                                          |
+| ----------------------------------- | -------------- | ------------ | ------------------------------------------------ |
+| Rotate selections counter-clockwise | `both.reverse` | `)` (normal) | `[".selections.rotate.both", { reverse: true }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
