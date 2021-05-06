@@ -117,17 +117,19 @@ export class Extension implements vscode.Disposable {
                 validationErrors = validateMenu(menu);
 
           if (validationErrors.length === 0) {
-            const globalConfig = inspect.globalValue?.[menuName],
-                  defaultConfig = inspect.defaultValue?.[menuName];
+            if (!vscode.workspace.isTrusted) {
+              const globalConfig = inspect.globalValue?.[menuName],
+                    defaultConfig = inspect.defaultValue?.[menuName];
 
-            if (globalConfig !== undefined || defaultConfig !== undefined) {
-              // Menu is a global menu; make sure that the local workspace does
-              // not override its items.
-              for (const key in menu.items) {
-                if (globalConfig !== undefined && key in globalConfig.items) {
-                  menu.items[key] = globalConfig.items[key];
-                } else if (defaultConfig !== undefined && key in defaultConfig.items) {
-                  menu.items[key] = defaultConfig.items[key];
+              if (globalConfig !== undefined || defaultConfig !== undefined) {
+                // Menu is a global menu; make sure that the local workspace does
+                // not override its items.
+                for (const key in menu.items) {
+                  if (globalConfig !== undefined && key in globalConfig.items) {
+                    menu.items[key] = globalConfig.items[key];
+                  } else if (defaultConfig !== undefined && key in defaultConfig.items) {
+                    menu.items[key] = defaultConfig.items[key];
+                  }
                 }
               }
             }

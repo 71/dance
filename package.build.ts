@@ -93,7 +93,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   main: "./out/src/extension.js",
 
   engines: {
-    vscode: "^1.44.0",
+    vscode: "^1.56.0",
   },
 
   scripts: {
@@ -113,7 +113,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "@types/glob": "^7.1.1",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.6.0",
-    "@types/vscode": "^1.44.0",
+    "@types/vscode": "^1.56.0",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
     "chokidar": "^3.5.1",
@@ -594,6 +594,16 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
         },
       },
+    },
+
+    // Misc configuration.
+    // ========================================================================
+
+    untrustedWorkspaces: {
+      supported: "limited",
+      description:
+        "Existing menu items and mode commands can only be updated if the current workspace is "
+        + "trusted in order to ensure untrusted workspaces do not execute malicious commands.",
     },
 
     // Commands.

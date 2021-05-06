@@ -3,7 +3,6 @@ import { command } from "../api";
 import { extensionName } from "../extension";
 import { Extension } from "./extension";
 import { SettingsValidator } from "../utils/settings-validator";
-import { workspaceSettingsPropertyNames } from "../utils/misc";
 
 export const enum SelectionBehavior {
   Caret = 1,
@@ -602,15 +601,17 @@ export class Modes implements Iterable<Mode> {
         let mode = this._modes.get(modeName);
         const configuration = value[modeName];
 
-        const globalConfig = inspect.globalValue?.[modeName],
-              defaultConfig = inspect.defaultValue?.[modeName];
+        if (!vscode.workspace.isTrusted) {
+          const globalConfig = inspect.globalValue?.[modeName],
+                defaultConfig = inspect.defaultValue?.[modeName];
 
-        if (globalConfig !== undefined || defaultConfig !== undefined) {
-          // Mode is a global mode; make sure that the local workspace does not
-          // override its `on{Enter,Leave}Mode` hooks (to make sure loading a
-          // workspace will not execute arbitrary code).
-          configuration.onEnterMode = globalConfig?.onEnterMode ?? defaultConfig?.onEnterMode;
-          configuration.onLeaveMode = globalConfig?.onLeaveMode ?? defaultConfig?.onLeaveMode;
+          if (globalConfig !== undefined || defaultConfig !== undefined) {
+            // Mode is a global mode; make sure that the local workspace does not
+            // override its `on{Enter,Leave}Mode` hooks (to make sure loading a
+            // workspace will not execute arbitrary code).
+            configuration.onEnterMode = globalConfig?.onEnterMode ?? defaultConfig?.onEnterMode;
+            configuration.onLeaveMode = globalConfig?.onLeaveMode ?? defaultConfig?.onLeaveMode;
+          }
         }
 
         if (mode === undefined) {
