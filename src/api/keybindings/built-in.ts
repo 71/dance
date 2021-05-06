@@ -467,7 +467,7 @@ const builtinKeybindings = [
     key: "Shift+]",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Extend to whole object end",
-    command: "dance.seek.askObject.end",
+    command: "dance.seek.askObject.end.extend",
   },
   {
     key: "Alt+I",
@@ -515,7 +515,7 @@ const builtinKeybindings = [
     key: "Shift+[",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Extend to whole object start",
-    command: "dance.seek.askObject.start",
+    command: "dance.seek.askObject.start.extend",
   },
   {
     key: "Alt+T",

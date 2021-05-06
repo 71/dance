@@ -255,11 +255,11 @@ let lastObjectInput: string | undefined;
  * | Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { input: "object"                                                           }]` |
  * | Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { input: "object", pass: [{ inner: true                                  }] }]` |
  * | Select to whole object start | `askObject.start`              | `[` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start"                  }] }]` |
- * | Extend to whole object start | `askObject.start`              | `{` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start", shift: "extend" }] }]` |
+ * | Extend to whole object start | `askObject.start.extend`       | `{` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start", shift: "extend" }] }]` |
  * | Select to inner object start | `askObject.inner.start`        | `a-[` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "start"                  }] }]` |
  * | Extend to inner object start | `askObject.inner.start.extend` | `a-{` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "start", shift: "extend" }] }]` |
  * | Select to whole object end   | `askObject.end`                | `]` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "end"                    }] }]` |
- * | Extend to whole object end   | `askObject.end`                | `}` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
+ * | Extend to whole object end   | `askObject.end.extend`         | `}` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
  * | Select to inner object end   | `askObject.inner.end`          | `a-]` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "end"                    }] }]` |
  * | Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
  */

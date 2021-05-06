@@ -628,12 +628,12 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.seek.askObject.end",
-      (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", pass: [{ where: "end" , shift: "extend", ...argument }], ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", pass: [{ where: "end", ...argument }], ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
-      "dance.seek.askObject.end",
-      (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", pass: [{ where: "end", ...argument }], ...argument }])),
+      "dance.seek.askObject.end.extend",
+      (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", pass: [{ where: "end" , shift: "extend", ...argument }], ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -667,7 +667,7 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
-      "dance.seek.askObject.start",
+      "dance.seek.askObject.start.extend",
       (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", pass: [{ where: "start", shift: "extend", ...argument }], ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),

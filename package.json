@@ -1104,7 +1104,7 @@
         "category": "Dance"
       },
       {
-        "command": "dance.seek.askObject.end",
+        "command": "dance.seek.askObject.end.extend",
         "title": "Extend to whole object end",
         "category": "Dance"
       },
@@ -1139,7 +1139,7 @@
         "category": "Dance"
       },
       {
-        "command": "dance.seek.askObject.start",
+        "command": "dance.seek.askObject.start.extend",
         "title": "Extend to whole object start",
         "category": "Dance"
       },
@@ -1957,7 +1957,7 @@
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.seek.askObject.end",
+          "command": "dance.seek.askObject.end.extend",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -1985,7 +1985,7 @@
           "when": "dance.mode == 'normal'"
         },
         {
-          "command": "dance.seek.askObject.start",
+          "command": "dance.seek.askObject.start.extend",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -2880,7 +2880,7 @@
         "key": "Shift+]",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Extend to whole object end",
-        "command": "dance.seek.askObject.end"
+        "command": "dance.seek.askObject.end.extend"
       },
       {
         "key": "Alt+I",
@@ -2928,7 +2928,7 @@
         "key": "Shift+[",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Extend to whole object start",
-        "command": "dance.seek.askObject.start"
+        "command": "dance.seek.askObject.start.extend"
       },
       {
         "key": "Alt+T",
