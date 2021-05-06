@@ -232,3 +232,36 @@ if (ok) {
   }
 }
 ```
+
+# 2
+
+> /\$object/"\\{(?#inner)\\}"/g
+
+```
+{
+  "foo": {
+    "bar": 0,
+  },
+  "baz": null,
+   | 0
+}
+```
+
+## 2 select-inner
+[up](#2)
+
+Make sure that the object that wraps the selection is selected, rather than the
+one closest to it when going backward.
+
+- .seek.object { input: $object, inner: true }
+
+```
+{
+ ^ 0
+  "foo": {
+    "bar": 0,
+  },
+  "baz": null,
+              ^ 0
+}
+```

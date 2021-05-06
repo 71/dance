@@ -463,8 +463,7 @@ export class ExpectedDocument {
       }
     }
 
-    // Then, we report selections that are expected and not found, and those
-    // that were found but were not expected.
+    // Then, we diff selections that exist in both arrays.
     const sortedExpectedSelections = expectedSelections
       .map((x, i) => [i, x!] as const)
       .filter((x) => x[1] !== undefined)
@@ -474,6 +473,23 @@ export class ExpectedDocument {
       .filter((x) => x[1] !== undefined)
       .sort((a, b) => a[1].start.compareTo(b[1].start));
 
+    for (let i = 0; i < sortedExpectedSelections.length && i < sortedActualSelections.length; i++) {
+      const [expectedIndex, expectedSelection] = sortedExpectedSelections[i],
+            [actualIndex, actualSelection] = sortedActualSelections[i];
+
+      const error = actualIndex === expectedIndex
+        ? `Selection #${actualIndex} is not as expected:`
+        : `Actual selection #${actualIndex} differs from expected selection #${expectedIndex}:`;
+
+      actualText.push(error);
+      expectedText.push(error);
+
+      actualText.push(stringifySelection(document, actualSelection).replace(/^/gm, "  "));
+      expectedText.push(stringifySelection(document, expectedSelection).replace(/^/gm, "  "));
+    }
+
+    // Finally, we report selections that are expected and not found, and those
+    // that were found but were not expected.
     for (let i = sortedActualSelections.length; i < sortedExpectedSelections.length; i++) {
       const [index, expectedSelection] = sortedExpectedSelections[i];
 
@@ -492,22 +508,7 @@ export class ExpectedDocument {
       expectedText.push(`Unexpected selection #${index}:\n`);
     }
 
-    // Finally, we diff selections that exist in both arrays.
-    for (let i = 0; i < sortedExpectedSelections.length && i < sortedActualSelections.length; i++) {
-      const [expectedIndex, expectedSelection] = sortedExpectedSelections[i],
-            [actualIndex, actualSelection] = sortedActualSelections[i];
-
-      const error = actualIndex === expectedIndex
-        ? `Selection #${actualIndex} is not as expected:`
-        : `Actual selection #${actualIndex} differs from expected selection #${expectedIndex}:`;
-
-      actualText.push(error);
-      expectedText.push(error);
-
-      actualText.push(stringifySelection(document, actualSelection).replace(/^/gm, "  "));
-      expectedText.push(stringifySelection(document, expectedSelection).replace(/^/gm, "  "));
-    }
-
+    // Show error:
     assert.strictEqual(
       actualText.join("\n"),
       expectedText.join("\n"),

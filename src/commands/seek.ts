@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Argument, InputOr } from ".";
-import { ArgumentError, assert, Context, Direction, keypress, Lines, moveTo, moveWhile, Pair, pair, Positions, prompt, Selections, Shift, surroundedBy, todo } from "../api";
+import { ArgumentError, assert, closestSurroundedBy, Context, Direction, keypress, Lines, moveTo, moveWhile, Pair, pair, Positions, prompt, search, Selections, Shift, surroundedBy } from "../api";
 import { Range } from "../api/search/range";
 import { wordBoundary } from "../api/search/word";
 import { SelectionBehavior } from "../state/modes";
@@ -141,7 +141,7 @@ export function enclosing(
       currentCharacter = Positions.previous(currentCharacter, document) ?? currentCharacter;
     }
 
-    const enclosedRange = surroundedBy(compiledPairs, direction, currentCharacter, open, document);
+    const enclosedRange = closestSurroundedBy(compiledPairs, direction, currentCharacter, open, document);
 
     if (enclosedRange === undefined) {
       return undefined;
@@ -288,7 +288,7 @@ export async function object(
         const startResult = p.searchOpening(Selections.activeStart(selection, _));
 
         if (startResult === undefined) {
-          return undefined;
+          return;
         }
 
         const start = inner
@@ -304,7 +304,7 @@ export async function object(
         const endResult = p.searchClosing(Selections.activeEnd(selection, _));
 
         if (endResult === undefined) {
-          return undefined;
+          return;
         }
 
         const end = inner
@@ -315,12 +315,41 @@ export async function object(
       });
     }
 
-    return shiftWhere(
-      _,
-      (selection, _) => surroundedBy(
-        [p], Direction.Backward, Selections.activeEnd(selection, _), !inner, _.document),
-      shift,
-      where,
+    if (_.selectionBehavior === SelectionBehavior.Character) {
+      const startRe = new RegExp("^" + openRe.source, openRe.flags);
+
+      return Selections.update.byIndex((_i, selection) => {
+        // If the selection behavior is character and the current character
+        // corresponds to the start of a pair, we select from here.
+        const searchStart = Selections.activeStart(selection, _),
+              searchStartResult = search(Direction.Forward, startRe, searchStart);
+
+        if (searchStartResult?.[1][0].length === 1) {
+          const start = searchStartResult[0],
+                innerStart = Positions.offset(start, searchStartResult[1][0].length, _.document)!,
+                endResult = p.searchClosing(innerStart);
+
+          if (endResult === undefined) {
+            return undefined;
+          }
+
+          if (inner) {
+            return new vscode.Selection(innerStart, endResult[0]);
+          }
+
+          return new vscode.Selection(
+            start,
+            Positions.offset(endResult[0], endResult[1][0].length, _.document)!,
+          );
+        }
+
+        // Otherwise, we select from the end of the current selection.
+        return surroundedBy([p], Selections.activeStart(selection, _), !inner, _.document);
+      });
+    }
+
+    return Selections.update.byIndex(
+      (_i, selection) => surroundedBy([p], Selections.activeStart(selection, _), !inner, _.document),
     );
   }
 

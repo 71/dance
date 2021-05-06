@@ -111,11 +111,55 @@ export function pair(open: string | RegExp, close: string | RegExp): Pair {
 }
 
 /**
+ * Returns the selection enclosed in one of the given pairs and containing
+ * the given position.
+ */
+export function surroundedBy(
+  pairs: readonly Pair[],
+  searchOrigin: vscode.Position,
+  open = true,
+  document = Context.current.document,
+) {
+  let pair: Pair;
+
+  if (pairs.length === 1) {
+    pair = pairs[0];
+  } else {
+    pair = new Pair(
+      new RegExp(pairs.map((p) => `(${p.open.source})`).join("|"), "u"),
+      new RegExp(pairs.map((p) => `(${p.close.source})`).join("|"), "u"),
+    );
+  }
+
+  const startResult = pair.searchOpening(searchOrigin);
+
+  if (startResult === undefined) {
+    return undefined;
+  }
+
+  const innerStart = Positions.offset(startResult[0], startResult[1][0].length, document)!,
+        endResult = pair.searchClosing(innerStart);
+
+  if (endResult === undefined) {
+    return undefined;
+  }
+
+  if (open) {
+    return new vscode.Selection(
+      startResult[0],
+      Positions.offset(endResult[0], endResult[1][0].length, document)!,
+    );
+  }
+
+  return new vscode.Selection(innerStart, endResult[0]);
+}
+
+/**
  * Returns the next selection enclosed in one of the given pairs. The resulting
  * selection is anchored on the first closing or opening pattern encountered in
  * the given direction, and its cursor will be on its matching pattern.
  */
-export function surroundedBy(
+export function closestSurroundedBy(
   pairs: readonly Pair[],
   direction: Direction,
   searchOrigin: vscode.Position,
@@ -131,7 +175,7 @@ export function surroundedBy(
 
   const match = anchorSearch[1],
         index = match.findIndex((x, i) => i > 0 && x !== undefined) - 1,
-        pairIndex = (index & 0xffff_fffe) >> 1,
+        pairIndex = index >> 1,
         pair = pairs[pairIndex];
 
   // Then, find the matching char of the anchor.

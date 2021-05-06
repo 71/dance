@@ -382,5 +382,33 @@ suite("./test/suite/commands/seek-object-between.md", function () {
     `);
   });
 
+  test("2 > select-inner", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      {
+        "foo": {
+          "bar": 0,
+        },
+        "baz": null,
+         | 0
+      }
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek.object", { input: "\\{(?#inner)\\}", inner: true });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-between.md:250:1", 6, String.raw`
+      {
+       ^ 0
+        "foo": {
+          "bar": 0,
+        },
+        "baz": null,
+                    ^ 0
+      }
+    `);
+  });
+
   groupTestsByParentName(this);
 });
