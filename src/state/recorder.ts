@@ -385,6 +385,10 @@ export class Recorder implements vscode.Disposable {
       }
     }
 
+    if (commonActiveOffsetDiff === 0 && commonAnchorOffsetDiff === 0) {
+      return;
+    }
+
     // Merge consecutive events, if any.
     if (this._tryMergeSelectionTranslations(commonAnchorOffsetDiff, commonActiveOffsetDiff)) {
       return;

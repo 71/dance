@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { RegisterOr } from ".";
 import { Context, prompt, todo } from "../api";
 import { Register } from "../state/registers";

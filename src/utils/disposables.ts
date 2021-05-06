@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { Context } from "../api";
 import { PerEditorState } from "../state/editors";
+import { Recording } from "../state/recorder";
 
 declare class WeakRef<T extends object> {
   public constructor(value: T);
@@ -205,10 +206,30 @@ export class AutoDisposable implements vscode.Disposable {
 
     case AutoDisposable.EventType.OnSelectionsDidChange:
       vscode.window.onDidChangeTextEditorSelection((e) => {
-        if (editorState.editor === e.textEditor
-            && e.kind === vscode.TextEditorSelectionChangeKind.Mouse) {
-          this.dispose();
+        if (editorState.editor !== e.textEditor) {
+          return;
         }
+
+        const cursor = context.extension.recorder.cursorFromEnd();
+
+        if (cursor.previous()) {
+          if (cursor.is(Recording.ActionType.SelectionTranslation)) {
+            const translationBy = cursor.activeOffsetDiff();
+
+            if (cursor.previous() && cursor.is(Recording.ActionType.TextReplacement)) {
+              const insertionLength =
+                (cursor.insertedText() as string).length - cursor.deletionLength();
+
+              if (translationBy === insertionLength) {
+                return;
+              }
+            }
+          } else if (cursor.is(Recording.ActionType.Command)) {
+            return;
+          }
+        }
+
+        this.dispose();
       }, undefined, this._disposables);
       break;
 

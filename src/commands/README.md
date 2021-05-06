@@ -464,7 +464,7 @@ This command:
 
 Utilities for setting up keybindings.
 
-### [`keybindings.setup`](./keybindings.ts#L11-L14)
+### [`keybindings.setup`](./keybindings.ts#L12-L15)
 
 Set up Dance keybindings.
 
