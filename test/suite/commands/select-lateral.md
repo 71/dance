@@ -23,6 +23,19 @@ baz
 quxxx
 ```
 
+### 1 left right-avoid-eol
+[up](#1-left)
+
+- .select.right.jump { avoidEol: true }
+
+```
+foo
+bar
+baz
+^ 0
+quxxx
+```
+
 ## 1 right
 [up](#1)
 
@@ -33,6 +46,19 @@ foo
 bar
 baz
 ^ 0
+quxxx
+```
+
+### 1 right left-avoid-eol
+[up](#1-right)
+
+- .select.left.jump { avoidEol: true }
+
+```
+foo
+bar
+  ^ 0
+baz
 quxxx
 ```
 
@@ -49,7 +75,7 @@ baz
 quxxx
 ```
 
-## 1 up-skip-eol
+## 1 up-avoid-eol
 [up](#1)
 
 - .select.up.jump { avoidEol: true }
@@ -79,12 +105,12 @@ baz
 quxxx
 ```
 
-## 1 down-skip-eol
+## 1 down-avoid-eol
 [up](#1)
 
 - .select.down.jump { avoidEol: true }
 
-Similarly to the [test case above](#1-up-skip-eol), "desired column" is 4 so we
+Similarly to the [test case above](#1-up-avoid-eol), "desired column" is 4 so we
 select the last character.
 
 ```
@@ -95,7 +121,7 @@ baz
 quxxx
 ```
 
-## 1 down-skip-eol-2
+## 1 down-avoid-eol-2
 [up](#1)
 
 - .select.down.jump { count: 2, avoidEol: true }
@@ -109,6 +135,59 @@ bar
 baz
 quxxx
    ^ 0
+```
+
+## 1 left-extend
+[up](#1)
+
+- .select.left.extend
+
+```
+foo
+bar
+  |^ 0
+baz
+quxxx
+```
+
+### 1 left-extend right-extend
+[up](#1-left-extend)
+
+- .select.right.extend
+
+```
+foo
+bar
+   ^ 0
+baz
+quxxx
+```
+
+## 1 right-extend
+[up](#1)
+
+- .select.right.extend
+
+```
+foo
+bar
+   ^ 0
+baz
+^ 0
+quxxx
+```
+
+### 1 right-extend left-extend
+[up](#1-right-extend)
+
+- .select.left.extend
+
+```
+foo
+bar
+   ^ 0
+baz
+quxxx
 ```
 
 # 2

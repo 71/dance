@@ -128,7 +128,7 @@ export function vertically(
     );
   }
 
-  Selections.update.byIndex((i, selection) => {
+  const newSelections = Selections.map.byIndex((i, selection) => {
     // TODO: handle tab characters
     const activeLine = Selections.activeLine(selection),
           targetLine = Lines.clamp(activeLine + repetitions * direction, document),
@@ -183,6 +183,12 @@ export function vertically(
     return Selections.shift(selection, newPosition, shift);
   });
 
+  if (_.selectionBehavior === SelectionBehavior.Character) {
+    Selections.shiftEmptyLeft(newSelections, document);
+  }
+
+  Selections.set(newSelections);
+
   preferredColumnsState.expectedSelections = unsafeSelections(editorState.editor);
 }
 
@@ -212,7 +218,7 @@ export function horizontally(
   const mayNeedAdjustment = direction === Direction.Backward
                          && _.selectionBehavior === SelectionBehavior.Character;
 
-  Selections.update.byIndex((_i, selection, document) => {
+  const newSelections = Selections.map.byIndex((_i, selection, document) => {
     let active = selection.active === selection.start
       ? Selections.activeStart(selection, _)
       : Selections.activeEnd(selection, _);
@@ -247,6 +253,12 @@ export function horizontally(
 
     return Selections.shift(selection, target, shift);
   });
+
+  if (_.selectionBehavior === SelectionBehavior.Character) {
+    Selections.shiftEmptyLeft(newSelections, _.document);
+  }
+
+  Selections.set(newSelections);
 }
 
 /**

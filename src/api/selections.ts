@@ -1692,6 +1692,30 @@ export namespace Selections {
   export const from = fromAnchorActive;
 
   /**
+   * Shifts empty selections by one character to the left.
+   */
+  export function shiftEmptyLeft(
+    selections: vscode.Selection[],
+    document?: vscode.TextDocument,
+  ) {
+    for (let i = 0; i < selections.length; i++) {
+      const selection = selections[i];
+
+      if (selection.isEmpty) {
+        if (document === undefined) {
+          document = Context.current.document;
+        }
+
+        const newPosition = Positions.previous(selection.active, document);
+
+        if (newPosition !== undefined) {
+          selections[i] = Selections.empty(newPosition);
+        }
+      }
+    }
+  }
+
+  /**
    * Transforms a list of caret-mode selections (that is, regular selections as
    * manipulated internally) into a list of character-mode selections (that is,
    * selections modified to include a block character in them).
@@ -1732,6 +1756,11 @@ export namespace Selections {
    * expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 1, 0, 0)]), "to satisfy", [
    *   expect.it("to have anchor at coords", 1, 1).and("to have cursor at coords", 0, 0),
    * ]);
+   *
+   * // Empty selection stays as-is.
+   * expect(Selections.toCharacterMode([Selections.empty(1, 1)]), "to satisfy", [
+   *   expect.it("to be empty at coords", 1, 1),
+   * ]);
    * ```
    *
    * With:
@@ -1758,11 +1787,7 @@ export namespace Selections {
           changed = false;
 
       if (selectionAnchorLine === selectionActiveLine) {
-        if (selectionAnchorCharacter === selectionActiveCharacter) {
-          // Selection is empty: go to previous position.
-          anchor = active = Positions.previous(active, document) ?? active;
-          changed = active !== selectionActive;
-        } else if (selectionAnchorCharacter + 1 === selectionActiveCharacter) {
+        if (selectionAnchorCharacter + 1 === selectionActiveCharacter) {
           // Selection is one-character long: make it empty.
           active = selectionAnchor;
           changed = true;
@@ -1775,7 +1800,7 @@ export namespace Selections {
           active = new vscode.Position(selectionActiveLine, selectionActiveCharacter - 1);
           changed = true;
         } else {
-          // Selection is reversed: do nothing.
+          // Selection is reversed or empty: do nothing.
         }
       } else if (selectionAnchorLine < selectionActiveLine) {
         // Selection is strictly forward-facing: make it shorter.

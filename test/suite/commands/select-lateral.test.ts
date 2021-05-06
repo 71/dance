@@ -45,6 +45,31 @@ suite("./test/suite/commands/select-lateral.md", function () {
     `);
   });
 
+  test("1 > left > right-avoid-eol", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      bar
+        ^ 0
+      baz
+      quxxx
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+    await executeCommand("dance.select.right.jump", { avoidEol: true });
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:26:1", 6, String.raw`
+      foo
+      bar
+      baz
+      ^ 0
+      quxxx
+    `);
+  });
+
   test("1 > right", async function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
@@ -61,11 +86,36 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:26:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:39:1", 6, String.raw`
       foo
       bar
       baz
       ^ 0
+      quxxx
+    `);
+  });
+
+  test("1 > right > left-avoid-eol", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      bar
+      baz
+      ^ 0
+      quxxx
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+    await executeCommand("dance.select.left.jump", { avoidEol: true });
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:52:1", 6, String.raw`
+      foo
+      bar
+        ^ 0
+      baz
       quxxx
     `);
   });
@@ -86,7 +136,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:39:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:65:1", 6, String.raw`
       foo
          ^ 0
       bar
@@ -95,7 +145,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     `);
   });
 
-  test("1 > up-skip-eol", async function () {
+  test("1 > up-avoid-eol", async function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       foo
@@ -111,7 +161,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:52:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:78:1", 6, String.raw`
       foo
         ^ 0
       bar
@@ -136,7 +186,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:69:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:95:1", 6, String.raw`
       foo
       bar
       baz
@@ -145,7 +195,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     `);
   });
 
-  test("1 > down-skip-eol", async function () {
+  test("1 > down-avoid-eol", async function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       foo
@@ -161,7 +211,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:82:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:108:1", 6, String.raw`
       foo
       bar
       baz
@@ -170,7 +220,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     `);
   });
 
-  test("1 > down-skip-eol-2", async function () {
+  test("1 > down-avoid-eol-2", async function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       foo
@@ -186,12 +236,114 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:98:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:124:1", 6, String.raw`
       foo
       bar
       baz
       quxxx
          ^ 0
+    `);
+  });
+
+  test("1 > left-extend", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      bar
+         ^ 0
+      baz
+      quxxx
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+    await executeCommand("dance.select.left.extend");
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:140:1", 6, String.raw`
+      foo
+      bar
+        |^ 0
+      baz
+      quxxx
+    `);
+  });
+
+  test("1 > left-extend > right-extend", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      bar
+        |^ 0
+      baz
+      quxxx
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+    await executeCommand("dance.select.right.extend");
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:153:1", 6, String.raw`
+      foo
+      bar
+         ^ 0
+      baz
+      quxxx
+    `);
+  });
+
+  test("1 > right-extend", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      bar
+         ^ 0
+      baz
+      quxxx
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+    await executeCommand("dance.select.right.extend");
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:166:1", 6, String.raw`
+      foo
+      bar
+         ^ 0
+      baz
+      ^ 0
+      quxxx
+    `);
+  });
+
+  test("1 > right-extend > left-extend", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      bar
+         ^ 0
+      baz
+      ^ 0
+      quxxx
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+    await executeCommand("dance.select.left.extend");
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:180:1", 6, String.raw`
+      foo
+      bar
+         ^ 0
+      baz
+      quxxx
     `);
   });
 
@@ -211,7 +363,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:126:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:205:1", 6, String.raw`
       foo
 
       ^ 0
@@ -236,7 +388,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:141:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:220:1", 6, String.raw`
       foo
         ^ 0
 
@@ -261,7 +413,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:166:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:245:1", 6, String.raw`
       foo
          ^ 0
 
@@ -286,7 +438,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:179:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:258:1", 6, String.raw`
       foo
 
       bar
@@ -311,7 +463,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:192:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:271:1", 6, String.raw`
       foo
       ^ 0
 
@@ -336,7 +488,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:205:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:284:1", 6, String.raw`
       foo
 
       bar
@@ -361,7 +513,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:218:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:297:1", 6, String.raw`
       foo
 
       ^ 0
@@ -386,7 +538,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:231:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:310:1", 6, String.raw`
       foo
 
       | 0
@@ -413,7 +565,7 @@ suite("./test/suite/commands/select-lateral.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:245:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:324:1", 6, String.raw`
       foo
       | 0
 

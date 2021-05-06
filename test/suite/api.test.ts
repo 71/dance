@@ -1325,6 +1325,11 @@ suite("API tests", function () {
         expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 1, 0, 0)]), "to satisfy", [
           expect.it("to have anchor at coords", 1, 1).and("to have cursor at coords", 0, 0),
         ]);
+
+        // Empty selection stays as-is.
+        expect(Selections.toCharacterMode([Selections.empty(1, 1)]), "to satisfy", [
+          expect.it("to be empty at coords", 1, 1),
+        ]);
       });
 
       // No expected end document.

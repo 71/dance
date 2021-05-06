@@ -408,8 +408,10 @@ export async function object(
       assert(false);
     }
 
+    let newSelections: vscode.Selection[];
+
     if (where === "start") {
-      Selections.update.byIndex((_i, selection, document) =>
+      newSelections = Selections.map.byIndex((_i, selection, document) =>
         Selections.shift(
           selection,
           f.start(Selections.activePosition(selection, _.document), inner, document),
@@ -418,7 +420,7 @@ export async function object(
         ),
       );
     } else if (where === "end") {
-      Selections.update.byIndex((_i, selection, document) =>
+      newSelections = Selections.map.byIndex((_i, selection, document) =>
         Selections.shift(
           selection,
           f.end(selection.active, inner, document),
@@ -427,10 +429,16 @@ export async function object(
         ),
       );
     } else {
-      Selections.update.byIndex((_, selection, document) => f(selection.active, inner, document));
+      newSelections = Selections.map.byIndex((_, selection, document) =>
+        f(selection.active, inner, document),
+      );
     }
 
-    return;
+    if (_.selectionBehavior === SelectionBehavior.Character) {
+      Selections.shiftEmptyLeft(newSelections, _.document);
+    }
+
+    return _.selections = newSelections;
   }
 
   throw new Error("unknown object " + JSON.stringify(input));

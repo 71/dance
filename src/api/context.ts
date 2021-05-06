@@ -234,8 +234,6 @@ export class Context extends ContextWithoutActiveEditor {
 
   /**
    * The selection behavior for this context.
-   *
-   * @deprecated Try to avoid using this property.
    */
   public get selectionBehavior() {
     return this._mode.selectionBehavior;

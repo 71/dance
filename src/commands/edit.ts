@@ -60,7 +60,7 @@ export async function insert(
 ) {
   let contents = await register.get();
 
-  if (contents === undefined) {
+  if (contents === undefined || contents.length === 0) {
     throw new Error(`register "${register.name}" does not contain any saved text`);
   }
 
@@ -386,13 +386,8 @@ function extendArrayToLength<T>(array: readonly T[], length: number) {
   const arrayLen = array.length;
 
   if (length > arrayLen) {
-    const newArray = [] as T[];
-
-    for (let i = 0; i < arrayLen; i++) {
-      newArray.push(array[i]);
-    }
-
-    const last = array[arrayLen - 1];
+    const newArray = array.slice(),
+          last = array[arrayLen - 1];
 
     for (let i = arrayLen; i < length; i++) {
       newArray.push(last);

@@ -10,6 +10,13 @@ export async function run(testsRoot: string) {
         rootPath = path.join(__dirname, "../../.."),
         mocha = new Mocha({ ui: "tdd", color: true, timeout: 0 });
 
+  if (process.env.MOCHA_REPORTER) {
+    // Note: most reporters do not work due to
+    // https://github.com/microsoft/vscode/issues/56211. Here, using a faulty
+    // reporter is not necessarily bad; we can do this to avoid writing results.
+    mocha.reporter(process.env.MOCHA_REPORTER);
+  }
+
   let files = await new Promise<readonly string[]>((resolve, reject) => {
     glob("**/**.test.js", { cwd: testsRoot }, (err, matches) => {
       if (err) {
