@@ -357,7 +357,7 @@ Insert new line above each selection.
 
 | Title                                      | Identifier             | Keybinding     | Commands                                                                         |
 | ------------------------------------------ | ---------------------- | -------------- | -------------------------------------------------------------------------------- |
-| Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".modes.set", { input: "insert" }], [".edit.newLine.above", { select: true }]` |
+| Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { select: true }], [".modes.set", { input: "insert" }]` |
 
 This command:
 - takes an argument `select` of type `boolean`.
@@ -371,7 +371,7 @@ Insert new line below each selection.
 
 | Title                                      | Identifier             | Keybinding   | Commands                                                                         |
 | ------------------------------------------ | ---------------------- | ------------ | -------------------------------------------------------------------------------- |
-| Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".modes.set", { input: "insert" }], [".edit.newLine.below", { select: true }]` |
+| Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { select: true }], [".modes.set", { input: "insert" }]` |
 
 This command:
 - takes an argument `select` of type `boolean`.

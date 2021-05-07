@@ -272,12 +272,12 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above.insert",
-      (_, argument) => _.runAsync(() => commands([".modes.set", { input: "insert", ...argument }], [".edit.newLine.above", { select: true, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".edit.newLine.above", { select: true, ...argument }], [".modes.set", { input: "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below.insert",
-      (_, argument) => _.runAsync(() => commands([".modes.set", { input: "insert", ...argument }], [".edit.newLine.below", { select: true, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".edit.newLine.below", { select: true, ...argument }], [".modes.set", { input: "insert", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(

@@ -311,7 +311,7 @@ export function copyIndentation(
  *
  * | Title                                      | Identifier             | Keybinding     | Commands                                                                         |
  * | ------------------------------------------ | ---------------------- | -------------- | -------------------------------------------------------------------------------- |
- * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".modes.set", { input: "insert" }], [".edit.newLine.above", { select: true }]` |
+ * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { select: true }], [".modes.set", { input: "insert" }]` |
  */
 export function newLine_above(_: Context, select: Argument<boolean> = false) {
   if (select) {
@@ -346,7 +346,7 @@ export function newLine_above(_: Context, select: Argument<boolean> = false) {
  *
  * | Title                                      | Identifier             | Keybinding   | Commands                                                                         |
  * | ------------------------------------------ | ---------------------- | ------------ | -------------------------------------------------------------------------------- |
- * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".modes.set", { input: "insert" }], [".edit.newLine.below", { select: true }]` |
+ * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { select: true }], [".modes.set", { input: "insert" }]` |
  */
 export function newLine_below(_: Context, select: Argument<boolean> = false) {
   if (select) {
