@@ -1,13 +1,7 @@
 import * as vscode from "vscode";
+
 import { Context } from "../api";
-import { PerEditorState } from "../state/editors";
 import { Recording } from "../state/recorder";
-
-declare class WeakRef<T extends object> {
-  public constructor(value: T);
-
-  public deref(): T | undefined;
-}
 
 export interface NotifyingDisposable extends vscode.Disposable {
   readonly onDisposed: vscode.Event<this>;
