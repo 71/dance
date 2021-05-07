@@ -344,7 +344,7 @@ export class Recorder implements vscode.Disposable {
           selections = e.selections;
     this._lastActiveSelections = selections;
 
-    // Issue: Command is executing but not in a context, so we log selection changes which is bad
+    // Issue: context is never disposed of, for some reason.
     if (Context.WithoutActiveEditor.currentOrUndefined !== undefined
         || lastSelections === undefined) {
       return;

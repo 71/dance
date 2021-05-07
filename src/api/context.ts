@@ -94,6 +94,10 @@ class ContextWithoutActiveEditor {
   public run<T>(f: (context: this) => T) {
     const previousContext = currentContext;
 
+    if (previousContext === this) {
+      return f(this) as any;
+    }
+
     currentContext = this;
 
     try {
@@ -108,6 +112,14 @@ class ContextWithoutActiveEditor {
    */
   public async runAsync<T>(f: (context: this) => T): Promise<T extends Thenable<infer R> ? R : T> {
     const previousContext = currentContext;
+
+    if (previousContext === this) {
+      // Takes care of this situation: context 1 is created, context 1 spawns
+      // another context 2, context 1 is exited, and then context 2 is exited.
+      // Context 2 inherited "currentContext" === context 1, so context 2
+      // restores context 1 instead of exiting context 1 fully.
+      return f(this) as any;
+    }
 
     currentContext = this;
 
