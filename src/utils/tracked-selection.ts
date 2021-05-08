@@ -253,6 +253,8 @@ export namespace TrackedSelection {
     }
 
     public dispose() {
+      this._onDisposed.fire(this);
+      this._onDisposed.dispose();
       this._onDidChangeTextDocumentSubscription.dispose();
     }
   }
@@ -306,6 +308,7 @@ export namespace TrackedSelection {
       super.dispose();
 
       this._decorationType.dispose();
+      this._onDidEditorVisibilityChangeSubscription.dispose();
     }
 
     private _updateDecorations() {
