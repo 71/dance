@@ -16,7 +16,7 @@ function mapResults(
   selections: readonly vscode.Selection[],
   replacements: readonly replace.Result[],
 ) {
-  let flags = TrackedSelection.Flags.Inclusive,
+  let flags = TrackedSelection.Flags.Inclusive | TrackedSelection.Flags.EmptyExtendsForward,
       where = undefined as "start" | "end" | "active" | "anchor" | undefined;
 
   switch (insertFlags & Constants.PositionMask) {
@@ -107,12 +107,12 @@ function mapResults(
         if (restoredSelection[where] === restoredSelection.start) {
           restoredSelection = Selections.fromStartEnd(
             restoredSelection.start,
-            Positions.offset(restoredSelection.end, -previousLength)!,
+            Positions.offset(restoredSelection.end, -previousLength, document)!,
             restoredSelection.isReversed,
           );
         } else {
           restoredSelection = Selections.fromStartEnd(
-            Positions.offset(restoredSelection.start, previousLength)!,
+            Positions.offset(restoredSelection.start, previousLength, document)!,
             restoredSelection.end,
             restoredSelection.isReversed,
           );

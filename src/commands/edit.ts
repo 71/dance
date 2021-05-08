@@ -65,6 +65,30 @@ export async function insert(
     throw new Error(`register "${register.name}" does not contain any saved text`);
   }
 
+  if (select) {
+    const textToInsert = contents.join(""),
+          insert = handleNewLine ? api.insert.byIndex.withFullLines : api.insert.byIndex,
+          flags = api.insert.flagsAtEdge(where) | api.insert.Select;
+
+    const insertedRanges = await insert(flags, () => textToInsert, selections),
+          allSelections = [] as vscode.Selection[],
+          document = _.document;
+
+    for (const insertedRange of insertedRanges) {
+      let offset = document.offsetAt(insertedRange.start);
+
+      for (const content of contents) {
+        const newSelection = Selections.fromLength(offset, content.length, false, document);
+
+        allSelections.push(newSelection);
+        offset += content.length;
+      }
+    }
+
+    Selections.set(Selections.bottomToTop(allSelections));
+    return;
+  }
+
   if (adjust) {
     contents = extendArrayToLength(contents, selections.length);
   } else {
@@ -84,7 +108,7 @@ export async function insert(
     throw new Error(`"where" must be one of "active", "anchor", "start", "end", or undefined`);
   }
 
-  const flags = api.insert.flagsAtEdge(where) | (select ? api.insert.Select : api.insert.Keep);
+  const flags = api.insert.flagsAtEdge(where) | api.insert.Keep;
 
   Selections.set(
     handleNewLine

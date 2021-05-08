@@ -14,6 +14,9 @@ export namespace TrackedSelection {
     StrictEnd   = 0b10,
 
     Strict = 0b11,
+
+    EmptyExtendsForward = 0b01_00,
+    EmptyExtendsBackward = 0b10_00,
   }
 
   /**
@@ -164,14 +167,23 @@ export namespace TrackedSelection {
   ) {
     for (let i = 0, len = array.length; i < len; i += 2) {
       let anchorOffset = array[i],
-          activeOffset = array[i + 1];
+          activeOffset = array[i + 1],
+          inclusiveActive: boolean,
+          inclusiveAnchor: boolean;
 
-      const activeIsStart = activeOffset <= anchorOffset,
-            anchorIsStart = activeOffset >= anchorOffset,
-            inclusiveStart = (flags & Flags.StrictStart) === 0,
-            inclusiveEnd = (flags & Flags.StrictEnd) === 0,
-            inclusiveActive = activeIsStart ? !inclusiveStart : inclusiveEnd,
-            inclusiveAnchor = anchorIsStart ? !inclusiveStart : inclusiveEnd;
+      if (anchorOffset === activeOffset) {
+        // Empty selection.
+        inclusiveActive = (flags & Flags.EmptyExtendsForward) === Flags.EmptyExtendsForward;
+        inclusiveAnchor = (flags & Flags.EmptyExtendsBackward) === Flags.EmptyExtendsBackward;
+      } else {
+        const activeIsStart = activeOffset <= anchorOffset,
+              anchorIsStart = activeOffset >= anchorOffset,
+              inclusiveStart = (flags & Flags.StrictStart) === 0,
+              inclusiveEnd = (flags & Flags.StrictEnd) === 0;
+
+        inclusiveActive = activeIsStart ? !inclusiveStart : inclusiveEnd;
+        inclusiveAnchor = anchorIsStart ? !inclusiveStart : inclusiveEnd;
+      }
 
       for (let i = 0, len = changes.length; i < len; i++) {
         const change = changes[i],

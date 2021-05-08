@@ -199,10 +199,6 @@ export class Recorder implements vscode.Disposable {
     case Recording.ActionType.SelectionTranslation:
       return Promise.resolve(this.replaySelectionTranslation(buffer, index));
 
-    case Recording.ActionType.SelectionTranslationToLineEnd:
-      todo();
-      break;
-
     case Recording.ActionType.TextReplacement:
       return this.replayTextReplacement(buffer, index);
 
@@ -233,10 +229,6 @@ export class Recorder implements vscode.Disposable {
     case Recording.ActionType.SelectionTranslation:
       return buffer.slice(index, index + 3) as
         Recording.Entry<Recording.ActionType.SelectionTranslation>;
-
-    case Recording.ActionType.SelectionTranslationToLineEnd:
-      todo();
-      break;
 
     case Recording.ActionType.TextReplacement:
       return buffer.slice(index, index + 3) as
@@ -355,7 +347,6 @@ export class Recorder implements vscode.Disposable {
       return this._recordBreak();
     }
 
-    // TODO: be able to record jumps to end of line with a line offset
     const document = e.textEditor.document;
     let commonAnchorOffsetDiff = Number.MAX_SAFE_INTEGER,
         commonActiveOffsetDiff = Number.MAX_SAFE_INTEGER;
@@ -371,7 +362,7 @@ export class Recorder implements vscode.Disposable {
       if (commonAnchorOffsetDiff === Number.MAX_SAFE_INTEGER) {
         commonAnchorOffsetDiff = anchorOffsetDiff;
       } else if (commonAnchorOffsetDiff !== anchorOffsetDiff) {
-        return this._tryRecordSelectionTranslationToLineEnd();
+        return;
       }
 
       const lastActiveOffset = document.offsetAt(lastSelection.active),
@@ -381,7 +372,7 @@ export class Recorder implements vscode.Disposable {
       if (commonActiveOffsetDiff === Number.MAX_SAFE_INTEGER) {
         commonActiveOffsetDiff = activeOffsetDiff;
       } else if (commonActiveOffsetDiff !== activeOffsetDiff) {
-        return this._tryRecordSelectionTranslationToLineEnd();
+        return;
       }
     }
 
@@ -462,11 +453,6 @@ export class Recorder implements vscode.Disposable {
     this._endRecord(Recording.ActionType.SelectionTranslation);
 
     return true;
-  }
-
-  private _tryRecordSelectionTranslationToLineEnd() {
-    // TODO
-    return this._recordBreak();
   }
 
   /**
@@ -884,11 +870,6 @@ export namespace Recording {
     SelectionTranslation,
 
     /**
-     * A translation of all selections to the end of a line.
-     */
-    SelectionTranslationToLineEnd,
-
-    /**
      * An active text editor change.
      */
     TextEditorChange,
@@ -912,7 +893,6 @@ export namespace Recording {
     readonly [ActionType.Command]: readonly [command: CommandDescriptor, argument: object];
     readonly [ActionType.ExternalCommand]: readonly [identifier: string, argument: object];
     readonly [ActionType.SelectionTranslation]: readonly [anchorDiff: number, activeDiff: number];
-    readonly [ActionType.SelectionTranslationToLineEnd]: readonly [];
     readonly [ActionType.TextEditorChange]: readonly [uri: vscode.Uri];
     readonly [ActionType.TextReplacement]:
       readonly [insertedText: string, deletionLength: number, offsetFromActive: number];
@@ -923,5 +903,5 @@ export namespace Recording {
    */
   export const entrySize: {
     readonly [K in keyof EntryMap]: EntryMap[K]["length"];
-  } = [0, 2, 2, 2, 0, 1, 3];
+  } = [0, 2, 2, 2, 1, 3];
 }

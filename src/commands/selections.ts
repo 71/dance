@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
-import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun, todo } from "../api";
+import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun } from "../api";
 import { PerEditorState } from "../state/editors";
 import { Mode, SelectionBehavior } from "../state/modes";
 import { Register } from "../state/registers";
