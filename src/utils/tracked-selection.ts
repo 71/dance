@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { ArgumentError } from "../api";
 import { PerEditorState } from "../state/editors";
 

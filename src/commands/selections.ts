@@ -52,6 +52,7 @@ export function save(
 
     validator.throwErrorIfNeeded();
 
+    renderOptions.rangeBehavior = vscode.DecorationRangeBehavior.ClosedOpen;
     trackedSelectionSet =
       new TrackedSelection.StyledSet(trackedSelections, _.getState(), renderOptions);
   } else {
