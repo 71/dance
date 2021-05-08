@@ -55,6 +55,7 @@ export function save(
     renderOptions.rangeBehavior = vscode.DecorationRangeBehavior.ClosedOpen;
     trackedSelectionSet =
       new TrackedSelection.StyledSet(trackedSelections, _.getState(), renderOptions);
+    trackedSelectionSet.flags |= TrackedSelection.Flags.EmptyMoves;
   } else {
     trackedSelectionSet = new TrackedSelection.Set(trackedSelections, document);
   }

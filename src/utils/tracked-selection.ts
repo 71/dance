@@ -17,6 +17,7 @@ export namespace TrackedSelection {
 
     EmptyExtendsForward = 0b01_00,
     EmptyExtendsBackward = 0b10_00,
+    EmptyMoves = 0b11_00,
   }
 
   /**
@@ -219,7 +220,7 @@ export namespace TrackedSelection {
     public constructor(
       selections: Array,
       public readonly document: vscode.TextDocument,
-      public readonly flags = Flags.Inclusive,
+      public flags = Flags.Inclusive,
     ) {
       ArgumentError.validate("selections", selections.length > 0, "selections cannot be empty");
 
