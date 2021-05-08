@@ -24,6 +24,10 @@ export class AutoDisposable implements vscode.Disposable {
    * Disposes of all the wrapped disposables.
    */
   public dispose() {
+    if (this._boundDispose === undefined) {
+      return;
+    }
+
     this._boundDispose = undefined;
 
     const disposables = this._disposables;
