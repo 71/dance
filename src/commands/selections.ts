@@ -365,7 +365,8 @@ export function select(
 
     lastSelectInput = input;
 
-    Selections.set(Selections.selectWithin(input, selections));
+    Selections.set(
+      Selections.bottomToTop(Selections.selectWithin(input, selections)));
 
     return Promise.resolve(input);
   });
@@ -402,7 +403,7 @@ export function split(
       split = split.filter((s) => !s.isEmpty);
     }
 
-    Selections.set(split);
+    Selections.set(Selections.bottomToTop(split));
 
     return Promise.resolve(input);
   });
@@ -418,8 +419,10 @@ export function splitLines(
   document: vscode.TextDocument,
   selections: readonly vscode.Selection[],
   repetitions: number,
+  excludeEol: Argument<boolean> = false,
 ) {
-  const newSelections = [] as vscode.Selection[];
+  const newSelections = [] as vscode.Selection[],
+        lineEnd = excludeEol ? Positions.lineEnd : Positions.lineBreak;
 
   for (let i = 0, len = selections.length; i < len; i++) {
     const selection = selections[i],
@@ -435,28 +438,29 @@ export function splitLines(
       return;
     }
 
+
     // Add start line.
     newSelections.push(
-      Selections.fromStartEnd(start, Positions.lineEnd(startLine, document), isReversed, document),
+      Selections.fromStartEnd(start, lineEnd(startLine, document), isReversed, document),
     );
 
     // Add intermediate lines.
     for (let line = startLine + repetitions; line < endLine; line += repetitions) {
       const start = Positions.lineStart(line),
-            end = Positions.lineEnd(line, document);
+            end = lineEnd(line, document);
 
       newSelections.push(Selections.fromStartEnd(start, end, isReversed, document));
     }
 
     // Add end line.
-    if (endLine % repetitions === 0) {
+    if (endLine % repetitions === 0 && end.character > 0) {
       newSelections.push(
         Selections.fromStartEnd(Positions.lineStart(endLine), end, isReversed, document),
       );
     }
   }
 
-  Selections.set(newSelections);
+  Selections.set(Selections.bottomToTop(newSelections));
 }
 
 /**

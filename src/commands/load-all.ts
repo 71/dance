@@ -1123,7 +1123,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.splitLines",
-      (_, argument) => _.runAsync((_) => splitLines(_, _.document, _.selections, getRepetitions(_, argument))),
+      (_, argument) => _.runAsync((_) => splitLines(_, _.document, _.selections, getRepetitions(_, argument), argument.excludeEol)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

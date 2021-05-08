@@ -1692,6 +1692,29 @@ export namespace Selections {
   export const from = fromAnchorActive;
 
   /**
+   * Sorts selections in the given direction. If `Forward`, selections will be
+   * sorted from top to bottom. Otherwise, they will be sorted from bottom to
+   * top.
+   */
+  export function sort(direction: Direction, selections: vscode.Selection[] = current.slice()) {
+    return selections.sort(direction === Direction.Forward ? sortTopToBottom : sortBottomToTop);
+  }
+
+  /**
+   * Sorts selections from top to bottom.
+   */
+  export function topToBottom(selections: vscode.Selection[] = current.slice()) {
+    return selections.sort(sortTopToBottom);
+  }
+
+  /**
+   * Sorts selections from bottom to top.
+   */
+  export function bottomToTop(selections: vscode.Selection[] = current.slice()) {
+    return selections.sort(sortBottomToTop);
+  }
+
+  /**
    * Shifts empty selections by one character to the left.
    */
   export function shiftEmptyLeft(
@@ -1931,4 +1954,12 @@ export namespace Selections {
 
     return caretModeSelections;
   }
+}
+
+function sortTopToBottom(a: vscode.Selection, b: vscode.Selection) {
+  return a.start.compareTo(b.start);
+}
+
+function sortBottomToTop(a: vscode.Selection, b: vscode.Selection) {
+  return b.start.compareTo(a.start);
 }
