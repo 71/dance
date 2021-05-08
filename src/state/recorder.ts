@@ -548,7 +548,8 @@ export class Recorder implements vscode.Disposable {
     }
 
     this._startRecord(Recording.ActionType.TextReplacement);
-    this._buffer.push(commonInsertedText, commonDeletionLength, commonOffsetFromActive);
+    this._buffer.push(
+      commonInsertedText, commonDeletionLength, commonOffsetFromActive, firstChange.rangeOffset);
     this._endRecord(Recording.ActionType.TextReplacement);
   }
 
@@ -730,6 +731,10 @@ export namespace Recorder {
       return this._buffer[this._offset + 3] as number as any;
     }
 
+    public absoluteOffset(): T extends Recording.ActionType.TextReplacement ? number : never {
+      return this._buffer[this._offset + 4] as number as any;
+    }
+
     public anchorOffsetDiff(
     ): T extends Recording.ActionType.SelectionTranslation ? number : never {
       return this._buffer[this._offset + 1] as number as any;
@@ -895,7 +900,8 @@ export namespace Recording {
     readonly [ActionType.SelectionTranslation]: readonly [anchorDiff: number, activeDiff: number];
     readonly [ActionType.TextEditorChange]: readonly [uri: vscode.Uri];
     readonly [ActionType.TextReplacement]:
-      readonly [insertedText: string, deletionLength: number, offsetFromActive: number];
+      readonly [insertedText: string, deletionLength: number,
+                offsetFromActive: number, absoluteAnchorOffset: number];
   }
 
   /**
@@ -903,5 +909,5 @@ export namespace Recording {
    */
   export const entrySize: {
     readonly [K in keyof EntryMap]: EntryMap[K]["length"];
-  } = [0, 2, 2, 2, 1, 3];
+  } = [0, 2, 2, 2, 1, 4];
 }

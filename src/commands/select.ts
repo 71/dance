@@ -596,7 +596,7 @@ export function lastModification(_: Context, shift = Shift.Select) {
 
   while (cursor.previous()) {
     if (cursor.is(Recording.ActionType.TextReplacement)) {
-      const position = todo();
+      const position = _.document.positionAt(cursor.absoluteOffset());
 
       Selections.set([Selections.shift(_.mainSelection, position, shift)]);
       return;
