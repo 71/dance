@@ -58,3 +58,26 @@ foooo
 foo
 bar
 ```
+
+# 2
+
+```
+hello
+^^^^^^ 0
+
+```
+
+## 2 paste-3
+[up](#2)
+
+- .selections.saveText
+- .edit.paste.after { count: 3 }
+
+```
+hello
+^^^^^^ 0
+hello
+hello
+hello
+
+```

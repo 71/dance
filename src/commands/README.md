@@ -23,8 +23,8 @@
     <tr><td><a href="#editdeindentwithIncomplete"><code>edit.deindent.withIncomplete</code></a></td><td>Deindent selected lines (including incomplete indent)</td><td><code>Shift+,</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./edit.ts#L45"><code>edit.delete</code></a></td><td>Delete</td><td><code>Alt+D</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./edit.ts#L46"><code>edit.delete-insert</code></a></td><td>Delete and switch to Insert</td><td><code>Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L314"><code>edit.newLine.above.insert</code></a></td><td>Insert new line above and switch to insert</td><td><code>Shift+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./edit.ts#L349"><code>edit.newLine.below.insert</code></a></td><td>Insert new line below and switch to insert</td><td><code>O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L319"><code>edit.newLine.above.insert</code></a></td><td>Insert new line above and switch to insert</td><td><code>Shift+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./edit.ts#L354"><code>edit.newLine.below.insert</code></a></td><td>Insert new line below and switch to insert</td><td><code>O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./edit.ts#L42"><code>edit.paste.after</code></a></td><td>Paste after</td><td><code>P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./edit.ts#L44"><code>edit.paste.after.select</code></a></td><td>Paste after and select</td><td><code>Alt+P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./edit.ts#L41"><code>edit.paste.before</code></a></td><td>Paste before</td><td><code>Shift+P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -226,7 +226,7 @@ Perform changes on the text content of the document.
 
 See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes.
 
-### [`edit.insert`](./edit.ts#L27-L60)
+### [`edit.insert`](./edit.ts#L27-L61)
 
 Insert contents of register.
 
@@ -252,12 +252,13 @@ replaced by the text.
 
 This command:
 - accepts a register (by default, it uses `dquote`).
+- may be repeated with a given number of repetitions.
 - takes an argument `adjust` of type `boolean`.
 - takes an argument `handleNewLine` of type `boolean`.
 - takes an argument `select` of type `boolean`.
 - takes an argument `where` of type `"active" | "anchor" | "start" | "end" | undefined`.
 
-### [`edit.join`](./edit.ts#L91-L96)
+### [`edit.join`](./edit.ts#L96-L101)
 
 Join lines.
 
@@ -265,7 +266,7 @@ Join lines.
 This command:
 - takes an argument `separator` of type `string`.
 
-### [`edit.join.select`](./edit.ts#L100-L105)
+### [`edit.join.select`](./edit.ts#L105-L110)
 
 Join lines and select inserted separators.
 
@@ -273,7 +274,7 @@ Join lines and select inserted separators.
 This command:
 - takes an argument `separator` of type `string`.
 
-### [`edit.indent`](./edit.ts#L109-L114)
+### [`edit.indent`](./edit.ts#L114-L119)
 
 Indent selected lines.
 
@@ -281,7 +282,7 @@ Indent selected lines.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.indent.withEmpty`](./edit.ts#L118-L123)
+### [`edit.indent.withEmpty`](./edit.ts#L123-L128)
 
 Indent selected lines (including empty lines).
 
@@ -289,7 +290,7 @@ Indent selected lines (including empty lines).
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.deindent`](./edit.ts#L127-L132)
+### [`edit.deindent`](./edit.ts#L132-L137)
 
 Deindent selected lines.
 
@@ -297,7 +298,7 @@ Deindent selected lines.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.deindent.withIncomplete`](./edit.ts#L136-L141)
+### [`edit.deindent.withIncomplete`](./edit.ts#L141-L146)
 
 Deindent selected lines (including incomplete indent).
 
@@ -305,19 +306,19 @@ Deindent selected lines (including incomplete indent).
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.case.toLower`](./edit.ts#L145-L150)
+### [`edit.case.toLower`](./edit.ts#L150-L155)
 
 Transform to lower case.
 
-### [`edit.case.toUpper`](./edit.ts#L154-L159)
+### [`edit.case.toUpper`](./edit.ts#L159-L164)
 
 Transform to upper case.
 
-### [`edit.case.swap`](./edit.ts#L163-L168)
+### [`edit.case.swap`](./edit.ts#L168-L173)
 
 Swap case.
 
-### [`edit.replaceCharacters`](./edit.ts#L183-L192)
+### [`edit.replaceCharacters`](./edit.ts#L188-L197)
 
 Replace characters.
 
@@ -326,7 +327,7 @@ This command:
 - may be repeated with a given number of repetitions.
 - takes an input of type `string`.
 
-### [`edit.align`](./edit.ts#L235-L248)
+### [`edit.align`](./edit.ts#L240-L253)
 
 Align selections.
 
@@ -337,7 +338,7 @@ before the first character of each selection.
 This command:
 - takes an argument `fill` of type `string`.
 
-### [`edit.copyIndentation`](./edit.ts#L263-L276)
+### [`edit.copyIndentation`](./edit.ts#L268-L281)
 
 Copy indentation.
 
@@ -348,7 +349,7 @@ given) to all other ones.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`edit.newLine.above`](./edit.ts#L305-L316)
+### [`edit.newLine.above`](./edit.ts#L310-L321)
 
 Insert new line above each selection.
 
@@ -362,7 +363,7 @@ Insert new line above each selection.
 This command:
 - takes an argument `select` of type `boolean`.
 
-### [`edit.newLine.below`](./edit.ts#L340-L351)
+### [`edit.newLine.below`](./edit.ts#L345-L356)
 
 Insert new line below each selection.
 

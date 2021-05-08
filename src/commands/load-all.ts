@@ -232,7 +232,7 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.insert",
-      (_, argument) => _.runAsync((_) => insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument.adjust, argument.handleNewLine, argument.select, argument.where)),
+      (_, argument) => _.runAsync((_) => insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument.adjust, argument.handleNewLine, getRepetitions(_, argument), argument.select, argument.where)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

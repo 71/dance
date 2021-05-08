@@ -55,6 +55,7 @@ export async function insert(
 
   adjust: Argument<boolean> = true,
   handleNewLine: Argument<boolean> = false,
+  repetitions: number,
   select: Argument<boolean> = false,
   where?: Argument<"active" | "anchor" | "start" | "end" | undefined>,
 ) {
@@ -68,6 +69,10 @@ export async function insert(
     contents = extendArrayToLength(contents, selections.length);
   } else {
     LengthMismatchError.throwIfLengthMismatch(selections, contents);
+  }
+
+  if (repetitions > 1) {
+    contents = contents.map((content) => content.repeat(repetitions));
   }
 
   if (where === undefined) {

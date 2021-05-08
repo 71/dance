@@ -107,5 +107,28 @@ suite("./test/suite/commands/edit-paste.md", function () {
     `);
   });
 
+  test("2 > paste-3", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      hello
+      ^^^^^^ 0
+
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.selections.saveText");
+    await executeCommand("dance.edit.paste.after", { count: 3 });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-paste.md:70:1", 6, String.raw`
+      hello
+      ^^^^^^ 0
+      hello
+      hello
+      hello
+
+    `);
+  });
+
   groupTestsByParentName(this);
 });
