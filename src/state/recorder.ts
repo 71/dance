@@ -355,9 +355,16 @@ export class Recorder implements vscode.Disposable {
       const lastSelection = lastSelections[i],
             selection = selections[i];
 
-      const lastAnchorOffset = document.offsetAt(lastSelection.active),
-            anchorOffset = document.offsetAt(selection.active),
-            anchorOffsetDiff = anchorOffset - lastAnchorOffset;
+      let anchorOffsetDiff: number;
+
+      if (lastSelection.anchor.line === selection.anchor.line) {
+        anchorOffsetDiff = selection.anchor.character - lastSelection.anchor.character;
+      } else {
+        const lastAnchorOffset = document.offsetAt(lastSelection.anchor),
+              anchorOffset = document.offsetAt(selection.anchor);
+
+        anchorOffsetDiff = anchorOffset - lastAnchorOffset;
+      }
 
       if (commonAnchorOffsetDiff === Number.MAX_SAFE_INTEGER) {
         commonAnchorOffsetDiff = anchorOffsetDiff;
@@ -365,9 +372,16 @@ export class Recorder implements vscode.Disposable {
         return;
       }
 
-      const lastActiveOffset = document.offsetAt(lastSelection.active),
-            activeOffset = document.offsetAt(selection.active),
-            activeOffsetDiff = activeOffset - lastActiveOffset;
+      let activeOffsetDiff: number;
+
+      if (lastSelection.active.line === selection.active.line) {
+        activeOffsetDiff = selection.active.character - lastSelection.active.character;
+      } else {
+        const lastActiveOffset = document.offsetAt(lastSelection.active),
+              activeOffset = document.offsetAt(selection.active);
+
+        activeOffsetDiff = activeOffset - lastActiveOffset;
+      }
 
       if (commonActiveOffsetDiff === Number.MAX_SAFE_INTEGER) {
         commonActiveOffsetDiff = activeOffsetDiff;
@@ -406,9 +420,10 @@ export class Recorder implements vscode.Disposable {
     }
 
     const insertedText2 = cursor.insertedText(),
-          deletionLength2 = cursor.deletionLength();
+          deletionLength2 = cursor.deletionLength(),
+          totalInserted2 = insertedText2.length - deletionLength2;
 
-    if (insertedText2.length !== activeOffsetDiff2 || deletionLength2 !== 0) {
+    if (totalInserted2 !== activeOffsetDiff2) {
       return false;
     }
 
@@ -429,14 +444,16 @@ export class Recorder implements vscode.Disposable {
       return false;
     }
 
-    const insertedText1 = cursor.insertedText();
+    const insertedText1 = cursor.insertedText(),
+          deletionLength1 = cursor.deletionLength(),
+          totalInserted1 = insertedText1.length - deletionLength1;
 
-    if (insertedText1.length !== activeOffsetDiff1) {
+    if (totalInserted1 !== activeOffsetDiff1) {
       return false;
     }
 
     // This is a match! Update "text change 1 -> selection change 1".
-    (cursor.buffer as Recorder.MutableBuffer)[cursor.offset + 1] = insertedText1 + insertedText2;
+    (cursor.buffer as Recorder.MutableBuffer)[cursor.offset + 1] = insertedText1.slice(0, insertedText1.length - deletionLength2) + insertedText2;
 
     assert(cursor.next() && cursor.is(Recording.ActionType.SelectionTranslation));
 
