@@ -347,7 +347,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 },
                 "w": {
                   command,
-                  args: [{ input: "[\\p{L}]+(?<after>[^\\S\\n]+)" }],
+                  args: [{ input: "[\\p{L}_\\d]+(?<after>[^\\S\\n]+)" }],
                   text: "word",
                 },
                 "W": {
