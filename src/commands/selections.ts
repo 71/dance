@@ -575,6 +575,7 @@ export function reduce(
   _: Context,
 
   where: Argument<"active" | "anchor" | "start" | "end" | "both"> = "active",
+  empty: Argument<boolean> = false,
 ) {
   ArgumentError.validate(
     "where",
@@ -582,20 +583,41 @@ export function reduce(
     `"where" must be "active", "anchor", "start", "end", "both", or undefined`,
   );
 
-  const takeWhere = _.selectionBehavior === SelectionBehavior.Character
-    ? (selection: vscode.Selection, prop: Exclude<typeof where, "both">) => {
-        const result = selection[prop];
-
-        if (result === selection.end && !result.isEqual(selection.start)) {
-          return Positions.previous(result)!;
+  if (empty && _.selectionBehavior !== SelectionBehavior.Character) {
+    if (where !== "both") {
+      Selections.update.byIndex((_, selection) => Selections.empty(selection[where]));
+    } else {
+      Selections.set(_.selections.flatMap((selection) => {
+        if (selection.isEmpty) {
+          return [selection];
         }
 
-        return result;
-      }
-    : (selection: vscode.Selection, prop: Exclude<typeof where, "both">) => selection[prop];
+        return [
+          Selections.empty(selection.active),
+          Selections.empty(selection.anchor),
+        ];
+      }));
+    }
+
+    return;
+  }
+
+  const takeWhere = (selection: vscode.Selection, prop: Exclude<typeof where, "both">) => {
+    let start = selection[prop],
+        end: vscode.Position;
+
+    if (start === selection.end && !start.isEqual(selection.start)) {
+      end = start;
+      start = Positions.previous(start)!;
+    } else {
+      end = Positions.next(start) ?? start;
+    }
+
+    return Selections.from(start, end);
+  };
 
   if (where !== "both") {
-    Selections.update.byIndex((_, selection) => Selections.empty(takeWhere(selection, where)));
+    Selections.update.byIndex((_, selection) => takeWhere(selection, where));
 
     return;
   }
@@ -606,8 +628,8 @@ export function reduce(
     }
 
     return [
-      Selections.empty(takeWhere(selection, "active")),
-      Selections.empty(takeWhere(selection, "anchor")),
+      takeWhere(selection, "active"),
+      takeWhere(selection, "anchor"),
     ];
   }));
 }

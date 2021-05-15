@@ -475,31 +475,31 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.modes.set",
       (_, argument) => _.runAsync((_) => set(_, getInputOr(argument))),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.set.temporarily",
       (_, argument) => _.runAsync((_) => set_temporarily(_, getInputOr(argument), getRepetitions(_, argument))),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.insert.after",
-      (_, argument) => _.runAsync(() => commands([".selections.faceForward"] , [".modes.set", { input: "insert", ...argument }], [".selections.reduce", { where: "end", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.faceForward" , { record: false, ...argument }], [".modes.set", { input: "insert", ...argument }], [".selections.reduce", { where: "end" , record: false, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.insert.before",
-      (_, argument) => _.runAsync(() => commands([".selections.faceBackward"], [".modes.set", { input: "insert", ...argument }], [".selections.reduce", { where: "start", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.faceBackward", { record: false, ...argument }], [".modes.set", { input: "insert", ...argument }], [".selections.reduce", { where: "start", record: false, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineEnd",
-      (_, argument) => _.runAsync(() => commands([".select.lineEnd" , { shift: "jump", ...argument }], [".modes.set", { input: "insert", ...argument }], [".selections.reduce", { where: "end", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineEnd" , { shift: "jump", ...argument }], [".modes.set", { input: "insert", ...argument }], [".selections.reduce", { where: "end" , record: false, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.modes.insert.lineStart",
-      (_, argument) => _.runAsync(() => commands([".select.lineStart", { shift: "jump", skipBlank: true, ...argument }], [".modes.set", { input: "insert", ...argument }], [".selections.reduce", { where: "start", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".select.lineStart", { shift: "jump", skipBlank: true, ...argument }], [".modes.set", { input: "insert", ...argument }], [".selections.reduce", { where: "start", record: false, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -1088,7 +1088,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.reduce",
-      (_, argument) => _.runAsync((_) => reduce(_, argument.where)),
+      (_, argument) => _.runAsync((_) => reduce(_, argument.where, argument.empty)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

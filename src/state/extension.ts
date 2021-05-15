@@ -53,7 +53,7 @@ export class Extension implements vscode.Disposable {
   /**
    * `Recorder` for this instance of the extension.
    */
-  public readonly recorder = new Recorder(this.statusBar);
+  public readonly recorder: Recorder;  // Needs to be initialized later.
 
   /**
    * `Editors` for this instance of the extension.
@@ -101,6 +101,8 @@ export class Extension implements vscode.Disposable {
   }
 
   public constructor(public readonly commands: Commands) {
+    this.recorder = new Recorder(this);
+
     // Configuration: menus.
     this.observePreference<Record<string, Menu>>(
       ".menus",

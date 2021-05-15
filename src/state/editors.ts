@@ -210,10 +210,10 @@ export class PerEditorState implements vscode.Disposable {
     commandsToRun: readonly command.Any[],
     error: (e: any) => string,
   ) {
-    const context = new Context(this, this.extension.cancellationToken);
+    const context = new Context(this, this.extension.cancellationToken).doNotRecord();
 
     return this.extension.runPromiseSafely(
-      () => context.run(() => commands(...commandsToRun)),
+      () => context.runAsync(() => commands(...commandsToRun)),
       () => undefined,
       error,
     );

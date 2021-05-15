@@ -41,11 +41,11 @@ import { SelectionBehavior } from "../state/modes";
  * assert.throws(() => setSelections([1 as any]), NotASelectionError);
  * ```
  */
-export function setSelections(selections: readonly vscode.Selection[]) {
+export function setSelections(selections: readonly vscode.Selection[], context = Context.current) {
   NotASelectionError.throwIfNotASelectionArray(selections);
 
-  Context.current.selections = selections;
-  Selections.reveal(selections[0]);
+  context.selections = selections;
+  Selections.reveal(selections[0], context);
 
   return selections;
 }
@@ -421,6 +421,7 @@ export namespace mapSelections {
  */
 export function updateSelections(
   f: mapSelections.Mapper<vscode.Selection | undefined>,
+  context?: Context,
 ): vscode.Selection[];
 
 /**
@@ -451,19 +452,21 @@ export function updateSelections(
  */
 export function updateSelections(
   f: mapSelections.Mapper<Thenable<vscode.Selection | undefined>>,
+  context?: Context,
 ): Thenable<vscode.Selection[]>;
 
 export function updateSelections(
   f: mapSelections.Mapper<vscode.Selection | undefined>
    | mapSelections.Mapper<Thenable<vscode.Selection | undefined>>,
+  context?: Context,
 ): any {
-  const selections = mapSelections(f as any);
+  const selections = mapSelections(f as any, context?.selections);
 
   if (Array.isArray(selections)) {
-    return setSelections(selections);
+    return setSelections(selections, context);
   }
 
-  return (selections as Thenable<vscode.Selection[]>).then(setSelections);
+  return (selections as Thenable<vscode.Selection[]>).then((xs) => setSelections(xs, context));
 }
 
 function mapFallbackSelections(values: (vscode.Selection | readonly [vscode.Selection])[]) {
@@ -512,6 +515,7 @@ export namespace updateSelections {
    */
   export function byIndex(
     f: mapSelections.ByIndexMapper<vscode.Selection | undefined>,
+    context?: Context,
   ): vscode.Selection[];
 
   /**
@@ -520,19 +524,21 @@ export namespace updateSelections {
    */
   export function byIndex(
     f: mapSelections.ByIndexMapper<Thenable<vscode.Selection | undefined>>,
+    context?: Context,
   ): Thenable<vscode.Selection[]>;
 
   export function byIndex(
     f: mapSelections.ByIndexMapper<vscode.Selection | undefined>
      | mapSelections.ByIndexMapper<Thenable<vscode.Selection | undefined>>,
+    context?: Context,
   ): any {
-    const selections = mapSelections.byIndex(f as any);
+    const selections = mapSelections.byIndex(f as any, context?.selections);
 
     if (Array.isArray(selections)) {
-      return setSelections(selections);
+      return setSelections(selections, context);
     }
 
-    return (selections as Thenable<vscode.Selection[]>).then(setSelections);
+    return (selections as Thenable<vscode.Selection[]>).then((xs) => setSelections(xs, context));
   }
 
   /**
@@ -757,8 +763,8 @@ export function selectWithinSelections(re: RegExp, selections = Context.current.
 /**
  * Reveals selections in the current editor.
  */
-export function revealSelections(selection?: vscode.Selection) {
-  const editor = Context.current.editor,
+export function revealSelections(selection?: vscode.Selection, context = Context.current) {
+  const editor = context.editor,
         active = (selection ?? (editor as vscode.TextEditor).selection).active;
 
   editor.revealRange(new vscode.Range(active, active));

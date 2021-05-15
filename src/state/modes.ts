@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+
 import { command } from "../api";
 import { extensionName } from "../extension";
 import { Extension } from "./extension";

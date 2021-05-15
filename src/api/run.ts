@@ -279,14 +279,20 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
     }
   }
 
-  const recorder = extension.recorder;
+  if (Context.WithoutActiveEditor.currentOrUndefined?.shouldRecord() ?? true) {
+    const recorder = extension.recorder;
 
-  for (const batch of batches) {
-    if (typeof batch[0] === "string") {
-      recorder.recordExternalCommand(batch[0], batch[1]);
-    } else {
-      for (const [descriptor, argument] of batch as [CommandDescriptor, any][]) {
-        recorder.recordCommand(descriptor, argument);
+    for (const batch of batches) {
+      if (typeof batch[0] === "string") {
+        recorder.recordExternalCommand(batch[0], batch[1]);
+      } else {
+        for (const [descriptor, argument] of batch as [CommandDescriptor, any][]) {
+          if (argument.record === false) {
+            continue;
+          }
+
+          recorder.recordCommand(descriptor, argument);
+        }
       }
     }
   }

@@ -109,6 +109,9 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
     if (ownedArgument.register === undefined && extension.currentRegister !== undefined) {
       ownedArgument.register = extension.currentRegister;
     }
+    if (ownedArgument.record === false) {
+      context.doNotRecord();
+    }
 
     extension.currentCount = 0;
     extension.currentRegister = undefined;
@@ -127,7 +130,9 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
 
     // Record command *after* executing it, to ensure it did not encounter
     // an error.
-    extension.recorder.recordCommand(this, ownedArgument);
+    if (context.shouldRecord()) {
+      extension.recorder.recordCommand(this, ownedArgument);
+    }
 
     if (this.requiresActiveEditor) {
       await (context as Context).insertUndoStop();

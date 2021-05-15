@@ -10,6 +10,12 @@ import { noUndoStops, performDummyEdit } from "../utils/misc";
 
 let currentContext: ContextWithoutActiveEditor | undefined;
 
+const enum ContextFlags {
+  None = 0,
+  ShouldInsertUndoStop = 1,
+  DoNotRecord = 2,
+}
+
 /**
  * @see Context.WithoutActiveEditor
  */
@@ -62,6 +68,8 @@ class ContextWithoutActiveEditor {
     return this.current.setup();
   }
 
+  protected _flags = ContextFlags.None;
+
   public constructor(
     /**
      * The global extension state.
@@ -77,7 +85,28 @@ class ContextWithoutActiveEditor {
      * The descriptor of the command that led to the creation of this context.
      */
     public readonly commandDescriptor?: CommandDescriptor,
-  ) {}
+  ) {
+    if (currentContext?._flags ?? 0 & ContextFlags.DoNotRecord) {
+      this._flags |= ContextFlags.DoNotRecord;
+    }
+  }
+
+  /**
+   * Whether commands executed within this context should be recorded.
+   */
+  public shouldRecord() {
+    return (this._flags & ContextFlags.DoNotRecord) === 0;
+  }
+
+  /**
+   * Indicates that commands executed within this context should not be
+   * recorded.
+   */
+  public doNotRecord() {
+    this._flags |= ContextFlags.DoNotRecord;
+
+    return this;
+  }
 
   /**
    * Creates a new promise that executes within the current context.
@@ -178,11 +207,6 @@ class ContextWithoutActiveEditor {
   }
 }
 
-const enum ContextFlags {
-  None = 0,
-  ShouldInsertUndoStop = 1,
-}
-
 /**
  * The context of execution of a script.
  */
@@ -213,7 +237,11 @@ export class Context extends ContextWithoutActiveEditor {
     return currentContext;
   }
 
-  private _flags = ContextFlags.None;
+  public static assert(context: Context.WithoutActiveEditor): asserts context is Context {
+    if (!(context instanceof Context)) {
+      throw new Error("current context does not have an active text editor");
+    }
+  }
 
   private _document: vscode.TextDocument;
   private _editor: vscode.TextEditor;

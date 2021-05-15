@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { Argument, CommandDescriptor, RegisterOr } from ".";
 import { ArgumentError, Context } from "../api";
 import { Register } from "../state/registers";
-import { ActiveRecording, Recorder, Recording } from "../state/recorder";
+import { ActiveRecording, Entry, Recorder, Recording } from "../state/recorder";
 
 /**
  * Interact with history.
@@ -72,11 +72,15 @@ export async function repeat(
   const cursor = _.extension.recorder.cursorFromEnd();
 
   for (;;) {
-    if (cursor.is(Recording.ActionType.Command)
-        && include.test(cursor.commandDescriptor().identifier)) {
-      commandDescriptor = cursor.commandDescriptor();
-      commandArgument = cursor.commandArgument();
-      break;
+    if (cursor.is(Entry.ExecuteCommand)) {
+      const entry = cursor.entry(),
+            descriptor = entry.descriptor();
+
+      if (include.test(descriptor.identifier)) {
+        commandDescriptor = descriptor;
+        commandArgument = entry.argument();
+        break;
+      }
     }
 
     if (!cursor.previous()) {
@@ -96,19 +100,24 @@ export async function repeat(
  * @noreplay
  */
 export async function repeat_edit(_: Context, repetitions: number) {
+  _.doNotRecord();
+
   const recorder = _.extension.recorder,
         cursor = recorder.cursorFromEnd();
   let startCursor: Recorder.Cursor | undefined,
       endCursor: Recorder.Cursor | undefined;
 
   for (;;) {
-    if (cursor.is(Recording.ActionType.Command)
-        && cursor.commandDescriptor().identifier === "dance.modes.set") {
-      const modeName = cursor.commandArgument().input as string;
+    if (cursor.is(Entry.ChangeTextEditorMode)) {
+      const modeName = cursor.entry().mode().name;
 
       if (modeName === "normal") {
+        cursor.previous();
+
         endCursor = cursor.clone();
       } else if (modeName === "insert" && endCursor !== undefined) {
+        cursor.next();
+
         startCursor = cursor.clone();
         break;
       }
@@ -119,7 +128,6 @@ export async function repeat_edit(_: Context, repetitions: number) {
     }
   }
 
-  // TODO: almost there, but not completely
   for (let i = 0; i < repetitions; i++) {
     for (let cursor = startCursor.clone(); cursor.isBeforeOrEqual(endCursor); cursor.next()) {
       await cursor.replay(_);

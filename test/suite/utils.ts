@@ -297,6 +297,10 @@ export class ExpectedDocument {
     }
   }
 
+  public static snapshot(editor: vscode.TextEditor) {
+    return new this(editor.document.getText(), editor.selections);
+  }
+
   public static apply(editor: vscode.TextEditor, indent: number, text: string) {
     return this.parseIndented(indent, text).apply(editor);
   }

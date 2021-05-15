@@ -6,7 +6,7 @@ import { column, columns, Context, Direction, Lines, Positions, Selections, Shif
 import { SelectionBehavior } from "../state/modes";
 import { PerEditorState } from "../state/editors";
 import { unsafeSelections } from "../utils/misc";
-import { Recording } from "../state/recorder";
+import { Entry, Recording } from "../state/recorder";
 
 /**
  * Update selections based on their position in the document.
@@ -592,10 +592,11 @@ export function lastVisibleLine(_: Context, shift = Shift.Select) {
  * | Extend to last modification | `lastModification.extend` | `[".select.lastModification", { shift: "extend" }]` |
  */
 export function lastModification(_: Context, shift = Shift.Select) {
-  const cursor = _.extension.recorder.cursorFromEnd();
+  todo();
+  /*const cursor = _.extension.recorder.cursorFromEnd();
 
   while (cursor.previous()) {
-    if (cursor.is(Recording.ActionType.TextReplacement)) {
+    if (cursor.is(Entry)) {
       const position = _.document.positionAt(cursor.absoluteOffset());
 
       Selections.set([Selections.shift(_.mainSelection, position, shift)]);
@@ -605,5 +606,5 @@ export function lastModification(_: Context, shift = Shift.Select) {
     if (cursor.is(Recording.ActionType.TextEditorChange)) {
       return;
     }
-  }
+  }*/
 }

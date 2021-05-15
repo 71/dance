@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Context } from "../api";
-import { Recording } from "../state/recorder";
+import { Entry, Recording } from "../state/recorder";
 
 export interface NotifyingDisposable extends vscode.Disposable {
   readonly onDisposed: vscode.Event<this>;
@@ -211,18 +211,10 @@ export class AutoDisposable implements vscode.Disposable {
         const cursor = context.extension.recorder.cursorFromEnd();
 
         if (cursor.previous()) {
-          if (cursor.is(Recording.ActionType.SelectionTranslation)) {
-            const translationBy = cursor.activeOffsetDiff();
-
-            if (cursor.previous() && cursor.is(Recording.ActionType.TextReplacement)) {
-              const insertionLength =
-                (cursor.insertedText() as string).length - cursor.deletionLength();
-
-              if (translationBy === insertionLength) {
-                return;
-              }
-            }
-          } else if (cursor.is(Recording.ActionType.Command)) {
+          if (cursor.is(Entry.DeleteAfter) || cursor.is(Entry.DeleteBefore)
+              || cursor.is(Entry.InsertAfter) || cursor.is(Entry.InsertBefore)
+              || cursor.is(Entry.ReplaceWith)) {
+            // Regular edit.
             return;
           }
         }
