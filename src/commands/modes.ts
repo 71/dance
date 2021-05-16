@@ -20,12 +20,12 @@ declare module "./modes";
  *
  * Other variants are provided to switch to insert mode:
  *
- * | Title                | Identifier         | Keybinding     | Commands                                                                                                                                                    |
- * | -------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
- * | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward", { record: false }],           [".modes.set", { input: "insert" }], [".selections.reduce", { where: "start", record: false }]` |
- * | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward" , { record: false }],           [".modes.set", { input: "insert" }], [".selections.reduce", { where: "end"  , record: false }]` |
- * | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { input: "insert" }], [".selections.reduce", { where: "start", record: false }]` |
- * | Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { input: "insert" }], [".selections.reduce", { where: "end"  , record: false }]` |
+ * | Title                | Identifier         | Keybinding     | Commands                                                                                                                                                                 |
+ * | -------------------- | ------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+ * | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward", { record: false }],           [".modes.set", { input: "insert" }], [".selections.reduce", { where: "start", record: false, empty: true }]` |
+ * | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward" , { record: false }],           [".modes.set", { input: "insert" }], [".selections.reduce", { where: "end"  , record: false, empty: true }]` |
+ * | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { input: "insert" }], [".selections.reduce", { where: "start", record: false, empty: true }]` |
+ * | Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { input: "insert" }], [".selections.reduce", { where: "end"  , record: false, empty: true }]` |
  *
  * @noreplay
  */

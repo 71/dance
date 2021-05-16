@@ -80,6 +80,38 @@ function diffAddedByTabs(text: string, editor: Pick<vscode.TextEditor, "options"
   return total;
 }
 
+function getCharacter(
+  text: string,
+  column: number,
+  editor: Pick<vscode.TextEditor, "options">,
+  roundUp: boolean,
+) {
+  const tabSize = editor.options.tabSize as number;
+  let character = 0;
+
+  for (const ch of text) {
+    if (column <= 0) {
+      break;
+    }
+
+    if (ch === "\t") {
+      column -= tabSize;
+
+      if (!roundUp && column < 0) {
+        // Handle negative values here to escape loop before incrementing
+        // `character`.
+        break;
+      }
+    } else {
+      column--;
+    }
+
+    character++;
+  }
+
+  return character;
+}
+
 /**
  * Returns the position corresponding to the character at the given position,
  * taking into account tab characters that precede it.
@@ -127,6 +159,7 @@ export namespace column {
   export function character(
     position: vscode.Position,
     editor?: Pick<vscode.TextEditor, "document" | "options">,
+    roundUp?: boolean,
   ): vscode.Position;
 
   /**
@@ -137,26 +170,34 @@ export namespace column {
     line: number,
     character: number,
     editor?: Pick<vscode.TextEditor, "document" | "options">,
+    roundUp?: boolean,
   ): number;
 
   export function character(
-    line: number | vscode.Position,
-    character?: number | Pick<vscode.TextEditor, "document" | "options">,
-    editor?: Pick<vscode.TextEditor, "document" | "options">,
+    lineOrPosition: number | vscode.Position,
+    characterOrEditor?: number | Pick<vscode.TextEditor, "document" | "options">,
+    editorOrRoundUp?: Pick<vscode.TextEditor, "document" | "options"> | boolean,
+    roundUp?: boolean,
   ) {
-    if (typeof line === "number") {
-      editor ??= Context.current.editor;
+    if (typeof lineOrPosition === "number") {
+      // Second overload.
+      const line = lineOrPosition,
+            character = characterOrEditor as number,
+            editor = editorOrRoundUp as vscode.TextEditor ?? Context.current.editor;
 
-      const text = editor.document.lineAt(line).text.slice(0, character as number);
-
-      return text.length - diffAddedByTabs(text, editor);
+      return getCharacter(editor.document.lineAt(line).text, character, editor, roundUp ?? false);
     }
 
-    editor ??= Context.current.editor;
+    // First overload.
+    const position = lineOrPosition,
+          editor = characterOrEditor as vscode.TextEditor ?? Context.current.editor;
 
-    const text = editor.document.lineAt(line.line).text.slice(0, line.character);
+    roundUp = editorOrRoundUp as boolean ?? false;
 
-    return new vscode.Position(line.line, text.length - diffAddedByTabs(text, editor));
+    const text = editor.document.lineAt(position.line).text;
+
+    return new vscode.Position(
+      position.line, getCharacter(text, position.character, editor, roundUp));
   }
 }
 

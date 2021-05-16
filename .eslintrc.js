@@ -21,7 +21,13 @@ module.exports = {
       rules: {
         "no-useless-escape": "off",
       },
-    }
+    },
+    {
+      files: ["test/suite/commands/*-tabs.test.ts"],
+      rules: {
+        "no-tabs": "off",
+      },
+    },
   ],
   rules: {
     "indent": ["error", 2, {

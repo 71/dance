@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
 import { Argument } from ".";
+import { Context } from "../api";
 import { Extension } from "../state/extension";
 import { SelectionBehavior } from "../state/modes";
 
@@ -13,12 +14,13 @@ declare module "./dev";
  * Set the selection behavior of the specified mode.
  */
 export function setSelectionBehavior(
+  _: Context,
   extension: Extension,
 
-  mode: Argument<string>,
+  mode?: Argument<string>,
   value?: Argument<"caret" | "character">,
 ) {
-  const selectedMode = extension.modes.get(mode);
+  const selectedMode = mode === undefined ? _.mode : extension.modes.get(mode);
 
   if (selectedMode !== undefined) {
     if (value === undefined) {

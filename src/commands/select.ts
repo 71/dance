@@ -169,7 +169,9 @@ export function vertically(
     }
 
     let newPosition = new vscode.Position(
-      targetLine, column.character(targetLine, targetColumn, _.editor));
+      targetLine,
+      column.character(targetLine, targetColumn, _.editor, /* roundUp= */ isCharacterMode),
+    );
 
     if (isCharacterMode && shift !== Shift.Jump) {
       const edge = shift === Shift.Extend ? selection.anchor : selection.active;
@@ -185,6 +187,7 @@ export function vertically(
   });
 
   if (_.selectionBehavior === SelectionBehavior.Character) {
+    // TODO: if line contains tabs, we should shift left by tabSize
     Selections.shiftEmptyLeft(newSelections, document);
   }
 

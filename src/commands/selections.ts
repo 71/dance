@@ -603,6 +603,10 @@ export function reduce(
   }
 
   const takeWhere = (selection: vscode.Selection, prop: Exclude<typeof where, "both">) => {
+    if (selection.isEmpty) {
+      return selection;
+    }
+
     let start = selection[prop],
         end: vscode.Position;
 
