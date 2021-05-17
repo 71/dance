@@ -114,11 +114,10 @@
     <tr><td><a href="./seek.ts#L178"><code>seek.wordEnd.ws</code></a></td><td>Select to next non-whitespace word end</td><td><code>Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./seek.ts#L179"><code>seek.wordEnd.ws.extend</code></a></td><td>Extend to next non-whitespace word end</td><td><code>Shift+Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#seekword"><code>seek.word</code></a></td><td>Select to next word start</td><td><code>W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=44><a href="#select"><code>select</code></a></td><td><a href="#selectbuffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=41><a href="#select"><code>select</code></a></td><td><a href="#selectbuffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectfirstVisibleLine"><code>select.firstVisibleLine</code></a></td><td>Select to first visible line</td><td></td></tr>
     <tr><td><a href="#selecthorizontally"><code>select.horizontally</code></a></td><td>Select horizontally</td><td></td></tr>
     <tr><td><a href="#selectlastLine"><code>select.lastLine</code></a></td><td>Select to last line</td><td></td></tr>
-    <tr><td><a href="#selectlastModification"><code>select.lastModification</code></a></td><td>Select to last modification</td><td></td></tr>
     <tr><td><a href="#selectlastVisibleLine"><code>select.lastVisibleLine</code></a></td><td>Select to last visible line</td><td></td></tr>
     <tr><td><a href="#selectlineabove"><code>select.line.above</code></a></td><td>Select line above</td><td></td></tr>
     <tr><td><a href="#selectlineaboveextend"><code>select.line.above.extend</code></a></td><td>Extend to line above</td><td></td></tr>
@@ -137,8 +136,6 @@
     <tr><td><a href="./select.ts#L543"><code>select.firstVisibleLine.jump</code></a></td><td>Jump to first visible line</td><td></td></tr>
     <tr><td><a href="./select.ts#L523"><code>select.lastLine.extend</code></a></td><td>Extend to last line</td><td></td></tr>
     <tr><td><a href="./select.ts#L522"><code>select.lastLine.jump</code></a></td><td>Jump to last line</td><td></td></tr>
-    <tr><td><a href="./select.ts#L595"><code>select.lastModification.extend</code></a></td><td>Extend to last modification</td><td></td></tr>
-    <tr><td><a href="./select.ts#L594"><code>select.lastModification.jump</code></a></td><td>Jump to last modification</td><td></td></tr>
     <tr><td><a href="./select.ts#L578"><code>select.lastVisibleLine.extend</code></a></td><td>Extend to last visible line</td><td></td></tr>
     <tr><td><a href="./select.ts#L577"><code>select.lastVisibleLine.jump</code></a></td><td>Jump to last visible line</td><td></td></tr>
     <tr><td><a href="./select.ts#L212"><code>select.left.extend</code></a></td><td>Extend left</td><td><code>Shift+H</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Left</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -940,17 +937,6 @@ Select to last visible line.
 | --------------------------- | ------------------------ | -------------------------------------------------- |
 | Jump to last visible line   | `lastVisibleLine.jump`   | `[".select.lastVisibleLine", { shift: "jump"   }]` |
 | Extend to last visible line | `lastVisibleLine.extend` | `[".select.lastVisibleLine", { shift: "extend" }]` |
-
-### [`select.lastModification`](./select.ts#L587-L597)
-
-Select to last modification.
-
-#### Variants
-
-| Title                       | Identifier                | Command                                             |
-| --------------------------- | ------------------------- | --------------------------------------------------- |
-| Jump to last modification   | `lastModification.jump`   | `[".select.lastModification", { shift: "jump"   }]` |
-| Extend to last modification | `lastModification.extend` | `[".select.lastModification", { shift: "extend" }]` |
 
 ## [`selections`](./selections.ts)
 

@@ -245,7 +245,13 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             additionalProperties: false,
           },
           default: {
-            insert: {},
+            insert: {
+              onLeaveMode: [
+                [".selections.save", {
+                  register: " insert",
+                }],
+              ],
+            },
             normal: {
               lineNumbers: "relative",
               decorations: {
@@ -439,7 +445,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 },
                 ".": {
                   text: "to last buffer modification position",
-                  command: "dance.select.lastModification",
+                  command: "dance.selections.restore",
+                  args: [{ register: " insert" }],
                 },
               },
             },

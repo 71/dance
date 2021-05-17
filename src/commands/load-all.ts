@@ -788,7 +788,6 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     firstVisibleLine,
     horizontally,
     lastLine,
-    lastModification,
     lastVisibleLine,
     lineEnd,
     lineStart,
@@ -820,11 +819,6 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.select.lastLine",
       (_, argument) => _.runAsync((_) => lastLine(_, _.document, getShift(argument))),
-      CommandDescriptor.Flags.RequiresActiveEditor,
-    ),
-    new CommandDescriptor(
-      "dance.select.lastModification",
-      (_, argument) => _.runAsync((_) => lastModification(_, getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -925,16 +919,6 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.select.lastLine.jump",
       (_, argument) => _.runAsync(() => commands([".select.lastLine", { shift: "jump", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.select.lastModification.extend",
-      (_, argument) => _.runAsync(() => commands([".select.lastModification", { shift: "extend", ...argument }])),
-      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    ),
-    new CommandDescriptor(
-      "dance.select.lastModification.jump",
-      (_, argument) => _.runAsync(() => commands([".select.lastModification", { shift: "jump", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(

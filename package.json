@@ -278,7 +278,16 @@
             "additionalProperties": false
           },
           "default": {
-            "insert": {},
+            "insert": {
+              "onLeaveMode": [
+                [
+                  ".selections.save",
+                  {
+                    "register": " insert"
+                  }
+                ]
+              ]
+            },
             "normal": {
               "lineNumbers": "relative",
               "decorations": {
@@ -560,7 +569,12 @@
                 },
                 ".": {
                   "text": "to last buffer modification position",
-                  "command": "dance.select.lastModification"
+                  "command": "dance.selections.restore",
+                  "args": [
+                    {
+                      "register": " insert"
+                    }
+                  ]
                 }
               }
             },
@@ -1331,21 +1345,6 @@
       {
         "command": "dance.select.lastLine.jump",
         "title": "Jump to last line",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.lastModification",
-        "title": "Select to last modification",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.lastModification.extend",
-        "title": "Extend to last modification",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.select.lastModification.jump",
-        "title": "Jump to last modification",
         "category": "Dance"
       },
       {
@@ -2138,18 +2137,6 @@
         },
         {
           "command": "dance.select.lastLine.jump",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.select.lastModification",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.select.lastModification.extend",
-          "when": "dance.mode == 'normal'"
-        },
-        {
-          "command": "dance.select.lastModification.jump",
           "when": "dance.mode == 'normal'"
         },
         {

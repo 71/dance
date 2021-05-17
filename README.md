@@ -155,6 +155,8 @@ A few changes were made from Kakoune, mostly out of personal preference, and to
 make the extension integrate better with VS Code.
 
 - The default yank register `"` maps to the system clipboard.
+- Registers can have arbitrary names. If the name of a register starts with a
+  single space character, it will be local to the current document.
 - When using the default configuration (that is to say, these settings can be
   modified):
   - The cursor is not a block, but a line: Dance focuses on selections, and

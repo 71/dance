@@ -583,31 +583,3 @@ export function lastVisibleLine(_: Context, shift = Shift.Select) {
 
   Selections.set([Selections.shift(selection, toPosition, shift)]);
 }
-
-/**
- * Select to last modification.
- *
- * #### Variants
- *
- * | Title                       | Identifier                | Command                                             |
- * | --------------------------- | ------------------------- | --------------------------------------------------- |
- * | Jump to last modification   | `lastModification.jump`   | `[".select.lastModification", { shift: "jump"   }]` |
- * | Extend to last modification | `lastModification.extend` | `[".select.lastModification", { shift: "extend" }]` |
- */
-export function lastModification(_: Context, shift = Shift.Select) {
-  todo();
-  /*const cursor = _.extension.recorder.cursorFromEnd();
-
-  while (cursor.previous()) {
-    if (cursor.is(Entry)) {
-      const position = _.document.positionAt(cursor.absoluteOffset());
-
-      Selections.set([Selections.shift(_.mainSelection, position, shift)]);
-      return;
-    }
-
-    if (cursor.is(Recording.ActionType.TextEditorChange)) {
-      return;
-    }
-  }*/
-}
