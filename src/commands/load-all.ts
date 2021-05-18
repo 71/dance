@@ -272,12 +272,12 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above.insert",
-      (_, argument) => _.runAsync(() => commands([".edit.newLine.above", { select: true, ...argument }], [".modes.set", { input: "insert", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".edit.newLine.above", { select: true, ...argument }], [".modes.insert.before"])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below.insert",
-      (_, argument) => _.runAsync(() => commands([".edit.newLine.below", { select: true, ...argument }], [".modes.set", { input: "insert", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".edit.newLine.below", { select: true, ...argument }], [".modes.insert.before"])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -1087,7 +1087,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.save",
-      (_, argument) => _.runAsync((_) => save(_, _.document, _.selections, getRegister(_, argument, "caret", Register.Flags.CanWriteSelections), argument.style, argument.until)),
+      (_, argument) => _.runAsync((_) => save(_, _.document, _.selections, getRegister(_, argument, "caret", Register.Flags.CanWriteSelections), argument.style, argument.until, argument.untilDelay)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

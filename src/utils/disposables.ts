@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Context } from "../api";
-import { Entry, Recording } from "../state/recorder";
+import { Entry } from "../state/recorder";
 
 export interface NotifyingDisposable extends vscode.Disposable {
   readonly onDisposed: vscode.Event<this>;

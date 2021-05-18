@@ -338,9 +338,9 @@ export function copyIndentation(
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding     | Commands                                                                         |
- * | ------------------------------------------ | ---------------------- | -------------- | -------------------------------------------------------------------------------- |
- * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { select: true }], [".modes.set", { input: "insert" }]` |
+ * | Title                                      | Identifier             | Keybinding     | Commands                                                                |
+ * | ------------------------------------------ | ---------------------- | -------------- | ----------------------------------------------------------------------- |
+ * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { select: true }], [".modes.insert.before"]` |
  */
 export function newLine_above(_: Context, select: Argument<boolean> = false) {
   if (select) {
@@ -373,9 +373,9 @@ export function newLine_above(_: Context, select: Argument<boolean> = false) {
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding   | Commands                                                                         |
- * | ------------------------------------------ | ---------------------- | ------------ | -------------------------------------------------------------------------------- |
- * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { select: true }], [".modes.set", { input: "insert" }]` |
+ * | Title                                      | Identifier             | Keybinding   | Commands                                                              |
+ * | ------------------------------------------ | ---------------------- | ------------ | --------------------------------------------------------------------- |
+ * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { select: true }], [".modes.insert.before"]` |
  */
 export function newLine_below(_: Context, select: Argument<boolean> = false) {
   if (select) {

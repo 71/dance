@@ -42,6 +42,7 @@ export function save(
 
   style?: Argument<object>,
   until?: Argument<AutoDisposable.Event[]>,
+  untilDelay: Argument<number> = 100,
 ) {
   const trackedSelections = TrackedSelection.fromArray(selections, document);
   let trackedSelectionSet: TrackedSelection.Set;
@@ -68,7 +69,13 @@ export function save(
     }));
 
   if (Array.isArray(until)) {
-    until.forEach((until) => disposable.disposeOnUserEvent(until, _));
+    if (untilDelay <= 0) {
+      until.forEach((until) => disposable.disposeOnUserEvent(until, _));
+    } else {
+      setTimeout(() => {
+        until.forEach((until) => disposable.disposeOnUserEvent(until, _));
+      }, untilDelay);
+    }
   }
 
   register.replaceSelectionSet(trackedSelectionSet)?.dispose();
