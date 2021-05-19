@@ -141,7 +141,7 @@ the quick brown fox
 
 - .seek.word.backward { count: 9 }
 
-Both overflowed and both falled back to the selection below.
+Both overflowed and both fell back to the selection below.
 
 ```
 the quick brown fox
@@ -165,7 +165,7 @@ the quick brown fox
 
 - .seek.wordEnd { count: 5 }
 
-Both overflowed and both falled back to the selection below.
+Both overflowed and both fell back to the selection below.
 
 ```
 the quick brown fox

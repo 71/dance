@@ -30,7 +30,7 @@ export async function build(builder: Builder) {
     const examplesPerFunction = new Map<string, number>();
 
     // Note: we use the name starting with ./ below to make sure the filename is
-    // clickeable.
+    // clickable.
     return unindent(4, `
       suite(${JSON.stringify(module.path.replace(/^dance/, "."))}, function () {
         ${examples.map((example) => {

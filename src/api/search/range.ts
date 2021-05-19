@@ -22,7 +22,7 @@ export namespace Range {
    * A function that, given a position, returns the end of the object to which
    * the position belongs.
    *
-   * If the whole object is being saught, the start position of the object will
+   * If the whole object is being sought, the start position of the object will
    * also be given.
    */
   export interface SeekEnd {
@@ -224,7 +224,7 @@ export namespace Range {
       start?: vscode.Position,
     ) {
       if (start !== undefined) {
-        // It is imposssible to determine if active is at leading or trailing or
+        // It is impossible to determine if active is at leading or trailing or
         // in-sentence blank characters by just looking ahead. Therefore, we
         // search from the sentence start, which may be slightly less efficient
         // but always accurate.
