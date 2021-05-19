@@ -16,7 +16,7 @@ export const enum SelectionBehavior {
 export class Mode {
   private readonly _onChanged = new vscode.EventEmitter<readonly [Mode, readonly (keyof Mode)[]]>();
   private readonly _onDeleted = new vscode.EventEmitter<Mode>();
-  private _changeSubcription: vscode.Disposable | undefined;
+  private _changeSubscription: vscode.Disposable | undefined;
 
   private _raw: Mode.Configuration = {};
   private _inheritsFrom: Mode;
@@ -86,14 +86,14 @@ export class Mode {
       this.apply(rawConfiguration, new SettingsValidator());
     }
 
-    this._changeSubcription = this._inheritsFrom?.onChanged(this._onParentModeChanged, this);
+    this._changeSubscription = this._inheritsFrom?.onChanged(this._onParentModeChanged, this);
   }
 
   /**
    * Disposes of the mode.
    */
   public dispose() {
-    this._changeSubcription?.dispose();
+    this._changeSubscription?.dispose();
 
     this._onDeleted.fire(this);
 
@@ -138,9 +138,9 @@ export class Mode {
     const changedProperties: (keyof Mode)[] = [];
 
     if (willInheritFrom !== this._inheritsFrom) {
-      this._changeSubcription?.dispose();
+      this._changeSubscription?.dispose();
       this._inheritsFrom = willInheritFrom;
-      this._changeSubcription = willInheritFrom.onChanged(this._onParentModeChanged, this);
+      this._changeSubscription = willInheritFrom.onChanged(this._onParentModeChanged, this);
       changedProperties.push("inheritsFrom");
     }
 

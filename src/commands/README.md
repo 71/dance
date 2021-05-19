@@ -65,7 +65,7 @@
     <tr><td><a href="./modes.ts#L27"><code>modes.insert.lineStart</code></a></td><td>Insert at line start</td><td><code>Shift+I</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./modes.ts#L19"><code>modes.set.insert</code></a></td><td>Set mode to Insert</td><td></td></tr>
     <tr><td><a href="./modes.ts#L18"><code>modes.set.normal</code></a></td><td>Set mode to Normal</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
-    <tr><td><a href="./modes.ts#L44"><code>modes.set.temporarily.insert</code></a></td><td>Temporart Insert mode</td><td><code>Ctrl+V</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./modes.ts#L44"><code>modes.set.temporarily.insert</code></a></td><td>Temporary Insert mode</td><td><code>Ctrl+V</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./modes.ts#L43"><code>modes.set.temporarily.normal</code></a></td><td>Temporary Normal mode</td><td><code>Ctrl+V</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
     <tr><td><a href="#modesset"><code>modes.set</code></a></td><td>Set Dance mode</td><td></td></tr>
     <tr><td><a href="#modessettemporarily"><code>modes.set.temporarily</code></a></td><td>Set Dance mode temporarily</td><td></td></tr>
@@ -594,7 +594,7 @@ Set Dance mode temporarily.
 | Title                 | Identifier               | Keybindings    | Commands                                          |
 | --------------------- | ------------------------ | -------------- | ------------------------------------------------- |
 | Temporary Normal mode | `set.temporarily.normal` | `c-v` (insert) | `[".modes.set.temporarily", { input: "normal" }]` |
-| Temporart Insert mode | `set.temporarily.insert` | `c-v` (normal) | `[".modes.set.temporarily", { input: "insert" }]` |
+| Temporary Insert mode | `set.temporarily.insert` | `c-v` (normal) | `[".modes.set.temporarily", { input: "insert" }]` |
 
 
 This command:

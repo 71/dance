@@ -370,7 +370,7 @@ const builtinKeybindings = [
   {
     key: "Ctrl+V",
     when: "editorTextFocus && dance.mode == 'normal'",
-    title: "Temporart Insert mode",
+    title: "Temporary Insert mode",
     command: "dance.modes.set.temporarily.insert",
   },
   {

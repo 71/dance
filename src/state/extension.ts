@@ -289,7 +289,7 @@ export class Extension implements vscode.Disposable {
   private _lastErrorMessage?: string;
 
   /**
-   * The last error message reported via `showDismissableErrorMessage`.
+   * The last error message reported via `showDismissibleErrorMessage`.
    */
   public get lastErrorMessage() {
     return this._lastErrorMessage;
@@ -306,9 +306,9 @@ export class Extension implements vscode.Disposable {
   }
 
   /**
-   * Displays a dismissable error message in the status bar.
+   * Displays a dismissible error message in the status bar.
    */
-  public showDismissableErrorMessage(message: string) {
+  public showDismissibleErrorMessage(message: string) {
     // Log the error so that long error messages and stacktraces can still be
     // accessed by the user.
     this._lastErrorMessage = message;
@@ -352,7 +352,7 @@ export class Extension implements vscode.Disposable {
       return f();
     } catch (e) {
       if (!(e instanceof CancellationError)) {
-        this.showDismissableErrorMessage(errorMessage(e));
+        this.showDismissibleErrorMessage(errorMessage(e));
       }
 
       return errorValue();
@@ -374,7 +374,7 @@ export class Extension implements vscode.Disposable {
       return await f();
     } catch (e) {
       if (!(e instanceof CancellationError)) {
-        this.showDismissableErrorMessage(errorMessage(e));
+        this.showDismissibleErrorMessage(errorMessage(e));
       }
 
       return errorValue();

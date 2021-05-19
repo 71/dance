@@ -41,7 +41,7 @@ export async function set(_: Context, inputOr: InputOr<string>) {
  * | Title                 | Identifier               | Keybindings    | Commands                                          |
  * | --------------------- | ------------------------ | -------------- | ------------------------------------------------- |
  * | Temporary Normal mode | `set.temporarily.normal` | `c-v` (insert) | `[".modes.set.temporarily", { input: "normal" }]` |
- * | Temporart Insert mode | `set.temporarily.insert` | `c-v` (normal) | `[".modes.set.temporarily", { input: "insert" }]` |
+ * | Temporary Insert mode | `set.temporarily.insert` | `c-v` (normal) | `[".modes.set.temporarily", { input: "insert" }]` |
  *
  * @noreplay
  */
