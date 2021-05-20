@@ -572,11 +572,17 @@ export function unindent(by: number, string: string) {
 async function buildFile(fileName: string, builder: Builder) {
   const relativeName = path.relative(__dirname, fileName),
         relativeNameWithoutBuild = relativeName.replace(/build\.ts$/, ""),
-        modulePath = `./${relativeNameWithoutBuild}build`,
-        module: { build(builder: Builder): Promise<string> } = require(modulePath),
+        modulePath = `./${relativeNameWithoutBuild}build`;
+
+  // Clear module cache if any.
+  delete require.cache[require.resolve(modulePath)];
+
+  const module: { build(builder: Builder): Promise<string> } = require(modulePath),
         generatedContent = await module.build(builder);
 
   if (typeof generatedContent === "string") {
+    // Write result of `build` to the first file we find that has the same name
+    // as the build.ts file, but with any extension.
     const prefix = path.basename(relativeNameWithoutBuild),
           outputName = (await fs.readdir(path.dirname(fileName)))
             .find((path) => path.startsWith(prefix) && !path.endsWith(".build.ts"))!,
