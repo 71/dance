@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Argument, InputOr } from ".";
-import { ArgumentError, assert, closestSurroundedBy, Context, Direction, keypress, Lines, moveTo, moveWhile, Pair, pair, Positions, prompt, search, Selections, Shift, surroundedBy } from "../api";
+import { ArgumentError, assert, closestSurroundedBy, Context, Direction, keypress, Lines, mapSelections, moveTo, moveWhile, Pair, pair, Positions, prompt, search, Selections, Shift, surroundedBy } from "../api";
 import { Range } from "../api/search/range";
 import { wordBoundary } from "../api/search/word";
 import { SelectionBehavior } from "../state/modes";
@@ -440,14 +440,20 @@ export async function object(
     let newSelections: vscode.Selection[];
 
     if (where === "start") {
-      newSelections = Selections.map.byIndex((_i, selection, document) =>
-        Selections.shift(
-          selection,
-          f.start(Selections.activePosition(selection, _.document), inner, document),
-          shift,
-          _,
-        ),
-      );
+      newSelections = Selections.map.byIndex((_i, selection, document) => {
+        const activePosition = Selections.activePosition(selection, _.document);
+        let shiftTo = f.start(activePosition, inner, document);
+
+        if (shiftTo.isEqual(activePosition)) {
+          const activePositionBefore = Positions.previous(activePosition, document);
+
+          if (activePositionBefore !== undefined) {
+            shiftTo = f.start(activePositionBefore, inner, document);
+          }
+        }
+
+        return Selections.shift(selection, shiftTo, shift, _);
+      });
     } else if (where === "end") {
       newSelections = Selections.map.byIndex((_i, selection, document) =>
         Selections.shift(

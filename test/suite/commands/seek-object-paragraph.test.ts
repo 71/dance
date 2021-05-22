@@ -267,5 +267,78 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
     `);
   });
 
+  test("3 > to-start", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      this is the first
+      paragraph.
+
+      this is the second paragraph.
+                   | 0
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "start" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:213:1", 6, String.raw`
+      this is the first
+      paragraph.
+
+      this is the second paragraph.
+      |^^^^^^^^^^^^ 0
+    `);
+  });
+
+  test("3 > to-start > x", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      this is the first
+      paragraph.
+
+      this is the second paragraph.
+      |^^^^^^^^^^^^ 0
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "start" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:226:1", 6, String.raw`
+      this is the first
+      |^^^^^^^^^^^^^^^^^ 0
+      paragraph.
+      ^^^^^^^^^^^ 0
+
+      ^ 0
+      this is the second paragraph.
+    `);
+  });
+
+  test("3 > to-start > x > x", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      this is the first
+      |^^^^^^^^^^^^^^^^^ 0
+      paragraph.
+      ^^^^^^^^^^^ 0
+
+      ^ 0
+      this is the second paragraph.
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek.object", { input: "(?#predefined=paragraph)", where: "start" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-object-paragraph.md:241:1", 6, String.raw`
+      this is the first
+      | 0
+      paragraph.
+
+      this is the second paragraph.
+    `);
+  });
+
   groupTestsByParentName(this);
 });

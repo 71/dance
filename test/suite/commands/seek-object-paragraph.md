@@ -195,3 +195,58 @@ paragraph 1
 paragraph 2
 ^^^^^^^^^^^ 4
 ```
+
+# 3
+
+> /\$object/"(?#predefined=paragraph)"/g
+
+Seeking to paragraph start multiple times should select previous paragraph.
+
+```
+this is the first
+paragraph.
+
+this is the second paragraph.
+             | 0
+```
+
+## 3 to-start
+[up](#3)
+
+- .seek.object { input: $object, where: "start" }
+
+```
+this is the first
+paragraph.
+
+this is the second paragraph.
+|^^^^^^^^^^^^ 0
+```
+
+### 3 to-start x
+[up](#3-to-start)
+
+- .seek.object { input: $object, where: "start" }
+
+```
+this is the first
+|^^^^^^^^^^^^^^^^^ 0
+paragraph.
+^^^^^^^^^^^ 0
+
+^ 0
+this is the second paragraph.
+```
+
+#### 3 to-start x x
+[up](#3-to-start-x)
+
+- .seek.object { input: $object, where: "start" }
+
+```
+this is the first
+| 0
+paragraph.
+
+this is the second paragraph.
+```
