@@ -1003,6 +1003,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.updateRegister",
+        "title": "Update the contents of a register",
+        "category": "Dance"
+      },
+      {
         "command": "dance.modes.insert.after",
         "title": "Insert after",
         "category": "Dance"
@@ -1861,6 +1866,10 @@
         },
         {
           "command": "dance.updateCount",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.updateRegister",
           "when": "dance.mode == 'normal'"
         },
         {

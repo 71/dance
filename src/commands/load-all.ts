@@ -317,7 +317,7 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.yank-replace",
-      (_, argument) => _.runAsync(() => commands([".selections.saveText"], [".edit.insert"])),
+      (_, argument) => _.runAsync(() => commands([".selections.saveText", { register: "tmp", ...argument }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
@@ -426,6 +426,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     run,
     selectRegister,
     updateCount,
+    updateRegister,
   } = await import("./misc");
 
   return [
@@ -457,6 +458,11 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.updateCount",
       (_, argument) => _.runAsync((_) => updateCount(_, getCount(_, argument), _.extension, getInputOr(argument), argument.addDigits)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    new CommandDescriptor(
+      "dance.updateRegister",
+      (_, argument) => _.runAsync((_) => updateRegister(_, getRegister(_, argument, "dquote", Register.Flags.CanWrite), argument.copyFrom, getInputOr(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];

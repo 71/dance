@@ -1,6 +1,6 @@
 import * as api from "../api";
 
-import { Argument, InputOr } from ".";
+import { Argument, InputOr, RegisterOr } from ".";
 import { Context, InputError, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
 import { Extension } from "../state/extension";
 import { Register } from "../state/registers";
@@ -56,6 +56,8 @@ export async function run(
       try {
         api.run.compileFunction(value);
 
+        lastRunCode = value;
+
         return;
       } catch (e) {
         if (e instanceof SyntaxError) {
@@ -66,7 +68,6 @@ export async function run(
       }
     },
     value: lastRunCode,
-    valueSelection: lastRunCode === undefined ? undefined : [0, lastRunCode.length],
   }, _));
 
   if (Array.isArray(code)) {
@@ -96,15 +97,47 @@ export async function selectRegister(_: Context, inputOr: InputOr<string | Regis
       return;
     }
 
-    const extension = _.extension,
-          registers = extension.registers;
-
-    extension.currentRegister = input.startsWith(" ")
-      ? registers.forDocument(_.document).get(input.slice(1))
-      : registers.get(input);
+    _.extension.currentRegister = _.extension.registers.getPossiblyScoped(input, _.document);
   } else {
     _.extension.currentRegister = input;
   }
+}
+
+let lastUpdateRegisterText: string | undefined;
+
+/**
+ * Update the contents of a register.
+ */
+export async function updateRegister(
+  _: Context,
+
+  register: RegisterOr<"dquote", Register.Flags.CanWrite>,
+  copyFrom: Argument<Register | string | undefined>,
+  inputOr: InputOr<string>,
+) {
+  if (copyFrom !== undefined) {
+    const copyFromRegister: Register = typeof copyFrom === "string"
+      ? _.extension.registers.getPossiblyScoped(copyFrom, _.document)
+      : copyFrom;
+
+    copyFromRegister.ensureCanRead();
+
+    await register.set(await copyFromRegister.get());
+
+    return;
+  }
+
+  const input = await inputOr(() => prompt({
+    prompt: "New register contents",
+    value: lastUpdateRegisterText,
+    validateInput(value) {
+      lastUpdateRegisterText = value;
+
+      return undefined;
+    },
+  }));
+
+  await register.set([input]);
 }
 
 /**

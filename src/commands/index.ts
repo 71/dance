@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context, EditorRequiredError, insertUndoStop } from "../api";
+import { Context, EditorRequiredError } from "../api";
 import { Extension } from "../state/extension";
 import { Register, Registers } from "../state/registers";
 

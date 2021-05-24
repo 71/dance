@@ -192,7 +192,7 @@ export namespace Register {
   }
 
   export interface Writeable {
-    set(values: readonly string[]): Thenable<void>;
+    set(values: readonly string[] | undefined): Thenable<void>;
   }
 
   export interface ReadableSelections {
@@ -600,5 +600,15 @@ export class Registers extends RegisterSet {
     }
 
     return registers;
+  }
+
+  /**
+   * Returns the register with the given name. If the name starts with a space
+   * character, the register scoped to the given document will be returned.
+   */
+  public getPossiblyScoped(name: string, document: vscode.TextDocument) {
+    return name.startsWith(" ")
+      ? this.forDocument(document).get(name.slice(1))
+      : this.get(name);
   }
 }
