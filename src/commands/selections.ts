@@ -224,7 +224,7 @@ export async function restore_withCurrent(
   _.selections = selections;
 }
 
-let lastPipeInput: string | undefined;
+const pipeHistory: string[] = [];
 
 /**
  * Pipe selections.
@@ -254,12 +254,11 @@ export async function pipe(
     validateInput(value) {
       try {
         switchRun.validate(value);
-        lastPipeInput = value;
       } catch (e) {
         return e?.message ?? `${e}`;
       }
     },
-    value: lastPipeInput,
+    history: pipeHistory,
   }, _));
 
   const selections = _.selections,
@@ -293,7 +292,7 @@ export async function pipe(
   await register.set(strings);
 }
 
-let lastFilterInput: string | undefined;
+const filterHistory: string[] = [];
 
 /**
  * Filter selections.
@@ -326,17 +325,13 @@ export function filter(
     validateInput(value) {
       try {
         switchRun.validate(value);
-        lastFilterInput = value;
       } catch (e) {
         return e?.message ?? `${e}`;
       }
     },
-    value: defaultInput ?? lastFilterInput,
-    valueSelection: defaultInput
-      ? [defaultInput.length, defaultInput.length]
-      : lastFilterInput
-        ? [0, lastFilterInput.length]
-        : undefined,
+    value: defaultInput,
+    valueSelection: defaultInput ? [defaultInput.length, defaultInput.length] : undefined,
+    history: filterHistory,
   }, (input, selections) => {
     return Selections.filter.byIndex(async (i) => {
       const context = { $: strings[i], $$: strings, i, n: strings.length };
@@ -364,24 +359,25 @@ export function select(
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
-    ...prompt.regexpOpts("mu"),
-    value: lastSelectInput?.source,
-  }, (input, selections) => {
-    if (typeof input === "string") {
-      input = new RegExp(input, "mu");
-    }
+  return manipulateSelectionsInteractively(
+    _,
+    input,
+    setInput,
+    interactive,
+    prompt.regexpOpts("mu"),
+    (input, selections) => {
+      if (typeof input === "string") {
+        input = new RegExp(input, "mu");
+      }
 
-    lastSelectInput = input;
+      lastSelectInput = input;
 
-    Selections.set(
-      Selections.bottomToTop(Selections.selectWithin(input, selections)));
+      Selections.set(Selections.bottomToTop(Selections.selectWithin(input, selections)));
 
-    return Promise.resolve(input);
-  });
+      return Promise.resolve(input);
+    },
+  );
 }
-
-let lastSplitInput: RegExp | undefined;
 
 /**
  * Split selections.
@@ -396,26 +392,28 @@ export function split(
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
-    ...prompt.regexpOpts("mu"),
-    value: lastSplitInput?.source,
-  }, (input, selections) => {
-    if (typeof input === "string") {
-      input = new RegExp(input, "mu");
-    }
+  return manipulateSelectionsInteractively(
+    _,
+    input,
+    setInput,
+    interactive,
+    prompt.regexpOpts("mu"),
+    (input, selections) => {
+      if (typeof input === "string") {
+        input = new RegExp(input, "mu");
+      }
 
-    lastSplitInput = input;
+      let split = Selections.split(input, selections);
 
-    let split = Selections.split(input, selections);
+      if (excludeEmpty) {
+        split = split.filter((s) => !s.isEmpty);
+      }
 
-    if (excludeEmpty) {
-      split = split.filter((s) => !s.isEmpty);
-    }
+      Selections.set(Selections.bottomToTop(split));
 
-    Selections.set(Selections.bottomToTop(split));
-
-    return Promise.resolve(input);
-  });
+      return Promise.resolve(input);
+    },
+  );
 }
 
 /**

@@ -1,26 +1,168 @@
 import * as vscode from "vscode";
+
 import { Context } from "../api";
 import { CancellationError } from "./errors";
+
+const actionEvent = new vscode.EventEmitter<Parameters<typeof prompt.notifyActionRequested>[0]>();
 
 /**
  * Displays a prompt to the user.
  */
 export function prompt(
-  opts: vscode.InputBoxOptions,
+  options: prompt.Options,
   context = Context.WithoutActiveEditor.current,
 ) {
-  return context.wrap(vscode.window.showInputBox(opts, context.cancellationToken)
-    .then((v) => {
-      if (v === undefined) {
+  if (options.value === undefined && options.history !== undefined && options.history.length > 0) {
+    options.value = options.history[options.history.length - 1];
+  }
+
+  const inputBox = vscode.window.createInputBox();
+
+  const promise = new Promise<string>((resolve, reject) => {
+    // Ported from
+    // https://github.com/microsoft/vscode/blob/14f61093f4312f7730135b9bc4bd97472e58ce04/src/vs/base/parts/quickinput/browser/quickInput.ts#L1465
+    //
+    // We can't use `showInputBox` because we may need to edit the text of the
+    // box while it is open, so we do everything manually below.
+    const token = context.cancellationToken;
+
+    if (token.isCancellationRequested) {
+      return reject(new CancellationError(CancellationError.Reason.CancellationToken));
+    }
+
+    const validateInput = options.validateInput ?? (() => Promise.resolve(undefined));
+
+    let validationValue = options.value ?? "",
+        validation = Promise.resolve(validateInput(validationValue));
+
+    let historyIndex = options.history?.length,
+        lastHistoryValue = validationValue;
+
+    function updateAndValidateValue(value: string, setValue = false) {
+      if (setValue) {
+        inputBox.value = value;
+      }
+
+      if (value !== validationValue) {
+        validation = Promise.resolve(validateInput(value));
+        validationValue = value;
+      }
+
+      validation.then((result) => {
+        if (value === validationValue) {
+          inputBox.validationMessage = result ?? undefined;
+        }
+      });
+    }
+
+    const disposables = [
+      inputBox,
+      inputBox.onDidChangeValue(updateAndValidateValue),
+      inputBox.onDidAccept(() => {
+        const value = inputBox.value;
+
+        if (value !== validationValue) {
+          validation = Promise.resolve(validateInput(value));
+          validationValue = value;
+        }
+
+        validation.then((result) => {
+          if (result == null) {
+            const history = options.history,
+                  historySize = options.historySize ?? 50;
+
+            if (history !== undefined) {
+              const existingIndex = history.indexOf(value);
+
+              if (existingIndex !== -1) {
+                history.splice(existingIndex, 1);
+              }
+
+              history.push(value);
+
+              if (history.length > historySize) {
+                history.shift();
+              }
+            }
+
+            resolve(value);
+            inputBox.hide();
+          } else if (value === validationValue) {
+            inputBox.validationMessage = result ?? undefined;
+          }
+        });
+      }),
+      token.onCancellationRequested(() => {
+        inputBox.hide();
+      }),
+      inputBox.onDidHide(() => {
+        disposables.forEach((d) => d.dispose());
+
         const reason = context.cancellationToken?.isCancellationRequested
           ? CancellationError.Reason.CancellationToken
           : CancellationError.Reason.PressedEscape;
 
-        return Promise.reject(new CancellationError(reason));
-      }
+        // Note: ignored if resolve() was previously called with a valid value.
+        reject(new CancellationError(reason));
+      }),
+      actionEvent.event((action) => {
+        switch (action) {
+        case "clear":
+          updateAndValidateValue("", /* setValue= */ true);
+          break;
 
-      return v;
-    }));
+        case "next":
+          if (historyIndex !== undefined) {
+            if (historyIndex === options.history!.length) {
+              return;
+            }
+
+            historyIndex++;
+
+            if (historyIndex === options.history!.length) {
+              updateAndValidateValue(lastHistoryValue, /* setValue= */ true);
+            } else {
+              updateAndValidateValue(options.history![historyIndex], /* setValue= */ true);
+            }
+          }
+          break;
+
+        case "previous":
+          if (historyIndex !== undefined) {
+            if (historyIndex === 0) {
+              return;
+            }
+
+            if (historyIndex === options.history!.length) {
+              lastHistoryValue = inputBox.value;
+            }
+
+            historyIndex--;
+            updateAndValidateValue(options.history![historyIndex], /* setValue= */ true);
+          }
+          break;
+        }
+      }),
+    ];
+
+    updateAndValidateValue(options.value ?? "", /* setValue= */ true);
+
+    inputBox.title = options.title;
+    inputBox.prompt = options.prompt;
+    inputBox.placeholder = options.placeHolder;
+    inputBox.password = !!options.password;
+    inputBox.ignoreFocusOut = !!options.ignoreFocusOut;
+
+    // Hack to set the `valueSelection`, since it isn't supported when using
+    // `createInputBox`.
+    if (options.valueSelection !== undefined) {
+      (inputBox as any).update({ valueSelection: options.valueSelection });
+    }
+
+    inputBox.show();
+  });
+
+  return context.wrap(promise);
 }
 
 export namespace prompt {
@@ -29,6 +171,14 @@ export namespace prompt {
                    | `${RegExpFlag}${RegExpFlag}`
                    | `${RegExpFlag}${RegExpFlag}${RegExpFlag}`
                    | `${RegExpFlag}${RegExpFlag}${RegExpFlag}${RegExpFlag}`;
+
+  /**
+   * Options for spawning a `prompt`.
+   */
+  export interface Options extends vscode.InputBoxOptions {
+    readonly history?: string[];
+    readonly historySize?: number;
+  }
 
   /**
    * Returns `vscode.InputBoxOptions` that only validate if a number in a given
@@ -69,10 +219,15 @@ export namespace prompt {
   }
 
   /**
+   * Last used inputs for `regexp` prompts.
+   */
+  export const regexpHistory: string[] = [];
+
+  /**
    * Returns `vscode.InputBoxOptions` that only validate if a valid ECMAScript
    * regular expression is entered.
    */
-  export function regexpOpts(flags: RegExpFlags): vscode.InputBoxOptions {
+  export function regexpOpts(flags: RegExpFlags): prompt.Options {
     return {
       prompt: "Regular expression",
       validateInput(input) {
@@ -88,6 +243,8 @@ export namespace prompt {
           return "invalid RegExp";
         }
       },
+
+      history: regexpHistory,
     };
   }
 
@@ -250,6 +407,13 @@ export namespace prompt {
     context = Context.WithoutActiveEditor.current,
   ) {
     return promptInList(true, items, init ?? (() => {}), context.cancellationToken);
+  }
+
+  /**
+   * Notifies an active prompt, if any, that an action has been requested.
+   */
+  export function notifyActionRequested(action: "next" | "previous" | "clear") {
+    actionEvent.fire(action);
   }
 }
 

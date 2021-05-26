@@ -1,7 +1,7 @@
 import * as api from "../api";
 
 import { Argument, InputOr, RegisterOr } from ".";
-import { Context, InputError, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
+import { ArgumentError, Context, InputError, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
 import { Extension } from "../state/extension";
 import { Register } from "../state/registers";
 
@@ -35,7 +35,7 @@ export function ignore() {
   // Used to intercept and ignore key presses in a given mode.
 }
 
-let lastRunCode: string | undefined;
+const runHistory: string[] = [];
 
 /**
  * Run code.
@@ -56,8 +56,6 @@ export async function run(
       try {
         api.run.compileFunction(value);
 
-        lastRunCode = value;
-
         return;
       } catch (e) {
         if (e instanceof SyntaxError) {
@@ -67,7 +65,7 @@ export async function run(
         return e?.message ?? `${e}`;
       }
     },
-    value: lastRunCode,
+    history: runHistory,
   }, _));
 
   if (Array.isArray(code)) {
@@ -88,6 +86,7 @@ export async function run(
  * current document.
  *
  * @keys `"` (normal)
+ * @noreplay
  */
 export async function selectRegister(_: Context, inputOr: InputOr<string | Register>) {
   const input = await inputOr(() => keypress.forRegister(_));
@@ -107,6 +106,8 @@ let lastUpdateRegisterText: string | undefined;
 
 /**
  * Update the contents of a register.
+ *
+ * @noreplay
  */
 export async function updateRegister(
   _: Context,
@@ -159,6 +160,8 @@ export async function updateRegister(
  * | Add the digit 7 to the counter | `7` (normal) | `[".updateCount", { addDigits: 7 }]` |
  * | Add the digit 8 to the counter | `8` (normal) | `[".updateCount", { addDigits: 8 }]` |
  * | Add the digit 9 to the counter | `9` (normal) | `[".updateCount", { addDigits: 9 }]` |
+ *
+ * @noreplay
  */
 export async function updateCount(
   _: Context,
@@ -205,6 +208,8 @@ let lastPickedMenu: string | undefined;
  * Pass a `prefix` argument to insert the prefix string followed by the typed
  * key if it does not match any menu entry. This can be used to implement chords
  * like `jj`.
+ *
+ * @noreplay
  */
 export async function openMenu(
   _: Context.WithoutActiveEditor,
@@ -249,4 +254,28 @@ export async function openMenu(
   }
 
   return showMenu.byName(input, pass, prefix);
+}
+
+/**
+ * Change current input.
+ *
+ * When showing some menus, Dance can navigate their history:
+ *
+ * | Keybinding      | Command                                    |
+ * | --------------- | ------------------------------------------ |
+ * | `up` (prompt)   | `[".changeInput", { action: "previous" }]` |
+ * | `down` (prompt) | `[".changeInput", { action: "next"     }]` |
+ *
+ * @noreplay
+ */
+export function changeInput(
+  action: Argument<Parameters<typeof prompt.notifyActionRequested>[0]>,
+) {
+  ArgumentError.validate(
+    "action",
+    ["clear", "previous", "next"].includes(action),
+    `must be "previous" or "next"`,
+  );
+
+  prompt.notifyActionRequested(action);
 }

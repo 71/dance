@@ -421,6 +421,7 @@ async function loadKeybindingsModule(): Promise<CommandDescriptor[]> {
 async function loadMiscModule(): Promise<CommandDescriptor[]> {
   const {
     cancel,
+    changeInput,
     ignore,
     openMenu,
     run,
@@ -436,6 +437,11 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
       CommandDescriptor.Flags.None,
     ),
     new CommandDescriptor(
+      "dance.changeInput",
+      (_, argument) => _.runAsync((_) => changeInput(argument.action)),
+      CommandDescriptor.Flags.DoNotReplay,
+    ),
+    new CommandDescriptor(
       "dance.ignore",
       (_) => _.runAsync((_) => ignore()),
       CommandDescriptor.Flags.None,
@@ -443,7 +449,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.openMenu",
       (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.pass, argument.locked)),
-      CommandDescriptor.Flags.None,
+      CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.run",
@@ -453,17 +459,17 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     new CommandDescriptor(
       "dance.selectRegister",
       (_, argument) => _.runAsync((_) => selectRegister(_, getInputOr(argument))),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.updateCount",
       (_, argument) => _.runAsync((_) => updateCount(_, getCount(_, argument), _.extension, getInputOr(argument), argument.addDigits)),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.updateRegister",
       (_, argument) => _.runAsync((_) => updateRegister(_, getRegister(_, argument, "dquote", Register.Flags.CanWrite), argument.copyFrom, getInputOr(argument))),
-      CommandDescriptor.Flags.RequiresActiveEditor,
+      CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
 }

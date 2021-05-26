@@ -1,5 +1,3 @@
-import * as vscode from "vscode";
-
 import { InputOr } from ".";
 import { Context, prompt, toMode } from "../api";
 
@@ -49,6 +47,8 @@ export async function set_temporarily(_: Context, inputOr: InputOr<string>, repe
   await toMode(await inputOr(() => prompt(validateModeName())), repetitions);
 }
 
+const modeHistory: string[] = [];
+
 function validateModeName(ctx = Context.WithoutActiveEditor.current) {
   const modes = ctx.extension.modes;
 
@@ -62,5 +62,6 @@ function validateModeName(ctx = Context.WithoutActiveEditor.current) {
       return `mode ${JSON.stringify(value)} does not exist`;
     },
     placeHolder: [...modes.userModes()].map((m) => m.name).sort().join(", "),
-  } as vscode.InputBoxOptions;
+    history: modeHistory,
+  } as prompt.Options;
 }

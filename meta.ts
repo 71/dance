@@ -468,6 +468,11 @@ export function parseKeys(keys: string) {
         whenClauses.push("dance.isRecording");
         break;
 
+      case "prompt":
+        whenClauses.shift();  // Remove "editorTextFocus" clause.
+        whenClauses.push("inputFocus && !textInputFocus");
+        break;
+
       default:
         throw new Error("unknown keybinding tag " + tag);
       }

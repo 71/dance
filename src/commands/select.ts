@@ -2,11 +2,10 @@ import * as vscode from "vscode";
 import * as api from "../api";
 
 import { Argument } from ".";
-import { column, columns, Context, Direction, Lines, Positions, Selections, Shift, showMenu, todo } from "../api";
+import { column, columns, Context, Direction, Lines, Positions, Selections, Shift, showMenu } from "../api";
 import { SelectionBehavior } from "../state/modes";
 import { PerEditorState } from "../state/editors";
 import { unsafeSelections } from "../utils/misc";
-import { Entry, Recording } from "../state/recorder";
 
 /**
  * Update selections based on their position in the document.

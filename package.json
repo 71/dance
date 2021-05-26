@@ -978,6 +978,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.changeInput",
+        "title": "Change current input",
+        "category": "Dance"
+      },
+      {
         "command": "dance.ignore",
         "title": "Ignore key",
         "category": "Dance"
@@ -1849,6 +1854,10 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.changeInput",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.ignore",
           "when": "dance.mode == 'normal'"
         },
@@ -2644,6 +2653,22 @@
         "when": "editorTextFocus && dance.mode == 'input'",
         "title": "Cancel Dance operation",
         "command": "dance.cancel"
+      },
+      {
+        "key": "Up",
+        "when": "inputFocus && !textInputFocus",
+        "command": "dance.changeInput",
+        "args": {
+          "action": "previous"
+        }
+      },
+      {
+        "key": "Down",
+        "when": "inputFocus && !textInputFocus",
+        "command": "dance.changeInput",
+        "args": {
+          "action": "next"
+        }
       },
       {
         "key": "Shift+'",

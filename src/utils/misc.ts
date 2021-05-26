@@ -40,7 +40,7 @@ export async function manipulateSelectionsInteractively<I, R>(
   input: Input<I>,
   setInput: SetInput<R>,
   interactive: boolean,
-  options: vscode.InputBoxOptions,
+  options: prompt.Options,
   f: (input: string | I, selections: readonly vscode.Selection[]) => Thenable<R>,
 ) {
   const selections = _.selections;

@@ -237,6 +237,22 @@ const builtinKeybindings = [
     command: "dance.cancel",
   },
   {
+    key: "Up",
+    when: "inputFocus && !textInputFocus",
+    command: "dance.changeInput",
+    args: {
+      action: "previous",
+    },
+  },
+  {
+    key: "Down",
+    when: "inputFocus && !textInputFocus",
+    command: "dance.changeInput",
+    args: {
+      action: "next",
+    },
+  },
+  {
     key: "Shift+'",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Select register for next command",
