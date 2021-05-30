@@ -68,9 +68,13 @@ export class PerEditorState implements vscode.Disposable {
     }
 
     this.setMode(mode);
+    this._updateOffscreenSelectionsIndicators();
   }
 
   public dispose() {
+    this._clearDecorations(this._mode);
+    this.editor.setDecorations(this.extension.editors.offscreenSelectionDecorationType, []);
+
     const options = this._editor.options,
           mode = this._mode,
           vscodeMode = mode.modes.vscodeMode;
@@ -263,6 +267,17 @@ export class PerEditorState implements vscode.Disposable {
    */
   public notifyDidChangeTextEditorSelection() {
     this._updateDecorations(this._mode);
+    this._updateOffscreenSelectionsIndicators();
+  }
+
+  /**
+   * Called when `vscode.window.onDidChangeTextEditorVisibleRanges` is triggered
+   * on this editor.
+   *
+   * @deprecated Do not call -- internal implementation detail.
+   */
+  public notifyDidChangeTextEditorVisibleRanges() {
+    this._updateOffscreenSelectionsIndicators();
   }
 
   /**
@@ -378,6 +393,88 @@ export class PerEditorState implements vscode.Disposable {
       ? Selections.toCharacterMode(selections, document)
       : Selections.fromCharacterMode(selections, document);
   }
+
+  private _updateOffscreenSelectionsIndicators() {
+    const editor = this._editor,
+          selections = editor.selections,
+          visibleRanges = editor.visibleRanges;
+
+    // Find which selections are offscreen.
+    const offscreenSelections = [] as vscode.Selection[];
+
+    for (const selection of selections) {
+      let isOffscreen = true;
+
+      for (const visibleRange of visibleRanges) {
+        if (Selections.overlap(visibleRange, selection)) {
+          isOffscreen = false;
+          break;
+        }
+      }
+
+      if (isOffscreen) {
+        offscreenSelections.push(selection);
+      }
+    }
+
+    // If there are no selections offscreen, clear decorations.
+    if (offscreenSelections.length === 0) {
+      editor.setDecorations(this.extension.editors.offscreenSelectionDecorationType, []);
+      return;
+    }
+
+    // Otherwise, add decorations for offscreen selections.
+    const sortedVisibleRanges = visibleRanges.slice(),
+          decorations = [] as vscode.DecorationOptions[];
+
+    sortedVisibleRanges.sort((a, b) => a.start.compareTo(b.start));
+    offscreenSelections.sort((a, b) => a.start.compareTo(b.start));
+
+    function pushDecoration(
+      decorations: vscode.DecorationOptions[],
+      count: number,
+      position: vscode.Position,
+      relatively: "above" | "below",
+    ) {
+      decorations.push({
+        range: new vscode.Range(position, position),
+        renderOptions: {
+          after: {
+            contentText: `  ${count} hidden selection${count === 1 ? "" : "s"} ${relatively}`,
+          },
+        },
+      });
+    }
+
+    // Hidden selections above each visible range.
+    let offscreenSelectionIdx = 0;
+
+    for (let i = 0; i < sortedVisibleRanges.length; i++) {
+      const visibleRange = sortedVisibleRanges[i],
+            visibleRangeStartLine = visibleRange.start.line;
+      let count = 0;
+
+      while (offscreenSelections.length > offscreenSelectionIdx
+          && offscreenSelections[offscreenSelectionIdx].end.line < visibleRangeStartLine) {
+        offscreenSelectionIdx++;
+        count++;
+      }
+
+      if (count > 0) {
+        pushDecoration(decorations, count, visibleRange.start, "above");
+      }
+    }
+
+    // Hidden selections below the last visible range.
+    const visibleRange = sortedVisibleRanges[sortedVisibleRanges.length - 1],
+          count = offscreenSelections.length - offscreenSelectionIdx;
+
+    if (count > 0) {
+      pushDecoration(decorations, count, visibleRange.end, "below");
+    }
+
+    editor.setDecorations(this.extension.editors.offscreenSelectionDecorationType, decorations);
+  }
 }
 
 export namespace PerEditorState {
@@ -404,6 +501,20 @@ export class Editors implements vscode.Disposable {
   });
 
   /**
+   * @deprecated Do not access -- internal implementation detail.
+   */
+  public readonly offscreenSelectionDecorationType = vscode.window.createTextEditorDecorationType({
+    after: {
+      color: new vscode.ThemeColor("list.warningForeground"),
+    },
+    backgroundColor: new vscode.ThemeColor("inputValidation.warningBackground"),
+    borderColor: new vscode.ThemeColor("inputValidation.warningBorder"),
+    borderStyle: "solid",
+    borderWidth: "1px",
+    isWholeLine: true,
+  });
+
+  /**
    * The Dance-specific state for the active `vscode.TextEditor`, or `undefined`
    * if `vscode.window.activeTextEditor === undefined`.
    */
@@ -423,6 +534,8 @@ export class Editors implements vscode.Disposable {
       this._handleDidChangeActiveTextEditor, this, this._subscriptions);
     vscode.window.onDidChangeTextEditorSelection(
       this._handleDidChangeTextEditorSelection, this, this._subscriptions);
+    vscode.window.onDidChangeTextEditorVisibleRanges(
+      this._handleDidChangeTextEditorVisibleRanges, this, this._subscriptions);
     vscode.window.onDidChangeVisibleTextEditors(
       this._handleDidChangeVisibleTextEditors, this, this._subscriptions);
     vscode.workspace.onDidCloseTextDocument(
@@ -443,6 +556,7 @@ export class Editors implements vscode.Disposable {
   public dispose() {
     this._subscriptions.splice(0).forEach((d) => d.dispose());
     this.characterDecorationType.dispose();
+    this.offscreenSelectionDecorationType.dispose();
   }
 
   /**
@@ -477,6 +591,10 @@ export class Editors implements vscode.Disposable {
 
   private _handleDidChangeTextEditorSelection(e: vscode.TextEditorSelectionChangeEvent) {
     this._editors.get(e.textEditor)?.notifyDidChangeTextEditorSelection();
+  }
+
+  private _handleDidChangeTextEditorVisibleRanges(e: vscode.TextEditorVisibleRangesChangeEvent) {
+    this._editors.get(e.textEditor)?.notifyDidChangeTextEditorVisibleRanges();
   }
 
   private _handleDidChangeVisibleTextEditors(visibleEditors: readonly vscode.TextEditor[]) {

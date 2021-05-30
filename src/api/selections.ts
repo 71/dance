@@ -1083,9 +1083,9 @@ export namespace Selections {
           bStart = b.start,
           bEnd = b.end;
 
-    return !(aStart.line < bStart.line
+    return !(aEnd.line < bStart.line
             || (aEnd.line === bEnd.line && aEnd.character < bStart.character))
-        && !(bStart.line < aStart.line
+        && !(bEnd.line < aStart.line
             || (bEnd.line === aEnd.line && bEnd.character < aStart.character));
   }
 
