@@ -1,6 +1,7 @@
 # Dance
 
-[Kakoune]-inspired key bindings for [Visual Studio Code][vsc].
+[Kakoune]-inspired key bindings, modes, menus and scripting for
+[Visual Studio Code][vsc].
 
 ## Important note
 
@@ -31,7 +32,7 @@ of it.
 
 - Kakoune is an efficient and lightweight editor with a very small ecosystem.
   VS Code is an entire IDE with a huge ecosystem and many existing extensions.
-- Kakoune is Unix only.
+- Kakoune is Unix-only.
 
 #### Why [Kakoune]'s key bindings, and not [Vim]'s?
 

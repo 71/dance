@@ -82,8 +82,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   // ==========================================================================
 
   name: "dance",
-  description: "Make those cursors dance with Kakoune-inspired keybindings.",
-  version: "0.5.0",
+  description: "Kakoune-inspired key bindings, modes, menus and scripting.",
+  version: "0.5.1",
   license: "ISC",
 
   author: {
