@@ -334,7 +334,7 @@ export function execute(
   }
 
   return Context.WithoutActiveEditor.wrap(import("child_process").then((cp) =>
-    new Promise<{ readonly val: string } | { readonly err: string }>((resolve) => {
+    new Promise<string>((resolve, reject) => {
       const shell = getShell() ?? true,
             child = cp.spawn(command, { shell, stdio: "pipe" });
 
@@ -352,18 +352,16 @@ export function execute(
       child.once("error", (err) => {
         disposable.dispose();
 
-        resolve({ err: err.message });
+        reject(err.message);
       });
       child.once("exit", (code) => {
         disposable.dispose();
 
         code === 0
-          ? resolve({ val: stdout.trimRight() })
-          : resolve({
-            err: `Command exited with error ${code}: ${
+          ? resolve(stdout.trimRight())
+          : reject(`Command exited with error ${code}: ${
               stderr.length > 0 ? stderr.trimRight() : "<No error output>"
-            }`,
-          });
+            }`);
       });
     })),
   );
