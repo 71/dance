@@ -64,6 +64,12 @@ const selectionDecorationType = {
       type: "boolean",
       default: false,
     },
+    after: {
+      type: "object",
+    },
+    before: {
+      type: "object",
+    },
   },
 };
 
@@ -245,6 +251,18 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             additionalProperties: false,
           },
           default: {
+            "": {
+              hiddenSelectionsIndicatorsDecoration: {
+                after: {
+                  color: "$list.warningForeground",
+                },
+                backgroundColor: "$inputValidation.warningBackground",
+                borderColor: "$inputValidation.warningBorder",
+                borderStyle: "solid",
+                borderWidth: "1px",
+                isWholeLine: true,
+              },
+            },
             insert: {
               onLeaveMode: [
                 [".selections.save", {

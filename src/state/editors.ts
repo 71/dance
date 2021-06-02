@@ -68,12 +68,10 @@ export class PerEditorState implements vscode.Disposable {
     }
 
     this.setMode(mode);
-    this._updateOffscreenSelectionsIndicators();
   }
 
   public dispose() {
     this._clearDecorations(this._mode);
-    this.editor.setDecorations(this.extension.editors.offscreenSelectionDecorationType, []);
 
     const options = this._editor.options,
           mode = this._mode,
@@ -267,7 +265,6 @@ export class PerEditorState implements vscode.Disposable {
    */
   public notifyDidChangeTextEditorSelection() {
     this._updateDecorations(this._mode);
-    this._updateOffscreenSelectionsIndicators();
   }
 
   /**
@@ -277,7 +274,7 @@ export class PerEditorState implements vscode.Disposable {
    * @deprecated Do not call -- internal implementation detail.
    */
   public notifyDidChangeTextEditorVisibleRanges() {
-    this._updateOffscreenSelectionsIndicators();
+    this._updateOffscreenSelectionsIndicators(this._mode);
   }
 
   /**
@@ -315,6 +312,10 @@ export class PerEditorState implements vscode.Disposable {
     }
 
     editor.setDecorations(this.extension.editors.characterDecorationType, empty);
+
+    if (mode.hiddenSelectionsIndicatorsDecorationType !== undefined) {
+      editor.setDecorations(mode.hiddenSelectionsIndicatorsDecorationType, empty);
+    }
   }
 
   private _updateDecorations(mode: Mode) {
@@ -382,6 +383,8 @@ export class PerEditorState implements vscode.Disposable {
 
     editor.options.cursorStyle = mode.cursorStyle;
     editor.options.lineNumbers = mode.lineNumbers;
+
+    this._updateOffscreenSelectionsIndicators(mode);
   }
 
   private _updateSelectionsAfterBehaviorChange(mode: Mode) {
@@ -394,7 +397,13 @@ export class PerEditorState implements vscode.Disposable {
       : Selections.fromCharacterMode(selections, document);
   }
 
-  private _updateOffscreenSelectionsIndicators() {
+  private _updateOffscreenSelectionsIndicators(mode: Mode) {
+    const decorationType = mode.hiddenSelectionsIndicatorsDecorationType;
+
+    if (decorationType === undefined) {
+      return;
+    }
+
     const editor = this._editor,
           selections = editor.selections,
           visibleRanges = editor.visibleRanges;
@@ -419,7 +428,7 @@ export class PerEditorState implements vscode.Disposable {
 
     // If there are no selections offscreen, clear decorations.
     if (offscreenSelections.length === 0) {
-      editor.setDecorations(this.extension.editors.offscreenSelectionDecorationType, []);
+      editor.setDecorations(decorationType, []);
       return;
     }
 
@@ -473,7 +482,7 @@ export class PerEditorState implements vscode.Disposable {
       pushDecoration(decorations, count, visibleRange.end, "below");
     }
 
-    editor.setDecorations(this.extension.editors.offscreenSelectionDecorationType, decorations);
+    editor.setDecorations(decorationType, decorations);
   }
 }
 
@@ -498,20 +507,6 @@ export class Editors implements vscode.Disposable {
    */
   public readonly characterDecorationType = vscode.window.createTextEditorDecorationType({
     backgroundColor: new vscode.ThemeColor("editor.selectionBackground"),
-  });
-
-  /**
-   * @deprecated Do not access -- internal implementation detail.
-   */
-  public readonly offscreenSelectionDecorationType = vscode.window.createTextEditorDecorationType({
-    after: {
-      color: new vscode.ThemeColor("list.warningForeground"),
-    },
-    backgroundColor: new vscode.ThemeColor("inputValidation.warningBackground"),
-    borderColor: new vscode.ThemeColor("inputValidation.warningBorder"),
-    borderStyle: "solid",
-    borderWidth: "1px",
-    isWholeLine: true,
   });
 
   /**
@@ -556,7 +551,6 @@ export class Editors implements vscode.Disposable {
   public dispose() {
     this._subscriptions.splice(0).forEach((d) => d.dispose());
     this.characterDecorationType.dispose();
-    this.offscreenSelectionDecorationType.dispose();
   }
 
   /**
