@@ -352,16 +352,16 @@ export function execute(
       child.once("error", (err) => {
         disposable.dispose();
 
-        reject(err.message);
+        reject(err);
       });
       child.once("exit", (code) => {
         disposable.dispose();
 
         code === 0
           ? resolve(stdout.trimRight())
-          : reject(`Command exited with error ${code}: ${
+          : reject(new Error(`Command exited with error ${code}: ${
               stderr.length > 0 ? stderr.trimRight() : "<No error output>"
-            }`);
+            }`));
       });
     })),
   );
