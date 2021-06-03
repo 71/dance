@@ -130,7 +130,7 @@ export function vertically(
 
   const newSelections = Selections.map.byIndex((i, selection) => {
     // TODO: handle tab characters
-    const activeLine = Selections.activeLine(selection),
+    const activeLine = isCharacterMode ? Selections.activeLine(selection) : selection.active.line,
           targetLine = Lines.clamp(activeLine + repetitions * direction, document),
           targetLineLength = columns(targetLine, _.editor);
 
@@ -138,7 +138,10 @@ export function vertically(
       let targetPosition = Positions.lineStart(targetLine);
 
       if (isCharacterMode) {
-        if (direction === Direction.Forward || shift === Shift.Jump) {
+        if (shift === Shift.Jump
+            || (direction === Direction.Backward
+              ? selection.contains(targetPosition)
+              : !selection.contains(targetPosition) || targetPosition.isEqual(selection.active))) {
           targetPosition = Positions.next(targetPosition, document) ?? targetPosition;
         }
 
@@ -161,8 +164,26 @@ export function vertically(
 
     if (preferredColumn <= targetLineLength) {
       targetColumn = preferredColumn;
-    } else if (isCharacterMode && targetLine + 1 < document.lineCount && !avoidEol) {
-      return Selections.shift(selection, new vscode.Position(targetLine + 1, 0), shift);
+    } else if (isCharacterMode && !avoidEol) {
+      if (direction === Direction.Forward && targetLine + 1 < document.lineCount) {
+        if (shift === Shift.Extend) {
+          const targetPosition = selection.anchor.line <= targetLine
+            ? Positions.lineBreak(targetLine)
+            : Positions.lineEnd(targetLine);
+
+          return Selections.shift(selection, targetPosition, shift);
+        }
+
+        return Selections.shift(selection, new vscode.Position(targetLine + 1, 0), shift);
+      } else if (direction === Direction.Backward) {
+        // We may need to shift left in some cases.
+        if (shift === Shift.Extend && targetLine < selection.anchor.line) {
+          return Selections.shift(selection, Positions.lineEnd(targetLine), shift);
+        }
+        return Selections.shift(selection, Positions.lineBreak(targetLine), shift);
+      }
+
+      targetColumn = targetLineLength;
     } else {
       targetColumn = targetLineLength;
     }

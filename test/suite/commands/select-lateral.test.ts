@@ -576,5 +576,48 @@ suite("./test/suite/commands/select-lateral.md", function () {
     `);
   });
 
+  test("4 > down-extend", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      abc
+        | 0
+
+
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.select.down.extend");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:350:1", 6, String.raw`
+      abc
+        ^^ 0
+
+
+    `);
+  });
+
+  test("4 > down-extend > x", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      abc
+        ^^ 0
+
+
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.select.down.extend");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lateral.md:362:1", 6, String.raw`
+      abc
+        ^^ 0
+
+      ^ 0
+
+    `);
+  });
+
   groupTestsByParentName(this);
 });

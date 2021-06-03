@@ -335,3 +335,39 @@ bar
 ^ 0
 baz
 ```
+
+# 4
+
+Context: [#168](https://github.com/71/dance/issues/168).
+
+```
+abc
+  | 0
+
+
+```
+
+## 4 down-extend
+[up](#4)
+
+- .select.down.extend
+
+```
+abc
+  ^^ 0
+
+
+```
+
+### 4 down-extend x
+[up](#4-down-extend)
+
+- .select.down.extend
+
+```
+abc
+  ^^ 0
+
+^ 0
+
+```
