@@ -11,10 +11,10 @@ declare module "./modes";
  *
  * #### Variants
  *
- * | Title              | Identifier   | Keybinding        | Command                               |
- * | ------------------ | ------------ | ----------------- | ------------------------------------- |
- * | Set mode to Normal | `set.normal` | `escape` (insert) | `[".modes.set", { input: "normal" }]` |
- * | Set mode to Insert | `set.insert` |                   | `[".modes.set", { input: "insert" }]` |
+ * | Title              | Identifier   | Keybinding        | Command                                                      |
+ * | ------------------ | ------------ | ----------------- | ------------------------------------------------------------ |
+ * | Set mode to Normal | `set.normal` | `escape` (insert) | `[".modes.set", { input: "normal" }], ["hideSuggestWidget"]` |
+ * | Set mode to Insert | `set.insert` |                   | `[".modes.set", { input: "insert" }]`                        |
  *
  * Other variants are provided to switch to insert mode:
  *

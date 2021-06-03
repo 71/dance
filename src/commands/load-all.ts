@@ -521,7 +521,7 @@ async function loadModesModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.modes.set.normal",
-      (_, argument) => _.runAsync(() => commands([".modes.set", { input: "normal", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".modes.set", { input: "normal", ...argument }], ["hideSuggestWidget"])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
