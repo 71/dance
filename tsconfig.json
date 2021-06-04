@@ -7,6 +7,7 @@
     "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true,
+    "preserveConstEnums": true,
   },
   "exclude": ["node_modules", ".vscode-test", "src/commands/old-*.ts"],
 }

@@ -1231,6 +1231,30 @@ suite("API tests", function () {
       // No expected end document.
     });
 
+    test("function text", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              abc
+              ^^^^ 0
+              def
+              ^^^ 0
+              ghi
+              ^ 1
+                | 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.text(Selections.current[0]), "to be", "abc\ndef");
+        expect(Selections.text(Selections.current[1]), "to be", "g");
+        expect(Selections.text(Selections.current[2]), "to be", "");
+      });
+
+      // No expected end document.
+    });
+
     test("function length", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),

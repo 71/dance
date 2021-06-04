@@ -1488,6 +1488,35 @@ export namespace Selections {
   }
 
   /**
+   * Returns the text contents of the given selection.
+   *
+   * ### Example
+   *
+   * ```js
+   * expect(Selections.text(Selections.current[0]), "to be", "abc\ndef");
+   * expect(Selections.text(Selections.current[1]), "to be", "g");
+   * expect(Selections.text(Selections.current[2]), "to be", "");
+   * ```
+   *
+   * With:
+   * ```
+   * abc
+   * ^^^^ 0
+   * def
+   * ^^^ 0
+   * ghi
+   * ^ 1
+   *   | 2
+   * ```
+   */
+  export function text(
+    selection: vscode.Selection | vscode.Range,
+    document = Context.current.document,
+  ) {
+    return document.getText(selection);
+  }
+
+  /**
    * Returns the length of the given selection.
    *
    * ### Example
