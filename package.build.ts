@@ -431,7 +431,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                   command: "dance.select.lineStart",
                   args: [{ skipBlank: true }],
                 },
-                "gk": {
+                "k": {
                   text: "to first line",
                   command: "dance.select.lineStart",
                   args: [{ count: 1 }],
@@ -476,7 +476,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 // - m, center cursor horizontally
                 // - h, scroll left
                 // - l, scroll right
-                "vc": {
+                "c": {
                   text: "center cursor vertically",
                   command: "dance.view.line",
                   args: [{ at: "center" }],
