@@ -7,7 +7,6 @@ import { Positions } from "../positions";
 import { moveWhile } from "./move";
 import { CharSet, getCharSetFunction } from "../../utils/charset";
 import { Lines } from "../lines";
-import { Selections } from "../selections";
 
 export namespace Range {
   /**

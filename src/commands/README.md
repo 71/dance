@@ -1110,9 +1110,9 @@ Reduce selections to their cursor.
 
 #### Variant
 
-| Title                           | Identifier     | Keybinding       | Command                                     |
-| ------------------------------- | -------------- | ---------------- | ------------------------------------------- |
-| Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both" }]` |
+| Title                             | Identifier     | Keybinding       | Command                                                   |
+| --------------------------------- | -------------- | ---------------- | --------------------------------------------------------- |
+| Reduce selections to their ends   | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both", empty: false }]` |
 
 This command:
 - takes an argument `empty` of type `boolean`.

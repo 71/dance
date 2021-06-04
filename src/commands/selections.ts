@@ -572,15 +572,15 @@ export function trimWhitespace(_: Context) {
  *
  * #### Variant
  *
- * | Title                           | Identifier     | Keybinding       | Command                                     |
- * | ------------------------------- | -------------- | ---------------- | ------------------------------------------- |
- * | Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both" }]` |
+ * | Title                             | Identifier     | Keybinding       | Command                                                   |
+ * | --------------------------------- | -------------- | ---------------- | --------------------------------------------------------- |
+ * | Reduce selections to their ends   | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both", empty: false }]` |
  */
 export function reduce(
   _: Context,
 
   where: Argument<"active" | "anchor" | "start" | "end" | "both"> = "active",
-  empty: Argument<boolean> = false,
+  empty: Argument<boolean> = true,
 ) {
   ArgumentError.validate(
     "where",

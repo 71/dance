@@ -1194,7 +1194,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.reduce.edges",
-      (_, argument) => _.runAsync(() => commands([".selections.reduce", { where: "both", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.reduce", { where: "both", empty: false, ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
