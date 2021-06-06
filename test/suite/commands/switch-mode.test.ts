@@ -101,31 +101,6 @@ suite("./test/suite/commands/switch-mode.md", function () {
     `);
   });
 
-  test("2 > insert-next-line-below > restore", async function () {
-    // Set-up document to be in expected initial state.
-    await ExpectedDocument.apply(editor, 6, String.raw`
-      abc
-      def
-
-      | 0
-      ghi
-    `);
-
-    // Perform all operations.
-    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.modes.set.normal");
-    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-    // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/switch-mode.md:67:1", 6, String.raw`
-      abc
-      def
-
-      ^ 0
-      ghi
-    `);
-  });
-
   test("2 > insert-next-line-above", async function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
@@ -141,35 +116,10 @@ suite("./test/suite/commands/switch-mode.md", function () {
     await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/switch-mode.md:80:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/switch-mode.md:70:1", 6, String.raw`
       abc
 
       | 0
-      def
-      ghi
-    `);
-  });
-
-  test("2 > insert-next-line-above > restore", async function () {
-    // Set-up document to be in expected initial state.
-    await ExpectedDocument.apply(editor, 6, String.raw`
-      abc
-
-      | 0
-      def
-      ghi
-    `);
-
-    // Perform all operations.
-    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
-    await executeCommand("dance.modes.set.normal");
-    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
-
-    // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/switch-mode.md:93:1", 6, String.raw`
-      abc
-
-      ^ 0
       def
       ghi
     `);

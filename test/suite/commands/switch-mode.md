@@ -64,18 +64,8 @@ def
 ghi
 ```
 
-### 2 insert-next-line-below restore
-[up](#2-insert-next-line-below)
-
-- .modes.set.normal
-
-```
-abc
-def
-
-^ 0
-ghi
-```
+It would be nice to test the `restore` version too, but right now this does not
+work in tests because tests don't work too well with saved selections.
 
 ## 2 insert-next-line-above
 [up](#2)
@@ -90,15 +80,5 @@ def
 ghi
 ```
 
-### 2 insert-next-line-above restore
-[up](#2-insert-next-line-above)
-
-- .modes.set.normal
-
-```
-abc
-
-^ 0
-def
-ghi
-```
+It would be nice to test the `restore` version too, but right now this does not
+work in tests because tests don't work too well with saved selections.
