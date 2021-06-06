@@ -65,7 +65,9 @@ export function save(
     .createAutoDisposable()
     .addNotifyingDisposable(trackedSelectionSet)
     .addDisposable(new vscode.Disposable(() => {
-      register.replaceSelectionSet()?.dispose();
+      if (register.canReadSelections() && register.getSelectionSet() === trackedSelectionSet) {
+        register.replaceSelectionSet()!.dispose();
+      }
     }));
 
   if (Array.isArray(until)) {
@@ -572,9 +574,9 @@ export function trimWhitespace(_: Context) {
  *
  * #### Variant
  *
- * | Title                             | Identifier     | Keybinding       | Command                                                   |
- * | --------------------------------- | -------------- | ---------------- | --------------------------------------------------------- |
- * | Reduce selections to their ends   | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both", empty: false }]` |
+ * | Title                           | Identifier     | Keybinding       | Command                                                   |
+ * | ------------------------------- | -------------- | ---------------- | --------------------------------------------------------- |
+ * | Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both", empty: false }]` |
  */
 export function reduce(
   _: Context,
