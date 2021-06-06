@@ -501,6 +501,9 @@ export function lineStart(
 /**
  * Select to line end.
  *
+ * @param lineBreak If `true`, selects the line break in character selection
+ *   mode.
+ *
  * @keys `a-l` (normal), `end` (normal)
  *
  * #### Variants
@@ -516,19 +519,32 @@ export function lineEnd(
 
   count: number,
   shift = Shift.Select,
+  lineBreak = false,
 ) {
-  if (count > 0) {
-    const selection = _.selections[0],
-          newLine = Math.min(_.document.lineCount, count) - 1,
-          newSelection = Selections.shift(selection, Positions.lineEnd(newLine), shift);
+  const mapSelection = (selection: vscode.Selection, newLine: number) => {
+    const newActive = Positions.lineEnd(newLine);
 
-    Selections.set([newSelection]);
+    if (_.selectionBehavior === SelectionBehavior.Character && shift === Shift.Jump) {
+      if (lineBreak) {
+        return Selections.from(newActive, Positions.next(newActive, _.document) ?? newActive);
+      } else {
+        return Selections.from(Positions.previous(newActive, _.document) ?? newActive, newActive);
+      }
+    }
+
+    return Selections.shift(selection, newActive, shift);
+  };
+
+  if (count > 0) {
+    const newLine = Math.min(_.document.lineCount, count) - 1;
+
+    Selections.set([mapSelection(_.mainSelection, newLine)]);
 
     return;
   }
 
-  Selections.update.byIndex((_, selection, doc) =>
-    Selections.shift(selection, Positions.lineEnd(Selections.activeLine(selection), doc), shift),
+  Selections.update.byIndex((_, selection) =>
+    mapSelection(selection, Selections.activeLine(selection)),
   );
 }
 

@@ -860,7 +860,7 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.lineEnd",
-      (_, argument) => _.runAsync((_) => lineEnd(_, getCount(_, argument), getShift(argument))),
+      (_, argument) => _.runAsync((_) => lineEnd(_, getCount(_, argument), getShift(argument), argument.lineBreak)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
