@@ -159,14 +159,20 @@ export namespace showLockedMenu {
 function mergeArgs(args: readonly any[] | undefined, additionalArgs: readonly any[]) {
   if (args == null) {
     return additionalArgs;
-  } else if (additionalArgs.length > 0) {
+  }
+
+  if (!Array.isArray(args)) {
+    args = [args];
+  }
+
+  if (additionalArgs.length > 0) {
     return args.length > additionalArgs.length
       ? args.map((arg, i) =>
         i < additionalArgs.length && additionalArgs[i]
           ? Object.assign({}, additionalArgs[i], arg)
           : arg)
       : additionalArgs.map((arg, i) =>
-        i < args.length ? Object.assign({}, arg, args[i]) : arg);
+        i < args!.length ? Object.assign({}, arg, args![i]) : arg);
   } else {
     return args;
   }

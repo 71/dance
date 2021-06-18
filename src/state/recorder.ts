@@ -779,6 +779,8 @@ export namespace Recorder {
      * succeeded or `false` if the current record is the first one available.
      */
     public previous(): this is Cursor<Entry.Any> {
+      assert(this._offset >= 0);
+
       if (this._offset === 0) {
         if (this._bufferIdx === 0) {
           return false;
