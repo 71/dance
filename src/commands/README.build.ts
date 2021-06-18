@@ -1,4 +1,4 @@
-import { Builder, parseKeys, unindent } from "../../meta";
+import { Builder, indent, parseKeys, unindent } from "../../meta";
 
 export async function build(builder: Builder) {
   const commandModules = await builder.getCommandModules();
@@ -12,13 +12,13 @@ export async function build(builder: Builder) {
     ${commandModules.map((module) => unindent(8, `
         ## [\`${module.name}\`](./${module.name}.ts)
 
-        ${module.doc!.trim()}
+        ${indent(4 + 8, module.doc!).trim()}
 
         ${module.functions.map((f) => unindent(12, `
             ### [\`${module.name === "misc" ? "" : module.name + "."}${f.nameWithDot}\`](./${
               module.name}.ts#L${f.startLine + 1}-L${f.endLine + 1})
 
-            ${f.doc}
+            ${indent(4 + 8 + 12, f.doc).trimStart()}
             ${(() => {
               const supportedInputs = determineSupportedInputs(f);
 

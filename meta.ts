@@ -572,6 +572,14 @@ export function unindent(by: number, string: string) {
 }
 
 /**
+ * Given a multiline string, returns the same string with all lines further
+ * indented by `by` spaces.
+ */
+export function indent(by: number, string: string) {
+  return string.replace(/^/gm, " ".repeat(by)).replace(/^ +$/gm, "");
+}
+
+/**
  * Updates a .build.ts file.
  */
 async function buildFile(fileName: string, builder: Builder) {

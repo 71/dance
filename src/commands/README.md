@@ -510,7 +510,7 @@ instance,
 {
   "command": "dance.run",
   "args": {
-"input": "Selections.set(Selections.filter(text => text.includes('foo')))",
+    "input": "Selections.set(Selections.filter(text => text.includes('foo')))",
   },
 },
 ```
@@ -523,11 +523,11 @@ easier to read:
 {
   "command": "dance.run",
   "args": {
-"input": [
-  "for (const selection of Selections.current) {",
-  "  console.log(text(selection));",
-  "}",
-],
+    "input": [
+      "for (const selection of Selections.current) {",
+      "  console.log(text(selection));",
+      "}",
+    ],
   },
 },
 ```
@@ -540,9 +540,9 @@ argument must be an array of "command-like" values. The simplest
 {
   "command": "dance.run",
   "args": {
-"commands": [
-  "dance.modes.set.normal",
-],
+    "commands": [
+      "dance.modes.set.normal",
+    ],
   },
 },
 ```
@@ -553,9 +553,9 @@ But arguments can also be provided by passing an array:
 {
   "command": "dance.run",
   "args": {
-"commands": [
-  ["dance.modes.set", { "input": "normal" }],
-],
+    "commands": [
+      ["dance.modes.set", { "input": "normal" }],
+    ],
   },
 },
 ```
@@ -566,12 +566,12 @@ Or by passing an object, like regular VS Code key bindings:
 {
   "command": "dance.run",
   "args": {
-"commands": [
-  {
-"command": "dance.modes.set",
-"args": { "input": "normal" },
-  },
-],
+    "commands": [
+      {
+        "command": "dance.modes.set",
+        "args": { "input": "normal" },
+      },
+    ],
   },
 },
 ```
@@ -582,14 +582,14 @@ These values can be mixed:
 {
   "command": "dance.run",
   "args": {
-"commands": [
-  ["dance.selections.saveText", { "register": "^" }],
-  {
-"command": "dance.modes.set",
-"args": { "input": "normal" },
-  },
-  "hideSuggestWidget",
-],
+    "commands": [
+      ["dance.selections.saveText", { "register": "^" }],
+      {
+        "command": "dance.modes.set",
+        "args": { "input": "normal" },
+      },
+      "hideSuggestWidget",
+    ],
   },
 },
 ```
@@ -853,7 +853,7 @@ Select object.
 - Pairs: `<regexp>(?#inner)<regexp>`.
 - Character sets: `[<characters>]+`.
   - Can be preceded by `(?<before>[<characters>]+)` and followed by
-`(?<after>[<character>]+)` for whole objects.
+    `(?<after>[<character>]+)` for whole objects.
 - Matches that may only span a single line: `(?#singleline)<regexp>`.
 - Predefined: `(?#predefined=<argument | paragraph | sentence>)`.
 
