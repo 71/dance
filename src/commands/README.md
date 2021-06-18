@@ -497,14 +497,107 @@ Ignore key.
 This command:
 - does not require an active text editor.
 
-### [`run`](./misc.ts#L40-L48)
+### [`run`](./misc.ts#L40-L141)
 
 Run code.
+
+There are two ways to invoke this command. The first one is to provide an
+`input` string argument. This input must be a valid JavaScript string, and
+will be executed with full access to the [Dance API](../api/README.md). For
+instance,
+
+```json
+{
+  "command": "dance.run",
+  "args": {
+"input": "Selections.set(Selections.filter(text => text.includes('foo')))",
+  },
+},
+```
+
+If no argument is provided, a prompt will be shown asking for an input.
+Furthermore, an array of strings can be passed to make longer functions
+easier to read:
+
+```json
+{
+  "command": "dance.run",
+  "args": {
+"input": [
+  "for (const selection of Selections.current) {",
+  "  console.log(text(selection));",
+  "}",
+],
+  },
+},
+```
+
+The second way to use this command is with the `commands` argument. This
+argument must be an array of "command-like" values. The simplest
+"command-like" value is a string corresponding to the command itself:
+
+```json
+{
+  "command": "dance.run",
+  "args": {
+"commands": [
+  "dance.modes.set.normal",
+],
+  },
+},
+```
+
+But arguments can also be provided by passing an array:
+
+```json
+{
+  "command": "dance.run",
+  "args": {
+"commands": [
+  ["dance.modes.set", { "input": "normal" }],
+],
+  },
+},
+```
+
+Or by passing an object, like regular VS Code key bindings:
+
+```json
+{
+  "command": "dance.run",
+  "args": {
+"commands": [
+  {
+"command": "dance.modes.set",
+"args": { "input": "normal" },
+  },
+],
+  },
+},
+```
+
+These values can be mixed:
+
+```json
+{
+  "command": "dance.run",
+  "args": {
+"commands": [
+  ["dance.selections.saveText", { "register": "^" }],
+  {
+"command": "dance.modes.set",
+"args": { "input": "normal" },
+  },
+  "hideSuggestWidget",
+],
+  },
+},
+```
 
 This command:
 - takes an argument `commands` of type `api.command.Any[]`.
 
-### [`selectRegister`](./misc.ts#L80-L91)
+### [`selectRegister`](./misc.ts#L173-L184)
 
 Select register for next command.
 
@@ -513,7 +606,7 @@ register is selected. If this key is a `space` character, then a new key
 press is awaited again and the returned register will be specific to the
 current document.
 
-### [`updateRegister`](./misc.ts#L107-L118)
+### [`updateRegister`](./misc.ts#L200-L211)
 
 Update the contents of a register.
 
@@ -522,7 +615,7 @@ This command:
 - accepts a register (by default, it uses `dquote`).
 - takes an input of type `string`.
 
-### [`updateCount`](./misc.ts#L144-L173)
+### [`updateCount`](./misc.ts#L237-L266)
 
 Update Dance count.
 
@@ -549,7 +642,7 @@ This command:
 - takes an argument `addDigits` of type `number`.
 - takes an input of type `number`.
 
-### [`openMenu`](./misc.ts#L201-L222)
+### [`openMenu`](./misc.ts#L294-L315)
 
 Open menu.
 
@@ -570,7 +663,7 @@ This command:
 - takes an argument `prefix` of type `string`.
 - takes an input of type `string`.
 
-### [`changeInput`](./misc.ts#L259-L273)
+### [`changeInput`](./misc.ts#L352-L366)
 
 Change current input.
 

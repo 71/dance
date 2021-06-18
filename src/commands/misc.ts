@@ -39,6 +39,99 @@ const runHistory: string[] = [];
 
 /**
  * Run code.
+ *
+ * There are two ways to invoke this command. The first one is to provide an
+ * `input` string argument. This input must be a valid JavaScript string, and
+ * will be executed with full access to the [Dance API](../api/README.md). For
+ * instance,
+ *
+ * ```json
+ * {
+ *   "command": "dance.run",
+ *   "args": {
+ *     "input": "Selections.set(Selections.filter(text => text.includes('foo')))",
+ *   },
+ * },
+ * ```
+ *
+ * If no argument is provided, a prompt will be shown asking for an input.
+ * Furthermore, an array of strings can be passed to make longer functions
+ * easier to read:
+ *
+ * ```json
+ * {
+ *   "command": "dance.run",
+ *   "args": {
+ *     "input": [
+ *       "for (const selection of Selections.current) {",
+ *       "  console.log(text(selection));",
+ *       "}",
+ *     ],
+ *   },
+ * },
+ * ```
+ *
+ * The second way to use this command is with the `commands` argument. This
+ * argument must be an array of "command-like" values. The simplest
+ * "command-like" value is a string corresponding to the command itself:
+ *
+ * ```json
+ * {
+ *   "command": "dance.run",
+ *   "args": {
+ *     "commands": [
+ *       "dance.modes.set.normal",
+ *     ],
+ *   },
+ * },
+ * ```
+ *
+ * But arguments can also be provided by passing an array:
+ *
+ * ```json
+ * {
+ *   "command": "dance.run",
+ *   "args": {
+ *     "commands": [
+ *       ["dance.modes.set", { "input": "normal" }],
+ *     ],
+ *   },
+ * },
+ * ```
+ *
+ * Or by passing an object, like regular VS Code key bindings:
+ *
+ * ```json
+ * {
+ *   "command": "dance.run",
+ *   "args": {
+ *     "commands": [
+ *       {
+ *         "command": "dance.modes.set",
+ *         "args": { "input": "normal" },
+ *       },
+ *     ],
+ *   },
+ * },
+ * ```
+ *
+ * These values can be mixed:
+ *
+ * ```json
+ * {
+ *   "command": "dance.run",
+ *   "args": {
+ *     "commands": [
+ *       ["dance.selections.saveText", { "register": "^" }],
+ *       {
+ *         "command": "dance.modes.set",
+ *         "args": { "input": "normal" },
+ *       },
+ *       "hideSuggestWidget",
+ *     ],
+ *   },
+ * },
+ * ```
  */
 export async function run(
   _: Context,
