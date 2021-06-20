@@ -20,6 +20,7 @@ export * from "./search/lines";
 export * from "./search/move";
 export * from "./search/move-to";
 export * from "./search/pairs";
+export * from "./search/range";
 export * from "./search/word";
 export * from "./selections";
 
