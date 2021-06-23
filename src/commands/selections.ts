@@ -347,8 +347,6 @@ export function filter(
   });
 }
 
-let lastSelectInput: RegExp | undefined;
-
 /**
  * Select within selections.
  *
@@ -371,8 +369,6 @@ export function select(
       if (typeof input === "string") {
         input = new RegExp(input, "mu");
       }
-
-      lastSelectInput = input;
 
       Selections.set(Selections.bottomToTop(Selections.selectWithin(input, selections)));
 

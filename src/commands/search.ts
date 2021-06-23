@@ -106,23 +106,47 @@ export function selection(
   for (const selection of selections) {
     let text = escapeForRegExp(document.getText(selection));
 
-    if (smart) {
-      const firstLine = document.lineAt(selection.start).text,
-            firstLineStart = selection.start.character;
+    if (text.length === 0) {
+      continue;
+    }
 
-      if (firstLineStart === 0 || !isWord!(firstLine.charCodeAt(firstLineStart - 1))) {
-        text = `\\b${text}`;
+    if (smart) {
+      let firstLine: string | undefined,
+          isBeginningOfWord = isWord!(text.charCodeAt(0));
+
+      const firstLineStart = selection.start.character;
+
+      if (isBeginningOfWord && firstLineStart > 0) {
+        firstLine = document.lineAt(selection.start).text;
+        isBeginningOfWord = !isWord!(firstLine.charCodeAt(firstLineStart - 1));
       }
 
-      const lastLine = selection.isSingleLine ? firstLine : document.lineAt(selection.end).text,
-            lastLineEnd = selection.end.character;
+      const lastLineEnd = selection.end.character,
+            lastLine = selection.isSingleLine && firstLine !== undefined
+              ? firstLine
+              : document.lineAt(selection.end).text,
+            isEndOfWord = lastLineEnd + 1 < lastLine.length
+              && isWord!(lastLine.charCodeAt(lastLineEnd - 1))
+              && !isWord!(lastLine.charCodeAt(lastLineEnd));
 
-      if (lastLineEnd >= lastLine.length || !isWord!(lastLine.charCodeAt(lastLineEnd))) {
-        text = `${text}\\b`;
+      if (isBeginningOfWord) {
+        const prefix = text.charCodeAt(0) < 0x80 ? "\\b" : "(?<=^|\\P{L})";
+
+        text = prefix + text;
+      }
+
+      if (isEndOfWord) {
+        const suffix = text.charCodeAt(text.length - 1) < 0x80 ? "\\b" : "(?=\\P{L}|$)";
+
+        text += suffix;
       }
     }
 
     texts.push(text);
+  }
+
+  if (texts.length === 0) {
+    throw new Error("all selections are empty");
   }
 
   register.set(texts);
