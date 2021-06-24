@@ -442,7 +442,10 @@ export function keypress(context = Context.current): Promise<string> {
             if (subscriptions.length > 0) {
               subscriptions.splice(0).forEach((s) => s.dispose());
               context.switchToMode(previousMode)
-                .then(() => reject(new CancellationError(CancellationError.Reason.PressedEscape)));
+                .then(() => reject(
+                  new CancellationError(
+                    context.extension.cancellationReasonFor(context.cancellationToken)
+                    ?? CancellationError.Reason.CancellationToken)));
             }
           }),
         ];

@@ -241,6 +241,8 @@ export class Extension implements vscode.Disposable {
   // =============================================================================================
 
   private _cancellationTokenSource = new vscode.CancellationTokenSource();
+  private readonly _cancellationReasons
+    = new WeakMap<vscode.CancellationToken, CancellationError.Reason>();
 
   /**
    * The token for the next command.
@@ -250,9 +252,18 @@ export class Extension implements vscode.Disposable {
   }
 
   /**
+   * The reason why the `cancellationToken` was cancelled.
+   */
+  public cancellationReasonFor(token: vscode.CancellationToken) {
+    return this._cancellationReasons.get(token);
+  }
+
+  /**
    * Requests the cancellation of the last operation.
    */
-  public cancelLastOperation() {
+  public cancelLastOperation(reason: CancellationError.Reason) {
+    this._cancellationReasons.set(this._cancellationTokenSource.token, reason);
+
     this._cancellationTokenSource.cancel();
     this._cancellationTokenSource.dispose();
 

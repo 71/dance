@@ -448,7 +448,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.openMenu",
-      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.pass, argument.locked)),
+      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.pass, argument.locked, argument.delay)),
       CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(

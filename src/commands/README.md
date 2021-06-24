@@ -642,7 +642,7 @@ This command:
 - takes an argument `addDigits` of type `number`.
 - takes an input of type `number`.
 
-### [`openMenu`](./misc.ts#L294-L315)
+### [`openMenu`](./misc.ts#L294-L316)
 
 Open menu.
 
@@ -657,6 +657,7 @@ like `jj`.
 
 This command:
 - does not require an active text editor.
+- takes an argument `delay` of type `number`.
 - takes an argument `locked` of type `boolean`.
 - takes an argument `menu` of type `Menu`.
 - takes an argument `pass` of type `any[]`.

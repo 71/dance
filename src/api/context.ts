@@ -92,6 +92,15 @@ class ContextWithoutActiveEditor {
   }
 
   /**
+   * Returns a new context whose cancellation is controlled by the specified
+   * cancellation token.
+   */
+  public withCancellationToken(cancellationToken: vscode.CancellationToken) {
+    return new Context.WithoutActiveEditor(
+      this.extension, cancellationToken, this.commandDescriptor);
+  }
+
+  /**
    * Whether commands executed within this context should be recorded.
    */
   public shouldRecord() {
@@ -338,6 +347,14 @@ export class Context extends ContextWithoutActiveEditor {
     this._document = state.editor.document;
     this._editor = state.editor;
     this._mode = state.mode;
+  }
+
+  /**
+   * Returns a new context whose cancellation is controlled by the specified
+   * cancellation token.
+   */
+  public withCancellationToken(cancellationToken: vscode.CancellationToken) {
+    return new Context(this.getState(), cancellationToken, this.commandDescriptor);
   }
 
   /**

@@ -1,7 +1,7 @@
 import * as api from "../api";
 
 import { Argument, InputOr, RegisterOr } from ".";
-import { ArgumentError, Context, InputError, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
+import { ArgumentError, CancellationError, Context, findMenu, InputError, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
 import { Extension } from "../state/extension";
 import { Register } from "../state/registers";
 
@@ -25,7 +25,7 @@ declare module "./misc";
 export function cancel(extension: Extension) {
   // Calling a new command resets pending operations, so we don't need to do
   // anything special here.
-  extension.cancelLastOperation();
+  extension.cancelLastOperation(CancellationError.Reason.PressedEscape);
 }
 
 /**
@@ -289,7 +289,7 @@ export async function updateCount(
   extension.currentCount = input;
 }
 
-let lastPickedMenu: string | undefined;
+const menuHistory: string[] = [];
 
 /**
  * Open menu.
@@ -312,41 +312,41 @@ export async function openMenu(
   prefix?: Argument<string>,
   pass: Argument<any[]> = [],
   locked: Argument<boolean> = false,
+  delay: Argument<number> = 0,
 ) {
-  if (typeof menu === "object") {
-    const errors = validateMenu(menu);
+  if (typeof menu !== "object") {
+    const menus = _.extension.menus;
+    const input = await inputOr(() => prompt({
+      prompt: "Menu name",
+      validateInput(value) {
+        if (menus.has(value)) {
+          return;
+        }
 
-    if (errors.length > 0) {
-      throw new Error(`invalid menu: ${errors.join(", ")}`);
-    }
+        return `menu ${JSON.stringify(value)} does not exist`;
+      },
+      placeHolder: [...menus.keys()].sort().join(", ") || "no menu defined",
+      history: menuHistory,
+    }, _));
 
-    if (locked) {
-      return showLockedMenu(menu, pass);
-    }
-
-    return showMenu(menu, pass, prefix);
+    menu = findMenu(input, _);
   }
 
-  const menus = _.extension.menus;
-  const input = await inputOr(() => prompt({
-    prompt: "Menu name",
-    validateInput(value) {
-      if (menus.has(value)) {
-        lastPickedMenu = value;
-        return;
-      }
+  const errors = validateMenu(menu);
 
-      return `menu ${JSON.stringify(value)} does not exist`;
-    },
-    placeHolder: [...menus.keys()].sort().join(", ") || "no menu defined",
-    value: lastPickedMenu,
-  }, _));
+  if (errors.length > 0) {
+    throw new Error(`invalid menu: ${errors.join(", ")}`);
+  }
 
   if (locked) {
-    return showLockedMenu.byName(input, pass);
+    return showLockedMenu(menu, pass);
   }
 
-  return showMenu.byName(input, pass, prefix);
+  if (delay > 0) {
+    return showMenu.withDelay(delay, menu, pass, prefix);
+  }
+
+  return showMenu(menu, pass, prefix);
 }
 
 /**

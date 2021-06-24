@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 
 import { Context, prompt } from ".";
+import { CancellationError } from "./errors";
+import { keypress } from "./prompt";
 
 export interface Menu {
   readonly items: Menu.Items;
@@ -76,6 +78,20 @@ export function validateMenu(menu: Menu) {
 }
 
 /**
+ * Returns the menu with the given name. If no such menu exists, an exception
+ * will be thrown.
+ */
+export function findMenu(menuName: string, context = Context.WithoutActiveEditor.current) {
+  const menu = context.extension.menus.get(menuName);
+
+  if (menu === undefined) {
+    throw new Error(`menu ${JSON.stringify(menuName)} does not exist`);
+  }
+
+  return menu;
+}
+
+/**
  * Shows the given menu to the user, awaiting a choice.
  */
 export async function showMenu(
@@ -112,13 +128,57 @@ export namespace showMenu {
     additionalArgs: readonly any[] = [],
     prefix?: string,
   ) {
-    const menu = Context.WithoutActiveEditor.current.extension.menus.get(menuName);
+    return showMenu(findMenu(menuName), additionalArgs, prefix);
+  }
 
-    if (menu === undefined) {
-      return Promise.reject(new Error(`menu ${JSON.stringify(menuName)} does not exist`));
+  /**
+   * Same as `showMenu`, but only displays the menu after a specified delay.
+   */
+  export async function withDelay(
+    delayMs: number,
+    menu: Menu,
+    additionalArgs: readonly any[] = [],
+    prefix?: string,
+  ) {
+    const cancellationTokenSource = new vscode.CancellationTokenSource(),
+          currentContext = Context.current;
+
+    currentContext.cancellationToken.onCancellationRequested(() =>
+      cancellationTokenSource.cancel());
+
+    const keypressContext = currentContext.withCancellationToken(cancellationTokenSource.token),
+          timeout = setTimeout(() => cancellationTokenSource.cancel(), delayMs);
+
+    try {
+      const key = await keypress(keypressContext);
+
+      clearTimeout(timeout);
+
+      for (const itemKeys in menu.items) {
+        if (!itemKeys.includes(key)) {
+          continue;
+        }
+
+        const pickedItem = menu.items[itemKeys],
+              args = mergeArgs(pickedItem.args, additionalArgs);
+
+        return Context.WithoutActiveEditor.wrap(
+          vscode.commands.executeCommand(pickedItem.command, ...args),
+        );
+      }
+
+      if (prefix !== undefined) {
+        await vscode.commands.executeCommand("default:type", { text: prefix + key });
+      }
+    } catch (e) {
+      if (!currentContext.cancellationToken.isCancellationRequested) {
+        return showMenu(menu, additionalArgs, prefix);
+      }
+
+      throw e;
+    } finally {
+      cancellationTokenSource.dispose();
     }
-
-    return showMenu(menu, additionalArgs, prefix);
   }
 }
 
@@ -146,13 +206,7 @@ export namespace showLockedMenu {
     menuName: string,
     additionalArgs: readonly any[] = [],
   ) {
-    const menu = Context.WithoutActiveEditor.current.extension.menus.get(menuName);
-
-    if (menu === undefined) {
-      return Promise.reject(new Error(`menu ${JSON.stringify(menuName)} does not exist`));
-    }
-
-    return showLockedMenu(menu, additionalArgs);
+    return showLockedMenu(findMenu(menuName), additionalArgs);
   }
 }
 
