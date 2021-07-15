@@ -155,6 +155,18 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   "dance.disableArbitraryCodeExecution": false,
   "dance.disableArbitraryCommandExecution": false,
 
+  // Capabilities.
+  // ==========================================================================
+
+  capabilities: {
+    untrustedWorkspaces: {
+      supported: "limited",
+      description:
+        "Existing menu items and mode commands can only be updated if the current workspace is "
+        + "trusted in order to ensure untrusted workspaces do not execute malicious commands.",
+    },
+  },
+
   contributes: {
 
     // Configuration.
@@ -619,16 +631,6 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           markdownDeprecationMessage: builtinModesAreDeprecatedMessage,
         },
       },
-    },
-
-    // Misc configuration.
-    // ========================================================================
-
-    untrustedWorkspaces: {
-      supported: "limited",
-      description:
-        "Existing menu items and mode commands can only be updated if the current workspace is "
-        + "trusted in order to ensure untrusted workspaces do not execute malicious commands.",
     },
 
     // Commands.

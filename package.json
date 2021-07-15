@@ -62,6 +62,12 @@
   ],
   "dance.disableArbitraryCodeExecution": false,
   "dance.disableArbitraryCommandExecution": false,
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Existing menu items and mode commands can only be updated if the current workspace is trusted in order to ensure untrusted workspaces do not execute malicious commands."
+    }
+  },
   "contributes": {
     "configuration": {
       "type": "object",
@@ -785,10 +791,6 @@
           "markdownDeprecationMessage": "Built-in modes are deprecated. Use `#dance.modes#` instead."
         }
       }
-    },
-    "untrustedWorkspaces": {
-      "supported": "limited",
-      "description": "Existing menu items and mode commands can only be updated if the current workspace is trusted in order to ensure untrusted workspaces do not execute malicious commands."
     },
     "commands": [
       {
