@@ -75,6 +75,13 @@ export function save(
       until.forEach((until) => disposable.disposeOnUserEvent(until, _));
     } else {
       setTimeout(() => {
+        try {
+          _.getState();
+        } catch {
+          // Editor has gone out of view.
+          return disposable.dispose();
+        }
+
         until.forEach((until) => disposable.disposeOnUserEvent(until, _));
       }, untilDelay);
     }

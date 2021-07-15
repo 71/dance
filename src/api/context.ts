@@ -361,7 +361,7 @@ export class Context extends ContextWithoutActiveEditor {
    * Returns the mode-specific state for the current context.
    */
   public getState() {
-    return this.extension.editors.getState(this._editor)!;
+    return this.extension.editors.getState(this._editor);
   }
 
   /**
