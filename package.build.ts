@@ -259,6 +259,14 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 description: "The decorations to apply to selections.",
                 items: selectionDecorationType,
               },
+              hiddenSelectionsIndicatorsDecoration: {
+                ...selectionDecorationType,
+                type: ["object", "null"],
+                description:
+                  "The decorations to apply to the hidden selections indicator, shown when "
+                  + "some selections are below or above the lines currently shown in the editor. "
+                  + "Specify an empty object {} to disable this indicator.",
+              },
             },
             additionalProperties: false,
           },

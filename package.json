@@ -291,6 +291,58 @@
                     }
                   }
                 }
+              },
+              "hiddenSelectionsIndicatorsDecoration": {
+                "type": [
+                  "object",
+                  "null"
+                ],
+                "properties": {
+                  "applyTo": {
+                    "enum": [
+                      "all",
+                      "main",
+                      "secondary"
+                    ],
+                    "default": "all",
+                    "description": "The selections to apply this style to.",
+                    "enumDescriptions": [
+                      "Apply to all selections.",
+                      "Apply to main selection only.",
+                      "Apply to all selections except main selection."
+                    ]
+                  },
+                  "backgroundColor": {
+                    "type": "string",
+                    "pattern": "^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\\$([a-zA-Z]+(\\.[a-zA-Z]+)+))$",
+                    "patternErrorMessage": "Color should be an hex color or a '$' sign followed by a color identifier."
+                  },
+                  "borderColor": {
+                    "type": "string",
+                    "pattern": "^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\\$([a-zA-Z]+(\\.[a-zA-Z]+)+))$",
+                    "patternErrorMessage": "Color should be an hex color or a '$' sign followed by a color identifier."
+                  },
+                  "borderStyle": {
+                    "type": "string"
+                  },
+                  "borderWidth": {
+                    "type": "string"
+                  },
+                  "borderRadius": {
+                    "type": "string"
+                  },
+                  "isWholeLine": {
+                    "type": "boolean",
+                    "default": false
+                  },
+                  "after": {
+                    "type": "object"
+                  },
+                  "before": {
+                    "type": "object"
+                  }
+                },
+                "description": "The decorations to apply to the hidden selections indicator, shown when some selections are below or above the lines currently shown in the editor. Specify an empty object {} to disable this indicator."
               }
             },
             "additionalProperties": false

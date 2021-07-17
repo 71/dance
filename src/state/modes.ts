@@ -261,7 +261,8 @@ export class Mode {
       "hiddenSelectionsIndicatorsDecoration", "hiddenSelectionsIndicatorsDecorationType",
       Mode.decorationObjectToDecorationRenderOptions);
 
-    if (hiddenSelectionsIndicatorsDecoration === undefined) {
+    if (hiddenSelectionsIndicatorsDecoration === undefined
+        || Object.keys(hiddenSelectionsIndicatorsDecoration).length === 0) {
       if (this._raw?.hiddenSelectionsIndicatorsDecoration != null) {
         this._hiddenSelectionsIndicatorsDecorationType!.dispose();
       }
