@@ -1,15 +1,16 @@
 import * as vscode from "vscode";
 
-import { extensionName } from "../extension";
-import { Register, Registers } from "./registers";
-import { assert, CancellationError, Menu, validateMenu } from "../api";
-import { Modes } from "./modes";
-import { SettingsValidator } from "../utils/settings-validator";
-import { Recorder } from "./recorder";
-import { Commands } from "../commands";
-import { AutoDisposable } from "../utils/disposables";
-import { StatusBar } from "./status-bar";
 import { Editors } from "./editors";
+import { Modes } from "./modes";
+import { Recorder } from "./recorder";
+import { Register, Registers } from "./registers";
+import { StatusBar } from "./status-bar";
+import { Menu, validateMenu } from "../api";
+import type { Commands } from "../commands";
+import { extensionName } from "../utils/constants";
+import { AutoDisposable } from "../utils/disposables";
+import { assert, CancellationError } from "../utils/errors";
+import { SettingsValidator } from "../utils/settings-validator";
 
 // ===============================================================================================
 // ==  EXTENSION  ================================================================================

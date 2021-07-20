@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import * as api from ".";
-import { CommandDescriptor } from "../commands";
+
+import { Context } from ".";
+import type { CommandDescriptor } from "../commands";
 import { parseRegExpWithReplacement } from "../utils/regexp";
-import { Context } from "./context";
 
 /**
  * Runs the given string of JavaScript code.
@@ -47,25 +47,33 @@ export function run(strings: string | readonly string[], context: object = {}) {
 
 const cachedParameterNames = [] as string[],
       cachedParameters = [] as unknown[];
+let globalsObject: Record<string, any> = {};
 
 function ensureCacheIsPopulated() {
   if (cachedParameterNames.length > 0) {
     return;
   }
 
-  for (const name in api) {
+  for (const name in globalsObject) {
     cachedParameterNames.push(name);
-    cachedParameters.push((api as any)[name]);
+    cachedParameters.push(globalsObject[name]);
   }
 
   cachedParameterNames.push("vscode");
   cachedParameters.push(vscode);
-
-  Object.freeze(cachedParameterNames);
-  Object.freeze(cachedParameters);
 }
 
 export namespace run {
+  /**
+   * Sets the globals available within {@link run} expressions.
+   */
+  export function setGlobals(globals: object) {
+    cachedParameterNames.length = 0;
+    cachedParameters.length = 0;
+
+    globalsObject = globals;
+  }
+
   /**
    * Returns the parameter names given to dynamically run functions.
    */
@@ -105,7 +113,7 @@ export namespace run {
           async function () {}.constructor as any,
         functionCache = new Map<string, CachedFunction>();
 
-  type CachedFunction = [function: CompiledFunction, lastAccessTimestamp: number];
+  type CachedFunction = [funct: CompiledFunction, lastAccessTimestamp: number];
 
   /**
    * A few common inputs.

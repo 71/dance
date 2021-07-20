@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 
 import { Context, EditorRequiredError } from "../api";
-import { Extension } from "../state/extension";
-import { Register, Registers } from "../state/registers";
+import type { Extension } from "../state/extension";
+import type { Register, Registers } from "../state/registers";
 
 /**
  * Indicates that a register is expected; if no register is given, the

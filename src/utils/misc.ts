@@ -1,8 +1,5 @@
 import * as vscode from "vscode";
 
-import { Context, prompt, Selections } from "../api";
-import { Input, SetInput } from "../commands";
-
 /**
  * An object passed to `vscode.TextEditor.edit` to indicate that no undo stops
  * should be implicitly inserted.
@@ -33,31 +30,6 @@ export function performDummyEdit(editor: vscode.TextEditor) {
  */
 export function unsafeSelections(editor: vscode.TextEditor) {
   return editor.selections;
-}
-
-export async function manipulateSelectionsInteractively<I, R>(
-  _: Context,
-  input: Input<I>,
-  setInput: SetInput<R>,
-  interactive: boolean,
-  options: prompt.Options,
-  f: (input: string | I, selections: readonly vscode.Selection[]) => Thenable<R>,
-) {
-  const selections = _.selections;
-
-  function execute(input: string | I) {
-    return _.runAsync(() => f(input, selections));
-  }
-
-  function undo() {
-    Selections.set(selections);
-  }
-
-  if (input === undefined) {
-    setInput(await prompt.interactive(execute, undo, options, interactive));
-  } else {
-    await execute(input);
-  }
 }
 
 export const workspaceSettingsPropertyNames = [

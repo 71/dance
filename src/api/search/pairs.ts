@@ -1,10 +1,8 @@
 import * as vscode from "vscode";
-import { search } from ".";
-import { Direction } from "..";
+
+import { Context, Direction, Positions, search } from "..";
+import { ArgumentError } from "../../utils/errors";
 import { anyRegExp, escapeForRegExp } from "../../utils/regexp";
-import { Context } from "../context";
-import { ArgumentError } from "../errors";
-import { Positions } from "../positions";
 
 /**
  * A pair of opening and closing patterns.

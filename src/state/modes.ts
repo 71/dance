@@ -1,14 +1,9 @@
 import * as vscode from "vscode";
 
-import { command } from "../api";
-import { extensionName } from "../extension";
-import { Extension } from "./extension";
+import type { Extension } from "./extension";
+import { command, SelectionBehavior } from "../api";
+import { extensionName } from "../utils/constants";
 import { SettingsValidator } from "../utils/settings-validator";
-
-export const enum SelectionBehavior {
-  Caret = 1,
-  Character = 2,
-}
 
 /**
  * An editing mode.

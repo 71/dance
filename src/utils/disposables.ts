@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context } from "../api";
+import type { Context } from "../api";
 import { Entry } from "../state/recorder";
 
 export interface NotifyingDisposable extends vscode.Disposable {

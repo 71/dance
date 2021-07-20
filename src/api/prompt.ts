@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 
-import { Context } from "../api";
-import { CancellationError } from "./errors";
+import { Context, Selections } from ".";
+import type { Input, SetInput } from "../commands";
+import { CancellationError } from "../utils/errors";
 
 const actionEvent = new vscode.EventEmitter<Parameters<typeof prompt.notifyActionRequested>[0]>();
 
@@ -297,6 +298,34 @@ export namespace prompt {
         throw err;
       },
     );
+  }
+
+  /**
+   * @internal
+   */
+  export async function manipulateSelectionsInteractively<I, R>(
+    _: Context,
+    input: Input<I>,
+    setInput: SetInput<R>,
+    interactive: boolean,
+    options: prompt.Options,
+    f: (input: string | I, selections: readonly vscode.Selection[]) => Thenable<R>,
+  ) {
+    const selections = _.selections;
+
+    function execute(input: string | I) {
+      return _.runAsync(() => f(input, selections));
+    }
+
+    function undo() {
+      Selections.set(selections);
+    }
+
+    if (input === undefined) {
+      setInput(await prompt.interactive(execute, undo, options, interactive));
+    } else {
+      await execute(input);
+    }
   }
 
   export type ListPair = readonly [string, string];

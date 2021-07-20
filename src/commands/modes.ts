@@ -1,4 +1,4 @@
-import { InputOr } from ".";
+import type { InputOr } from ".";
 import { Context, prompt, toMode } from "../api";
 
 /**

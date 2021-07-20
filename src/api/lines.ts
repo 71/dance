@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context } from "./context";
-import { assert } from "./errors";
+import { Context } from ".";
 
 /**
  * Returns the 0-based number of the first visible line in the current editor.

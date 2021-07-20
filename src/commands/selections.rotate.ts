@@ -1,4 +1,4 @@
-import { Argument } from ".";
+import type { Argument } from ".";
 import { Context, rotate } from "../api";
 
 /**

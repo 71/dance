@@ -1,5 +1,4 @@
-import { group } from "console";
-import { assert } from "../api/errors";
+import { assert } from "./errors";
 
 /**
  * Returns whether this `RegExp` may match on a string that contains a `\n`

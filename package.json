@@ -16,7 +16,7 @@
     "vscode": "^1.56.0"
   },
   "scripts": {
-    "check": "eslint .",
+    "check": "eslint . && depcruise -v .dependency-cruiser.js src",
     "format": "eslint . --fix",
     "generate": "ts-node ./meta.ts",
     "generate:watch": "ts-node ./meta.ts --watch",
@@ -35,6 +35,7 @@
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
     "chokidar": "^3.5.1",
+    "dependency-cruiser": "^10.0.5",
     "eslint": "^7.22.0",
     "glob": "^7.1.6",
     "mocha": "^8.1.1",
@@ -58,6 +59,7 @@
   ],
   "extensionKind": [
     "ui",
+    "web",
     "workspace"
   ],
   "dance.disableArbitraryCodeExecution": false,

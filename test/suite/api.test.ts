@@ -3,9 +3,8 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 
 import { expect, ExpectedDocument } from "./utils";
-import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, mergeOverlappingSelections, moveWhile, NotASelectionError, Positions, replace, rotate, rotateSelections, search, Select, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
+import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, mergeOverlappingSelections, moveWhile, NotASelectionError, Positions, replace, rotate, rotateSelections, search, Select, SelectionBehavior, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
 import { Extension } from "../../src/state/extension";
-import { SelectionBehavior } from "../../src/state/modes";
 
 function setSelectionBehavior(selectionBehavior: SelectionBehavior) {
   Context.current.mode.update("_selectionBehavior", selectionBehavior);

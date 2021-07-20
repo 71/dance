@@ -8,7 +8,7 @@ module.exports = {
     ecmaVersion: 2019,
     sourceType: "module",
   },
-  ignorePatterns: ["*.js"],
+  ignorePatterns: ["out/", "*.js"],
   overrides: [
     {
       files: ["commands/index.ts"],

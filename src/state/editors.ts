@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 
-import { assert, command, commands, Context, Positions, Selections, selectionsLines } from "../api";
-import { extensionName } from "../extension";
-import { Extension } from "./extension";
-import { Mode, SelectionBehavior } from "./modes";
+import type { Extension } from "./extension";
+import type { Mode } from "./modes";
+import { command, commands, Context, Positions, SelectionBehavior, Selections, selectionsLines } from "../api";
+import { extensionName } from "../utils/constants";
+import { assert } from "../utils/errors";
 
 /**
  * Dance-specific state related to a single `vscode.TextEditor`.

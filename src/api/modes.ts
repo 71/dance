@@ -1,4 +1,4 @@
-import { Context } from "./context";
+import { Context } from ".";
 
 /**
  * Switches to the mode with the given name.

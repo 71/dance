@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
-import { ArgumentError } from "../api";
-import { PerEditorState } from "../state/editors";
+import { ArgumentError } from "./errors";
+import type { PerEditorState } from "../state/editors";
 
 export namespace TrackedSelection {
   /**
@@ -246,7 +246,7 @@ export namespace TrackedSelection {
     /**
      * Updates the tracked selections to reflect a change in their document.
      *
-     * @returns whether the change was applied.
+     * @return whether the change was applied.
      */
     protected updateAfterDocumentChanged(e: vscode.TextDocumentChangeEvent) {
       if (e.document !== this.document || e.contentChanges.length === 0) {

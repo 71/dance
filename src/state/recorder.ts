@@ -1,15 +1,13 @@
 import * as vscode from "vscode";
 
+import type { PerEditorState } from "./editors";
+import type { Extension } from "./extension";
+import type { Mode } from "./modes";
+import type { StatusBar } from "./status-bar";
+import { Context, Positions, Selections } from "../api";
 import { CommandDescriptor } from "../commands";
+import { assert, CancellationError } from "../utils/errors";
 import { noUndoStops } from "../utils/misc";
-import { StatusBar } from "./status-bar";
-import { Context } from "../api/context";
-import { assert, CancellationError } from "../api/errors";
-import { Positions } from "../api/positions";
-import { Selections } from "../api";
-import { Extension } from "./extension";
-import { PerEditorState } from "./editors";
-import { Mode } from "./modes";
 
 type RecordValue = CommandDescriptor | object | vscode.Uri | number | string;
 
@@ -950,7 +948,17 @@ export namespace Entry {
         public static readonly id = id;
       }
 
-      return EntryWithSize;
+      // We need to wrap `EntryWithSize` into an actual, textually-representable
+      // type below in order to generate a valid declaration for `define` in a
+      // `.d.ts` file.
+      return EntryWithSize as unknown as {
+        readonly size: number;
+        readonly id: number;
+
+        new(
+          ...args: typeof Base extends abstract new(...args: infer Args) => any ? Args : never
+        ): Base<Readonly<Items>>;
+      };
     }
   }
 

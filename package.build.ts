@@ -103,7 +103,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   },
 
   scripts: {
-    "check": "eslint .",
+    "check": "eslint . && depcruise -v .dependency-cruiser.js src",
     "format": "eslint . --fix",
     "generate": "ts-node ./meta.ts",
     "generate:watch": "ts-node ./meta.ts --watch",
@@ -123,6 +123,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
     "chokidar": "^3.5.1",
+    "dependency-cruiser": "^10.0.5",
     "eslint": "^7.22.0",
     "glob": "^7.1.6",
     "mocha": "^8.1.1",
@@ -144,7 +145,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   icon: "assets/dance.png",
 
   activationEvents: ["*"],
-  extensionKind: ["ui", "workspace"],
+  extensionKind: ["ui", "web", "workspace"],
 
   // Dance-specific properties.
   // ==========================================================================

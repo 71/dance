@@ -1,9 +1,8 @@
 import * as vscode from "vscode";
 
-import { Argument } from ".";
-import { Context } from "../api";
-import { Extension } from "../state/extension";
-import { SelectionBehavior } from "../state/modes";
+import type { Argument } from ".";
+import { Context, SelectionBehavior } from "../api";
+import type { Extension } from "../state/extension";
 
 /**
  * Developer utilities for Dance.

@@ -1,9 +1,7 @@
 import * as vscode from "vscode";
-import * as api from "../api";
 
-import { Argument } from ".";
-import { column, columns, Context, Direction, Lines, Positions, Selections, Shift, showMenu } from "../api";
-import { SelectionBehavior } from "../state/modes";
+import type { Argument } from ".";
+import { firstVisibleLine as apiFirstVisibleLine, lastVisibleLine as apiLastVisibleLine, middleVisibleLine as apiMiddleVisibleLine, column, columns, Context, Direction, Lines, Positions, SelectionBehavior, Selections, Shift, showMenu } from "../api";
 import { PerEditorState } from "../state/editors";
 import { unsafeSelections } from "../utils/misc";
 
@@ -581,7 +579,7 @@ export function lastLine(_: Context, document: vscode.TextDocument, shift = Shif
  */
 export function firstVisibleLine(_: Context, shift = Shift.Select) {
   const selection = _.mainSelection,
-        toPosition = Positions.lineStart(api.firstVisibleLine(_.editor));
+        toPosition = Positions.lineStart(apiFirstVisibleLine(_.editor));
 
   Selections.set([Selections.shift(selection, toPosition, shift)]);
 }
@@ -598,7 +596,7 @@ export function firstVisibleLine(_: Context, shift = Shift.Select) {
  */
 export function middleVisibleLine(_: Context, shift = Shift.Select) {
   const selection = _.mainSelection,
-        toPosition = Positions.lineStart(api.middleVisibleLine(_.editor));
+        toPosition = Positions.lineStart(apiMiddleVisibleLine(_.editor));
 
   Selections.set([Selections.shift(selection, toPosition, shift)]);
 }
@@ -615,7 +613,7 @@ export function middleVisibleLine(_: Context, shift = Shift.Select) {
  */
 export function lastVisibleLine(_: Context, shift = Shift.Select) {
   const selection = _.mainSelection,
-        toPosition = Positions.lineStart(api.lastVisibleLine(_.editor));
+        toPosition = Positions.lineStart(apiLastVisibleLine(_.editor));
 
   Selections.set([Selections.shift(selection, toPosition, shift)]);
 }

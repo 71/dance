@@ -1,9 +1,10 @@
 import * as vscode from "vscode";
 
-import { Argument, CommandDescriptor, RegisterOr } from ".";
-import { ArgumentError, Context } from "../api";
-import { Register } from "../state/registers";
-import { ActiveRecording, Entry, Recorder, Recording } from "../state/recorder";
+import type { Argument, CommandDescriptor, RegisterOr } from ".";
+import type { Context } from "../api";
+import { ActiveRecording, Entry, Recorder } from "../state/recorder";
+import type { Register } from "../state/registers";
+import { ArgumentError } from "../utils/errors";
 
 /**
  * Interact with history.

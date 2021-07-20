@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import { Register } from "../state/registers";
-import { Context } from "./context";
+
+import { Context } from ".";
+import type { Register } from "../state/registers";
 
 /**
  * Returns the `i`th string in the register with the given name, or `undefined`

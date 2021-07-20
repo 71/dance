@@ -1,12 +1,10 @@
 import * as vscode from "vscode";
-import * as api from "../api";
 
-import { Argument, Input, RegisterOr, SetInput } from ".";
-import { Context, Direction, EmptySelectionsError, Positions, prompt, Selections } from "../api";
-import { Register } from "../state/registers";
-import { manipulateSelectionsInteractively } from "../utils/misc";
-import { escapeForRegExp } from "../utils/regexp";
+import type { Argument, Input, RegisterOr, SetInput } from ".";
+import { search as apiSearch, Context, Direction, EmptySelectionsError, Positions, prompt, Selections, Shift } from "../api";
+import type { Register } from "../state/registers";
 import { CharSet, getCharSetFunction } from "../utils/charset";
+import { escapeForRegExp } from "../utils/regexp";
 
 /**
  * Search for patterns and replace or add selections.
@@ -34,12 +32,12 @@ export function search(
   add: Argument<boolean> = false,
   direction: Direction = Direction.Forward,
   interactive: Argument<boolean> = true,
-  shift: api.Shift = api.Shift.Jump,
+  shift: Shift = Shift.Jump,
 
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
+  return prompt.manipulateSelectionsInteractively(_, input, setInput, interactive, {
     ...prompt.regexpOpts("mu"),
     value: lastSearchInput?.source,
   }, (input, selections) => {
@@ -59,7 +57,7 @@ export function search(
       for (let j = 0; j < repetitions; j++) {
         const searchResult = nextImpl(
           input as RegExp, direction, newSelection, undefined, undefined, document,
-          /* allowWrapping= */ shift !== api.Shift.Extend, regexpMatches, regexpMatches.length);
+          /* allowWrapping= */ shift !== Shift.Extend, regexpMatches, regexpMatches.length);
 
         if (searchResult === undefined) {
           return undefined;
@@ -68,7 +66,7 @@ export function search(
         newSelection = searchResult;
       }
 
-      if (shift === api.Shift.Jump) {
+      if (shift === Shift.Jump) {
         return newSelection;
       }
 
@@ -251,7 +249,7 @@ function nextImpl(
 ): vscode.Selection | undefined {
   searchStart ??= direction === Direction.Backward ? selection.start : selection.end;
 
-  const searchResult = api.search(direction, re, searchStart, searchEnd);
+  const searchResult = apiSearch(direction, re, searchStart, searchEnd);
 
   if (searchResult === undefined) {
     if (allowWrapping) {

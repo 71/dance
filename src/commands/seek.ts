@@ -1,11 +1,9 @@
 import * as vscode from "vscode";
 
-import { Argument, InputOr } from ".";
-import { ArgumentError, assert, closestSurroundedBy, Context, Direction, keypress, Lines, mapSelections, moveTo, moveWhile, Pair, pair, Positions, prompt, search, Selections, Shift, surroundedBy } from "../api";
-import { Range } from "../api/search/range";
-import { wordBoundary } from "../api/search/word";
-import { SelectionBehavior } from "../state/modes";
+import type { Argument, InputOr } from ".";
+import { closestSurroundedBy, Context, Direction, keypress, Lines, moveTo, moveWhile, Pair, pair, Positions, prompt, Range, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
 import { CharSet } from "../utils/charset";
+import { ArgumentError, assert } from "../utils/errors";
 import { execRange } from "../utils/regexp";
 
 /**

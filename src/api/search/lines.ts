@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context } from "../context";
-import { Positions } from "../positions";
-import { lineByLine } from "./move";
+import { Context, lineByLine, Positions } from "..";
 
 /**
  * Returns the range of lines matching the given `RegExp` before and after

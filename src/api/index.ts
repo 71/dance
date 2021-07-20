@@ -59,6 +59,20 @@ export const enum Shift {
   Extend,
 }
 
+/**
+ * Selection behavior of an operation.
+ */
+export const enum SelectionBehavior {
+  /**
+   * VS Code-like caret selections.
+   */
+  Caret = 1,
+  /**
+   * Kakoune-like character selections.
+   */
+  Character = 2,
+}
+
 export const Forward = Direction.Forward,
              Backward = Direction.Backward,
              Jump = Shift.Jump,

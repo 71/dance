@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context, prompt } from ".";
-import { CancellationError } from "./errors";
-import { keypress } from "./prompt";
+import { Context, keypress, prompt } from ".";
 
 export interface Menu {
   readonly items: Menu.Items;

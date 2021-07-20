@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
-import * as regexp from "../../utils/regexp";
 
-import { Context, Direction } from "..";
-import { Positions } from "../positions";
+import { Context, Direction, Positions } from "..";
+import { canMatchLineFeed, execLast, matchesStaticStrings } from "../../utils/regexp";
 
 /**
  * Searches backward or forward for a pattern starting at the given position.
@@ -72,13 +71,13 @@ export namespace search {
     }
 
     if (possibleSearchLength > 2_000) {
-      const staticMatches = regexp.matchesStaticStrings(re);
+      const staticMatches = matchesStaticStrings(re);
 
       if (staticMatches !== undefined) {
         return searchOneOfBackward(re, staticMatches, origin, end, document);
       }
 
-      if (!regexp.canMatchLineFeed(re)) {
+      if (!canMatchLineFeed(re)) {
         return searchSingleLineRegExpBackward(re, origin, end, document);
       }
     }
@@ -132,13 +131,13 @@ export namespace search {
     }
 
     if (possibleSearchLength > 2_000) {
-      const staticMatches = regexp.matchesStaticStrings(re);
+      const staticMatches = matchesStaticStrings(re);
 
       if (staticMatches !== undefined) {
         return searchOneOfForward(re, staticMatches, origin, end, document);
       }
 
-      if (!regexp.canMatchLineFeed(re)) {
+      if (!canMatchLineFeed(re)) {
         return searchSingleLineRegExpForward(re, origin, end, document);
       }
     }
@@ -177,7 +176,7 @@ function searchNaiveBackward(
 
   // Find all matches before the origin and take the last one.
   const searchRange = new vscode.Range(end, origin),
-        match = regexp.execLast(re, document.getText(searchRange));
+        match = execLast(re, document.getText(searchRange));
 
   if (match === null) {
     return;
@@ -217,7 +216,7 @@ function searchSingleLineRegExpBackward(
 
   // Loop for a match line by line, starting at the current line.
   const currentLine = document.lineAt(origin),
-        match = regexp.execLast(re, currentLine.text.slice(0, origin.character));
+        match = execLast(re, currentLine.text.slice(0, origin.character));
 
   if (match !== null) {
     return [new vscode.Position(origin.line, match.index), match] as search.Result;
@@ -227,14 +226,14 @@ function searchSingleLineRegExpBackward(
 
   for (let line = origin.line - 1; line > endLine; line--) {
     const textLine = document.lineAt(line),
-          match = regexp.execLast(re, textLine.text);
+          match = execLast(re, textLine.text);
 
     if (match !== null) {
       return [new vscode.Position(line, match.index), match] as search.Result;
     }
   }
 
-  const endMatch = regexp.execLast(re, document.lineAt(endLine).text.slice(end.character));
+  const endMatch = execLast(re, document.lineAt(endLine).text.slice(end.character));
 
   if (endMatch !== null) {
     const endCharacter = end.character + endMatch.index;

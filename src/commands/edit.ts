@@ -1,21 +1,9 @@
 import * as vscode from "vscode";
-import * as api from "../api";
 
-import {
-  Context,
-  deindentLines,
-  edit,
-  indentLines,
-  joinLines,
-  keypress,
-  LengthMismatchError,
-  replace,
-  Selections,
-  selectionsLines,
-  setSelections,
-} from "../api";
-import { Register } from "../state/registers";
-import { Argument, InputOr, RegisterOr } from ".";
+import type { Argument, InputOr, RegisterOr } from ".";
+import { insert as apiInsert, Context, deindentLines, edit, indentLines, joinLines, keypress, replace, Selections, selectionsLines, setSelections } from "../api";
+import type { Register } from "../state/registers";
+import { LengthMismatchError } from "../utils/errors";
 
 /**
  * Perform changes on the text content of the document.
@@ -67,8 +55,8 @@ export async function insert(
 
   if (select) {
     const textToInsert = contents.join(""),
-          insert = handleNewLine ? api.insert.byIndex.withFullLines : api.insert.byIndex,
-          flags = api.insert.flagsAtEdge(where) | api.insert.Select;
+          insert = handleNewLine ? apiInsert.byIndex.withFullLines : apiInsert.byIndex,
+          flags = apiInsert.flagsAtEdge(where) | apiInsert.Select;
 
     const insertedRanges = await insert(flags, () => textToInsert, selections),
           allSelections = [] as vscode.Selection[],
@@ -108,12 +96,12 @@ export async function insert(
     throw new Error(`"where" must be one of "active", "anchor", "start", "end", or undefined`);
   }
 
-  const flags = api.insert.flagsAtEdge(where) | api.insert.Keep;
+  const flags = apiInsert.flagsAtEdge(where) | apiInsert.Keep;
 
   Selections.set(
     handleNewLine
-      ? await api.insert.byIndex.withFullLines(flags, (i) => contents![i], selections)
-      : await api.insert.byIndex(flags, (i) => contents![i], selections),
+      ? await apiInsert.byIndex.withFullLines(flags, (i) => contents![i], selections)
+      : await apiInsert.byIndex(flags, (i) => contents![i], selections),
   );
 }
 

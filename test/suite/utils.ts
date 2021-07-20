@@ -9,8 +9,7 @@ import * as path   from "path";
 import * as unexpected from "unexpected";
 import * as vscode from "vscode";
 
-import { Context, Selections } from "../../src/api";
-import { SelectionBehavior } from "../../src/state/modes";
+import { Context, SelectionBehavior, Selections } from "../../src/api";
 import type { Extension } from "../../src/state/extension";
 
 interface Expect<T = any> {

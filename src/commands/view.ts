@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Argument } from ".";
+import type { Argument } from ".";
 import { Context, Selections } from "../api";
 
 /**

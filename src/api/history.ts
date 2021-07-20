@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context } from "./context";
+import { Context } from ".";
 
 /**
  * Un-does the last action.

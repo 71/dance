@@ -1,6 +1,6 @@
+import { CommandDescriptor, Commands } from ".";
 import { ArgumentError, commands, Context, Direction, EditorRequiredError, Shift } from "../api";
 import { Register } from "../state/registers";
-import { CommandDescriptor, Commands } from ".";
 
 function getRegister<F extends Register.Flags>(
   _: Context.WithoutActiveEditor,

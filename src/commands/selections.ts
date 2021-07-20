@@ -1,13 +1,14 @@
 import * as vscode from "vscode";
 
-import { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
-import { ArgumentError, Context, Direction, EmptySelectionsError, moveWhile, Positions, prompt, Selections, switchRun } from "../api";
+import type { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
+import { Context, Direction, moveWhile, Positions, prompt, SelectionBehavior, Selections, switchRun } from "../api";
 import { PerEditorState } from "../state/editors";
-import { Mode, SelectionBehavior } from "../state/modes";
-import { Register } from "../state/registers";
+import { Mode } from "../state/modes";
+import type { Register } from "../state/registers";
 import { CharSet, getCharacters } from "../utils/charset";
 import { AutoDisposable } from "../utils/disposables";
-import { manipulateSelectionsInteractively, unsafeSelections } from "../utils/misc";
+import { ArgumentError, EmptySelectionsError } from "../utils/errors";
+import { unsafeSelections } from "../utils/misc";
 import { SettingsValidator } from "../utils/settings-validator";
 import { TrackedSelection } from "../utils/tracked-selection";
 
@@ -329,7 +330,7 @@ export function filter(
   const document = _.document,
         strings = _.selections.map((selection) => document.getText(selection));
 
-  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
+  return prompt.manipulateSelectionsInteractively(_, input, setInput, interactive, {
     prompt: "Expression",
     validateInput(value) {
       try {
@@ -366,7 +367,7 @@ export function select(
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  return manipulateSelectionsInteractively(
+  return prompt.manipulateSelectionsInteractively(
     _,
     input,
     setInput,
@@ -397,7 +398,7 @@ export function split(
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  return manipulateSelectionsInteractively(
+  return prompt.manipulateSelectionsInteractively(
     _,
     input,
     setInput,

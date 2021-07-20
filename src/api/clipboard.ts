@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
-import { Context } from "./context";
+
+import { Context } from ".";
 
 /**
  * Copies the given text to the clipboard.

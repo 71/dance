@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
 
-import { EditNotAppliedError, EditorRequiredError } from "./errors";
-import { Selections } from "./selections";
-import { CommandDescriptor } from "../commands";
-import { PerEditorState } from "../state/editors";
-import { Extension } from "../state/extension";
-import { Mode, SelectionBehavior } from "../state/modes";
+import { SelectionBehavior, Selections } from ".";
+import type { CommandDescriptor } from "../commands";
+import type { PerEditorState } from "../state/editors";
+import type { Extension } from "../state/extension";
+import type { Mode } from "../state/modes";
+import { EditNotAppliedError, EditorRequiredError } from "../utils/errors";
 import { noUndoStops, performDummyEdit } from "../utils/misc";
 
 let currentContext: ContextWithoutActiveEditor | undefined;
@@ -17,9 +17,11 @@ const enum ContextFlags {
 }
 
 /**
- * @see Context.WithoutActiveEditor
+ * See {@link Context.WithoutActiveEditor} instead.
+ *
+ * @internal
  */
-class ContextWithoutActiveEditor {
+export class ContextWithoutActiveEditor {
   /**
    * Returns the current execution context, or throws an error if called outside
    * of an execution context.

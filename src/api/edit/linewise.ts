@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context, edit } from "../context";
+import { Context, edit } from "..";
 import { blankCharacters } from "../../utils/charset";
 
 /**

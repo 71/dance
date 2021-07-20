@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context, Direction } from "..";
-import { Positions } from "../positions";
+import { Context, Direction, Positions } from "..";
 
 /**
  * Moves the given position towards the given direction as long as the given

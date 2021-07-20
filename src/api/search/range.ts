@@ -1,12 +1,8 @@
 import * as vscode from "vscode";
 
-import { CharCodes } from "../../utils/regexp";
-import { Direction } from "..";
-import { Context } from "../context";
-import { Positions } from "../positions";
-import { moveWhile } from "./move";
+import { Context, Direction, Lines, moveWhile, Positions } from "..";
 import { CharSet, getCharSetFunction } from "../../utils/charset";
-import { Lines } from "../lines";
+import { CharCodes } from "../../utils/regexp";
 
 export namespace Range {
   /**
@@ -30,7 +26,7 @@ export namespace Range {
   }
 
   /**
-   * A function that, given a position, returns the range of teh object to which
+   * A function that, given a position, returns the range of the object to which
    * the position belongs.
    */
   export interface Seek {

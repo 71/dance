@@ -1,9 +1,8 @@
-import * as api from "../api";
-
-import { Argument, InputOr, RegisterOr } from ".";
-import { ArgumentError, CancellationError, Context, findMenu, InputError, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
-import { Extension } from "../state/extension";
-import { Register } from "../state/registers";
+import type { Argument, InputOr, RegisterOr } from ".";
+import { commands as apiCommands, run as apiRun, command, Context, findMenu, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
+import type { Extension } from "../state/extension";
+import type { Register } from "../state/registers";
+import { ArgumentError, CancellationError, InputError } from "../utils/errors";
 
 /**
  * Miscellaneous commands that don't deserve their own category.
@@ -137,17 +136,17 @@ export async function run(
   _: Context,
   inputOr: InputOr<string | readonly string[]>,
 
-  commands?: Argument<api.command.Any[]>,
+  commands?: Argument<command.Any[]>,
 ) {
   if (Array.isArray(commands)) {
-    return api.commands(...commands);
+    return apiCommands(...commands);
   }
 
   let code = await inputOr(() => prompt({
     prompt: "Code to run",
     validateInput(value) {
       try {
-        api.run.compileFunction(value);
+        apiRun.compileFunction(value);
 
         return;
       } catch (e) {
@@ -167,7 +166,7 @@ export async function run(
     return new InputError(`expected code to be a string or an array, but it was ${code}`);
   }
 
-  return _.run(() => api.run(code as string));
+  return _.run(() => apiRun(code as string));
 }
 
 /**

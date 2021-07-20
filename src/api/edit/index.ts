@@ -1,9 +1,7 @@
 import * as vscode from "vscode";
 
+import { Context, edit, Positions, Selections } from "..";
 import { TrackedSelection } from "../../utils/tracked-selection";
-import { Context, edit } from "../context";
-import { Positions } from "../positions";
-import { rotateSelections, Selections } from "../selections";
 
 const enum Constants {
   PositionMask = 0b00_11_1,
@@ -786,6 +784,6 @@ export namespace rotate {
    * ```
    */
   export function selectionsOnly(by: number, selections?: readonly vscode.Selection[]) {
-    Selections.set(rotateSelections(by, selections));
+    Selections.set(Selections.rotate(by, selections));
   }
 }
