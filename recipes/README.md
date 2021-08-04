@@ -96,3 +96,34 @@ command:
 
 For more information, please refer to [this issue](
 https://github.com/71/dance/issues/74#issuecomment-819557435).
+
+## Using `#` to search for current word under cursor
+
+We will use `dance.run` and combine multiple commands to mimic the behavior of `#` in Vim:
+1. Select to the end of the current word
+2. Select back to the begin of the current word
+3. Call search current selection command
+
+```json
+{
+   "key": "shift+3",
+   "command": "dance.run",
+   "args": {
+       "commands": [
+           {
+               "command": "dance.seek.word",
+               "args": { "stopAtEnd": true }
+           },
+           {
+               "command": "dance.seek.word",
+               "args": { "direction": -1 }
+           },
+           {
+               "command": "dance.search.selection",
+               "args": { "smart": true }
+           },
+       ]
+   },
+   "when": "editorTextFocus && dance.mode == 'normal'"
+}
+```
