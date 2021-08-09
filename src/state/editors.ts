@@ -503,6 +503,9 @@ export class Editors implements vscode.Disposable {
   private readonly _subscriptions: vscode.Disposable[] = [];
   private _activeEditor?: PerEditorState;
 
+  private readonly _lastRemovedEditorStates: PerEditorState[] = [];
+  private _lastRemovedEditorUri: string = "";
+
   /**
    * @deprecated Do not access -- internal implementation detail.
    */
@@ -534,6 +537,8 @@ export class Editors implements vscode.Disposable {
       this._handleDidChangeTextEditorVisibleRanges, this, this._subscriptions);
     vscode.window.onDidChangeVisibleTextEditors(
       this._handleDidChangeVisibleTextEditors, this, this._subscriptions);
+    vscode.workspace.onDidOpenTextDocument(
+      this._handleDidOpenTextDocument, this, this._subscriptions);
     vscode.workspace.onDidCloseTextDocument(
       this._handleDidCloseTextDocument, this, this._subscriptions);
 
@@ -551,6 +556,7 @@ export class Editors implements vscode.Disposable {
 
   public dispose() {
     this._subscriptions.splice(0).forEach((d) => d.dispose());
+    this._lastRemovedEditorStates.splice(0).forEach((s) => s.dispose());
     this.characterDecorationType.dispose();
   }
 
@@ -650,7 +656,39 @@ export class Editors implements vscode.Disposable {
     }
   }
 
+  private _handleDidOpenTextDocument(document: vscode.TextDocument) {
+    // When changing the file type of a new file, the current document is closed
+    // and a new document with the same name and content is created. Attempt to
+    // recover the state of the previously closed document here.
+    if (document.uri.toString() === this._lastRemovedEditorUri) {
+      const states = this._lastRemovedEditorStates;
+      let i = 0;
+
+      for (const editor of vscode.window.visibleTextEditors) {
+        if (editor.document === document && i < states.length) {
+          this._editors.set(editor, states[i++]);
+        }
+      }
+
+      assert(i === states.length);
+    } else {
+      for (const state of this._lastRemovedEditorStates) {
+        state.dispose();
+      }
+    }
+
+    this._lastRemovedEditorStates.length = 0;
+    this._lastRemovedEditorUri = "";
+  }
+
   private _handleDidCloseTextDocument(document: vscode.TextDocument) {
+    // Dispose of previous document state, if any.
+    for (const state of this._lastRemovedEditorStates) {
+      state.dispose();
+    }
+
+    this._lastRemovedEditorStates.length === 0;
+
     // Dispose of fallback editor, if any.
     const fallback = this._fallbacks.get(document);
 
@@ -660,13 +698,15 @@ export class Editors implements vscode.Disposable {
     } else {
       // There is no fallback editor, so there might be visible editors related
       // to that document.
+      this._lastRemovedEditorUri = document.uri.toString();
+
       for (const editor of vscode.window.visibleTextEditors) {
         if (editor.document === document) {
           const state = this._editors.get(editor);
 
           if (state !== undefined) {
             this._editors.delete(editor);
-            state.dispose();
+            this._lastRemovedEditorStates.push(state);
           }
         }
       }
