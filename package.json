@@ -1,7 +1,7 @@
 {
   "name": "dance",
   "description": "Kakoune-inspired key bindings, modes, menus and scripting.",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "license": "ISC",
   "author": {
     "name": "Grégoire Geis",
