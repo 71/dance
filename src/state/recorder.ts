@@ -26,6 +26,7 @@ type IntArray<E extends Entry.Base<any>> = E extends Entry.Base<infer I>
  */
 export class Recorder implements vscode.Disposable {
   private readonly _descriptors: readonly CommandDescriptor[];
+  private readonly _onDidAddEntry = new vscode.EventEmitter<Entry>();
   private readonly _previousBuffers: Recorder.Buffer[] = [];
   private readonly _storedObjects: (object | string)[] = [];
   private readonly _storedObjectsMap = new Map<object | string, number>();
@@ -37,6 +38,18 @@ export class Recorder implements vscode.Disposable {
   private _lastActiveSelections: readonly vscode.Selection[] | undefined;
   private _activeRecordingTokens: vscode.Disposable[] = [];
   private _expectedSelectionTranslation?: number;
+
+  public get onDidAddEntry() {
+    return this._onDidAddEntry.event;
+  }
+
+  /**
+   * {@link Entry} is re-exported here since it defines important values, and
+   * cannot be imported directly from API functions.
+   */
+  public get Entry() {
+    return Entry;
+  }
 
   public constructor(
     extension: Extension,
@@ -92,6 +105,19 @@ export class Recorder implements vscode.Disposable {
   }
 
   /**
+   * Returns the last entry.
+   */
+  public lastEntry() {
+    const cursor = this.cursorFromEnd();
+
+    if (!cursor.previous()) {
+      return undefined;
+    }
+
+    return cursor.entry();
+  }
+
+  /**
    * Records an action to the current buffer.
    */
   private _record<E extends Entry.Base<any>>(
@@ -101,6 +127,8 @@ export class Recorder implements vscode.Disposable {
     this._buffer[this._buffer.length - 1] |= type.id;
     this._buffer.push(...(args as unknown as number[]), type.id << Constants.PrevShift);
     this._archiveBufferIfNeeded();
+
+    this._onDidAddEntry.fire(this.lastEntry()!);
   }
 
   /**
