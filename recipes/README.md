@@ -8,6 +8,47 @@ For more examples, please see the [test suite](../test) and the [Dance API](
 ../src/api) documentation, both of which contain many different tested
 examples.
 
+## Enabling or disabling Dance
+
+Unlike, say, [VSCodeVim](https://github.com/VSCodeVim/Vim), Dance does not
+provide a "disable Dance" command or option. This is by design, since Dance
+features can be selectively disabled by using a custom mode. For instance, we
+can define a dummy `disabled` mode that will not respond to any default Dance
+keybinding:
+
+`settings.json`:
+```json
+"dance.modes": {
+  "disabled": {},
+},
+```
+
+`keybindings.json`:
+```json
+{
+  "key": "...",
+  "command": "dance.modes.set",
+  "args": {
+    "input": "disabled"
+  },
+  "when": "dance.mode != 'disabled'",
+},
+{
+  "key": "...",
+  "command": "dance.modes.set",
+  "args": {
+    "input": "normal"
+  },
+  "when": "dance.mode == 'disabled'",
+},
+```
+
+An advantage of using modes rather than a complete "disable Dance" command is
+that other Dance features, such as `dance.run` and `dance.openMenu`, can keep
+working. If you truly want to completely disable Dance for some reason, please
+[disable it from the VS Code extensions panel](
+https://code.visualstudio.com/docs/editor/extension-marketplace#_disable-an-extension).
+
 ## Generating code using commented JavaScript code
 
 The following script can be used:
