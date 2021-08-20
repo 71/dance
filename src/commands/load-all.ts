@@ -1064,7 +1064,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.filter",
-      (_, argument) => _.runAsync((_) => filter(_, getInput(argument), getSetInput(argument), argument.defaultInput, argument.inverse, argument.interactive)),
+      (_, argument) => _.runAsync((_) => filter(_, getInput(argument), getSetInput(argument), argument.defaultInput, argument.inverse, argument.interactive, getCount(_, argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1139,12 +1139,12 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.clear.main",
-      (_, argument) => _.runAsync(() => commands([".selections.filter", { input: "i !== 0", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.filter", { input: "i !== count", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.selections.clear.secondary",
-      (_, argument) => _.runAsync(() => commands([".selections.filter", { input: "i === 0", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".selections.filter", { input: "i === count", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
