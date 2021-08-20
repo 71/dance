@@ -172,17 +172,17 @@
     <tr><td><a href="#selectionsselect"><code>selections.select</code></a></td><td>Select within selections</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L319"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L318"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L701"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L665"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L664"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L702"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L666"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L665"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L316"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L317"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L781"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L782"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
     <tr><td><a href="./selections.ts#L254"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L255"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L253"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L583"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L780"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L584"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L781"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
     <tr><td><a href="#selectionssplit"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionssplitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selectionstoggleIndices"><code>selections.toggleIndices</code></a></td><td>Toggle selection indices</td><td><code>Enter</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -1132,7 +1132,7 @@ This command:
 - accepts a register (by default, it uses `pipe`).
 - takes an input of type `string`.
 
-### [`selections.filter`](./selections.ts#L307-L329)
+### [`selections.filter`](./selections.ts#L307-L330)
 
 Filter selections.
 
@@ -1143,16 +1143,17 @@ Filter selections.
 | -------------------------- | ----------------------- | ------------------ | -------------------------------------------------------------- |
 | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"                }]` |
 | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true }]` |
-| Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === 0" }]`                 |
-| Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== 0" }]`                 |
+| Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === count" }]`             |
+| Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== count" }]`             |
 
 This command:
+- may be repeated with a given number of repetitions.
 - takes an argument `defaultInput` of type `string`.
 - takes an argument `interactive` of type `boolean`.
 - takes an argument `inverse` of type `boolean`.
 - takes an input of type `Input<string>`.
 
-### [`selections.select`](./selections.ts#L358-L369)
+### [`selections.select`](./selections.ts#L359-L370)
 
 Select within selections.
 
@@ -1161,7 +1162,7 @@ This command:
 - takes an argument `interactive` of type `boolean`.
 - takes an input of type `Input<string | RegExp>`.
 
-### [`selections.split`](./selections.ts#L388-L400)
+### [`selections.split`](./selections.ts#L389-L401)
 
 Split selections.
 
@@ -1171,7 +1172,7 @@ This command:
 - takes an argument `interactive` of type `boolean`.
 - takes an input of type `Input<string | RegExp>`.
 
-### [`selections.splitLines`](./selections.ts#L425-L436)
+### [`selections.splitLines`](./selections.ts#L426-L437)
 
 Split selections at line boundaries.
 
@@ -1180,25 +1181,25 @@ This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `excludeEol` of type `boolean`.
 
-### [`selections.expandToLines`](./selections.ts#L479-L486)
+### [`selections.expandToLines`](./selections.ts#L480-L487)
 
 Expand to lines.
 
 Expand selections to contain full lines (including end-of-line characters).
 
-### [`selections.trimLines`](./selections.ts#L513-L520)
+### [`selections.trimLines`](./selections.ts#L514-L521)
 
 Trim lines.
 
 Trim selections to only contain full lines (from start to line break).
 
-### [`selections.trimWhitespace`](./selections.ts#L545-L552)
+### [`selections.trimWhitespace`](./selections.ts#L546-L553)
 
 Trim whitespace.
 
 Trim whitespace at beginning and end of selections.
 
-### [`selections.reduce`](./selections.ts#L571-L590)
+### [`selections.reduce`](./selections.ts#L572-L591)
 
 Reduce selections to their cursor.
 
@@ -1214,7 +1215,7 @@ This command:
 - takes an argument `empty` of type `boolean`.
 - takes an argument `where` of type `"active" | "anchor" | "start" | "end" | "both"`.
 
-### [`selections.changeDirection`](./selections.ts#L652-L667)
+### [`selections.changeDirection`](./selections.ts#L653-L668)
 
 Change direction of selections.
 
@@ -1227,7 +1228,7 @@ Change direction of selections.
 | Forward selections  | `faceForward`  | `a-:` (normal) | `[".selections.changeDirection", { direction:  1 }]` |
 | Backward selections | `faceBackward` |                | `[".selections.changeDirection", { direction: -1 }]` |
 
-### [`selections.copy`](./selections.ts#L692-L710)
+### [`selections.copy`](./selections.ts#L693-L711)
 
 Copy selections below.
 
@@ -1241,15 +1242,15 @@ Copy selections below.
 This command:
 - may be repeated with a given number of repetitions.
 
-### [`selections.merge`](./selections.ts#L744-L749)
+### [`selections.merge`](./selections.ts#L745-L750)
 
 Merge contiguous selections.
 
-### [`selections.open`](./selections.ts#L753-L756)
+### [`selections.open`](./selections.ts#L754-L757)
 
 Open selected file.
 
-### [`selections.toggleIndices`](./selections.ts#L771-L788)
+### [`selections.toggleIndices`](./selections.ts#L772-L789)
 
 Toggle selection indices.
 

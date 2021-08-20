@@ -315,8 +315,8 @@ const filterHistory: string[] = [];
  * | -------------------------- | ----------------------- | ------------------ | -------------------------------------------------------------- |
  * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"                }]` |
  * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true }]` |
- * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === 0" }]`                 |
- * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== 0" }]`                 |
+ * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === count" }]`             |
+ * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== count" }]`             |
  */
 export function filter(
   _: Context,
@@ -326,6 +326,7 @@ export function filter(
   defaultInput?: Argument<string>,
   inverse: Argument<boolean> = false,
   interactive: Argument<boolean> = true,
+  count: number = 0,
 ) {
   const document = _.document,
         strings = _.selections.map((selection) => document.getText(selection));
@@ -344,7 +345,7 @@ export function filter(
     history: filterHistory,
   }, (input, selections) => {
     return Selections.filter.byIndex(async (i) => {
-      const context = { $: strings[i], $$: strings, i, n: strings.length };
+      const context = { $: strings[i], $$: strings, i, n: strings.length, count };
 
       try {
         return !!(await switchRun(input, context)) !== inverse;
