@@ -47,7 +47,7 @@ of it.
   provide VS Code-native [commands][vsccommands] and
   [key bindings][vsckeybindings] that are inspired by [Kakoune].
   - Some features are provided to mimic Kakoune's behavior (e.g. treating
-    positions as coordonates of characters, rather than carets between
+    positions as coordinates of characters, rather than carets between
     characters like VS Code), but are optional.
 - Kakoune, Vim and VS Code are all fully-fledged text editors; therefore, they
   have overlapping features. For instance, where [VSCodeVim] provides its own
@@ -149,6 +149,18 @@ being:
 - `/(\d+),(\d+)/$1.$2/g` replaces `12,34` into `12.34`.
 - `i + 1` replaces `1,1,1,1,1` into `1,2,3,4,5`, assuming that each selection is
   on a different digit.
+
+### Status bar
+
+Dance provides several status bar segments (left-aligned) exposing info similar
+to Kakoune's default mode-line. Most of them are hidden by default and only shown
+contextually:
+
+- current mode: click to switch to another mode
+- macro recording status: click to stop recording
+- current count prefix: click to reset to 0
+- current register: click to unset
+- dance error: click to copy the full description of the last error
 
 ### Miscellaneous changes
 
