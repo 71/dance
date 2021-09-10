@@ -83,7 +83,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   name: "dance",
   description: "Kakoune-inspired key bindings, modes, menus and scripting.",
-  version: "0.5.5",
+  version: "0.5.6",
   license: "ISC",
 
   author: {
@@ -135,7 +135,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4",
     "unexpected": "^12.0.0",
-    "vsce": "^1.87.0",
+    "vsce": "^1.99.0",
     "vscode-test": "^1.5.2",
     "webpack": "^5.52.1",
     "webpack-cli": "^4.8.0",
@@ -172,6 +172,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
         "Existing menu items and mode commands can only be updated if the current workspace is "
         + "trusted in order to ensure untrusted workspaces do not execute malicious commands.",
     },
+    virtualWorkspaces: true,
   },
 
   contributes: {
