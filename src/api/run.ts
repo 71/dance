@@ -335,13 +335,19 @@ export function execute(
   input?: string,
   cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
 ) {
+  if (process.platform as string === "web") {
+    return Context.WithoutActiveEditor.wrap(
+      Promise.reject(new Error("execution of arbitrary commands is not supported on the web")),
+    );
+  }
+
   if (!canExecuteArbitraryCommands) {
     return Context.WithoutActiveEditor.wrap(
       Promise.reject(new Error("execution of arbitrary commands is disabled")),
     );
   }
 
-  return Context.WithoutActiveEditor.wrap(import("child_process").then((cp) =>
+  const promise = import("child_process").then((cp) =>
     new Promise<string>((resolve, reject) => {
       const shell = getShell() ?? true,
             child = cp.spawn(command, { shell, stdio: "pipe" });
@@ -371,8 +377,10 @@ export function execute(
               stderr.length > 0 ? stderr.trimRight() : "<No error output>"
             }`));
       });
-    })),
+    }),
   );
+
+  return Context.WithoutActiveEditor.wrap(promise);
 }
 
 export namespace execute {

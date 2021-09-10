@@ -755,13 +755,12 @@ export function merge(_: Context) {
  * Open selected file.
  */
 export async function open(_: Context) {
-  const path = await import("path"),
-        basePath = path.dirname(_.document.fileName);
+  const basePath = vscode.Uri.joinPath(_.document.uri, "..");
 
   await Promise.all(
     Selections.map((text) =>
       vscode.workspace
-        .openTextDocument(path.resolve(basePath, text))
+        .openTextDocument(vscode.Uri.joinPath(basePath, text))
         .then(vscode.window.showTextDocument),
     ),
   );

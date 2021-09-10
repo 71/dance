@@ -542,7 +542,7 @@ export class Editors implements vscode.Disposable {
     vscode.workspace.onDidCloseTextDocument(
       this._handleDidCloseTextDocument, this, this._subscriptions);
 
-    process.nextTick(() => {
+    queueMicrotask(() => {
       this._handleDidChangeVisibleTextEditors(vscode.window.visibleTextEditors);
 
       const activeTextEditor = vscode.window.activeTextEditor;

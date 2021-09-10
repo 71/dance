@@ -1,6 +1,6 @@
 .github/**
 .vscode/**
-.vscode-test/**
+.vscode-test*/**
 assets/dance.afdesign
 src/**
 test/**

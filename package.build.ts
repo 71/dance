@@ -83,7 +83,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   name: "dance",
   description: "Kakoune-inspired key bindings, modes, menus and scripting.",
-  version: "0.5.4",
+  version: "0.5.5",
   license: "ISC",
 
   author: {
@@ -97,6 +97,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   },
 
   main: "./out/src/extension.js",
+  browser: "./out/web/extension.js",
 
   engines: {
     vscode: "^1.56.0",
@@ -107,9 +108,11 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "format": "eslint . --fix",
     "generate": "ts-node ./meta.ts",
     "generate:watch": "ts-node ./meta.ts --watch",
-    "vscode:prepublish": "yarn run generate && yarn run compile",
+    "vscode:prepublish": "yarn run generate && yarn run compile && yarn run compile-web",
     "compile": "tsc -p ./",
     "compile:watch": "tsc -watch -p ./",
+    "compile-web": "webpack --mode production --devtool hidden-source-map --config ./webpack.web.config.js",
+    "compile-web:watch": "webpack --watch --config ./webpack.web.config.js",
     "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package",
     "publish": "vsce publish",
@@ -128,11 +131,14 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "glob": "^7.1.6",
     "mocha": "^8.1.1",
     "source-map-support": "^0.5.19",
+    "ts-loader": "^9.2.5",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4",
     "unexpected": "^12.0.0",
     "vsce": "^1.87.0",
     "vscode-test": "^1.5.2",
+    "webpack": "^5.52.1",
+    "webpack-cli": "^4.8.0",
   },
 
   // VS Code-specific properties.
@@ -145,7 +151,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   icon: "assets/dance.png",
 
   activationEvents: ["*"],
-  extensionKind: ["ui", "web", "workspace"],
+  extensionKind: ["ui", "workspace"],
 
   // Dance-specific properties.
   // ==========================================================================
