@@ -157,3 +157,68 @@ pear pineapple apple
                ^^^^^ 0
 kiwi orange kiwi
 ```
+
+# 2
+
+```
+foo
+foo
+^^^ 0
+foo
+foo
+foo
+foo
+foo
+```
+
+## 2 search-next-add
+[up](#2)
+
+- .search.selection.smart
+- .search.next.add
+
+```
+foo
+foo
+^^^ 1
+foo
+^^^ 0
+foo
+foo
+foo
+foo
+```
+
+### 2 search-next-add search-next
+[up](#2-search-next-add)
+
+- .search.next
+
+```
+foo
+foo
+^^^ 1
+foo
+foo
+^^^ 0
+foo
+foo
+foo
+```
+
+#### 2 search-next-add search-next x
+[up](#2-search-next-add-search-next)
+
+- .search.next
+
+```
+foo
+foo
+^^^ 1
+foo
+foo
+foo
+^^^ 0
+foo
+foo
+```

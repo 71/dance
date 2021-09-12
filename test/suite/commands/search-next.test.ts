@@ -257,5 +257,98 @@ suite("./test/suite/commands/search-next.md", function () {
     `);
   });
 
+  test("2 > search-next-add", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      foo
+      ^^^ 0
+      foo
+      foo
+      foo
+      foo
+      foo
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.search.selection.smart");
+    await executeCommand("dance.search.next.add");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:174:1", 6, String.raw`
+      foo
+      foo
+      ^^^ 1
+      foo
+      ^^^ 0
+      foo
+      foo
+      foo
+      foo
+    `);
+  });
+
+  test("2 > search-next-add > search-next", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      foo
+      ^^^ 1
+      foo
+      ^^^ 0
+      foo
+      foo
+      foo
+      foo
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.search.next");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:192:1", 6, String.raw`
+      foo
+      foo
+      ^^^ 1
+      foo
+      foo
+      ^^^ 0
+      foo
+      foo
+      foo
+    `);
+  });
+
+  test("2 > search-next-add > search-next > x", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+      foo
+      ^^^ 1
+      foo
+      foo
+      ^^^ 0
+      foo
+      foo
+      foo
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.search.next");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:209:1", 6, String.raw`
+      foo
+      foo
+      ^^^ 1
+      foo
+      foo
+      foo
+      ^^^ 0
+      foo
+      foo
+    `);
+  });
+
   groupTestsByParentName(this);
 });

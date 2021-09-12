@@ -177,62 +177,48 @@ export async function next(
   }
 
   const re = new RegExp(reStrs[0], "mu"),
-        allRegexpMatches = [] as RegExpMatchArray[];
+        allRegexpMatches = [] as RegExpMatchArray[],
+        selections = _.selections.slice();
+  let mainSelection = selections[0];
 
   if (!add) {
-    Selections.update.byIndex((_i, selection) => {
-      for (let j = 0; j < repetitions; j++) {
-        const next = nextImpl(
-          re, direction, selection, undefined, undefined, document, /* allowWrapping= */ true,
-          allRegexpMatches, allRegexpMatches.length);
+    for (let j = 0; j < repetitions; j++) {
+      const next = nextImpl(
+        re, direction, mainSelection, undefined, undefined, document, /* allowWrapping= */ true,
+        allRegexpMatches, allRegexpMatches.length);
 
-        if (next === undefined) {
-          return undefined;
-        }
-
-        selection = next;
+      if (next === undefined) {
+        return;
       }
 
-      return selection;
-    });
+      mainSelection = next;
+    }
 
-    _.extension.registers.updateRegExpMatches(allRegexpMatches);
-    return;
-  }
-
-  const selections = _.selections.slice(),
-        allSelections = selections.slice();
-
-  for (let i = 0; i < repetitions; i++) {
-    const newSelections = [] as vscode.Selection[],
-          regexpMatches = [] as RegExpMatchArray[];
-
-    for (let j = 0; j < selections.length; j++) {
-      const selection = selections[j],
+    selections[0] = mainSelection;
+  } else {
+    for (let i = 0; i < repetitions; i++) {
+      const regexpMatches = [] as RegExpMatchArray[],
             next = nextImpl(
-              re, direction, selection, undefined, undefined, document, /* allowWrapping= */ true,
-              regexpMatches, regexpMatches.length);
+              re, direction, mainSelection, undefined, undefined, document,
+              /* allowWrapping= */ true, regexpMatches, regexpMatches.length);
 
       if (next !== undefined) {
-        selections[j] = next;
-        newSelections.push(next);
+        selections.unshift(next);
+        mainSelection = next;
+      } else {
+        const target = direction === Direction.Backward ? "previous" : "next",
+              times = repetitions === 1 ? "time" : "times";
+
+        throw new EmptySelectionsError(
+          `main selection could not advance to ${target} match ${repetitions} ${times}`,
+        );
       }
+
+      allRegexpMatches.unshift(...regexpMatches);
     }
-
-    if (newSelections.length === 0) {
-      const target = direction === Direction.Backward ? "previous" : "next",
-            times = repetitions === 1 ? "time" : "times";
-
-      throw new EmptySelectionsError(
-        `no selection could advance to ${target} match ${repetitions} ${times}`,
-      );
-    }
-
-    allSelections.unshift(...newSelections);
-    allRegexpMatches.unshift(...regexpMatches);
   }
 
-  Selections.set(allSelections);
+  Selections.set(selections);
   _.extension.registers.updateRegExpMatches(allRegexpMatches);
 }
 
