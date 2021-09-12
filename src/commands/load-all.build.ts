@@ -139,8 +139,10 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
 
       assert(match !== null);
 
-      const flags = match[2] ?? "Register.Flags.None",
-            registerString = `getRegister(_, argument, ${JSON.stringify(match[1])}, ${flags})`;
+      const flags = match[2]?.replace(/[[\]]/g, "").replace(/, /g, " | ") ?? "Register.Flags.None",
+            flagsType = match[2]?.startsWith("[") ? `<${match[2]}>` : "",
+            defaultRegister = JSON.stringify(match[1]),
+            registerString = `getRegister${flagsType}(_, argument, ${defaultRegister}, ${flags})`;
 
       givenParameters.push(registerString);
       break;

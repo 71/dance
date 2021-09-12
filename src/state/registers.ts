@@ -171,21 +171,23 @@ export namespace Register {
   }
 
   /**
-   * Given a set of `Flags`, returns what interfaces correspond to these flags.
+   * Given an array of `Flags` types, returns what interfaces correspond to
+   * these flags.
    */
-  export type InterfaceFromFlags<F extends Flags>
-    = (F extends Flags.CanRead ? Readable : never)
-    | (F extends Flags.CanReadSelections ? ReadableSelections : never)
-    | (F extends Flags.CanReadWriteMacros ? ReadableWriteableMacros : never)
-    | (F extends Flags.CanWrite ? Writeable : never)
-    | (F extends Flags.CanWriteSelections ? WriteableSelections : never)
-  ;
+  export type InterfacesFromFlags<F extends readonly any[]> =
+    F extends [Flags.CanRead,            ...infer Rest] ? Readable                & InterfacesFromFlags<Rest> :
+    F extends [Flags.CanReadSelections,  ...infer Rest] ? ReadableSelections      & InterfacesFromFlags<Rest> :
+    F extends [Flags.CanReadWriteMacros, ...infer Rest] ? ReadableWriteableMacros & InterfacesFromFlags<Rest> :
+    F extends [Flags.CanWrite,           ...infer Rest] ? Writeable               & InterfacesFromFlags<Rest> :
+    F extends [Flags.CanWriteSelections, ...infer Rest] ? WriteableSelections     & InterfacesFromFlags<Rest> :
+    Register;
 
   /**
    * Given a set of `Flags`, returns the `Register` type augmented with the
    * interfaces that correspond to these flags.
    */
-  export type WithFlags<F extends Flags> = Register & InterfaceFromFlags<F>;
+  export type WithFlags<F extends Flags | readonly Flags[]> =
+    InterfacesFromFlags<F extends Flags ? [F] : F>;
 
   export interface Readable {
     get(): Thenable<readonly string[] | undefined>;

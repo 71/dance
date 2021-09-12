@@ -11,8 +11,6 @@ import { escapeForRegExp } from "../utils/regexp";
  */
 declare module "./search";
 
-let lastSearchInput: RegExp | undefined;
-
 /**
  * Search.
  *
@@ -24,9 +22,9 @@ let lastSearchInput: RegExp | undefined;
  * | Search backward          | `backward`        | `a-/` (normal) | `[".search", { direction: -1                  }]` |
  * | Search backward (extend) | `backward.extend` | `a-?` (normal) | `[".search", { direction: -1, shift: "extend" }]` |
  */
-export function search(
+export async function search(
   _: Context,
-  register: RegisterOr<"slash", Register.Flags.CanWrite>,
+  register: RegisterOr<"slash", [Register.Flags.CanRead, Register.Flags.CanWrite]>,
   repetitions: number,
 
   add: Argument<boolean> = false,
@@ -39,14 +37,13 @@ export function search(
 ) {
   return prompt.manipulateSelectionsInteractively(_, input, setInput, interactive, {
     ...prompt.regexpOpts("mu"),
-    value: lastSearchInput?.source,
+    value: (await register.get())?.[0],
   }, (input, selections) => {
     if (typeof input === "string") {
       input = new RegExp(input, "mu");
     }
 
-    lastSearchInput = input;
-    register.set([]);
+    register.set([input.source]);
 
     const newSelections = add ? selections.slice() : [],
           regexpMatches = [] as RegExpMatchArray[];

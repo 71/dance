@@ -9,7 +9,7 @@ import type { Register, Registers } from "../state/registers";
  * specified default should be given instead.
  */
 export type RegisterOr<_Default extends keyof Registers,
-                       Flags extends Register.Flags = Register.Flags.None>
+                       Flags extends Register.Flags | Register.Flags[] = Register.Flags.None>
   = Register.WithFlags<Flags>;
 
 /**

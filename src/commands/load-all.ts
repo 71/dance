@@ -2,11 +2,11 @@ import { CommandDescriptor, Commands } from ".";
 import { ArgumentError, commands, Context, Direction, EditorRequiredError, Shift } from "../api";
 import { Register } from "../state/registers";
 
-function getRegister<F extends Register.Flags>(
+function getRegister<F extends Register.Flags | Register.Flags[]>(
   _: Context.WithoutActiveEditor,
   argument: { register?: string | Register },
   defaultRegisterName: string,
-  requiredFlags: F,
+  requiredFlags: F extends readonly (infer Fs)[] ? Fs : F,
 ): Register.WithFlags<F> {
   let register = argument.register;
   const extension = _.extension;
@@ -550,7 +550,7 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.search",
-      (_, argument) => _.runAsync((_) => search(_, getRegister(_, argument, "slash", Register.Flags.CanWrite), getRepetitions(_, argument), argument.add, getDirection(argument), argument.interactive, getShift(argument), getInput(argument), getSetInput(argument))),
+      (_, argument) => _.runAsync((_) => search(_, getRegister<[Register.Flags.CanRead, Register.Flags.CanWrite]>(_, argument, "slash", Register.Flags.CanRead | Register.Flags.CanWrite), getRepetitions(_, argument), argument.add, getDirection(argument), argument.interactive, getShift(argument), getInput(argument), getSetInput(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
