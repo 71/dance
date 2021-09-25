@@ -136,6 +136,10 @@ export async function run(
   _: Context,
   inputOr: InputOr<string | readonly string[]>,
 
+  count: number,
+  repetitions: number,
+  register: RegisterOr<"null">,
+
   commands?: Argument<command.Any[]>,
 ) {
   if (Array.isArray(commands)) {
@@ -166,7 +170,7 @@ export async function run(
     return new InputError(`expected code to be a string or an array, but it was ${code}`);
   }
 
-  return _.run(() => apiRun(code as string));
+  return _.run(() => apiRun(code as string, { count, repetitions, register }));
 }
 
 /**

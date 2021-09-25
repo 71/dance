@@ -135,7 +135,7 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
     case "register":
       takeArgument = true;
 
-      const match = /^RegisterOr<"(\w+)"(?:, (.+))>$/.exec(type);
+      const match = /^RegisterOr<"(\w+)"(?:, (.+))?>$/.exec(type);
 
       assert(match !== null);
 

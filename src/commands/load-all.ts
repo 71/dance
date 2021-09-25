@@ -453,7 +453,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.run",
-      (_, argument) => _.runAsync((_) => run(_, getInputOr(argument), argument.commands)),
+      (_, argument) => _.runAsync((_) => run(_, getInputOr(argument), getCount(_, argument), getRepetitions(_, argument), getRegister(_, argument, "null", Register.Flags.None), argument.commands)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

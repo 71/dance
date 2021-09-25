@@ -499,7 +499,7 @@ Ignore key.
 This command:
 - does not require an active text editor.
 
-### [`run`](./misc.ts#L39-L140)
+### [`run`](./misc.ts#L39-L144)
 
 Run code.
 
@@ -597,9 +597,12 @@ These values can be mixed:
 ```
 
 This command:
+- accepts a register (by default, it uses `null`).
+- may be repeated with a given number of repetitions.
+- may be repeated with a given number of repetitions.
 - takes an argument `commands` of type `command.Any[]`.
 
-### [`selectRegister`](./misc.ts#L172-L183)
+### [`selectRegister`](./misc.ts#L176-L187)
 
 Select register for next command.
 
@@ -608,7 +611,7 @@ register is selected. If this key is a `space` character, then a new key
 press is awaited again and the returned register will be specific to the
 current document.
 
-### [`updateRegister`](./misc.ts#L199-L210)
+### [`updateRegister`](./misc.ts#L203-L214)
 
 Update the contents of a register.
 
@@ -617,7 +620,7 @@ This command:
 - accepts a register (by default, it uses `dquote`).
 - takes an input of type `string`.
 
-### [`updateCount`](./misc.ts#L236-L265)
+### [`updateCount`](./misc.ts#L240-L269)
 
 Update Dance count.
 
@@ -644,7 +647,7 @@ This command:
 - takes an argument `addDigits` of type `number`.
 - takes an input of type `number`.
 
-### [`openMenu`](./misc.ts#L293-L315)
+### [`openMenu`](./misc.ts#L297-L319)
 
 Open menu.
 
@@ -666,7 +669,7 @@ This command:
 - takes an argument `prefix` of type `string`.
 - takes an input of type `string`.
 
-### [`changeInput`](./misc.ts#L351-L365)
+### [`changeInput`](./misc.ts#L355-L369)
 
 Change current input.
 
