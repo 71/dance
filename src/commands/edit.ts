@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument, InputOr, RegisterOr } from ".";
-import { insert as apiInsert, Context, deindentLines, edit, indentLines, joinLines, keypress, replace, Selections, selectionsLines, setSelections } from "../api";
+import { insert as apiInsert, Context, deindentLines, Direction, edit, indentLines, joinLines, keypress, Positions, replace, Selections, selectionsLines, setSelections } from "../api";
 import type { Register } from "../state/registers";
 import { LengthMismatchError } from "../utils/errors";
 
@@ -330,17 +330,13 @@ export function copyIndentation(
  * | ------------------------------------------ | ---------------------- | -------------- | ----------------------------------------------------------------------- |
  * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { select: true }], [".modes.insert.before"]` |
  */
-export function newLine_above(_: Context, select: Argument<boolean> = false) {
+export function newLine_above(_: Context, repetitions: number, select: Argument<boolean> = false) {
   if (select) {
-    Selections.update.byIndex(prepareSelectionForLineInsertion);
-
-    // Use built-in `insertLineBefore` command. It gives us less control, but at
-    // least it handles indentation well.
-    return vscode.commands.executeCommand("editor.action.insertLineBefore");
+    return insertLinesNativelyAndCopySelections(_, repetitions, "editor.action.insertLineBefore");
   }
 
   return edit((builder, selections, document) => {
-    const newLine = document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n",
+    const newLine = (document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n").repeat(repetitions),
           processedLines = new Set<number>();
 
     for (let i = 0, len = selections.length; i < len; i++) {
@@ -365,17 +361,13 @@ export function newLine_above(_: Context, select: Argument<boolean> = false) {
  * | ------------------------------------------ | ---------------------- | ------------ | --------------------------------------------------------------------- |
  * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { select: true }], [".modes.insert.before"]` |
  */
-export function newLine_below(_: Context, select: Argument<boolean> = false) {
+export function newLine_below(_: Context, repetitions: number, select: Argument<boolean> = false) {
   if (select) {
-    Selections.update.byIndex(prepareSelectionForLineInsertion);
-
-    // Use built-in `insertLineAfter` command. It gives us less control, but at
-    // least it handles indentation well.
-    return vscode.commands.executeCommand("editor.action.insertLineAfter");
+    return insertLinesNativelyAndCopySelections(_, repetitions, "editor.action.insertLineAfter");
   }
 
   return edit((builder, selections, document) => {
-    const newLine = document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n",
+    const newLine = (document.eol === vscode.EndOfLine.LF ? "\n" : "\r\n").repeat(repetitions),
           processedLines = new Set<number>();
 
     for (let i = 0, len = selections.length; i < len; i++) {
@@ -414,4 +406,71 @@ function extendArrayToLength<T>(array: readonly T[], length: number) {
   } else {
     return array.slice(0, length);
   }
+}
+
+/**
+ * Inserts lines below or above each current selection, and copies the new
+ * selections the given number of times.
+ *
+ * This function uses the native VS Code insertion strategy to get a valid
+ * indentation for the new selections, and copies the inserted selections down
+ * if more than one repetition is requested.
+ */
+function insertLinesNativelyAndCopySelections(
+  _: Context,
+  repetitions: number,
+  command: "editor.action.insertLineAfter" | "editor.action.insertLineBefore",
+) {
+  Selections.update.byIndex(prepareSelectionForLineInsertion);
+
+  if (repetitions === 1) {
+    return vscode.commands.executeCommand(command);
+  }
+
+  const isLastCharacterAt = [] as boolean[];
+
+  return vscode.commands.executeCommand(command).then(() =>
+    _.edit((builder, selections, document) => {
+      for (const selection of selections) {
+        const active = selection.active,
+              lineStart = Positions.lineStart(active.line),
+              indentationRange = new vscode.Range(lineStart, active),
+              indentation = (document.getText(indentationRange) + "\n").repeat(repetitions - 1);
+
+        if (active.line === document.lineCount - 1) {
+          isLastCharacterAt.push(true);
+          builder.insert(Positions.lineEnd(active.line), "\n" + indentation.slice(0, -1));
+        } else {
+          isLastCharacterAt.push(false);
+          builder.insert(lineStart.translate(1), indentation);
+        }
+      }
+    }),
+  ).then(() => {
+    const selections = [] as vscode.Selection[];
+    let selectionIndex = 0;
+
+    for (let selection of _.selections) {
+      if (isLastCharacterAt[selectionIndex++]) {
+        // Selection corresponds to the last character in the document. We
+        // couldn't simply insert a line above, so we must correct the current
+        // selection.
+        selection = Selections.fromAnchorActive(
+          selection.anchor.translate(-repetitions + 1),
+          selection.active.translate(-repetitions + 1),
+        );
+      }
+
+      const active = selection.active,
+            anchor = selection.anchor;
+
+      for (let i = repetitions - 1; i > 0; i--) {
+        selections.push(Selections.fromAnchorActive(anchor.translate(i), active.translate(i)));
+      }
+
+      selections.push(selection);
+    }
+
+    _.selections = selections;
+  });
 }

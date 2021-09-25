@@ -247,12 +247,12 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above",
-      (_, argument) => _.runAsync((_) => newLine_above(_, argument.select)),
+      (_, argument) => _.runAsync((_) => newLine_above(_, getRepetitions(_, argument), argument.select)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below",
-      (_, argument) => _.runAsync((_) => newLine_below(_, argument.select)),
+      (_, argument) => _.runAsync((_) => newLine_below(_, getRepetitions(_, argument), argument.select)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
