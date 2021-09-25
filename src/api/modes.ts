@@ -36,9 +36,9 @@ export function toMode(modeName: string, count?: number) {
 
   return context.switchToMode(mode).then(() => {
     // We must start listening for events after a short delay, otherwise we will
-    // be notified of the mode change below, immediately returning to the
+    // be notified of the mode change above, immediately returning to the
     // previous mode.
-    setImmediate(() => {
+    setTimeout(() => {
       const { Entry } = extension.recorder;
 
       disposable
@@ -59,6 +59,6 @@ export function toMode(modeName: string, count?: number) {
             disposable.dispose();
           }
         }));
-    });
+    }, 0);
   });
 }
