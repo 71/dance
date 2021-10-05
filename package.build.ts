@@ -225,6 +225,10 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                   "Controls the line highlighting applied to active lines. "
                   + "Can be an hex color, a [theme color]("
                   + "https://code.visualstudio.com/api/references/theme-color) or null.",
+                deprecationMessage:
+                  "`lineHighlight` is deprecated. Use `dance.modes.*.backgroundColor` instead.",
+                markdownDeprecationMessage:
+                  "`lineHighlight` is deprecated. Use `#dance.modes#.*.backgroundColor` instead.",
                 ...colorPattern,
               },
               lineNumbers: {

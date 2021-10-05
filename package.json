@@ -127,6 +127,8 @@
                   "null"
                 ],
                 "markdownDescription": "Controls the line highlighting applied to active lines. Can be an hex color, a [theme color](https://code.visualstudio.com/api/references/theme-color) or null.",
+                "deprecationMessage": "`lineHighlight` is deprecated. Use `dance.modes.*.backgroundColor` instead.",
+                "markdownDeprecationMessage": "`lineHighlight` is deprecated. Use `#dance.modes#.*.backgroundColor` instead.",
                 "pattern": "^(#[a-fA-F0-9]{3}|#[a-fA-F0-9]{6}|#[a-fA-F0-9]{8}|\\$([a-zA-Z]+(\\.[a-zA-Z]+)+))$",
                 "patternErrorMessage": "Color should be an hex color or a '$' sign followed by a color identifier."
               },
