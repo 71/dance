@@ -560,7 +560,11 @@ export class Modes implements Iterable<Mode> {
     decorations: [],
   };
   private readonly _vscodeMode = new Mode(this, "", undefined!);
-  private readonly _inputMode = new Mode(this, "input", { cursorStyle: "underline-thin" });
+
+  private readonly _inputModeDefaults: Mode.Configuration = {
+    cursorStyle: "underline-thin",
+  };
+  private readonly _inputMode = new Mode(this, "input", this._inputModeDefaults);
 
   private readonly _modes = new Map<string, Mode>();
 
@@ -649,16 +653,15 @@ export class Modes implements Iterable<Mode> {
       for (const modeName in value) {
         removeModes.delete(modeName);
 
-        if (modeName === "input") {
-          validator.reportInvalidSetting(`a mode cannot be named "${modeName}"`);
-          continue;
-        }
-
         let mode = this._modes.get(modeName),
             configuration = value[modeName];
 
         if (mode === this._vscodeMode) {
           configuration = { ...this._vscodeModeDefaults, ...configuration };
+        } else if (mode === this._inputMode) {
+          configuration = { ...this._inputModeDefaults, ...configuration };
+        } else {
+          isEmpty = false;
         }
 
         if (!vscode.workspace.isTrusted) {
@@ -685,8 +688,6 @@ export class Modes implements Iterable<Mode> {
           mode.isPendingDeletion = false;
           mode.apply(configuration, validator);
         }
-
-        isEmpty = false;
       }
 
       if (isEmpty) {

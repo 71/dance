@@ -370,6 +370,9 @@
                 "isWholeLine": true
               }
             },
+            "input": {
+              "cursorStyle": "underline-thin"
+            },
             "insert": {
               "onLeaveMode": [
                 [

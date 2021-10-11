@@ -295,6 +295,9 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 isWholeLine: true,
               },
             },
+            input: {
+              cursorStyle: "underline-thin",
+            },
             insert: {
               onLeaveMode: [
                 [".selections.save", {
