@@ -233,7 +233,7 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.insert",
-      (_, argument) => _.runAsync((_) => insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument.adjust, argument.handleNewLine, getRepetitions(_, argument), argument.select, argument.where)),
+      (_, argument) => _.runAsync((_) => insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument.adjust, argument.handleNewLine, getRepetitions(_, argument), argument.select, getShift(argument), argument.text, argument.where)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -248,12 +248,12 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above",
-      (_, argument) => _.runAsync((_) => newLine_above(_, getRepetitions(_, argument), argument.select)),
+      (_, argument) => _.runAsync((_) => newLine_above(_, getRepetitions(_, argument), argument.select, getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below",
-      (_, argument) => _.runAsync((_) => newLine_below(_, getRepetitions(_, argument), argument.select)),
+      (_, argument) => _.runAsync((_) => newLine_below(_, getRepetitions(_, argument), argument.select, getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -273,12 +273,12 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above.insert",
-      (_, argument) => _.runAsync(() => commands([".edit.newLine.above", { select: true, ...argument }], [".modes.insert.before"])),
+      (_, argument) => _.runAsync(() => commands([".edit.newLine.above", { shift: "select", ...argument }], [".modes.insert.before"])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below.insert",
-      (_, argument) => _.runAsync(() => commands([".edit.newLine.below", { select: true, ...argument }], [".modes.insert.before"])),
+      (_, argument) => _.runAsync(() => commands([".edit.newLine.below", { shift: "select", ...argument }], [".modes.insert.before"])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -288,7 +288,7 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.paste.after.select",
-      (_, argument) => _.runAsync(() => commands([".edit.insert", { handleNewLine: true, where: "end" , select: true, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".edit.insert", { handleNewLine: true, where: "end" , shift: "select", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -298,7 +298,7 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.paste.before.select",
-      (_, argument) => _.runAsync(() => commands([".edit.insert", { handleNewLine: true, where: "start", select: true, ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".edit.insert", { handleNewLine: true, where: "start", shift: "select", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(

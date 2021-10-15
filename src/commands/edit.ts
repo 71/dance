@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument, InputOr, RegisterOr } from ".";
-import { insert as apiInsert, Context, deindentLines, Direction, edit, indentLines, joinLines, keypress, Positions, replace, Selections, selectionsLines, setSelections } from "../api";
+import { insert as apiInsert, Context, deindentLines, edit, indentLines, joinLines, keypress, Positions, replace, Selections, selectionsLines, setSelections, Shift } from "../api";
 import type { Register } from "../state/registers";
 import { LengthMismatchError } from "../utils/errors";
 
@@ -19,6 +19,12 @@ declare module "./edit";
  * inserted relative to each selection. If unspecified, each selection will be
  * replaced by the text.
  *
+ * Specify `"shift": "select"` to select the inserted selection,
+ * `"shift": "extend"` to extend to the inserted text, and nothing to keep the
+ * current selections.
+ *
+ * `select` is deprecated; use `shift` with `"select"` instead.
+ *
  * @keys `s-a-r` (normal)
  *
  * #### Additional commands
@@ -28,8 +34,8 @@ declare module "./edit";
  * | Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert) | `[".selectRegister"], [".edit.insert"]`                                                                     |
  * | Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "start"               }]`                                   |
  * | Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { handleNewLine: true, where: "end"                 }]`                                   |
- * | Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { handleNewLine: true, where: "start", select: true }]`                                   |
- * | Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "end"  , select: true }]`                                   |
+ * | Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select" }]`                                |
+ * | Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select" }]`                                |
  * | Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { register: "_" }]`                                                                       |
  * | Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".modes.set", { input: "insert" }], [".edit.insert", { register: "_" }]`                                  |
  * | Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText"],                                      [".edit.insert", { register: "_" }]`        |
@@ -45,15 +51,19 @@ export async function insert(
   handleNewLine: Argument<boolean> = false,
   repetitions: number,
   select: Argument<boolean> = false,
+  shift?: Argument<Shift.Extend | Shift.Select>,
+  text?: Argument<string>,
   where?: Argument<"active" | "anchor" | "start" | "end" | undefined>,
 ) {
-  let contents = await register.get();
+  let contents = text?.length
+    ? (select ? [text] : selections.map(() => text))
+    : await register.get();
 
   if (contents === undefined || contents.length === 0) {
     throw new Error(`register "${register.name}" does not contain any saved text`);
   }
 
-  if (select) {
+  if (select || shift === Shift.Select) {
     const textToInsert = contents.join(""),
           insert = handleNewLine ? apiInsert.byIndex.withFullLines : apiInsert.byIndex,
           flags = apiInsert.flagsAtEdge(where) | apiInsert.Select;
@@ -96,7 +106,8 @@ export async function insert(
     throw new Error(`"where" must be one of "active", "anchor", "start", "end", or undefined`);
   }
 
-  const flags = apiInsert.flagsAtEdge(where) | apiInsert.Keep;
+  const keepOrExtend = shift === Shift.Extend ? apiInsert.Extend : apiInsert.Keep,
+        flags = apiInsert.flagsAtEdge(where) | keepOrExtend;
 
   Selections.set(
     handleNewLine
@@ -322,16 +333,26 @@ export function copyIndentation(
 /**
  * Insert new line above each selection.
  *
+ * Specify `"shift": "select"` to select the inserted selections, and nothing to
+ * keep the current selections.
+ *
+ * `select` is deprecated; use `shift` with `"select"` instead.
+ *
  * @keys `s-a-o` (normal)
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding     | Commands                                                                |
- * | ------------------------------------------ | ---------------------- | -------------- | ----------------------------------------------------------------------- |
- * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { select: true }], [".modes.insert.before"]` |
+ * | Title                                      | Identifier             | Keybinding     | Commands                                                                 |
+ * | ------------------------------------------ | ---------------------- | -------------- | ------------------------------------------------------------------------ |
+ * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before"]` |
  */
-export function newLine_above(_: Context, repetitions: number, select: Argument<boolean> = false) {
-  if (select) {
+export function newLine_above(
+  _: Context,
+  repetitions: number,
+  select: Argument<boolean> = false,
+  shift?: Argument<Shift.Select>,
+) {
+  if (select || shift === Shift.Select) {
     return insertLinesNativelyAndCopySelections(_, repetitions, "editor.action.insertLineBefore");
   }
 
@@ -353,16 +374,26 @@ export function newLine_above(_: Context, repetitions: number, select: Argument<
 /**
  * Insert new line below each selection.
  *
+ * Specify `"shift": "select"` to select the inserted selections, and nothing to
+ * keep the current selections.
+ *
+ * `select` is deprecated; use `shift` with `"select"` instead.
+ *
  * @keys `a-o` (normal)
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding   | Commands                                                              |
- * | ------------------------------------------ | ---------------------- | ------------ | --------------------------------------------------------------------- |
- * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { select: true }], [".modes.insert.before"]` |
+ * | Title                                      | Identifier             | Keybinding   | Commands                                                                 |
+ * | ------------------------------------------ | ---------------------- | ------------ | ------------------------------------------------------------------------ |
+ * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before"]` |
  */
-export function newLine_below(_: Context, repetitions: number, select: Argument<boolean> = false) {
-  if (select) {
+export function newLine_below(
+  _: Context,
+  repetitions: number,
+  select: Argument<boolean> = false,
+  shift?: Argument<Shift.Select>,
+) {
+  if (select || shift === Shift.Select) {
     return insertLinesNativelyAndCopySelections(_, repetitions, "editor.action.insertLineAfter");
   }
 

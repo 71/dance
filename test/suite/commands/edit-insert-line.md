@@ -30,7 +30,7 @@ bar
 ## 1 select-below
 [up](#1)
 
-- .edit.newLine.below { select: true }
+- .edit.newLine.below { shift: "select" }
 
 ```
 foo {
@@ -66,7 +66,7 @@ bar
 ## 1 select-below-2
 [up](#1)
 
-- .edit.newLine.below { select: true, count: 2 }
+- .edit.newLine.below { shift: "select", count: 2 }
 
 ```
 foo {
@@ -104,7 +104,7 @@ bar
 ## 1 select-above
 [up](#1)
 
-- .edit.newLine.above { select: true }
+- .edit.newLine.above { shift: "select" }
 
 ```
 
@@ -140,7 +140,7 @@ bar
 ## 1 select-above-2
 [up](#1)
 
-- .edit.newLine.above { select: true, count: 2 }
+- .edit.newLine.above { shift: "select", count: 2 }
 
 ```
 
