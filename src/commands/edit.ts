@@ -51,7 +51,7 @@ export async function insert(
   handleNewLine: Argument<boolean> = false,
   repetitions: number,
   select: Argument<boolean> = false,
-  shift?: Argument<Shift.Extend | Shift.Select>,
+  shift?: Argument<Shift>,
   text?: Argument<string>,
   where?: Argument<"active" | "anchor" | "start" | "end" | undefined>,
 ) {
@@ -350,7 +350,7 @@ export function newLine_above(
   _: Context,
   repetitions: number,
   select: Argument<boolean> = false,
-  shift?: Argument<Shift.Select>,
+  shift?: Argument<Shift>,
 ) {
   if (select || shift === Shift.Select) {
     return insertLinesNativelyAndCopySelections(_, repetitions, "editor.action.insertLineBefore");
@@ -391,7 +391,7 @@ export function newLine_below(
   _: Context,
   repetitions: number,
   select: Argument<boolean> = false,
-  shift?: Argument<Shift.Select>,
+  shift?: Argument<Shift>,
 ) {
   if (select || shift === Shift.Select) {
     return insertLinesNativelyAndCopySelections(_, repetitions, "editor.action.insertLineAfter");

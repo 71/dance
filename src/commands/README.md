@@ -261,7 +261,7 @@ This command:
 - takes an argument `adjust` of type `boolean`.
 - takes an argument `handleNewLine` of type `boolean`.
 - takes an argument `select` of type `boolean`.
-- takes an argument `shift` of type `Shift.Extend | Shift.Select`.
+- takes an argument `shift` of type `Shift`.
 - takes an argument `text` of type `string`.
 - takes an argument `where` of type `"active" | "anchor" | "start" | "end" | undefined`.
 
@@ -375,7 +375,7 @@ keep the current selections.
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `select` of type `boolean`.
-- takes an argument `shift` of type `Shift.Select`.
+- takes an argument `shift` of type `Shift`.
 
 ### [`edit.newLine.below`](./edit.ts#L374-L395)
 
@@ -396,7 +396,7 @@ keep the current selections.
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `select` of type `boolean`.
-- takes an argument `shift` of type `Shift.Select`.
+- takes an argument `shift` of type `Shift`.
 
 ## [`history`](./history.ts)
 
