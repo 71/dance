@@ -105,6 +105,13 @@ export namespace run {
     canRunArbitraryCode = false;
   }
 
+  /**
+   * Returns whether `compileFunction` and `run` can be used.
+   */
+  export function isEnabled() {
+    return canRunArbitraryCode;
+  }
+
   interface CompiledFunction {
     (...args: any[]): Thenable<unknown>;
   }

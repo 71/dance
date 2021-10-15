@@ -131,9 +131,13 @@ const runHistory: string[] = [];
  *   },
  * },
  * ```
+ *
+ * If both `input` and `commands` are given, Dance will use `run` if arbitrary
+ * command execution is enabled, or `commands` otherwise.
  */
 export async function run(
   _: Context,
+  input: string,
   inputOr: InputOr<string | readonly string[]>,
 
   count: number,
@@ -143,7 +147,11 @@ export async function run(
   commands?: Argument<command.Any[]>,
 ) {
   if (Array.isArray(commands)) {
-    return apiCommands(...commands);
+    if (typeof input === "string" && apiRun.isEnabled()) {
+      // Prefer "input" to the "commands" array.
+    } else {
+      return apiCommands(...commands);
+    }
   }
 
   let code = await inputOr(() => prompt({
