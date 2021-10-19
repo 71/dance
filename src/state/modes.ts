@@ -383,7 +383,7 @@ export class Mode {
       }
     }
 
-    for (const name of ["borderRadius", "borderStyle", "borderWidth"] as const) {
+    for (const name of ["borderRadius", "borderStyle", "borderWidth", "fontStyle"] as const) {
       const value = object[name];
 
       if (value) {
@@ -542,6 +542,7 @@ export namespace Mode {
       readonly borderStyle?: string;
       readonly borderRadius?: string;
       readonly borderWidth?: string;
+      readonly fontStyle?: string;
       readonly isWholeLine?: boolean;
     }
   }
