@@ -81,13 +81,7 @@ export class Recorder implements vscode.Disposable {
    * Returns the last 100 entries of the recorder, for debugging purposes.
    */
   private get debugBuffer() {
-    const lastEntries = this.lastEntries(100);
-
-    for (const entry of lastEntries) {
-      (entry as any).debugItems = entry.items();
-    }
-
-    return lastEntries;
+    return this.lastEntries(100);
   }
 
   /**
@@ -638,9 +632,16 @@ export class Recorder implements vscode.Disposable {
 
       if (cursor.previousIs(Entry.InsertAfter)) {
         // Insert -> Insert = Insert.
-        (cursor.buffer as Recorder.MutableBuffer)[cursor.offset + 1] =
-          this._storeObject(commonInsertedText);
+        const previousInsertedText = cursor.entry().insertedText();
+
+        if (previousInsertedText.length === commonOffsetFromActive) {
+          (cursor.buffer as Recorder.MutableBuffer)[cursor.offset + 1] =
+            this._storeObject(previousInsertedText + commonInsertedText);
+        } else {
+          this._record(Entry.InsertAfter, this._storeObject(commonInsertedText));
+        }
       } else {
+        // TODO: handle offset from active
         this._record(Entry.InsertAfter, this._storeObject(commonInsertedText));
       }
     }
@@ -878,9 +879,16 @@ export class Recording {
   }
 
   /**
-   * Replays the recording in the given context.
+   * Returns the result of calling `entries()`, for debugging purposes.
    */
-  public async replay(context = Context.WithoutActiveEditor.current) {
+  private get debugEntries() {
+    return [...this.entries()];
+  }
+
+  /**
+   * Returns an iterator over all the entries in the recorder.
+   */
+  public *entries(context = Context.WithoutActiveEditor.current) {
     let offset = this.offset;
     const buffer = this.buffer,
           end = offset + this.length,
@@ -889,8 +897,17 @@ export class Recording {
     while (offset < end) {
       const entry = recorder.entry(buffer, offset);
 
-      await entry.replay(context);
+      yield entry;
       offset += entry.size + 1;
+    }
+  }
+
+  /**
+   * Replays the recording in the given context.
+   */
+  public async replay(context = Context.WithoutActiveEditor.current) {
+    for (const entry of this.entries(context)) {
+      await entry.replay(context);
     }
   }
 }
@@ -943,6 +960,13 @@ export namespace Entry {
      */
     public get type() {
       return this.constructor as Entry.AnyClass;
+    }
+
+    /**
+     * Returns the result of calling `items()`, for debugging purposes.
+     */
+    private get debugItems() {
+      return this.items();
     }
 
     /**
