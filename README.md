@@ -76,7 +76,7 @@ If you prefer character-based selections like Kakoune, please set
 wish to use character-based selections. This mode is designed to work with
 block-style cursors, so your configuration would typically look like:
 
-```json
+```js
 "dance.modes": {
   "insert": {
     // ...
