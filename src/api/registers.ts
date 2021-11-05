@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context } from ".";
+import { Context } from "./context";
 import type { Register } from "../state/registers";
 
 /**

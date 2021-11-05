@@ -1,6 +1,10 @@
 import * as vscode from "vscode";
 
-import { Context, Direction, Lines, moveWhile, Positions } from "..";
+import { moveWhile } from "./move";
+import { Context } from "../context";
+import { Lines } from "../lines";
+import { Positions } from "../positions";
+import { Direction } from "../types";
 import { CharSet, getCharSetFunction } from "../../utils/charset";
 import { CharCodes } from "../../utils/regexp";
 

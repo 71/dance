@@ -89,6 +89,103 @@ suite("API tests", function () {
       // No expected end document.
     });
 
+    test("function selectionsToCharacterMode", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              a
+              b
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        // One-character selection becomes empty.
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 0, 0, 1)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 0),
+        ]);
+
+        // One-character selection becomes empty (at line break).
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 1, 1, 0)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 1),
+        ]);
+
+        // Forward-facing selection becomes shorter.
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 0, 1, 1)]), "to satisfy", [
+          expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 1, 0),
+        ]);
+
+        // One-character selection becomes empty (reversed).
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 1, 0, 0)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 0),
+        ]);
+
+        // One-character selection becomes empty (reversed, at line break).
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 0, 0, 1)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 1),
+        ]);
+
+        // Reversed selection stays as-is.
+        expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 1, 0, 0)]), "to satisfy", [
+          expect.it("to have anchor at coords", 1, 1).and("to have cursor at coords", 0, 0),
+        ]);
+
+        // Empty selection stays as-is.
+        expect(Selections.toCharacterMode([Selections.empty(1, 1)]), "to satisfy", [
+          expect.it("to be empty at coords", 1, 1),
+        ]);
+      });
+
+      // No expected end document.
+    });
+
+    test("function selectionsFromCharacterMode", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.fromCharacterMode([Selections.empty(0, 0)]), "to satisfy", [
+          expect.it("to be empty at coords", 0, 0),
+        ]);
+      });
+
+      // No expected end document.
+    });
+
+    test("function selectionsFromCharacterMode#1", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              a
+              b
+
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.fromCharacterMode([Selections.empty(0, 0)]), "to satisfy", [
+          expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 0, 1),
+        ]);
+
+        // At the end of the line, it selects the line ending:
+        expect(Selections.fromCharacterMode([Selections.empty(0, 1)]), "to satisfy", [
+          expect.it("to have anchor at coords", 0, 1).and("to have cursor at coords", 1, 0),
+        ]);
+
+        // But it does nothing at the end of the document:
+        expect(Selections.fromCharacterMode([Selections.empty(2, 0)]), "to satisfy", [
+          expect.it("to be empty at coords", 2, 0),
+        ]);
+      });
+
+      // No expected end document.
+    });
+
   });
 
   suite("./src/api/functional.ts", function () {
@@ -1303,103 +1400,6 @@ suite("API tests", function () {
           active: p0,
           isReversed: true,
         });
-      });
-
-      // No expected end document.
-    });
-
-    test("function toCharacterMode", async function () {
-      const editorState = extension.editors.getState(editor)!,
-            context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, String.raw`
-              a
-              b
-            `);
-
-      await before.apply(editor);
-
-      await context.runAsync(async () => {
-        // One-character selection becomes empty.
-        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 0, 0, 1)]), "to satisfy", [
-          expect.it("to be empty at coords", 0, 0),
-        ]);
-
-        // One-character selection becomes empty (at line break).
-        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 1, 1, 0)]), "to satisfy", [
-          expect.it("to be empty at coords", 0, 1),
-        ]);
-
-        // Forward-facing selection becomes shorter.
-        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 0, 1, 1)]), "to satisfy", [
-          expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 1, 0),
-        ]);
-
-        // One-character selection becomes empty (reversed).
-        expect(Selections.toCharacterMode([Selections.fromAnchorActive(0, 1, 0, 0)]), "to satisfy", [
-          expect.it("to be empty at coords", 0, 0),
-        ]);
-
-        // One-character selection becomes empty (reversed, at line break).
-        expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 0, 0, 1)]), "to satisfy", [
-          expect.it("to be empty at coords", 0, 1),
-        ]);
-
-        // Reversed selection stays as-is.
-        expect(Selections.toCharacterMode([Selections.fromAnchorActive(1, 1, 0, 0)]), "to satisfy", [
-          expect.it("to have anchor at coords", 1, 1).and("to have cursor at coords", 0, 0),
-        ]);
-
-        // Empty selection stays as-is.
-        expect(Selections.toCharacterMode([Selections.empty(1, 1)]), "to satisfy", [
-          expect.it("to be empty at coords", 1, 1),
-        ]);
-      });
-
-      // No expected end document.
-    });
-
-    test("function fromCharacterMode", async function () {
-      const editorState = extension.editors.getState(editor)!,
-            context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, String.raw`
-            `);
-
-      await before.apply(editor);
-
-      await context.runAsync(async () => {
-        expect(Selections.fromCharacterMode([Selections.empty(0, 0)]), "to satisfy", [
-          expect.it("to be empty at coords", 0, 0),
-        ]);
-      });
-
-      // No expected end document.
-    });
-
-    test("function fromCharacterMode#1", async function () {
-      const editorState = extension.editors.getState(editor)!,
-            context = new Context(editorState, cancellationToken),
-            before = ExpectedDocument.parseIndented(14, String.raw`
-              a
-              b
-
-            `);
-
-      await before.apply(editor);
-
-      await context.runAsync(async () => {
-        expect(Selections.fromCharacterMode([Selections.empty(0, 0)]), "to satisfy", [
-          expect.it("to have anchor at coords", 0, 0).and("to have cursor at coords", 0, 1),
-        ]);
-
-        // At the end of the line, it selects the line ending:
-        expect(Selections.fromCharacterMode([Selections.empty(0, 1)]), "to satisfy", [
-          expect.it("to have anchor at coords", 0, 1).and("to have cursor at coords", 1, 0),
-        ]);
-
-        // But it does nothing at the end of the document:
-        expect(Selections.fromCharacterMode([Selections.empty(2, 0)]), "to satisfy", [
-          expect.it("to be empty at coords", 2, 0),
-        ]);
       });
 
       // No expected end document.

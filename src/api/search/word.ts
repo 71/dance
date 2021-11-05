@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 
-import { Context, Direction, SelectionBehavior, skipEmptyLines } from "..";
+import { skipEmptyLines } from "./move";
+import { Context } from "../context";
+import { Direction, SelectionBehavior } from "../types";
 import { CharSet, getCharSetFunction } from "../../utils/charset";
 
 const enum WordCategory {

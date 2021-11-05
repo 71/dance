@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context } from ".";
+import { Context } from "./context";
 import type { CommandDescriptor } from "../commands";
 import { parseRegExpWithReplacement } from "../utils/regexp";
 

@@ -1,6 +1,9 @@
 import * as vscode from "vscode";
 
-import { Context, Direction, Positions, search } from "..";
+import { search } from "./index";
+import { Context } from "../context";
+import { Positions } from "../positions";
+import { Direction } from "../types";
 import { ArgumentError } from "../../utils/errors";
 import { anyRegExp, escapeForRegExp } from "../../utils/regexp";
 

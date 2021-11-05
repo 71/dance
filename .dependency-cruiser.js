@@ -4,21 +4,19 @@ module.exports = {
     {
       name: "no-circular",
       severity: "error",
-      from: {
-        pathNot: "^src/api",
-      },
+      from: {},
       to: {
         circular: true,
       },
     },
     {
-      name: "api-only-depends-on-api/index-and-utils",
+      name: "api-only-depends-on-api-and-utils",
       severity: "error",
       from: {
         path: "^src/api/(?!index)",
       },
       to: {
-        pathNot: "^src/(api/index|utils)",
+        pathNot: "^src/(api/(?!index)|utils)",
       },
     },
     {
@@ -32,10 +30,10 @@ module.exports = {
       },
     },
     {
-      name: "only-api/index-depends-on-api",
+      name: "only-api-depends-on-api",
       severity: "error",
       from: {
-        pathNot: "^src/api/index",
+        pathNot: "^src/api",
       },
       to: {
         path: "^src/api/(?!index)",

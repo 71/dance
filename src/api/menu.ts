@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
-import { Context, keypress, prompt } from ".";
+import { Context } from "./context";
+import { keypress, prompt } from "./prompt";
 
 export interface Menu {
   readonly items: Menu.Items;

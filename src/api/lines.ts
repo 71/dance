@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { Context } from ".";
+import { Context } from "./context";
 
 /**
  * Returns the 0-based number of the first visible line in the current editor.

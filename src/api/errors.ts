@@ -1,4 +1,4 @@
-import { Context } from ".";
+import { Context } from "./context";
 
 export * from "../utils/errors";
 

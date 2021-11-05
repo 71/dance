@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
-import { Context, Direction } from ".";
+import { Context } from "./context";
+import { Direction } from "./types";
 
 /**
  * Returns the position right after the given position, or `undefined` if

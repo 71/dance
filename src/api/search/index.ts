@@ -1,6 +1,8 @@
 import * as vscode from "vscode";
 
-import { Context, Direction, Positions } from "..";
+import { Context } from "../context";
+import { Positions } from "../positions";
+import { Direction } from "../types";
 import { canMatchLineFeed, execLast, matchesStaticStrings } from "../../utils/regexp";
 
 /**

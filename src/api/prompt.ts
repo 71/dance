@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 
-import { Context, Selections } from ".";
+import { Context } from "./context";
+import { Selections } from "./selections";
 import type { Input, SetInput } from "../commands";
 import { CancellationError } from "../utils/errors";
 
