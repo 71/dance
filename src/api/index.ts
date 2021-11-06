@@ -22,18 +22,21 @@ export * from "./search/range";
 export * from "./search/word";
 export * from "./types";
 
-export { firstVisibleLine, middleVisibleLine, lastVisibleLine } from "./lines";
-export * as Lines from "./lines";
-
 /**
- * Operations on `vscode.Selection`s.
+ * Operations on lines in `vscode`.
  */
-export * as Selections from "./selections";
+export * as Lines from "./lines";
+export { firstVisibleLine, middleVisibleLine, lastVisibleLine } from "./lines";
 
 /**
  * Operations on `vscode.Position`s.
  */
 export * as Positions from "./positions";
+
+/**
+ * Operations on `vscode.Selection`s.
+ */
+export * as Selections from "./selections";
 
 /**
  * Returns the module exported by the extension with the given identifier.
