@@ -3,7 +3,7 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 
 import { expect, ExpectedDocument } from "./utils";
-import { Context, deindentLines, EmptySelectionsError, filterSelections, indentLines, insert, isPosition, isRange, isSelection, joinLines, mergeOverlappingSelections, moveWhile, NotASelectionError, Positions, replace, rotate, rotateSelections, search, Select, SelectionBehavior, Selections, selectionsLines, setSelections, text, updateSelections } from "../../src/api";
+import { Context, deindentLines, EmptySelectionsError, indentLines, insert, isPosition, isRange, isSelection, joinLines, moveWhile, NotASelectionError, Positions, replace, rotate, search, Select, SelectionBehavior, Selections, text } from "../../src/api";
 import { Extension } from "../../src/state/extension";
 
 function setSelectionBehavior(selectionBehavior: SelectionBehavior) {
@@ -878,7 +878,7 @@ suite("API tests", function () {
 
   suite("./src/api/selections.ts", function () {
 
-    test("function setSelections", async function () {
+    test("function set", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -896,27 +896,27 @@ suite("API tests", function () {
         const start = new vscode.Position(0, 6),
               end = new vscode.Position(0, 11);
 
-        setSelections([new vscode.Selection(start, end)]);
+        Selections.set([new vscode.Selection(start, end)]);
       });
 
       after.assertEquals(editor);
     });
 
-    test("function setSelections#1", async function () {
+    test("function set#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken);
 
       // No setup needed.
 
       await context.runAsync(async () => {
-        assert.throws(() => setSelections([]), EmptySelectionsError);
-        assert.throws(() => setSelections([1 as any]), NotASelectionError);
+        assert.throws(() => Selections.set([]), EmptySelectionsError);
+        assert.throws(() => Selections.set([1 as any]), NotASelectionError);
       });
 
       // No expected end document.
     });
 
-    test("function filterSelections", async function () {
+    test("function filter", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -931,7 +931,7 @@ suite("API tests", function () {
         const atChar = (character: number) => new vscode.Position(0, character);
 
         assert.deepStrictEqual(
-          filterSelections((text) => !isNaN(+text)),
+          Selections.filter((text) => !isNaN(+text)),
           [new vscode.Selection(atChar(4), atChar(7))],
         );
       });
@@ -939,7 +939,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function filterSelections#1", async function () {
+    test("function filter#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -954,7 +954,7 @@ suite("API tests", function () {
         const atChar = (character: number) => new vscode.Position(0, character);
 
         assert.deepStrictEqual(
-          await filterSelections(async (text) => !isNaN(+text)),
+          await Selections.filter(async (text) => !isNaN(+text)),
           [new vscode.Selection(atChar(4), atChar(7))],
         );
       });
@@ -962,7 +962,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function updateSelections", async function () {
+    test("function update", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -981,13 +981,13 @@ suite("API tests", function () {
         const reverseUnlessNumber = (text: string, sel: vscode.Selection) =>
           isNaN(+text) ? new vscode.Selection(sel.active, sel.anchor) : undefined;
 
-        updateSelections(reverseUnlessNumber);
+        Selections.update(reverseUnlessNumber);
       });
 
       after.assertEquals(editor);
     });
 
-    test("function updateSelections#1", async function () {
+    test("function update#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -998,13 +998,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        assert.throws(() => updateSelections(() => undefined), EmptySelectionsError);
+        assert.throws(() => Selections.update(() => undefined), EmptySelectionsError);
       });
 
       // No expected end document.
     });
 
-    test("function updateSelections#2", async function () {
+    test("function update#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1023,13 +1023,13 @@ suite("API tests", function () {
         const reverseIfNumber = async (text: string, sel: vscode.Selection) =>
           !isNaN(+text) ? new vscode.Selection(sel.active, sel.anchor) : undefined;
 
-        await updateSelections(reverseIfNumber);
+        await Selections.update(reverseIfNumber);
       });
 
       after.assertEquals(editor);
     });
 
-    test("function rotateSelections", async function () {
+    test("function rotate", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1046,13 +1046,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        setSelections(rotateSelections(1));
+        Selections.set(Selections.rotate(1));
       });
 
       after.assertEquals(editor);
     });
 
-    test("function rotateSelections#1", async function () {
+    test("function rotate#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1069,13 +1069,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        setSelections(rotateSelections(-1));
+        Selections.set(Selections.rotate(-1));
       });
 
       after.assertEquals(editor);
     });
 
-    test("function selectionsLines", async function () {
+    test("function lines", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1099,13 +1099,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(selectionsLines(), "to only contain", 0, 1, 3, 4, 5, 6);
+        expect(Selections.lines(), "to only contain", 0, 1, 3, 4, 5, 6);
       });
 
       // No expected end document.
     });
 
-    test("function selectWithinSelections", async function () {
+    test("function selectWithin", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1130,7 +1130,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function mergeOverlappingSelections", async function () {
+    test("function mergeOverlapping", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1142,13 +1142,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(mergeOverlappingSelections(Selections.current), "to equal", [Selections.current[0]]);
+        expect(Selections.mergeOverlapping(), "to equal", [Selections.nth(0)]);
       });
 
       // No expected end document.
     });
 
-    test("function mergeOverlappingSelections#1", async function () {
+    test("function mergeOverlapping#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1160,13 +1160,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(mergeOverlappingSelections(Selections.current), "to equal", [Selections.current[0]]);
+        expect(Selections.mergeOverlapping(), "to equal", [Selections.nth(0)]);
       });
 
       // No expected end document.
     });
 
-    test("function mergeOverlappingSelections#2", async function () {
+    test("function mergeOverlapping#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1178,7 +1178,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(mergeOverlappingSelections(Selections.current), "to satisfy", [
+        expect(Selections.mergeOverlapping(), "to satisfy", [
           expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
         ]);
       });
@@ -1186,7 +1186,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function mergeOverlappingSelections#3", async function () {
+    test("function mergeConsecutive", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1198,9 +1198,9 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.mergeOverlapping(Selections.current), "to equal", Selections.current);
+        expect(Selections.mergeOverlapping(), "to equal", Selections.current());
 
-        expect(Selections.mergeConsecutive(Selections.current), "to satisfy", [
+        expect(Selections.mergeConsecutive(), "to satisfy", [
           expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
         ]);
       });
@@ -1208,7 +1208,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function mergeOverlappingSelections#4", async function () {
+    test("function mergeConsecutive#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -1220,9 +1220,9 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.mergeOverlapping(Selections.current), "to equal", Selections.current);
+        expect(Selections.mergeOverlapping(), "to equal", Selections.current());
 
-        expect(Selections.mergeConsecutive(Selections.current), "to satisfy", [
+        expect(Selections.mergeConsecutive(), "to satisfy", [
           expect.it("to start at coords", 0, 0).and("to end at coords", 0, 4),
         ]);
       });
@@ -1273,8 +1273,8 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.isEntireLine(Selections.current[0]), "to be true");
-        expect(Selections.isEntireLine(Selections.current[1]), "to be false");
+        expect(Selections.isEntireLine(Selections.nth(0)!), "to be true");
+        expect(Selections.isEntireLine(Selections.nth(1)!), "to be false");
       });
 
       // No expected end document.
@@ -1294,7 +1294,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.isEntireLine(Selections.current[0]), "to be false");
+        expect(Selections.isEntireLine(Selections.nth(0)!), "to be false");
       });
 
       // No expected end document.
@@ -1319,9 +1319,9 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.isEntireLines(Selections.current[0]), "to be true");
-        expect(Selections.isEntireLines(Selections.current[1]), "to be true");
-        expect(Selections.isEntireLines(Selections.current[2]), "to be false");
+        expect(Selections.isEntireLines(Selections.nth(0)!), "to be true");
+        expect(Selections.isEntireLines(Selections.nth(1)!), "to be true");
+        expect(Selections.isEntireLines(Selections.nth(2)!), "to be false");
       });
 
       // No expected end document.
@@ -1343,9 +1343,9 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.text(Selections.current[0]), "to be", "abc\ndef");
-        expect(Selections.text(Selections.current[1]), "to be", "g");
-        expect(Selections.text(Selections.current[2]), "to be", "");
+        expect(Selections.text(Selections.nth(0)!), "to be", "abc\ndef");
+        expect(Selections.text(Selections.nth(1)!), "to be", "g");
+        expect(Selections.text(Selections.nth(2)!), "to be", "");
       });
 
       // No expected end document.
@@ -1367,9 +1367,9 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        expect(Selections.length(Selections.current[0]), "to be", 7);
-        expect(Selections.length(Selections.current[1]), "to be", 1);
-        expect(Selections.length(Selections.current[2]), "to be", 0);
+        expect(Selections.length(Selections.nth(0)!), "to be", 7);
+        expect(Selections.length(Selections.nth(1)!), "to be", 1);
+        expect(Selections.length(Selections.nth(2)!), "to be", 0);
       });
 
       // No expected end document.

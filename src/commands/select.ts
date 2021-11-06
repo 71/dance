@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument } from ".";
-import { firstVisibleLine as apiFirstVisibleLine, lastVisibleLine as apiLastVisibleLine, middleVisibleLine as apiMiddleVisibleLine, column, columns, Context, Direction, Lines, Positions, SelectionBehavior, Selections, Shift, showMenu } from "../api";
+import { firstVisibleLine as apiFirstVisibleLine, lastVisibleLine as apiLastVisibleLine, middleVisibleLine as apiMiddleVisibleLine, Context, Direction, Lines, Positions, SelectionBehavior, Selections, Shift, showMenu } from "../api";
 import { PerEditorState } from "../state/editors";
 import { unsafeSelections } from "../utils/misc";
 
@@ -81,12 +81,12 @@ export function vertically(
     const active = selection.active;
 
     if (active === selection.end && Selections.endsWithEntireLine(selection)) {
-      return columns(active.line - 1, _.editor) + 1;
+      return Lines.columns(active.line - 1, _.editor) + 1;
     } else if (active === selection.start && isCharacterMode) {
-      return column(active.line, active.character, _.editor) + 1;
+      return Lines.column(active.line, active.character, _.editor) + 1;
     }
 
-    return column(active.line, active.character, _.editor);
+    return Lines.column(active.line, active.character, _.editor);
   };
 
   // Get or create the `PreferredColumnsState` for this editor.
@@ -130,7 +130,7 @@ export function vertically(
     // TODO: handle tab characters
     const activeLine = isCharacterMode ? Selections.activeLine(selection) : selection.active.line,
           targetLine = Lines.clamp(activeLine + repetitions * direction, document),
-          targetLineLength = columns(targetLine, _.editor);
+          targetLineLength = Lines.columns(targetLine, _.editor);
 
     if (targetLineLength === 0) {
       let targetPosition = Positions.lineStart(targetLine);
@@ -188,7 +188,7 @@ export function vertically(
 
     let newPosition = new vscode.Position(
       targetLine,
-      column.character(targetLine, targetColumn, _.editor, /* roundUp= */ isCharacterMode),
+      Lines.column.character(targetLine, targetColumn, _.editor, /* roundUp= */ isCharacterMode),
     );
 
     if (isCharacterMode && shift !== Shift.Jump) {

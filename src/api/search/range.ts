@@ -2,8 +2,8 @@ import * as vscode from "vscode";
 
 import { moveWhile } from "./move";
 import { Context } from "../context";
-import { Lines } from "../lines";
-import { Positions } from "../positions";
+import { isEmpty as lineIsEmpty } from "../lines";
+import * as Positions from "../positions";
 import { Direction } from "../types";
 import { CharSet, getCharSetFunction } from "../../utils/charset";
 import { CharCodes } from "../../utils/regexp";
@@ -134,7 +134,7 @@ export namespace Range {
     let start: vscode.Position;
 
     if (position.line + 1 < document.lineCount
-        && Lines.isEmpty(position.line, document) && !Lines.isEmpty(position.line + 1, document)) {
+        && lineIsEmpty(position.line, document) && !lineIsEmpty(position.line + 1, document)) {
       // Special case: if current line is empty, check next line and select
       // the NEXT paragraph if next line is not empty.
       start = Positions.lineStart(position.line + 1);
@@ -157,7 +157,7 @@ export namespace Range {
       _inner: boolean,
       document = Context.current.document,
     ) {
-      if (position.line > 0 && Lines.isEmpty(position.line, document)) {
+      if (position.line > 0 && lineIsEmpty(position.line, document)) {
         position = Positions.lineStart(position.line - 1);  // Re-anchor to the previous line.
       }
 
@@ -230,11 +230,11 @@ export namespace Range {
         position = start;
       }
 
-      if (Lines.isEmpty(position.line, document)) {
+      if (lineIsEmpty(position.line, document)) {
         // We're on an empty line which does not belong to last sentence or this
         // sentence. If next line is also empty, we should just stay here.
         // However, start scanning from the next line if it is not empty.
-        if (position.line + 1 >= document.lineCount || Lines.isEmpty(position.line + 1, document)) {
+        if (position.line + 1 >= document.lineCount || lineIsEmpty(position.line + 1, document)) {
           return position;
         } else {
           position = Positions.lineStart(position.line + 1);
@@ -438,7 +438,7 @@ function toParagraphStart(
   let line = position.line;
 
   // Move past any trailing empty lines.
-  while (line >= 0 && Lines.isEmpty(line, document)) {
+  while (line >= 0 && lineIsEmpty(line, document)) {
     line--;
   }
 
@@ -447,7 +447,7 @@ function toParagraphStart(
   }
 
   // Then move to the start of the paragraph (non-empty lines).
-  while (line > 0 && !Lines.isEmpty(line - 1, document)) {
+  while (line > 0 && !lineIsEmpty(line - 1, document)) {
     line--;
   }
 
@@ -462,7 +462,7 @@ function toParagraphEnd(
   let line = position.line;
 
   // Move to the end of the paragraph (non-empty lines)
-  while (line < document.lineCount && !Lines.isEmpty(line, document)) {
+  while (line < document.lineCount && !lineIsEmpty(line, document)) {
     line++;
   }
 
@@ -479,7 +479,7 @@ function toParagraphEnd(
   }
 
   // Then move to the last trailing empty line.
-  while (line + 1 < document.lineCount && Lines.isEmpty(line + 1, document)) {
+  while (line + 1 < document.lineCount && lineIsEmpty(line + 1, document)) {
     line++;
   }
 

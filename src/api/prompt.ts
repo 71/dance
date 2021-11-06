@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Context } from "./context";
-import { Selections } from "./selections";
+import { set as setSelections } from "./selections";
 import type { Input, SetInput } from "../commands";
 import { CancellationError } from "../utils/errors";
 
@@ -319,7 +319,7 @@ export namespace prompt {
     }
 
     function undo() {
-      Selections.set(selections);
+      setSelections(selections);
     }
 
     if (input === undefined) {

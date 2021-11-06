@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument, InputOr, RegisterOr } from ".";
-import { insert as apiInsert, Context, deindentLines, edit, indentLines, joinLines, keypress, Positions, replace, Selections, selectionsLines, setSelections, Shift } from "../api";
+import { insert as apiInsert, Context, deindentLines, edit, indentLines, joinLines, keypress, Positions, replace, Selections, Shift } from "../api";
 import type { Register } from "../state/registers";
 import { LengthMismatchError } from "../utils/errors";
 
@@ -122,7 +122,7 @@ export async function insert(
  * @keys `a-j` (normal)
  */
 export function join(_: Context, separator?: Argument<string>) {
-  return joinLines(selectionsLines(), separator);
+  return joinLines(Selections.lines(), separator);
 }
 
 /**
@@ -131,7 +131,7 @@ export function join(_: Context, separator?: Argument<string>) {
  * @keys `s-a-j` (normal)
  */
 export function join_select(_: Context, separator?: Argument<string>) {
-  return joinLines(selectionsLines(), separator).then(setSelections);
+  return joinLines(Selections.lines(), separator).then(Selections.set);
 }
 
 /**
@@ -140,7 +140,7 @@ export function join_select(_: Context, separator?: Argument<string>) {
  * @keys `>` (normal)
  */
 export function indent(_: Context, repetitions: number) {
-  return indentLines(selectionsLines(), repetitions, /* indentEmpty= */ false);
+  return indentLines(Selections.lines(), repetitions, /* indentEmpty= */ false);
 }
 
 /**
@@ -149,7 +149,7 @@ export function indent(_: Context, repetitions: number) {
  * @keys `a->` (normal)
  */
 export function indent_withEmpty(_: Context, repetitions: number) {
-  return indentLines(selectionsLines(), repetitions, /* indentEmpty= */ true);
+  return indentLines(Selections.lines(), repetitions, /* indentEmpty= */ true);
 }
 
 /**
@@ -158,7 +158,7 @@ export function indent_withEmpty(_: Context, repetitions: number) {
  * @keys `a-<` (normal)
  */
 export function deindent(_: Context, repetitions: number) {
-  return deindentLines(selectionsLines(), repetitions, /* deindentIncomplete= */ false);
+  return deindentLines(Selections.lines(), repetitions, /* deindentIncomplete= */ false);
 }
 
 /**
@@ -167,7 +167,7 @@ export function deindent(_: Context, repetitions: number) {
  * @keys `<` (normal)
  */
 export function deindent_withIncomplete(_: Context, repetitions: number) {
-  return deindentLines(selectionsLines(), repetitions, /* deindentIncomplete= */ true);
+  return deindentLines(Selections.lines(), repetitions, /* deindentIncomplete= */ true);
 }
 
 /**

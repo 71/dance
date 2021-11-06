@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
 
 import { Context, edit } from "../context";
-import { Positions } from "../positions";
-import { Selections } from "../selections";
+import * as Positions from "../positions";
+import * as Selections from "../selections";
 import { TrackedSelection } from "../../utils/tracked-selection";
 
 const enum Constants {

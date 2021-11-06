@@ -25,45 +25,43 @@ export function lastVisibleLine(editor = Context.current.editor) {
   return editor.visibleRanges[0].end.line;
 }
 
-export namespace Lines {
-  /**
-   * Returns the text contents of the given line.
-   */
-  export function text(line: number, document = Context.current.document) {
-    return document.lineAt(line).text;
+/**
+ * Returns the text contents of the given line.
+ */
+export function text(line: number, document = Context.current.document) {
+  return document.lineAt(line).text;
+}
+
+/**
+ * Returns the length of the given line.
+ */
+export function length(line: number, document = Context.current.document) {
+  return document.lineAt(line).text.length;
+}
+
+/**
+ * Returns whether the given line is empty.
+ */
+export function isEmpty(line: number, document = Context.current.document) {
+  return length(line, document) === 0;
+}
+
+/**
+ * Returns the given line number, possibly modified to fit in the current
+ * document.
+ */
+export function clamp(line: number, document?: vscode.TextDocument) {
+  if (line < 0) {
+    return 0;
   }
 
-  /**
-   * Returns the length of the given line.
-   */
-  export function length(line: number, document = Context.current.document) {
-    return document.lineAt(line).text.length;
+  const lastLine = (document ?? Context.current.document).lineCount - 1;
+
+  if (line > lastLine) {
+    return lastLine;
   }
 
-  /**
-   * Returns whether the given line is empty.
-   */
-  export function isEmpty(line: number, document = Context.current.document) {
-    return length(line, document) === 0;
-  }
-
-  /**
-   * Returns the given line number, possibly modified to fit in the current
-   * document.
-   */
-  export function clamp(line: number, document?: vscode.TextDocument) {
-    if (line < 0) {
-      return 0;
-    }
-
-    const lastLine = (document ?? Context.current.document).lineCount - 1;
-
-    if (line > lastLine) {
-      return lastLine;
-    }
-
-    return line;
-  }
+  return line;
 }
 
 function diffAddedByTabs(text: string, editor: Pick<vscode.TextEditor, "options">) {

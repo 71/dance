@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Context } from "../context";
-import { Positions } from "../positions";
+import * as Positions from "../positions";
 import { Direction } from "../types";
 
 /**

@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import type { Extension } from "./extension";
 import type { Mode } from "./modes";
-import { command, commands, Context, Positions, SelectionBehavior, Selections, selectionsLines } from "../api";
+import { command, commands, Context, Positions, SelectionBehavior, Selections } from "../api";
 import { extensionName } from "../utils/constants";
 import { assert } from "../utils/errors";
 
@@ -332,7 +332,7 @@ export class PerEditorState implements vscode.Disposable {
             : allSelections.slice(1);
 
       if (decoration.renderOptions.isWholeLine) {
-        const lines = selectionsLines(selections),
+        const lines = Selections.lines(selections),
               ranges: vscode.Range[] = [];
 
         for (let i = 0, len = lines.length; i < len; i++) {

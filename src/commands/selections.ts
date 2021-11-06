@@ -748,7 +748,7 @@ export function copy(
  * @keys `a-_` (normal)
  */
 export function merge(_: Context) {
-  Selections.set(Selections.mergeConsecutive(Selections.current));
+  Selections.set(Selections.mergeConsecutive(Selections.current()));
 }
 
 /**
