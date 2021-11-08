@@ -26,7 +26,8 @@ jobs:
         env:
           MOCHA_REPORTER: dot
 
-      - uses: butlerlogic/action-autotag@ade8d2e19bfcd1e6a91272e2849b4bf4c37a67f1
+      - name: Create tag based on package.json
+        uses: butlerlogic/action-autotag@ade8d2e19bfcd1e6a91272e2849b4bf4c37a67f1
         id: autotag
         with:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
