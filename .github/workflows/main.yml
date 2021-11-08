@@ -27,6 +27,25 @@ jobs:
           MOCHA_REPORTER: dot
 
       - uses: butlerlogic/action-autotag@ade8d2e19bfcd1e6a91272e2849b4bf4c37a67f1
+        id: autotag
         with:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           tag_prefix: v
+
+      - name: Publish to Open VSX Registry
+        uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
+        if: ${{ success() && steps.autotag.outputs.tagcreated == 'yes' }}
+        id: publishToOpenVSX
+        with:
+          pat: ${{ secrets.OPEN_VSX_TOKEN }}
+          yarn: true
+
+      - name: Publish to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
+        if: ${{ success() && steps.autotag.outputs.tagcreated == 'yes' }}
+        with:
+          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          registryUrl: https://marketplace.visualstudio.com
+          extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
+          packagePath: ''
+          yarn: true
