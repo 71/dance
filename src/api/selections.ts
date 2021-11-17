@@ -5,6 +5,7 @@ import { NotASelectionError } from "./errors";
 import * as Positions from "./positions";
 import { Direction, SelectionBehavior, Shift } from "./types";
 import { execRange, splitRange } from "../utils/regexp";
+import { TrackedSelection } from "../utils/tracked-selection";
 
 export { fromCharacterMode, toCharacterMode };
 
@@ -996,6 +997,17 @@ export function current() {
  */
 export function nth(index: number, selections: readonly vscode.Selection[] = current()) {
   return selections[index] as vscode.Selection | undefined;
+}
+
+/**
+ * Returns an object that keeps track of the given list of selections.
+ */
+export function track(selections?: readonly vscode.Selection[]) {
+  const context = Context.current,
+        document = context.document;
+
+  return new TrackedSelection.Set(
+    TrackedSelection.fromArray(selections ?? context.selections, document), document);
 }
 
 /**

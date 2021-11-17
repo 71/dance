@@ -11,7 +11,6 @@ export * from "./keybindings";
 export * from "./menu";
 export * from "./modes";
 export * from "./prompt";
-export * from "./registers";
 export * from "./run";
 export * from "./search";
 export * from "./search/lines";
@@ -37,6 +36,11 @@ export * as Positions from "./positions";
  * Operations on `vscode.Selection`s.
  */
 export * as Selections from "./selections";
+
+/**
+ * Operations on `Register`s.
+ */
+export * as Registers from "./registers";
 
 /**
  * Returns the module exported by the extension with the given identifier.
