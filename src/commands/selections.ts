@@ -129,6 +129,7 @@ export async function restore_withCurrent(
   register: RegisterOr<"caret", Register.Flags.CanReadSelections>,
 
   reverse: Argument<boolean> = false,
+  action?: Argument<"a" | "u" | "i" | "<" | ">" | "+" | "-">,
 ) {
   const savedSelections = register.getSelections();
 
@@ -150,11 +151,10 @@ export async function restore_withCurrent(
     [">", "Select rightmost cursor"],
     ["+", "Select longest"],
     ["-", "Select shortest"],
-  ]);
-
-  if (typeof type === "string") {
-    return;
-  }
+  ], undefined, {
+    defaultPick: action,
+    defaultPickName: "action",
+  });
 
   if (type === 0) {
     _.selections = from.concat(add);

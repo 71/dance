@@ -1095,7 +1095,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.restore.withCurrent",
-      (_, argument) => _.runAsync((_) => restore_withCurrent(_, _.document, getRegister(_, argument, "caret", Register.Flags.CanReadSelections), argument.reverse)),
+      (_, argument) => _.runAsync((_) => restore_withCurrent(_, _.document, getRegister(_, argument, "caret", Register.Flags.CanReadSelections), argument.reverse, argument.action)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(

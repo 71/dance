@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { Context } from "./context";
 import { set as setSelections } from "./selections";
 import type { Input, SetInput } from "../commands";
-import { CancellationError } from "../utils/errors";
+import { ArgumentError, CancellationError } from "../utils/errors";
 
 const actionEvent = new vscode.EventEmitter<Parameters<typeof prompt.notifyActionRequested>[0]>();
 
@@ -338,8 +338,23 @@ export namespace prompt {
   export function one(
     items: readonly ListPair[],
     init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
+    options?: Readonly<{ defaultPickName?: string, defaultPick?: string }>,
     context = Context.WithoutActiveEditor.current,
   ) {
+    if (options?.defaultPick != null) {
+      const defaultPick = options.defaultPick,
+            index = items.findIndex((pair) => pair[0] === defaultPick);
+
+      if (index === -1) {
+        const pickName = options.defaultPickName ?? "options.defaultPick",
+              choices = items.map((pair) => '"' + pair[0] + '"').join(", ");
+
+        return Promise.reject(new ArgumentError(`"${pickName}" must be one of ${choices}`));
+      }
+
+      return Promise.resolve(index);
+    }
+
     return promptInList(false, items, init ?? (() => {}), context.cancellationToken);
   }
 

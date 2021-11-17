@@ -1122,7 +1122,7 @@ Restore selections.
 This command:
 - accepts a register (by default, it uses `caret`).
 
-### [`selections.restore.withCurrent`](./selections.ts#L113-L132)
+### [`selections.restore.withCurrent`](./selections.ts#L113-L133)
 
 Combine register selections with current ones.
 
@@ -1137,6 +1137,7 @@ See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
 
 This command:
 - accepts a register (by default, it uses `caret`).
+- takes an argument `action` of type `"a" | "u" | "i" | "<" | ">" | "+" | "-"`.
 - takes an argument `reverse` of type `boolean`.
 
 ### [`selections.pipe`](./selections.ts#L239-L261)
