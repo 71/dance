@@ -4,7 +4,7 @@ import type { Argument, InputOr } from ".";
 import { closestSurroundedBy, Context, Direction, keypress, Lines, moveTo, moveWhile, Pair, pair, Positions, prompt, Range, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
 import { CharSet } from "../utils/charset";
 import { ArgumentError, assert } from "../utils/errors";
-import { execRange } from "../utils/regexp";
+import { escapeForRegExp, execRange } from "../utils/regexp";
 
 /**
  * Update selections based on the text surrounding them.
@@ -95,8 +95,32 @@ export function enclosing(
   direction = Direction.Forward,
   shift = Shift.Select,
   open: Argument<boolean> = true,
-  pairs: Argument<readonly string[]> = defaultEnclosingPatterns,
+  pairs?: Argument<readonly string[]>,
 ) {
+  if (pairs === undefined) {
+    // Find bracket pairs for current language, if any.
+    const languageConfig = vscode.workspace.getConfiguration("editor.language", _.document),
+          bracketsConfig = languageConfig.get<readonly [string, string][]>("brackets");
+
+    if (Array.isArray(bracketsConfig)) {
+      const flattenedPairs = [];
+
+      for (const bracketPair of bracketsConfig) {
+        if (!Array.isArray(bracketPair) || bracketPair.length !== 2
+            || typeof bracketPair[0] !== "string" || typeof bracketPair[1] !== "string") {
+          throw new Error("setting `editor.language.brackets` contains an invalid entry: "
+                          + JSON.stringify(bracketPair));
+        }
+
+        flattenedPairs.push(escapeForRegExp(bracketPair[0]), escapeForRegExp(bracketPair[1]));
+      }
+
+      pairs = flattenedPairs;
+    } else {
+      pairs = defaultEnclosingPatterns;
+    }
+  }
+
   ArgumentError.validate(
     "pairs",
     (pairs.length & 1) === 0,
