@@ -179,7 +179,7 @@ function parseDocComments(code: string, modulePath: string) {
             .map((p) => {
               let match: RegExpExecArray | null;
 
-              if (match = /^(\w+\??|.+[}\]]): *(.+)$/.exec(p)) {
+              if (match = /^(\w+\??|.+[}\]]): *(.+)$/s.exec(p)) {
                 return match.slice(1) as [string, string];
               }
               if (match = /^(\w+) *= *(\d+|true|false)$/.exec(p)) {
