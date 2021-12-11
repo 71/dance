@@ -415,7 +415,30 @@ export class Context extends ContextWithoutActiveEditor {
    * Switches the context to the given document.
    */
   public async switchToDocument(document: vscode.TextDocument, alsoFocusEditor = false) {
-    const editor = await vscode.window.showTextDocument(document, undefined, !alsoFocusEditor);
+    const notebook = (document as { notebook?: vscode.NotebookDocument }).notebook;
+    let notebookEditor: vscode.TextEditor | undefined;
+
+    if (notebook !== undefined) {
+      const uri = document.uri;
+
+      if (uri.scheme === "vscode-notebook-cell" && uri.fragment.startsWith("ch")) {
+        // Target document is a notebook cell; find its index and attempt to
+        // focus it.
+        const cellIndex = parseInt(uri.fragment.slice(2)),
+              cell = notebook.cellAt(cellIndex);
+
+        if (cell.index === cellIndex) {
+          // `showTextDocument` will force a regular text editor. We use
+          // `vscode.open` instead, which will focus the right cell.
+          await vscode.commands.executeCommand("vscode.open", cell.document.uri);
+
+          notebookEditor = vscode.window.activeTextEditor;
+        }
+      }
+    }
+
+    const editor = notebookEditor
+                ?? await vscode.window.showTextDocument(document, undefined, !alsoFocusEditor);
 
     this._document = document;
     this._editor = editor;

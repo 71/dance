@@ -100,7 +100,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   browser: "./out/web/extension.js",
 
   engines: {
-    vscode: "^1.56.0",
+    vscode: "^1.60.0",
   },
 
   scripts: {
@@ -122,7 +122,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "@types/glob": "^7.1.1",
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.6.0",
-    "@types/vscode": "^1.56.0",
+    "@types/vscode": "^1.63.0",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
     "chokidar": "^3.5.1",
