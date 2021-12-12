@@ -287,7 +287,7 @@ function stringifySelection(document: vscode.TextDocument, selection: vscode.Sel
 export class ExpectedDocument {
   public constructor(
     public readonly text: string,
-    public readonly selections: vscode.Selection[] = [],
+    public readonly selections: readonly vscode.Selection[] = [],
   ) {
     const lineCount = text.split("\n").length;
 
