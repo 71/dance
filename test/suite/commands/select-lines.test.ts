@@ -515,5 +515,28 @@ suite("./test/suite/commands/select-lines.md", function () {
     `);
   });
 
+  test("7 > line-extend", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo
+         ^ 0
+      bar
+      baz
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+    await executeCommand("dance.select.line.below.extend");
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/select-lines.md:363:1", 6, String.raw`
+      foo
+      ^^^^ 0
+      bar
+      baz
+    `);
+  });
+
   groupTestsByParentName(this);
 });

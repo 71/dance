@@ -1327,6 +1327,70 @@ suite("API tests", function () {
       // No expected end document.
     });
 
+    test("function startsWithEntireLine", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              abc
+                 ^ 0
+              def
+                ^^ 1
+              ghi
+              ^^^^ 1
+              jkl
+              mno
+              ^^^^ 2
+              pqr
+              ^^ 2
+              stu
+              ^^^^ 3
+              vwx
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.startsWithEntireLine(Selections.nth(0)!), "to be false");
+        expect(Selections.startsWithEntireLine(Selections.nth(1)!), "to be false");
+        expect(Selections.startsWithEntireLine(Selections.nth(2)!), "to be true");
+        expect(Selections.startsWithEntireLine(Selections.nth(3)!), "to be true");
+      });
+
+      // No expected end document.
+    });
+
+    test("function endsWithEntireLine", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              abc
+                 ^ 0
+              def
+                ^^ 1
+              ghi
+              ^^^^ 1
+              jkl
+              mno
+              ^^^^ 2
+              pqr
+              ^^ 2
+              stu
+              ^^^^ 3
+              vwx
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.endsWithEntireLine(Selections.nth(0)!), "to be false");
+        expect(Selections.endsWithEntireLine(Selections.nth(1)!), "to be true");
+        expect(Selections.endsWithEntireLine(Selections.nth(2)!), "to be false");
+        expect(Selections.endsWithEntireLine(Selections.nth(3)!), "to be true");
+      });
+
+      // No expected end document.
+    });
+
     test("function text", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),

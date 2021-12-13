@@ -1475,16 +1475,114 @@ export function isEntireLines(selection: vscode.Selection | vscode.Range) {
   return start.character === 0 && end.character === 0 && start.line !== end.line;
 }
 
+
+/**
+ * Returns whether the given selection starts with an entire line.
+ *
+ * ### Example
+ *
+ * ```js
+ * expect(Selections.startsWithEntireLine(Selections.nth(0)!), "to be false");
+ * expect(Selections.startsWithEntireLine(Selections.nth(1)!), "to be false");
+ * expect(Selections.startsWithEntireLine(Selections.nth(2)!), "to be true");
+ * expect(Selections.startsWithEntireLine(Selections.nth(3)!), "to be true");
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ *    ^ 0
+ * def
+ *   ^^ 1
+ * ghi
+ * ^^^^ 1
+ * jkl
+ * mno
+ * ^^^^ 2
+ * pqr
+ * ^^ 2
+ * stu
+ * ^^^^ 3
+ * vwx
+ * ```
+ */
 export function startsWithEntireLine(selection: vscode.Selection | vscode.Range) {
   const start = selection.start;
 
   return start.character === 0 && start.line !== selection.end.line;
 }
 
+/**
+ * Returns whether the given selection ends with an entire line.
+ *
+ * ### Example
+ *
+ * ```js
+ * expect(Selections.endsWithEntireLine(Selections.nth(0)!), "to be false");
+ * expect(Selections.endsWithEntireLine(Selections.nth(1)!), "to be true");
+ * expect(Selections.endsWithEntireLine(Selections.nth(2)!), "to be false");
+ * expect(Selections.endsWithEntireLine(Selections.nth(3)!), "to be true");
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ *    ^ 0
+ * def
+ *   ^^ 1
+ * ghi
+ * ^^^^ 1
+ * jkl
+ * mno
+ * ^^^^ 2
+ * pqr
+ * ^^ 2
+ * stu
+ * ^^^^ 3
+ * vwx
+ * ```
+ */
 export function endsWithEntireLine(selection: vscode.Selection | vscode.Range) {
   const end = selection.end;
 
-  return end.character === 0 && selection.start.line !== end.line;
+  return end.character === 0
+      && (selection.start.line < end.line - 1
+        || (selection.start.line === end.line - 1 && selection.start.character === 0));
+}
+
+/**
+ * Returns whether the given selection ends with a line break (included).
+ *
+ * ### Example
+ *
+ * ```js
+ * expect(Selections.endsWithLineBreak(Selections.nth(0)!), "to be true");
+ * expect(Selections.endsWithLineBreak(Selections.nth(1)!), "to be true");
+ * expect(Selections.endsWithLineBreak(Selections.nth(2)!), "to be false");
+ * expect(Selections.endsWithLineBreak(Selections.nth(3)!), "to be true");
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ *    ^ 0
+ * def
+ *   ^^ 1
+ * ghi
+ * ^^^^ 1
+ * jkl
+ * mno
+ * ^^^^ 2
+ * pqr
+ * ^^ 2
+ * stu
+ * ^^^^ 3
+ * vwx
+ * ``` */
+export function endsWithLineBreak(selection: vscode.Selection | vscode.Range) {
+  const end = selection.end;
+
+  return end.character === 0 && selection.start.line < end.line;
 }
 
 export function activeLineIsFullySelected(selection: vscode.Selection) {

@@ -80,7 +80,7 @@ export function vertically(
   const activeEnd = (selection: vscode.Selection) => {
     const active = selection.active;
 
-    if (active === selection.end && Selections.endsWithEntireLine(selection)) {
+    if (active === selection.end && Selections.endsWithLineBreak(selection)) {
       return Lines.columns(active.line - 1, _.editor) + 1;
     } else if (active === selection.start && isCharacterMode) {
       return Lines.column(active.line, active.character, _.editor) + 1;

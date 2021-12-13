@@ -348,3 +348,26 @@ bar
 baz
 quux
 ```
+
+# 7
+
+> behavior <- character
+
+```
+foo
+   ^ 0
+bar
+baz
+```
+
+## 7 line-extend
+[up](#7)
+
+- .select.line.below.extend
+
+```
+foo
+^^^^ 0
+bar
+baz
+```
