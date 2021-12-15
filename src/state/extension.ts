@@ -213,7 +213,8 @@ export class Extension implements vscode.Disposable {
 
     this._configurationChangeHandlers.set(fullName, () => {
       const validator = new SettingsValidator(fullName),
-            configuration = vscode.workspace.getConfiguration(extensionName);
+            topSection = fullName === section ? undefined : extensionName,
+            configuration = vscode.workspace.getConfiguration(topSection);
 
       handler(
         configuration.get<T>(section, defaultValue),

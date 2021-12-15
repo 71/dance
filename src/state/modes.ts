@@ -118,6 +118,7 @@ export class Mode {
     }
 
     if (updated.length > 0) {
+      this.apply(this._raw, new SettingsValidator());
       this._onChanged.fire([this, updated]);
     }
   }
@@ -734,16 +735,8 @@ export class Modes implements Iterable<Mode> {
     extension.observePreference<Mode.Configuration.CursorStyle>(
       "editor.cursorStyle",
       (value, validator) => {
-        const raw = this._vscodeMode.raw;
-
-        if (raw.cursorStyle !== value) {
-          this._vscodeMode.update(
-            "_cursorStyle",
-            Mode.cursorStyleStringToCursorStyle(value, validator),
-          );
-
-          this._vscodeModeDefaults.cursorStyle = raw.cursorStyle = value;
-        }
+        this._vscodeModeDefaults.cursorStyle = value;
+        this._vscodeMode.apply({ ...this._vscodeModeDefaults }, validator);
       },
       true,
     );
@@ -751,16 +744,8 @@ export class Modes implements Iterable<Mode> {
     extension.observePreference<Mode.Configuration.LineNumbers>(
       "editor.lineNumbers",
       (value, validator) => {
-        const raw = this._vscodeMode.raw;
-
-        if (raw.lineNumbers !== value) {
-          this._vscodeMode.update(
-            "_lineNumbers",
-            Mode.lineNumbersStringToLineNumbersStyle(value, validator),
-          );
-
-          this._vscodeModeDefaults.lineNumbers = raw.lineNumbers = value;
-        }
+        this._vscodeModeDefaults.lineNumbers = value;
+        this._vscodeMode.apply({ ...this._vscodeModeDefaults }, validator);
       },
       true,
     );
