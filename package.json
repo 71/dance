@@ -3360,7 +3360,8 @@
         "command": "dance.select.vertically",
         "args": {
           "direction": 1,
-          "by": "page"
+          "by": "page",
+          "shift": "jump"
         }
       },
       {
@@ -3369,7 +3370,8 @@
         "command": "dance.select.vertically",
         "args": {
           "direction": 1,
-          "by": "page"
+          "by": "page",
+          "shift": "jump"
         }
       },
       {
@@ -3378,7 +3380,8 @@
         "command": "dance.select.vertically",
         "args": {
           "direction": 1,
-          "by": "halfPage"
+          "by": "halfPage",
+          "shift": "jump"
         }
       },
       {
@@ -3387,7 +3390,8 @@
         "command": "dance.select.vertically",
         "args": {
           "direction": 1,
-          "by": "halfPage"
+          "by": "halfPage",
+          "shift": "jump"
         }
       },
       {
@@ -3396,7 +3400,8 @@
         "command": "dance.select.vertically",
         "args": {
           "direction": -1,
-          "by": "page"
+          "by": "page",
+          "shift": "jump"
         }
       },
       {
@@ -3405,7 +3410,8 @@
         "command": "dance.select.vertically",
         "args": {
           "direction": -1,
-          "by": "page"
+          "by": "page",
+          "shift": "jump"
         }
       },
       {
@@ -3414,7 +3420,8 @@
         "command": "dance.select.vertically",
         "args": {
           "direction": -1,
-          "by": "halfPage"
+          "by": "halfPage",
+          "shift": "jump"
         }
       },
       {
@@ -3423,7 +3430,8 @@
         "command": "dance.select.vertically",
         "args": {
           "direction": -1,
-          "by": "halfPage"
+          "by": "halfPage",
+          "shift": "jump"
         }
       },
       {

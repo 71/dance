@@ -931,12 +931,12 @@ Select vertically.
 
 The following keybindings are also defined:
 
-| Keybinding                     | Command                                                     |
-| ------------------------------ | ----------------------------------------------------------- |
-| `c-f` (normal), `c-f` (insert) | `[".select.vertically", { direction:  1, by: "page"     }]` |
-| `c-d` (normal), `c-d` (insert) | `[".select.vertically", { direction:  1, by: "halfPage" }]` |
-| `c-b` (normal), `c-b` (insert) | `[".select.vertically", { direction: -1, by: "page"     }]` |
-| `c-u` (normal), `c-u` (insert) | `[".select.vertically", { direction: -1, by: "halfPage" }]` |
+| Keybinding                     | Command                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------- |
+| `c-f` (normal), `c-f` (insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]` |
+| `c-d` (normal), `c-d` (insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]` |
+| `c-b` (normal), `c-b` (insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]` |
+| `c-u` (normal), `c-u` (insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]` |
 
 This command:
 - may be repeated with a given number of repetitions.

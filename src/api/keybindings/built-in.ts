@@ -852,6 +852,7 @@ const builtinKeybindings = [
     args: {
       direction: 1,
       by: "page",
+      shift: "jump",
     },
   },
   {
@@ -861,6 +862,7 @@ const builtinKeybindings = [
     args: {
       direction: 1,
       by: "page",
+      shift: "jump",
     },
   },
   {
@@ -870,6 +872,7 @@ const builtinKeybindings = [
     args: {
       direction: 1,
       by: "halfPage",
+      shift: "jump",
     },
   },
   {
@@ -879,6 +882,7 @@ const builtinKeybindings = [
     args: {
       direction: 1,
       by: "halfPage",
+      shift: "jump",
     },
   },
   {
@@ -888,6 +892,7 @@ const builtinKeybindings = [
     args: {
       direction: -1,
       by: "page",
+      shift: "jump",
     },
   },
   {
@@ -897,6 +902,7 @@ const builtinKeybindings = [
     args: {
       direction: -1,
       by: "page",
+      shift: "jump",
     },
   },
   {
@@ -906,6 +912,7 @@ const builtinKeybindings = [
     args: {
       direction: -1,
       by: "halfPage",
+      shift: "jump",
     },
   },
   {
@@ -915,6 +922,7 @@ const builtinKeybindings = [
     args: {
       direction: -1,
       by: "halfPage",
+      shift: "jump",
     },
   },
   {
