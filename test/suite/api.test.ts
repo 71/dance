@@ -227,9 +227,9 @@ suite("API tests", function () {
               range = new vscode.Range(position, position),
               selection = new vscode.Selection(position, position);
 
-        assert(isPosition(position));
-        assert(!isPosition(range));
-        assert(!isPosition(selection));
+        expect(isPosition(position), "to be true");
+        expect(isPosition(range), "to be false");
+        expect(isPosition(selection), "to be false");
       });
 
       // No expected end document.
@@ -246,9 +246,9 @@ suite("API tests", function () {
               range = new vscode.Range(position, position),
               selection = new vscode.Selection(position, position);
 
-        assert(!isRange(position));
-        assert(isRange(range));
-        assert(!isRange(selection));
+        expect(isRange(position), "to be false");
+        expect(isRange(range), "to be true");
+        expect(isRange(selection), "to be false");
       });
 
       // No expected end document.
@@ -265,9 +265,9 @@ suite("API tests", function () {
               range = new vscode.Range(position, position),
               selection = new vscode.Selection(position, position);
 
-        assert(!isSelection(position));
-        assert(!isSelection(range));
-        assert(isSelection(selection));
+        expect(isSelection(position) , "to be false");
+        expect(isSelection(range)    , "to be false");
+        expect(isSelection(selection), "to be true");
       });
 
       // No expected end document.
@@ -283,20 +283,24 @@ suite("API tests", function () {
         const p1 = new vscode.Position(0, 0),
               p2 = new vscode.Position(0, 1);
 
-        assert.deepStrictEqual(
+        expect(
           mapStart(p1, (x) => x.translate(1)),
+          "to equal",
           new vscode.Position(1, 0),
         );
-        assert.deepStrictEqual(
+        expect(
           mapStart(new vscode.Range(p1, p2), (x) => x.translate(1)),
+          "to equal",
           new vscode.Range(p2, new vscode.Position(1, 0)),
         );
-        assert.deepStrictEqual(
+        expect(
           mapStart(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+          "to equal",
           new vscode.Selection(new vscode.Position(1, 0), p2),
         );
-        assert.deepStrictEqual(
+        expect(
           mapStart(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+          "to equal",
           new vscode.Selection(p2, new vscode.Position(1, 0)),
         );
       });
@@ -314,20 +318,24 @@ suite("API tests", function () {
         const p1 = new vscode.Position(0, 0),
               p2 = new vscode.Position(0, 1);
 
-        assert.deepStrictEqual(
+        expect(
           mapEnd(p1, (x) => x.translate(1)),
+          "to equal",
           new vscode.Position(1, 0),
         );
-        assert.deepStrictEqual(
+        expect(
           mapEnd(new vscode.Range(p1, p2), (x) => x.translate(1)),
+          "to equal",
           new vscode.Range(p1, new vscode.Position(1, 1)),
         );
-        assert.deepStrictEqual(
+        expect(
           mapEnd(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+          "to equal",
           new vscode.Selection(p1, new vscode.Position(1, 1)),
         );
-        assert.deepStrictEqual(
+        expect(
           mapEnd(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+          "to equal",
           new vscode.Selection(new vscode.Position(1, 1), p1),
         );
       });
@@ -345,12 +353,14 @@ suite("API tests", function () {
         const p1 = new vscode.Position(0, 0),
               p2 = new vscode.Position(0, 1);
 
-        assert.deepStrictEqual(
+        expect(
           mapActive(p1, (x) => x.translate(1)),
+          "to equal",
           new vscode.Position(1, 0),
         );
-        assert.deepStrictEqual(
+        expect(
           mapActive(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+          "to equal",
           new vscode.Selection(p1, new vscode.Position(1, 1)),
         );
       });
@@ -368,20 +378,24 @@ suite("API tests", function () {
         const p1 = new vscode.Position(0, 0),
               p2 = new vscode.Position(0, 1);
 
-        assert.deepStrictEqual(
+        expect(
           mapBoth(p1, (x) => x.translate(1)),
+          "to equal",
           new vscode.Position(1, 0),
         );
-        assert.deepStrictEqual(
+        expect(
           mapBoth(new vscode.Range(p1, p2), (x) => x.translate(1)),
+          "to equal",
           new vscode.Range(new vscode.Position(1, 0), new vscode.Position(1, 1)),
         );
-        assert.deepStrictEqual(
+        expect(
           mapBoth(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+          "to equal",
           new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(1, 1)),
         );
-        assert.deepStrictEqual(
+        expect(
           mapBoth(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+          "to equal",
           new vscode.Selection(new vscode.Position(1, 1), new vscode.Position(1, 0)),
         );
       });
@@ -399,8 +413,9 @@ suite("API tests", function () {
         const doubleNumbers = pipe((n) => typeof n === "number" ? n : undefined,
                                    (n) => n * 2);
 
-        assert.deepStrictEqual(
+        expect(
           doubleNumbers([1, "a", 2, null, 3, {}]),
+          "to equal",
           [2, 4, 6],
         );
       });
@@ -728,22 +743,22 @@ suite("API tests", function () {
       await context.runAsync(async () => {
         const [p1, [t1]] = searchBackward(/\w/, new vscode.Position(0, 1))!;
 
-        assert.deepStrictEqual(p1, new vscode.Position(0, 0));
-        assert.strictEqual(t1, "a");
+        expect(p1, "to be at coords", 0, 0);
+        expect(t1, "to be", "a");
 
         const [p2, [t2]] = searchBackward(/\w/, new vscode.Position(0, 2))!;
 
-        assert.deepStrictEqual(p2, new vscode.Position(0, 1));
-        assert.strictEqual(t2, "b");
+        expect(p2, "to be at coords", 0, 1);
+        expect(t2, "to be", "b");
 
         const [p3, [t3]] = searchBackward(/\w+/, new vscode.Position(0, 2))!;
 
-        assert.deepStrictEqual(p3, new vscode.Position(0, 0));
-        assert.strictEqual(t3, "ab");
+        expect(p3, "to be at coords", 0, 0);
+        expect(t3, "to be", "ab");
 
-        assert.strictEqual(
+        expect(
           searchBackward(/\w/, new vscode.Position(0, 0)),
-          undefined,
+          "to be undefined",
         );
       });
 
@@ -762,22 +777,22 @@ suite("API tests", function () {
       await context.runAsync(async () => {
         const [p1, [t1]] = searchForward(/\w/, new vscode.Position(0, 0))!;
 
-        assert.deepStrictEqual(p1, new vscode.Position(0, 0));
-        assert.strictEqual(t1, "a");
+        expect(p1, "to be at coords", 0, 0);
+        expect(t1, "to be", "a");
 
         const [p2, [t2]] = searchForward(/\w/, new vscode.Position(0, 1))!;
 
-        assert.deepStrictEqual(p2, new vscode.Position(0, 1));
-        assert.strictEqual(t2, "b");
+        expect(p2, "to be at coords", 0, 1);
+        expect(t2, "to be", "b");
 
         const [p3, [t3]] = searchForward(/\w+/, new vscode.Position(0, 1))!;
 
-        assert.deepStrictEqual(p3, new vscode.Position(0, 1));
-        assert.strictEqual(t3, "bc");
+        expect(p3, "to be at coords", 0, 1);
+        expect(t3, "to be", "bc");
 
-        assert.strictEqual(
+        expect(
           searchForward(/\w/, new vscode.Position(0, 3)),
-          undefined,
+          "to be undefined",
         );
       });
 
@@ -1014,10 +1029,10 @@ suite("API tests", function () {
       await context.runAsync(async () => {
         // Go backward as long as the previous character is equal to the current
         // character minus one.
-        assert.deepStrictEqual(
+        expect(
           moveWithBackward((c, i) => +c === i - 1 ? +c : undefined,
                            9, new vscode.Position(0, 7)),
-          new vscode.Position(0, 5),
+          "to be at coords", 0, 5,
         );
       });
 
@@ -1034,10 +1049,10 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        assert.deepStrictEqual(
+        expect(
           moveWithForward((c, i) => +c === i + 1 ? +c : undefined,
                           0, new vscode.Position(0, 0)),
-          new vscode.Position(0, 5),
+          "to be at coords", 0, 5,
         );
       });
 
@@ -1054,19 +1069,19 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        assert.deepStrictEqual(
+        expect(
           moveWhileBackward((c) => /\w/.test(c), new vscode.Position(0, 3)),
-          new vscode.Position(0, 0),
+          "to be at coords", 0, 0,
         );
 
-        assert.deepStrictEqual(
+        expect(
           moveWhileBackward((c) => c === "c", new vscode.Position(0, 3)),
-          new vscode.Position(0, 2),
+          "to be at coords", 0, 2,
         );
 
-        assert.deepStrictEqual(
+        expect(
           moveWhileBackward((c) => c === "b", new vscode.Position(0, 3)),
-          new vscode.Position(0, 3),
+          "to be at coords", 0, 3,
         );
       });
 
@@ -1083,19 +1098,19 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        assert.deepStrictEqual(
+        expect(
           moveWhileForward((c) => /\w/.test(c), new vscode.Position(0, 0)),
-          new vscode.Position(0, 3),
+          "to be at coords", 0, 3,
         );
 
-        assert.deepStrictEqual(
+        expect(
           moveWhileForward((c) => c === "a", new vscode.Position(0, 0)),
-          new vscode.Position(0, 1),
+          "to be at coords", 0, 1,
         );
 
-        assert.deepStrictEqual(
+        expect(
           moveWhileForward((c) => c === "b", new vscode.Position(0, 0)),
-          new vscode.Position(0, 0),
+          "to be at coords", 0, 0,
         );
       });
 
@@ -1137,8 +1152,8 @@ suite("API tests", function () {
       // No setup needed.
 
       await context.runAsync(async () => {
-        assert.throws(() => Selections.set([]), EmptySelectionsError);
-        assert.throws(() => Selections.set([1 as any]), NotASelectionError);
+        expect(() => Selections.set([]), "to throw an", EmptySelectionsError);
+        expect(() => Selections.set([1 as any]), "to throw a", NotASelectionError);
       });
 
       // No expected end document.
@@ -1158,8 +1173,9 @@ suite("API tests", function () {
       await context.runAsync(async () => {
         const atChar = (character: number) => new vscode.Position(0, character);
 
-        assert.deepStrictEqual(
+        expect(
           Selections.filter((text) => !isNaN(+text)),
+          "to equal",
           [new vscode.Selection(atChar(4), atChar(7))],
         );
       });
@@ -1181,8 +1197,9 @@ suite("API tests", function () {
       await context.runAsync(async () => {
         const atChar = (character: number) => new vscode.Position(0, character);
 
-        assert.deepStrictEqual(
+        expect(
           await Selections.filter(async (text) => !isNaN(+text)),
+          "to equal",
           [new vscode.Selection(atChar(4), atChar(7))],
         );
       });
@@ -1202,8 +1219,9 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        assert.deepStrictEqual(
+        expect(
           Selections.map((text) => isNaN(+text) ? undefined : +text),
+          "to equal",
           [123],
         );
       });
@@ -1223,8 +1241,9 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        assert.deepStrictEqual(
+        expect(
           await Selections.map(async (text) => isNaN(+text) ? undefined : +text),
+          "to equal",
           [123],
         );
       });
@@ -1268,7 +1287,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        assert.throws(() => Selections.update(() => undefined), EmptySelectionsError);
+        expect(() => Selections.update(() => undefined), "to throw an", EmptySelectionsError);
       });
 
       // No expected end document.

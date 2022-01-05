@@ -51,10 +51,10 @@ export function moveWithReachedDocumentEdge() {
  * ```js
  * // Go backward as long as the previous character is equal to the current
  * // character minus one.
- * assert.deepStrictEqual(
+ * expect(
  *   moveWithBackward((c, i) => +c === i - 1 ? +c : undefined,
  *                    9, new vscode.Position(0, 7)),
- *   new vscode.Position(0, 5),
+ *   "to be at coords", 0, 5,
  * );
  * ```
  *
@@ -106,10 +106,10 @@ export function moveWithBackward<T>(
  * ### Example
  *
  * ```js
- * assert.deepStrictEqual(
+ * expect(
  *   moveWithForward((c, i) => +c === i + 1 ? +c : undefined,
  *                   0, new vscode.Position(0, 0)),
- *   new vscode.Position(0, 5),
+ *   "to be at coords", 0, 5,
  * );
  * ```
  *
@@ -306,19 +306,19 @@ export function moveWhileReachedDocumentEdge() {
  * ### Example
  *
  * ```js
- * assert.deepStrictEqual(
+ * expect(
  *   moveWhileBackward((c) => /\w/.test(c), new vscode.Position(0, 3)),
- *   new vscode.Position(0, 0),
+ *   "to be at coords", 0, 0,
  * );
  *
- * assert.deepStrictEqual(
+ * expect(
  *   moveWhileBackward((c) => c === "c", new vscode.Position(0, 3)),
- *   new vscode.Position(0, 2),
+ *   "to be at coords", 0, 2,
  * );
  *
- * assert.deepStrictEqual(
+ * expect(
  *   moveWhileBackward((c) => c === "b", new vscode.Position(0, 3)),
- *   new vscode.Position(0, 3),
+ *   "to be at coords", 0, 3,
  * );
  * ```
  *
@@ -341,19 +341,19 @@ export function moveWhileBackward(
  * ### Example
  *
  * ```js
- * assert.deepStrictEqual(
+ * expect(
  *   moveWhileForward((c) => /\w/.test(c), new vscode.Position(0, 0)),
- *   new vscode.Position(0, 3),
+ *   "to be at coords", 0, 3,
  * );
  *
- * assert.deepStrictEqual(
+ * expect(
  *   moveWhileForward((c) => c === "a", new vscode.Position(0, 0)),
- *   new vscode.Position(0, 1),
+ *   "to be at coords", 0, 1,
  * );
  *
- * assert.deepStrictEqual(
+ * expect(
  *   moveWhileForward((c) => c === "b", new vscode.Position(0, 0)),
- *   new vscode.Position(0, 0),
+ *   "to be at coords", 0, 0,
  * );
  * ```
  *

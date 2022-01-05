@@ -38,8 +38,8 @@ export { fromCharacterMode, toCharacterMode };
  *
  * ### Example
  * ```js
- * assert.throws(() => Selections.set([]), EmptySelectionsError);
- * assert.throws(() => Selections.set([1 as any]), NotASelectionError);
+ * expect(() => Selections.set([]), "to throw an", EmptySelectionsError);
+ * expect(() => Selections.set([1 as any]), "to throw a", NotASelectionError);
  * ```
  */
 export function set(selections: readonly vscode.Selection[], context = Context.current) {
@@ -62,8 +62,9 @@ export function set(selections: readonly vscode.Selection[], context = Context.c
  * ```js
  * const atChar = (character: number) => new vscode.Position(0, character);
  *
- * assert.deepStrictEqual(
+ * expect(
  *   Selections.filter((text) => !isNaN(+text)),
+ *   "to equal",
  *   [new vscode.Selection(atChar(4), atChar(7))],
  * );
  * ```
@@ -91,8 +92,9 @@ export function filter(
  * ```js
  * const atChar = (character: number) => new vscode.Position(0, character);
  *
- * assert.deepStrictEqual(
+ * expect(
  *   await Selections.filter(async (text) => !isNaN(+text)),
+ *   "to equal",
  *   [new vscode.Selection(atChar(4), atChar(7))],
  * );
  * ```
@@ -229,8 +231,9 @@ export declare namespace filterByIndex {
  * ### Example
  *
  * ```js
- * assert.deepStrictEqual(
+ * expect(
  *   Selections.map((text) => isNaN(+text) ? undefined : +text),
+ *   "to equal",
  *   [123],
  * );
  * ```
@@ -257,8 +260,9 @@ export function map<T>(
  * ### Example
  *
  * ```js
- * assert.deepStrictEqual(
+ * expect(
  *   await Selections.map(async (text) => isNaN(+text) ? undefined : +text),
+ *   "to equal",
  *   [123],
  * );
  * ```
@@ -415,7 +419,7 @@ export declare namespace mapByIndex {
  * ### Example
  *
  * ```js
- * assert.throws(() => Selections.update(() => undefined), EmptySelectionsError);
+ * expect(() => Selections.update(() => undefined), "to throw an", EmptySelectionsError);
  * ```
  *
  * With:

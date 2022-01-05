@@ -20,9 +20,9 @@ export type PS = vscode.Position | vscode.Selection;
  *       range = new vscode.Range(position, position),
  *       selection = new vscode.Selection(position, position);
  *
- * assert(isPosition(position));
- * assert(!isPosition(range));
- * assert(!isPosition(selection));
+ * expect(isPosition(position), "to be true");
+ * expect(isPosition(range), "to be false");
+ * expect(isPosition(selection), "to be false");
  * ```
  */
 export function isPosition(x: unknown): x is vscode.Position {
@@ -39,9 +39,9 @@ export function isPosition(x: unknown): x is vscode.Position {
  *       range = new vscode.Range(position, position),
  *       selection = new vscode.Selection(position, position);
  *
- * assert(!isRange(position));
- * assert(isRange(range));
- * assert(!isRange(selection));
+ * expect(isRange(position), "to be false");
+ * expect(isRange(range), "to be true");
+ * expect(isRange(selection), "to be false");
  * ```
  */
 export function isRange(x: unknown): x is vscode.Range {
@@ -58,9 +58,9 @@ export function isRange(x: unknown): x is vscode.Range {
  *       range = new vscode.Range(position, position),
  *       selection = new vscode.Selection(position, position);
  *
- * assert(!isSelection(position));
- * assert(!isSelection(range));
- * assert(isSelection(selection));
+ * expect(isSelection(position) , "to be false");
+ * expect(isSelection(range)    , "to be false");
+ * expect(isSelection(selection), "to be true");
  * ```
  */
 export function isSelection(x: unknown): x is vscode.Selection {
@@ -76,20 +76,24 @@ export function isSelection(x: unknown): x is vscode.Selection {
  * const p1 = new vscode.Position(0, 0),
  *       p2 = new vscode.Position(0, 1);
  *
- * assert.deepStrictEqual(
+ * expect(
  *   mapStart(p1, (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Position(1, 0),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapStart(new vscode.Range(p1, p2), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Range(p2, new vscode.Position(1, 0)),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapStart(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Selection(new vscode.Position(1, 0), p2),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapStart(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Selection(p2, new vscode.Position(1, 0)),
  * );
  * ```
@@ -117,20 +121,24 @@ export function mapStart<T extends PRS>(x: T, f: (_: vscode.Position) => vscode.
  * const p1 = new vscode.Position(0, 0),
  *       p2 = new vscode.Position(0, 1);
  *
- * assert.deepStrictEqual(
+ * expect(
  *   mapEnd(p1, (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Position(1, 0),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapEnd(new vscode.Range(p1, p2), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Range(p1, new vscode.Position(1, 1)),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapEnd(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Selection(p1, new vscode.Position(1, 1)),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapEnd(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Selection(new vscode.Position(1, 1), p1),
  * );
  * ```
@@ -158,12 +166,14 @@ export function mapEnd<T extends PRS>(x: T, f: (_: vscode.Position) => vscode.Po
  * const p1 = new vscode.Position(0, 0),
  *       p2 = new vscode.Position(0, 1);
  *
- * assert.deepStrictEqual(
+ * expect(
  *   mapActive(p1, (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Position(1, 0),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapActive(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Selection(p1, new vscode.Position(1, 1)),
  * );
  * ```
@@ -186,20 +196,24 @@ export function mapActive<T extends PS>(x: T, f: (_: vscode.Position) => vscode.
  * const p1 = new vscode.Position(0, 0),
  *       p2 = new vscode.Position(0, 1);
  *
- * assert.deepStrictEqual(
+ * expect(
  *   mapBoth(p1, (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Position(1, 0),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapBoth(new vscode.Range(p1, p2), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Range(new vscode.Position(1, 0), new vscode.Position(1, 1)),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapBoth(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(1, 1)),
  * );
- * assert.deepStrictEqual(
+ * expect(
  *   mapBoth(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+ *   "to equal",
  *   new vscode.Selection(new vscode.Position(1, 1), new vscode.Position(1, 0)),
  * );
  * ```
@@ -311,8 +325,9 @@ export function pipe<A, B>(a: (_: A) => B | undefined): (values: readonly A[]) =
  * const doubleNumbers = pipe((n) => typeof n === "number" ? n : undefined,
  *                            (n) => n * 2);
  *
- * assert.deepStrictEqual(
+ * expect(
  *   doubleNumbers([1, "a", 2, null, 3, {}]),
+ *   "to equal",
  *   [2, 4, 6],
  * );
  * ```

@@ -38,22 +38,22 @@ export declare namespace search {
  * ```ts
  * const [p1, [t1]] = searchBackward(/\w/, new vscode.Position(0, 1))!;
  *
- * assert.deepStrictEqual(p1, new vscode.Position(0, 0));
- * assert.strictEqual(t1, "a");
+ * expect(p1, "to be at coords", 0, 0);
+ * expect(t1, "to be", "a");
  *
  * const [p2, [t2]] = searchBackward(/\w/, new vscode.Position(0, 2))!;
  *
- * assert.deepStrictEqual(p2, new vscode.Position(0, 1));
- * assert.strictEqual(t2, "b");
+ * expect(p2, "to be at coords", 0, 1);
+ * expect(t2, "to be", "b");
  *
  * const [p3, [t3]] = searchBackward(/\w+/, new vscode.Position(0, 2))!;
  *
- * assert.deepStrictEqual(p3, new vscode.Position(0, 0));
- * assert.strictEqual(t3, "ab");
+ * expect(p3, "to be at coords", 0, 0);
+ * expect(t3, "to be", "ab");
  *
- * assert.strictEqual(
+ * expect(
  *   searchBackward(/\w/, new vscode.Position(0, 0)),
- *   undefined,
+ *   "to be undefined",
  * );
  * ```
  *
@@ -97,22 +97,22 @@ export function searchBackward(re: RegExp, origin: vscode.Position, end?: vscode
  * ```ts
  * const [p1, [t1]] = searchForward(/\w/, new vscode.Position(0, 0))!;
  *
- * assert.deepStrictEqual(p1, new vscode.Position(0, 0));
- * assert.strictEqual(t1, "a");
+ * expect(p1, "to be at coords", 0, 0);
+ * expect(t1, "to be", "a");
  *
  * const [p2, [t2]] = searchForward(/\w/, new vscode.Position(0, 1))!;
  *
- * assert.deepStrictEqual(p2, new vscode.Position(0, 1));
- * assert.strictEqual(t2, "b");
+ * expect(p2, "to be at coords", 0, 1);
+ * expect(t2, "to be", "b");
  *
  * const [p3, [t3]] = searchForward(/\w+/, new vscode.Position(0, 1))!;
  *
- * assert.deepStrictEqual(p3, new vscode.Position(0, 1));
- * assert.strictEqual(t3, "bc");
+ * expect(p3, "to be at coords", 0, 1);
+ * expect(t3, "to be", "bc");
  *
- * assert.strictEqual(
+ * expect(
  *   searchForward(/\w/, new vscode.Position(0, 3)),
- *   undefined,
+ *   "to be undefined",
  * );
  * ```
  *
