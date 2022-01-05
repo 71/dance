@@ -15,17 +15,20 @@ export async function build(builder: Builder) {
         ${indent(4 + 8, module.doc!).trim()}
 
         ${module.functions.map((f) => unindent(12, `
+            <a name="${module.name === "misc" ? "" : module.name}.${f.nameWithDot}" />
+
             ### [\`${module.name === "misc" ? "" : module.name + "."}${f.nameWithDot}\`](./${
               module.name}.ts#L${f.startLine + 1}-L${f.endLine + 1})
 
-            ${indent(4 + 8 + 12, f.doc).trimStart()}
+            ${indent(4 + 8 + 12, sanitizeDoc(f.doc)).trimStart()}
             ${(() => {
               const supportedInputs = determineSupportedInputs(f);
 
               return supportedInputs.length === 0
                 ? ""
-                : "This command:" + supportedInputs.map((x) => `\n- ${x}.`).join("");
+                : "This command:" + supportedInputs.map((x) => `\n- ${x}.`).join("") + "\n";
             })()}
+            ${"keys" in f.properties ? `Default keybinding: ${f.properties.keys}\n` : ""}
         `).trim()).join("\n\n")}
     `).trim()).join("\n\n")}
   `);
@@ -55,7 +58,7 @@ function toTable(modules: readonly Builder.ParsedModule[]) {
             summary = "summary" in f ? f.summary : f.title,
             keys = parseKeys(("properties" in f ? f.properties.keys : f.keys) ?? ""),
             link = "name" in f
-              ? `#${(modulePrefix + f.nameWithDot).replace(/\./g, "")}`
+              ? `#${modulePrefix + f.nameWithDot}`
               : `./${module.name}.ts#L${f.line + 1}`;
 
       return [
@@ -115,4 +118,14 @@ function determineSupportedInputs(f: Builder.ParsedFunction) {
   }
 
   return supported.sort();
+}
+
+function sanitizeDoc(doc: string) {
+  // In tables, escape pipes:
+  doc = doc.replace(
+    /^\|(.+?)\|$/gm,
+    (line: string) => line.replace(/(?<! )\|(?! )/g, "\\|"),
+  );
+
+  return doc;
 }

@@ -52,10 +52,10 @@ export function redo_selections() {
  *
  * @noreplay
  *
- * | Title                        | Identifier         | Keybinding     | Commands                                                                      |
- * | ---------------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------- |
- * | Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { include: "dance\\.(seek\|select\|selections)\\..+" }]` |
- * | Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { include: "dance\\.seek\\..+" }]`                       |
+ * | Title                        | Identifier         | Keybinding     | Commands                                                                    |
+ * | ---------------------------- | ------------------ | -------------- | --------------------------------------------------------------------------- |
+ * | Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { include: "dance\\.(seek|select|selections)\\..+" }]` |
+ * | Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { include: "dance\\.seek\\..+" }]`                     |
  */
 export async function repeat(
   _: Context,
