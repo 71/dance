@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument, InputOr } from ".";
-import { closestSurroundedBy, Context, Direction, keypress, Lines, moveTo, moveToExcluded, moveWhile, moveWhileBackward, moveWhileForward, Pair, pair, Positions, prompt, Range, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
+import { closestSurroundedBy, Context, Direction, keypress, Lines, moveToExcluded, moveWhileBackward, moveWhileForward, Objects, Pair, pair, Positions, prompt, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
 import { CharSet } from "../utils/charset";
 import { ArgumentError, assert } from "../utils/errors";
 import { escapeForRegExp, execRange } from "../utils/regexp";
@@ -437,14 +437,14 @@ export async function object(
   }
 
   if (match = /^\(\?#predefined=(argument|indent|paragraph|sentence)\)$/.exec(input)) {
-    let f: Range.Seek;
+    let f: Objects.Seek;
 
     switch (match[1]) {
     case "argument":
     case "indent":
     case "paragraph":
     case "sentence":
-      f = Range[match[1]];
+      f = Objects[match[1]];
       break;
 
     default:

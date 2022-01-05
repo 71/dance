@@ -29,7 +29,7 @@ export { firstVisibleLine, middleVisibleLine, lastVisibleLine } from "./lines";
 /**
  * Operations on ranges of text objects.
  */
-export * as Range from "./search/range";
+export * as Objects from "./search/objects";
 
 /**
  * Operations on `vscode.Position`s.
