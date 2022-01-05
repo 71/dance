@@ -143,23 +143,15 @@ export function enclosing(
     // First, find an enclosing char (which may be the current character).
     let currentCharacter = selection.active;
 
-    if (selectionBehavior === SelectionBehavior.Caret) {
-      if (direction === Direction.Backward && selection.isReversed) {
-        // When moving backwards, the first character to consider is the
-        // character to the left, not the right. However, we hackily special
-        // case `|[foo]>` (> is anchor, | is active) to jump to the end in the
-        // current group.
-        currentCharacter = Positions.previous(currentCharacter, document) ?? currentCharacter;
-      } else if (direction === Direction.Forward && !selection.isReversed && !selection.isEmpty) {
-        // Similarly, we special case `<[foo]|` to jump back in the current
-        // group.
-        currentCharacter = Positions.previous(currentCharacter, document) ?? currentCharacter;
-      }
-    }
-
-    if (selectionBehavior === SelectionBehavior.Caret && direction === Direction.Backward) {
+    if (direction === Direction.Backward && selection.isReversed && !selection.isEmpty) {
       // When moving backwards, the first character to consider is the
-      // character to the left, not the right.
+      // character to the left, not the right. However, we hackily special
+      // case `|[foo]>` (> is anchor, | is active) to jump to the end in the
+      // current group.
+      currentCharacter = Positions.previous(currentCharacter, document) ?? currentCharacter;
+    } else if (direction === Direction.Forward && !selection.isReversed && !selection.isEmpty) {
+      // Similarly, we special case `<[foo]|` to jump back in the current
+      // group.
       currentCharacter = Positions.previous(currentCharacter, document) ?? currentCharacter;
     }
 
