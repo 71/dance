@@ -13,16 +13,14 @@ const moduleCommentRe =
              "m");
 
 const docCommentRe =
-  new RegExp(String.raw`^( *)`                               // #1: indentation
-           + String.raw`\/\*\*\n`                            //     start of doc comment
-           + String.raw`((?:\1 \*(?:\n| .+\n))+?)`           // #2: doc comment
-           + String.raw`\1 \*\/\n`                           //     end of doc comment
-           + String.raw`\1export (?:async )?function (\w+)`  // #3: function name
-           + String.raw`\((.*|\n[\s\S]+?^\1)\)`              // #4: parameters
-           + String.raw`(?:: )?(.+)[;{]$`                    // #5: return type (optional)
-           + "|"                                             //     or
-           + String.raw`^ *export namespace (\w+) {\n`       // #6: namespace (alternative)
-           + String.raw`^( +)`,                              // #7: namespace indentation
+  new RegExp(String.raw`^( *)`                                  // #1: indentation
+           + String.raw`\/\*\*\n`                               //     start of doc comment
+           + String.raw`((?:\1 \*(?:\n| .+\n))+?)`              // #2: doc comment
+           + String.raw`\1 \*\/\n`                              //     end of doc comment
+           + String.raw`\1export (?:async )?function (\w+)`     // #3: function name
+           + String.raw`(?:<[^>)\n]+>)?`                        //     generic arguments
+           + String.raw`\((.*|\n[\s\S]+?^\1)\)`                 // #4: parameters
+           + String.raw`(?:: )?(.+)[;{]$`,                      // #5: return type (optional)
              "gm");
 
 function countNewLines(text: string) {
@@ -145,11 +143,8 @@ function parseDocComments(code: string, modulePath: string) {
     console.log("Parsing doc comments in module", moduleName);
   }
 
-  const modulePrefix = moduleName === "misc" ? "" : moduleName + ".";
-
-  const functions: Builder.ParsedFunction[] = [],
-        namespaces: string[] = [];
-  let previousIndentation = 0;
+  const modulePrefix = moduleName === "misc" ? "" : moduleName + ".",
+        functions: Builder.ParsedFunction[] = [];
 
   for (let match = docCommentRe.exec(code); match !== null; match = docCommentRe.exec(code)) {
     const indentationString = match[1],
@@ -157,20 +152,10 @@ function parseDocComments(code: string, modulePath: string) {
           functionName = match[3],
           parametersString = match[4],
           returnTypeString = match[5],
-          enteredNamespace = match[6],
-          enteredNamespaceIndentation = match[7],
           startLine = countNewLines(code.slice(0, match.index)),
           endLine = startLine + countNewLines(match[0]);
 
-    if (enteredNamespace !== undefined) {
-      namespaces.push(enteredNamespace);
-      previousIndentation = enteredNamespaceIndentation.length;
-
-      continue;
-    }
-
     const indentation = indentationString.length,
-          namespace = namespaces.length === 0 ? undefined : namespaces.join("."),
           returnType = returnTypeString.trim(),
           parameters = parametersString
             .split(/,(?![^:]+?[}>])/g)
@@ -203,11 +188,6 @@ function parseDocComments(code: string, modulePath: string) {
             .map((line) => line.slice(indentation).replace(/^ \* ?/g, ""))
             .join("\n");
 
-    if (previousIndentation > indentation) {
-      namespaces.pop();
-      previousIndentation = indentation;
-    }
-
     for (const parameter of parameters) {
       if (parameter[0].endsWith("?")) {
         // Optional parameters.
@@ -230,15 +210,15 @@ function parseDocComments(code: string, modulePath: string) {
                                              properties[k] = v?.replace(/\n {2}/g, " ").trim();
                                              return "";
                                            }),
-          summary = /((?:.+(?:\n|$))+)/.exec(doc)![0].trim().replace(/\.$/, ""),
+          summary = (/((?:.+(?:\n|$))+)/.exec(doc) === null ? console.log(functionName, JSON.stringify(doc)) : 0, /((?:.+(?:\n|$))+)/.exec(doc)![0].trim().replace(/\.$/, "")),
           examplesStrings = splitDocComment.slice(1),
           nameWithDot = functionName.replace(/_/g, ".");
 
-    let qualifiedName = modulePrefix;
-
-    if (namespace !== undefined) {
-      qualifiedName += namespace + ".";
+    if ("internal" in properties) {
+      continue;
     }
+
+    let qualifiedName = modulePrefix;
 
     if (nameWithDot === moduleName) {
       qualifiedName = qualifiedName.replace(/\.$/, "");
@@ -247,7 +227,6 @@ function parseDocComments(code: string, modulePath: string) {
     }
 
     functions.push({
-      namespace,
       name: functionName,
       nameWithDot,
       qualifiedName,
@@ -370,9 +349,8 @@ export class Builder {
   }
 }
 
-export namespace Builder {
+export declare namespace Builder {
   export interface ParsedFunction {
-    readonly namespace?: string;
     readonly name: string;
     readonly nameWithDot: string;
     readonly qualifiedName: string;
@@ -666,6 +644,11 @@ async function main() {
 
       if (contentToCheck.includes("editor.selections")) {
         console.error("File", fileToCheck, "includes forbidden access to editor.selections.");
+        success = false;
+      }
+
+      if (/^(export )?namespace/m.test(contentToCheck)) {
+        console.error("File", fileToCheck, "includes a non-`declare` namespace.");
         success = false;
       }
     }

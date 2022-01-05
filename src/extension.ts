@@ -22,13 +22,13 @@ export function activate() {
         extensionPackageJSON = extensionData?.packageJSON;
 
   if (extensionPackageJSON?.[`${extensionName}.disableArbitraryCodeExecution`]) {
-    api.run.disable();
+    api.disableRunFunction();
   } else {
-    api.run.setGlobals({ vscode, ...api });
+    api.setRunGlobals({ vscode, ...api });
   }
 
   if (extensionPackageJSON?.[`${extensionName}.disableArbitraryCommandExecution`]) {
-    api.execute.disable();
+    api.disableExecuteFunction();
   }
 
   return loadCommands().then((commands) => {

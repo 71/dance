@@ -1,9 +1,52 @@
 import * as vscode from "vscode";
 
+export class StatusBarSegment implements vscode.Disposable {
+  private readonly _statusBarItem: vscode.StatusBarItem;
+
+  private _content?: string;
+
+  public get content() {
+    return this._content;
+  }
+
+  public get statusBarItem() {
+    return this._statusBarItem;
+  }
+
+  public constructor(
+    public readonly name: string,
+    public readonly icon: string,
+    public readonly priority: number,
+    command: string | vscode.Command,
+  ) {
+    this._statusBarItem =
+      vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, priority);
+    this._statusBarItem.tooltip = name;
+    this._statusBarItem.command = command;
+  }
+
+  public dispose() {
+    this._statusBarItem.dispose();
+  }
+
+  public setContent(content?: string) {
+    this._content = content;
+
+    if (content) {
+      this._statusBarItem.text = `$(${this.icon}) ${content}`;
+      this._statusBarItem.show();
+    } else {
+      this._statusBarItem.hide();
+    }
+  }
+}
+
 /**
  * Controls the Dance status bar item.
  */
 export class StatusBar implements vscode.Disposable {
+  public static readonly Segment = StatusBarSegment;
+
   private readonly _segments: StatusBar.Segment[] = [];
 
   public readonly activeModeSegment: StatusBar.Segment;
@@ -48,45 +91,6 @@ export class StatusBar implements vscode.Disposable {
   }
 }
 
-export namespace StatusBar {
-  export class Segment implements vscode.Disposable {
-    private readonly _statusBarItem: vscode.StatusBarItem;
-
-    private _content?: string;
-
-    public get content() {
-      return this._content;
-    }
-
-    public get statusBarItem() {
-      return this._statusBarItem;
-    }
-
-    public constructor(
-      public readonly name: string,
-      public readonly icon: string,
-      public readonly priority: number,
-      command: string | vscode.Command,
-    ) {
-      this._statusBarItem =
-        vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, priority);
-      this._statusBarItem.tooltip = name;
-      this._statusBarItem.command = command;
-    }
-
-    public dispose() {
-      this._statusBarItem.dispose();
-    }
-
-    public setContent(content?: string) {
-      this._content = content;
-
-      if (content) {
-        this._statusBarItem.text = `$(${this.icon}) ${content}`;
-        this._statusBarItem.show();
-      } else {
-        this._statusBarItem.hide();
-      }
-    }
-  }
+export declare namespace StatusBar {
+  export type Segment = StatusBarSegment;
 }

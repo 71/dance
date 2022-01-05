@@ -484,7 +484,7 @@ export class Mode {
   }
 }
 
-export namespace Mode {
+export declare namespace Mode {
   /**
    * The configuration of a `Mode` as specified in the user preferences.
    */
@@ -752,7 +752,7 @@ export class Modes implements Iterable<Mode> {
   }
 }
 
-export namespace Modes {
+export declare namespace Modes {
   export interface Configuration {
     readonly [modeName: string]: Mode.Configuration;
   }

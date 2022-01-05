@@ -456,7 +456,7 @@ export interface Node<To extends Node<To>> {
   reverse(state: Node.ReverseState): To;
 }
 
-export namespace Node {
+export declare namespace Node {
   export type Inner<T extends Node<any>> = T extends Node<infer R> ? R : never;
 
   export interface ReverseState {
@@ -491,7 +491,7 @@ export class Sequence implements Node<Sequence> {
   }
 }
 
-export namespace Sequence {
+export declare namespace Sequence {
   export type Node = Repeat | Anchor;
 }
 
@@ -733,7 +733,7 @@ export class CharacterSet implements Node<CharacterSet> {
     CharacterSet.whitespace.alternatives, true);
 }
 
-export namespace CharacterSet {
+export declare namespace CharacterSet {
   export type AlternativeAtom = Raw | Escaped;
   export type Alternative = AlternativeAtom | CharacterClass | [AlternativeAtom, AlternativeAtom];
 }
@@ -876,7 +876,7 @@ export class Lookaround extends Disjunction<Lookaround> {
   }
 }
 
-export namespace Anchor {
+export declare namespace Anchor {
   export type Kind = AnchorKind;
 }
 
@@ -938,7 +938,7 @@ export class Repeat<T extends Repeat.Node = Repeat.Node> implements Node<Repeat>
   }
 }
 
-export namespace Repeat {
+export declare namespace Repeat {
   export type Node = Group | Lookaround | CharacterSet | Raw | Escaped | CharacterClass | Dot
                    | NumericEscape | Backreference;
 }

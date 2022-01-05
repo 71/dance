@@ -80,23 +80,21 @@ export function offset(
   return document.positionAt(document.offsetAt(position) + by);
 }
 
-export namespace offset {
-  /**
-   * Same as `offset`, but clamps to document edges.
-   */
-  export function orEdge(
-    position: vscode.Position,
-    by: number,
-    document?: vscode.TextDocument,
-  ) {
-    const result = offset(position, by, document);
+/**
+ * Same as {@link offset}, but clamps to document edges.
+ */
+export function offsetOrEdge(
+  position: vscode.Position,
+  by: number,
+  document?: vscode.TextDocument,
+) {
+  const result = offset(position, by, document);
 
-    if (result === undefined) {
-      return by < 0 ? zero : last(document);
-    }
-
-    return result;
+  if (result === undefined) {
+    return by < 0 ? zero : last(document);
   }
+
+  return result;
 }
 
 /**
@@ -150,8 +148,8 @@ export function lineBreak(line: number, document = Context.current.document) {
 
 /**
  * Returns the last position of the current document when going in the given
- * direction. If `Backward`, this is `Positions.zero`. If `Forward`, this is
- * `Positions.last(document)`.
+ * direction. If {@link Direction.Backward}, this is {@link zero}. If
+ * {@link Direction.Forward}, this is {@link last(document)}.
  */
 export function edge(direction: Direction, document?: vscode.TextDocument) {
   return direction === Direction.Backward ? zero : last(document);

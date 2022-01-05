@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument } from ".";
-import { firstVisibleLine as apiFirstVisibleLine, lastVisibleLine as apiLastVisibleLine, middleVisibleLine as apiMiddleVisibleLine, Context, Direction, Lines, Positions, SelectionBehavior, Selections, Shift, showMenu } from "../api";
+import { firstVisibleLine as apiFirstVisibleLine, lastVisibleLine as apiLastVisibleLine, middleVisibleLine as apiMiddleVisibleLine, Context, Direction, Lines, Positions, SelectionBehavior, Selections, Shift, showMenuByName } from "../api";
 import { PerEditorState } from "../state/editors";
 import { unsafeSelections } from "../utils/misc";
 
@@ -126,7 +126,7 @@ export function vertically(
     );
   }
 
-  const newSelections = Selections.map.byIndex((i, selection) => {
+  const newSelections = Selections.mapByIndex((i, selection) => {
     // TODO: handle tab characters
     const activeLine = isCharacterMode ? Selections.activeLine(selection) : selection.active.line,
           targetLine = Lines.clamp(activeLine + repetitions * direction, document),
@@ -188,7 +188,7 @@ export function vertically(
 
     let newPosition = new vscode.Position(
       targetLine,
-      Lines.column.character(targetLine, targetColumn, _.editor, /* roundUp= */ isCharacterMode),
+      Lines.character(targetLine, targetColumn, _.editor, /* roundUp= */ isCharacterMode),
     );
 
     if (isCharacterMode && shift !== Shift.Jump) {
@@ -240,7 +240,7 @@ export function horizontally(
   const mayNeedAdjustment = direction === Direction.Backward
                          && _.selectionBehavior === SelectionBehavior.Character;
 
-  const newSelections = Selections.map.byIndex((_i, selection, document) => {
+  const newSelections = Selections.mapByIndex((_i, selection, document) => {
     let active = selection.active === selection.start
       ? Selections.activeStart(selection, _)
       : Selections.activeEnd(selection, _);
@@ -305,7 +305,7 @@ export function to(
   if (count === 0) {
     // TODO: Make just merely opening the menu not count as a command execution
     // and do not record it.
-    return showMenu.byName("goto", [argument]);
+    return showMenuByName("goto", [argument]);
   }
 
   return lineStart(_, count, shift);
@@ -318,7 +318,7 @@ export function to(
  */
 export function line_below(_: Context, count: number) {
   if (count === 0 || count === 1) {
-    Selections.update.byIndex((_, selection) => {
+    Selections.updateByIndex((_, selection) => {
       let line = Selections.activeLine(selection);
 
       if (Selections.isEntireLines(selection) && !selection.isReversed) {
@@ -328,7 +328,7 @@ export function line_below(_: Context, count: number) {
       return new vscode.Selection(line, 0, line + 1, 0);
     });
   } else {
-    Selections.update.byIndex((_, selection, document) => {
+    Selections.updateByIndex((_, selection, document) => {
       const lastLine = document.lineCount - 1;
       let line = Math.min(Selections.activeLine(selection) + count - 1, lastLine);
 
@@ -348,7 +348,7 @@ export function line_below(_: Context, count: number) {
  */
 export function line_below_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {
-    Selections.update.byIndex((_, selection, document) => {
+    Selections.updateByIndex((_, selection, document) => {
       const isFullLine = Selections.endsWithEntireLine(selection),
             isSameLine = Selections.isSingleLine(selection),
             isFullLineDiff = isFullLine && !(isSameLine && selection.isReversed) ? 1 : 0,
@@ -360,7 +360,7 @@ export function line_below_extend(_: Context, count: number) {
       return new vscode.Selection(anchor, active);
     });
   } else {
-    Selections.update.byIndex((_, selection, document) => {
+    Selections.updateByIndex((_, selection, document) => {
       const activeLine = Selections.activeLine(selection),
             line = Math.min(activeLine + count - 1, document.lineCount - 1),
             isSameLine = Selections.isSingleLine(selection);
@@ -378,7 +378,7 @@ export function line_below_extend(_: Context, count: number) {
  */
 export function line_above(_: Context, count: number) {
   if (count === 0 || count === 1) {
-    Selections.update.byIndex((_, selection) => {
+    Selections.updateByIndex((_, selection) => {
       let line = Selections.activeLine(selection);
 
       if (!Selections.isEntireLines(selection)) {
@@ -388,7 +388,7 @@ export function line_above(_: Context, count: number) {
       return new vscode.Selection(line, 0, line - 1, 0);
     });
   } else {
-    Selections.update.byIndex((_, selection) => {
+    Selections.updateByIndex((_, selection) => {
       let line = Math.max(Selections.activeLine(selection) - count + 1, 0);
 
       if (!Selections.isEntireLines(selection)) {
@@ -405,7 +405,7 @@ export function line_above(_: Context, count: number) {
  */
 export function line_above_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {
-    Selections.update.byIndex((_, selection) => {
+    Selections.updateByIndex((_, selection) => {
       if (selection.isSingleLine) {
         let line = Selections.activeLine(selection);
 
@@ -429,7 +429,7 @@ export function line_above_extend(_: Context, count: number) {
       return new vscode.Selection(selection.anchor, active);
     });
   } else {
-    Selections.update.byIndex((_, selection, document) => {
+    Selections.updateByIndex((_, selection, document) => {
       let line = Math.max(Selections.activeLine(selection) - count, 0),
           anchor = selection.anchor;
 
@@ -485,7 +485,7 @@ export function lineStart(
     return;
   }
 
-  Selections.update.byIndex((_, selection) =>
+  Selections.updateByIndex((_, selection) =>
     Selections.shift(
       selection,
       skipBlank
@@ -541,7 +541,7 @@ export function lineEnd(
     return;
   }
 
-  Selections.update.byIndex((_, selection) =>
+  Selections.updateByIndex((_, selection) =>
     mapSelection(selection, Selections.activeLine(selection)),
   );
 }

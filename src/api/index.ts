@@ -17,7 +17,6 @@ export * from "./search/lines";
 export * from "./search/move";
 export * from "./search/move-to";
 export * from "./search/pairs";
-export * from "./search/range";
 export * from "./search/word";
 export * from "./types";
 
@@ -26,6 +25,11 @@ export * from "./types";
  */
 export * as Lines from "./lines";
 export { firstVisibleLine, middleVisibleLine, lastVisibleLine } from "./lines";
+
+/**
+ * Operations on ranges of text objects.
+ */
+export * as Range from "./search/range";
 
 /**
  * Operations on `vscode.Position`s.

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
-import { Context, Direction, moveWhile, Positions, prompt, SelectionBehavior, Selections, switchRun } from "../api";
+import { Context, Direction, manipulateSelectionsInteractively, moveWhile, moveWhileBackward, moveWhileForward, Positions, prompt, promptOne, promptRegexpOpts, SelectionBehavior, Selections, switchRun, validateForSwitchRun } from "../api";
 import { PerEditorState } from "../state/editors";
 import { Mode } from "../state/modes";
 import type { Register } from "../state/registers";
@@ -10,7 +10,7 @@ import { AutoDisposable } from "../utils/disposables";
 import { ArgumentError, EmptySelectionsError } from "../utils/errors";
 import { unsafeSelections } from "../utils/misc";
 import { SettingsValidator } from "../utils/settings-validator";
-import { TrackedSelection } from "../utils/tracked-selection";
+import * as TrackedSelection from "../utils/tracked-selection";
 
 /**
  * Interacting with selections.
@@ -143,7 +143,7 @@ export async function restore_withCurrent(
     add = savedSelections;
   }
 
-  const type = await prompt.one([
+  const type = await promptOne([
     ["a", "Append lists"],
     ["u", "Union"],
     ["i", "Intersection"],
@@ -263,9 +263,9 @@ export async function pipe(
     prompt: "Expression",
     validateInput(value) {
       try {
-        switchRun.validate(value);
+        return void validateForSwitchRun(value);
       } catch (e) {
-        return e?.message ?? `${e}`;
+        return (e as Error)?.message ?? `${e}`;
       }
     },
     history: pipeHistory,
@@ -331,20 +331,20 @@ export function filter(
   const document = _.document,
         strings = _.selections.map((selection) => document.getText(selection));
 
-  return prompt.manipulateSelectionsInteractively(_, input, setInput, interactive, {
+  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
     prompt: "Expression",
     validateInput(value) {
       try {
-        switchRun.validate(value);
+        return void validateForSwitchRun(value);
       } catch (e) {
-        return e?.message ?? `${e}`;
+        return (e as Error)?.message ?? `${e}`;
       }
     },
     value: defaultInput,
     valueSelection: defaultInput ? [defaultInput.length, defaultInput.length] : undefined,
     history: filterHistory,
   }, (input, selections) => {
-    return Selections.filter.byIndex(async (i) => {
+    return Selections.filterByIndex(async (i) => {
       const context = { $: strings[i], $$: strings, i, n: strings.length, count };
 
       try {
@@ -368,12 +368,12 @@ export function select(
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  return prompt.manipulateSelectionsInteractively(
+  return manipulateSelectionsInteractively(
     _,
     input,
     setInput,
     interactive,
-    prompt.regexpOpts("mu"),
+    promptRegexpOpts("mu"),
     (input, selections) => {
       if (typeof input === "string") {
         input = new RegExp(input, "mu");
@@ -399,12 +399,12 @@ export function split(
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  return prompt.manipulateSelectionsInteractively(
+  return manipulateSelectionsInteractively(
     _,
     input,
     setInput,
     interactive,
-    prompt.regexpOpts("mu"),
+    promptRegexpOpts("mu"),
     (input, selections) => {
       if (typeof input === "string") {
         input = new RegExp(input, "mu");
@@ -485,7 +485,7 @@ export function splitLines(
  * @keys `a-x` (normal)
  */
 export function expandToLines(_: Context) {
-  return Selections.update.byIndex((_, selection, document) => {
+  return Selections.updateByIndex((_, selection, document) => {
     const start = selection.start,
           end = selection.end;
 
@@ -519,7 +519,7 @@ export function expandToLines(_: Context) {
  * @keys `s-a-x` (normal)
  */
 export function trimLines(_: Context) {
-  return Selections.update.byIndex((_, selection) => {
+  return Selections.updateByIndex((_, selection) => {
     const start = selection.start,
           end = selection.end;
 
@@ -554,12 +554,12 @@ export function trimWhitespace(_: Context) {
   const blank = getCharacters(CharSet.Blank, _.document),
         isBlank = (character: string) => blank.includes(character);
 
-  return Selections.update.byIndex((_, selection, document) => {
+  return Selections.updateByIndex((_, selection, document) => {
     const firstCharacter = selection.start,
           lastCharacter = selection.end;
 
-    const start = moveWhile.forward(isBlank, firstCharacter, document),
-          end = moveWhile.backward(isBlank, lastCharacter, document);
+    const start = moveWhileForward(isBlank, firstCharacter, document),
+          end = moveWhileBackward(isBlank, lastCharacter, document);
 
     if (start.isAfter(end)) {
       return undefined;
@@ -597,7 +597,7 @@ export function reduce(
 
   if (empty && _.selectionBehavior !== SelectionBehavior.Character) {
     if (where !== "both") {
-      Selections.update.byIndex((_, selection) => Selections.empty(selection[where]));
+      Selections.updateByIndex((_, selection) => Selections.empty(selection[where]));
     } else {
       Selections.set(_.selections.flatMap((selection) => {
         if (selection.isEmpty) {
@@ -633,7 +633,7 @@ export function reduce(
   };
 
   if (where !== "both") {
-    Selections.update.byIndex((_, selection) => takeWhere(selection, where));
+    Selections.updateByIndex((_, selection) => takeWhere(selection, where));
 
     return;
   }
@@ -668,21 +668,21 @@ export function reduce(
 export function changeDirection(_: Context, direction?: Direction) {
   switch (direction) {
   case Direction.Backward:
-    Selections.update.byIndex((_, selection) =>
+    Selections.updateByIndex((_, selection) =>
       selection.isReversed || selection.isEmpty || Selections.isNonDirectional(selection)
         ? selection
         : new vscode.Selection(selection.end, selection.start));
     break;
 
   case Direction.Forward:
-    Selections.update.byIndex((_, selection) =>
+    Selections.updateByIndex((_, selection) =>
       selection.isReversed
         ? new vscode.Selection(selection.start, selection.end)
         : selection);
     break;
 
   default:
-    Selections.update.byIndex((_, selection) =>
+    Selections.updateByIndex((_, selection) =>
       selection.isEmpty || Selections.isNonDirectional(selection)
         ? selection
         : new vscode.Selection(selection.active, selection.anchor));

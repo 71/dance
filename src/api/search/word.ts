@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { skipEmptyLines } from "./move";
+import { skipEmptyLines, skipEmptyLinesReachedDocumentEdge } from "./move";
 import { Context } from "../context";
 import { Direction, SelectionBehavior } from "../types";
 import { CharSet, getCharSetFunction } from "../../utils/charset";
@@ -53,7 +53,7 @@ export function wordBoundary(
   if (isAtLineBoundary) {
     const afterEmptyLines = skipEmptyLines(direction, active.line + direction, document);
 
-    if (skipEmptyLines.reachedDocumentEdge) {
+    if (skipEmptyLinesReachedDocumentEdge()) {
       return undefined;
     }
 

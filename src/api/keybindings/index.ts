@@ -2,6 +2,6 @@
 /**
  * API for generating VS Code-compatible keybindings.
  */
-export namespace Keybindings {
+export declare namespace Keybindings {
 
 }

@@ -8,7 +8,8 @@ import { canMatchLineFeed, execLast, matchesStaticStrings } from "../../utils/re
 /**
  * Searches backward or forward for a pattern starting at the given position.
  *
- * @see search.backward,search.forward
+ * @see {@link searchBackward}
+ * @see {@link searchForward}
  */
 export function search(
   direction: Direction,
@@ -17,135 +18,135 @@ export function search(
   end?: vscode.Position,
 ) {
   return direction === Direction.Backward
-    ? search.backward(re, origin, end)
-    : search.forward(re, origin, end);
+    ? searchBackward(re, origin, end)
+    : searchForward(re, origin, end);
 }
 
-export namespace search {
+export declare namespace search {
   /**
    * The type of the result of a search: a `[startPosition, match]` pair if the
    * search succeeded, and `undefined` otherwise.
    */
   export type Result = [vscode.Position, RegExpMatchArray] | undefined;
+}
 
-  /**
-   * Searches backward for a pattern starting at the given position.
-   *
-   * ### Example
-   *
-   * ```ts
-   * const [p1, [t1]] = search.backward(/\w/, new vscode.Position(0, 1))!;
-   *
-   * assert.deepStrictEqual(p1, new vscode.Position(0, 0));
-   * assert.strictEqual(t1, "a");
-   *
-   * const [p2, [t2]] = search.backward(/\w/, new vscode.Position(0, 2))!;
-   *
-   * assert.deepStrictEqual(p2, new vscode.Position(0, 1));
-   * assert.strictEqual(t2, "b");
-   *
-   * const [p3, [t3]] = search.backward(/\w+/, new vscode.Position(0, 2))!;
-   *
-   * assert.deepStrictEqual(p3, new vscode.Position(0, 0));
-   * assert.strictEqual(t3, "ab");
-   *
-   * assert.strictEqual(
-   *   search.backward(/\w/, new vscode.Position(0, 0)),
-   *   undefined,
-   * );
-   * ```
-   *
-   * With:
-   * ```
-   * abc
-   * ```
-   */
-  export function backward(re: RegExp, origin: vscode.Position, end?: vscode.Position): Result {
-    end ??= Positions.zero;
+/**
+ * Searches backward for a pattern starting at the given position.
+ *
+ * ### Example
+ *
+ * ```ts
+ * const [p1, [t1]] = searchBackward(/\w/, new vscode.Position(0, 1))!;
+ *
+ * assert.deepStrictEqual(p1, new vscode.Position(0, 0));
+ * assert.strictEqual(t1, "a");
+ *
+ * const [p2, [t2]] = searchBackward(/\w/, new vscode.Position(0, 2))!;
+ *
+ * assert.deepStrictEqual(p2, new vscode.Position(0, 1));
+ * assert.strictEqual(t2, "b");
+ *
+ * const [p3, [t3]] = searchBackward(/\w+/, new vscode.Position(0, 2))!;
+ *
+ * assert.deepStrictEqual(p3, new vscode.Position(0, 0));
+ * assert.strictEqual(t3, "ab");
+ *
+ * assert.strictEqual(
+ *   searchBackward(/\w/, new vscode.Position(0, 0)),
+ *   undefined,
+ * );
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ * ```
+ */
+export function searchBackward(re: RegExp, origin: vscode.Position, end?: vscode.Position): search.Result {
+  end ??= Positions.zero;
 
-    const document = Context.current.document,
-          searchStart = document.offsetAt(end),
-          searchEnd = document.offsetAt(origin),
-          possibleSearchLength = searchEnd - searchStart;
+  const document = Context.current.document,
+        searchStart = document.offsetAt(end),
+        searchEnd = document.offsetAt(origin),
+        possibleSearchLength = searchEnd - searchStart;
 
-    if (possibleSearchLength < 0) {
-      return;
-    }
-
-    if (possibleSearchLength > 2_000) {
-      const staticMatches = matchesStaticStrings(re);
-
-      if (staticMatches !== undefined) {
-        return searchOneOfBackward(re, staticMatches, origin, end, document);
-      }
-
-      if (!canMatchLineFeed(re)) {
-        return searchSingleLineRegExpBackward(re, origin, end, document);
-      }
-    }
-
-    return searchNaiveBackward(re, origin, end, document);
+  if (possibleSearchLength < 0) {
+    return;
   }
 
-  /**
-   * Searches forward for a pattern starting at the given position.
-   *
-   * ### Example
-   *
-   * ```ts
-   * const [p1, [t1]] = search.forward(/\w/, new vscode.Position(0, 0))!;
-   *
-   * assert.deepStrictEqual(p1, new vscode.Position(0, 0));
-   * assert.strictEqual(t1, "a");
-   *
-   * const [p2, [t2]] = search.forward(/\w/, new vscode.Position(0, 1))!;
-   *
-   * assert.deepStrictEqual(p2, new vscode.Position(0, 1));
-   * assert.strictEqual(t2, "b");
-   *
-   * const [p3, [t3]] = search.forward(/\w+/, new vscode.Position(0, 1))!;
-   *
-   * assert.deepStrictEqual(p3, new vscode.Position(0, 1));
-   * assert.strictEqual(t3, "bc");
-   *
-   * assert.strictEqual(
-   *   search.forward(/\w/, new vscode.Position(0, 3)),
-   *   undefined,
-   * );
-   * ```
-   *
-   * With:
-   * ```
-   * abc
-   * ```
-   */
-  export function forward(re: RegExp, origin: vscode.Position, end?: vscode.Position): Result {
-    const document = Context.current.document;
+  if (possibleSearchLength > 2_000) {
+    const staticMatches = matchesStaticStrings(re);
 
-    end ??= Positions.last(document);
-
-    const searchStart = document.offsetAt(origin),
-          searchEnd = document.offsetAt(end),
-          possibleSearchLength = searchEnd - searchStart;
-
-    if (possibleSearchLength < 0) {
-      return;
+    if (staticMatches !== undefined) {
+      return searchOneOfBackward(re, staticMatches, origin, end, document);
     }
 
-    if (possibleSearchLength > 2_000) {
-      const staticMatches = matchesStaticStrings(re);
-
-      if (staticMatches !== undefined) {
-        return searchOneOfForward(re, staticMatches, origin, end, document);
-      }
-
-      if (!canMatchLineFeed(re)) {
-        return searchSingleLineRegExpForward(re, origin, end, document);
-      }
+    if (!canMatchLineFeed(re)) {
+      return searchSingleLineRegExpBackward(re, origin, end, document);
     }
-
-    return searchNaiveForward(re, origin, end, document);
   }
+
+  return searchNaiveBackward(re, origin, end, document);
+}
+
+/**
+ * Searches forward for a pattern starting at the given position.
+ *
+ * ### Example
+ *
+ * ```ts
+ * const [p1, [t1]] = searchForward(/\w/, new vscode.Position(0, 0))!;
+ *
+ * assert.deepStrictEqual(p1, new vscode.Position(0, 0));
+ * assert.strictEqual(t1, "a");
+ *
+ * const [p2, [t2]] = searchForward(/\w/, new vscode.Position(0, 1))!;
+ *
+ * assert.deepStrictEqual(p2, new vscode.Position(0, 1));
+ * assert.strictEqual(t2, "b");
+ *
+ * const [p3, [t3]] = searchForward(/\w+/, new vscode.Position(0, 1))!;
+ *
+ * assert.deepStrictEqual(p3, new vscode.Position(0, 1));
+ * assert.strictEqual(t3, "bc");
+ *
+ * assert.strictEqual(
+ *   searchForward(/\w/, new vscode.Position(0, 3)),
+ *   undefined,
+ * );
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ * ```
+ */
+export function searchForward(re: RegExp, origin: vscode.Position, end?: vscode.Position): search.Result {
+  const document = Context.current.document;
+
+  end ??= Positions.last(document);
+
+  const searchStart = document.offsetAt(origin),
+        searchEnd = document.offsetAt(end),
+        possibleSearchLength = searchEnd - searchStart;
+
+  if (possibleSearchLength < 0) {
+    return;
+  }
+
+  if (possibleSearchLength > 2_000) {
+    const staticMatches = matchesStaticStrings(re);
+
+    if (staticMatches !== undefined) {
+      return searchOneOfForward(re, staticMatches, origin, end, document);
+    }
+
+    if (!canMatchLineFeed(re)) {
+      return searchSingleLineRegExpForward(re, origin, end, document);
+    }
+  }
+
+  return searchNaiveForward(re, origin, end, document);
 }
 
 function maxLines(strings: readonly string[]) {

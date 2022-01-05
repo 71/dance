@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument, InputOr, RegisterOr } from ".";
-import { insert as apiInsert, Context, deindentLines, edit, indentLines, joinLines, keypress, Positions, replace, Selections, Shift } from "../api";
+import { insert as apiInsert, Context, deindentLines, edit, indentLines, insertByIndex, insertByIndexWithFullLines, insertFlagsAtEdge, joinLines, keypress, Positions, replace, replaceByIndex, Selections, Shift } from "../api";
 import type { Register } from "../state/registers";
 import { LengthMismatchError } from "../utils/errors";
 
@@ -65,8 +65,8 @@ export async function insert(
 
   if (select || shift === Shift.Select) {
     const textToInsert = contents.join(""),
-          insert = handleNewLine ? apiInsert.byIndex.withFullLines : apiInsert.byIndex,
-          flags = apiInsert.flagsAtEdge(where) | apiInsert.Select;
+          insert = handleNewLine ? insertByIndexWithFullLines : insertByIndex,
+          flags = insertFlagsAtEdge(where) | apiInsert.Flags.Select;
 
     const insertedRanges = await insert(flags, () => textToInsert, selections),
           allSelections = [] as vscode.Selection[],
@@ -98,7 +98,7 @@ export async function insert(
   }
 
   if (where === undefined) {
-    Selections.set(await replace.byIndex((i) => contents![i], selections));
+    Selections.set(await replaceByIndex((i) => contents![i], selections));
     return;
   }
 
@@ -106,13 +106,13 @@ export async function insert(
     throw new Error(`"where" must be one of "active", "anchor", "start", "end", or undefined`);
   }
 
-  const keepOrExtend = shift === Shift.Extend ? apiInsert.Extend : apiInsert.Keep,
-        flags = apiInsert.flagsAtEdge(where) | keepOrExtend;
+  const keepOrExtend = shift === Shift.Extend ? apiInsert.Flags.Extend : apiInsert.Flags.Keep,
+        flags = insertFlagsAtEdge(where) | keepOrExtend;
 
   Selections.set(
     handleNewLine
-      ? await apiInsert.byIndex.withFullLines(flags, (i) => contents![i], selections)
-      : await apiInsert.byIndex(flags, (i) => contents![i], selections),
+      ? await insertByIndexWithFullLines(flags, (i) => contents![i], selections)
+      : await insertByIndex(flags, (i) => contents![i], selections),
   );
 }
 
@@ -452,7 +452,7 @@ function insertLinesNativelyAndCopySelections(
   repetitions: number,
   command: "editor.action.insertLineAfter" | "editor.action.insertLineBefore",
 ) {
-  Selections.update.byIndex(prepareSelectionForLineInsertion);
+  Selections.updateByIndex(prepareSelectionForLineInsertion);
 
   if (repetitions === 1) {
     return vscode.commands.executeCommand(command);

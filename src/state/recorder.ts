@@ -16,7 +16,7 @@ const enum Constants {
   PrevShift = 8,
 }
 
-type IntArray<E extends Entry.Base<any>> = E extends Entry.Base<infer I>
+type IntArray<E extends BaseEntry<any>> = E extends BaseEntry<infer I>
   ? { readonly [K in keyof I]: I[K] extends undefined ? never : number; }
     & { readonly length: number; }
   : never;
@@ -26,7 +26,7 @@ type IntArray<E extends Entry.Base<any>> = E extends Entry.Base<infer I>
  */
 export class Recorder implements vscode.Disposable {
   private readonly _descriptors: readonly CommandDescriptor[];
-  private readonly _onDidAddEntry = new vscode.EventEmitter<Entry>();
+  private readonly _onDidAddEntry = new vscode.EventEmitter<Entry.Any>();
   private readonly _previousBuffers: Recorder.Buffer[] = [];
   private readonly _storedObjects: (object | string)[] = [];
   private readonly _storedObjectsMap = new Map<object | string, number>();
@@ -88,7 +88,7 @@ export class Recorder implements vscode.Disposable {
    * Returns the last `n` entries.
    */
   public lastEntries(n: number) {
-    const entries: Entry[] = [],
+    const entries: Entry.Any[] = [],
           cursor = this.cursorFromEnd();
 
     for (let i = 0; i < n && cursor.previous(); i++) {
@@ -114,7 +114,7 @@ export class Recorder implements vscode.Disposable {
   /**
    * Records an action to the current buffer.
    */
-  private _record<E extends Entry.Base<any>>(
+  private _record<E extends Entry.Any>(
     type: (new (...args: any) => E) & { readonly id: number },
     ...args: IntArray<E>
   ) {
@@ -196,7 +196,7 @@ export class Recorder implements vscode.Disposable {
    * Returns a `Cursor` starting at the start of the recorder.
    */
   public cursorFromStart() {
-    return new Recorder.Cursor(this, 0, 0);
+    return new Cursor(this, 0, 0);
   }
 
   /**
@@ -204,7 +204,7 @@ export class Recorder implements vscode.Disposable {
    * call.
    */
   public cursorFromEnd() {
-    return new Recorder.Cursor(this, this._previousBuffers.length, this._buffer.length - 1);
+    return new Cursor(this, this._previousBuffers.length, this._buffer.length - 1);
   }
 
   /**
@@ -219,7 +219,7 @@ export class Recorder implements vscode.Disposable {
       bufferIdx = this._previousBuffers.length;
     }
 
-    return new Recorder.Cursor(this, bufferIdx, recording.offset);
+    return new Cursor(this, bufferIdx, recording.offset);
   }
 
   /**
@@ -234,7 +234,7 @@ export class Recorder implements vscode.Disposable {
       bufferIdx = this._previousBuffers.length;
     }
 
-    return new Recorder.Cursor(this, bufferIdx, recording.offset + recording.length);
+    return new Cursor(this, bufferIdx, recording.offset + recording.length);
   }
 
   /**
@@ -648,198 +648,199 @@ export class Recorder implements vscode.Disposable {
   }
 }
 
-export namespace Recorder {
+export declare namespace Recorder {
   /**
-   * A buffer of `Recorder` values.
+   * A buffer of {@link Recorder} values.
    */
   export type Buffer = { readonly [index: number]: number; } & { readonly length: number; };
 
   /**
-   * The mutable version of `Buffer`.
+   * The mutable version of {@link Buffer}.
    */
   export type MutableBuffer = number[];
+}
+
+/**
+ * A cursor used to enumerate records in a {@link Recorder} or
+ * {@link Recording}.
+ */
+export class Cursor<T extends Entry.Any = Entry.Any> {
+  private _buffer: Recorder.Buffer;
+  private _bufferIdx: number;
+  private _offset: number;
+
+  public constructor(
+    /**
+     * The recorder from which records are read.
+     */
+    public readonly recorder: Recorder,
+
+    buffer: number,
+    offset: number,
+  ) {
+    this._buffer = recorder.getBuffer(buffer);
+    this._bufferIdx = buffer;
+    this._offset = offset;
+  }
 
   /**
-   * A cursor used to enumerate records in a `Recorder` or `Recording`.
+   * Returns the buffer storing the current record.
    */
-  export class Cursor<T extends Entry.Any = Entry.Any> {
-    private _buffer: Buffer;
-    private _bufferIdx: number;
-    private _offset: number;
+  public get buffer() {
+    return this._buffer;
+  }
 
-    public constructor(
-      /**
-       * The recorder from which records are read.
-       */
-      public readonly recorder: Recorder,
+  /**
+   * Returns the offset of the current record in its buffer.
+   */
+  public get offset() {
+    return this._offset;
+  }
 
-      buffer: number,
-      offset: number,
-    ) {
-      this._buffer = recorder.getBuffer(buffer);
-      this._bufferIdx = buffer;
-      this._offset = offset;
-    }
+  /**
+   * Returns the offset of the previous record in its buffer, or `undefined`
+   * if the current record is the first of its buffer.
+   */
+  public get previousOffset() {
+    return this._offset === 0
+      ? undefined
+      : this._offset - Entry.size(this.previousType()) - 1;
+  }
 
-    /**
-     * Returns the buffer storing the current record.
-     */
-    public get buffer() {
-      return this._buffer;
-    }
+  /**
+   * Returns a different instance of a `Cursor` that points to the same
+   * record.
+   */
+  public clone() {
+    return new Cursor<T>(this.recorder, this._bufferIdx, this._offset);
+  }
 
-    /**
-     * Returns the offset of the current record in its buffer.
-     */
-    public get offset() {
-      return this._offset;
-    }
+  /**
+   * Returns whether the current cursor is before or equal to the given
+   * cursor.
+   */
+  public isBeforeOrEqual(other: Cursor) {
+    return this._bufferIdx < other._bufferIdx
+        || (this._bufferIdx === other._bufferIdx && this._offset <= other._offset);
+  }
 
-    /**
-     * Returns the offset of the previous record in its buffer, or `undefined`
-     * if the current record is the first of its buffer.
-     */
-    public get previousOffset() {
-      return this._offset === 0
-        ? undefined
-        : this._offset - Entry.size(this.previousType()) - 1;
-    }
+  /**
+   * Returns whether the current cursor is after or equal to the given
+   * cursor.
+   */
+  public isAfterOrEqual(other: Cursor) {
+    return this._bufferIdx > other._bufferIdx
+        || (this._bufferIdx === other._bufferIdx && this._offset >= other._offset);
+  }
 
-    /**
-     * Returns a different instance of a `Cursor` that points to the same
-     * record.
-     */
-    public clone() {
-      return new Cursor<T>(this.recorder, this._bufferIdx, this._offset);
-    }
+  /**
+   * Replays the record pointed at by the cursor.
+   */
+  public replay(context: Context.WithoutActiveEditor) {
+    return this.entry().replay(context);
+  }
 
-    /**
-     * Returns whether the current cursor is before or equal to the given
-     * cursor.
-     */
-    public isBeforeOrEqual(other: Cursor) {
-      return this._bufferIdx < other._bufferIdx
-          || (this._bufferIdx === other._bufferIdx && this._offset <= other._offset);
-    }
+  /**
+   * Returns the entry pointed at by the cursor.
+   */
+  public entry() {
+    return Entry.instantiate(this.type(), this.recorder, this._buffer, this._offset) as T;
+  }
 
-    /**
-     * Returns whether the current cursor is after or equal to the given
-     * cursor.
-     */
-    public isAfterOrEqual(other: Cursor) {
-      return this._bufferIdx > other._bufferIdx
-          || (this._bufferIdx === other._bufferIdx && this._offset >= other._offset);
-    }
+  /**
+   * Returns the type of the current record.
+   */
+  public type() {
+    return ((this._buffer[this._offset] as number) & Constants.NextMask) as Entry.Identifier;
+  }
 
-    /**
-     * Replays the record pointed at by the cursor.
-     */
-    public replay(context: Context.WithoutActiveEditor) {
-      return this.entry().replay(context);
-    }
+  /**
+   * Returns the type of the previous record.
+   */
+  public previousType() {
+    return (this._buffer[this._offset] as number >> Constants.PrevShift) as Entry.Identifier;
+  }
 
-    /**
-     * Returns the entry pointed at by the cursor.
-     */
-    public entry() {
-      return Entry.instantiate(this.type(), this.recorder, this._buffer, this._offset) as T;
-    }
+  /**
+   * Returns whether the cursor points to a record of the given type.
+   */
+  public is<T extends Entry.AnyClass>(type: T): this is Cursor<InstanceType<T>> {
+    return this.type() === type.id;
+  }
 
-    /**
-     * Returns the type of the current record.
-     */
-    public type() {
-      return ((this._buffer[this._offset] as number) & Constants.NextMask) as Entry.Identifier;
-    }
+  /**
+   * Returns whether, when going backward, the type will be correspond to the
+   * given type. If so, goes backward.
+   */
+  public previousIs<T extends Entry.AnyClass>(type: T): this is Cursor<InstanceType<T>> {
+    if (this.previousType() === type.id) {
+      this.previous();
 
-    /**
-     * Returns the type of the previous record.
-     */
-    public previousType() {
-      return (this._buffer[this._offset] as number >> Constants.PrevShift) as Entry.Identifier;
-    }
-
-    /**
-     * Returns whether the cursor points to a record of the given type.
-     */
-    public is<T extends Entry.AnyClass>(type: T): this is Cursor<InstanceType<T>> {
-      return this.type() === type.id;
-    }
-
-    /**
-     * Returns whether, when going backward, the type will be correspond to the
-     * given type. If so, goes backward.
-     */
-    public previousIs<T extends Entry.AnyClass>(type: T): this is Cursor<InstanceType<T>> {
-      if (this.previousType() === type.id) {
-        this.previous();
-
-        return true;
-      }
-
-      return false;
-    }
-
-    /**
-     * Switches to the next record, and returns `true` if the operation
-     * succeeded or `false` if the current record is the last one available.
-     */
-    public next(): this is Cursor<Entry.Any> {
-      if (this._offset === this._buffer.length - 1) {
-        if (this._bufferIdx === this.recorder.bufferCount) {
-          return false;
-        }
-
-        this._bufferIdx++;
-        this._buffer = this.recorder.getBuffer(this._bufferIdx);
-        this._offset = 0;
-
-        return true;
-      }
-
-      this._offset += Entry.size(this.type()) + 1;
       return true;
     }
 
-    /**
-     * Switches to the previous record, and returns `true` if the operation
-     * succeeded or `false` if the current record is the first one available.
-     */
-    public previous(): this is Cursor<Entry.Any> {
-      assert(this._offset >= 0);
+    return false;
+  }
 
-      if (this._offset === 0) {
-        if (this._bufferIdx === 0) {
-          return false;
-        }
-
-        this._bufferIdx--;
-        this._buffer = this.recorder.getBuffer(this._bufferIdx);
-        this._offset = this._buffer.length - 1;
-
-        return true;
+  /**
+   * Switches to the next record, and returns `true` if the operation
+   * succeeded or `false` if the current record is the last one available.
+   */
+  public next(): this is Cursor<Entry.Any> {
+    if (this._offset === this._buffer.length - 1) {
+      if (this._bufferIdx === this.recorder.bufferCount) {
+        return false;
       }
 
-      this._offset -= Entry.size(this.previousType()) + 1;
+      this._bufferIdx++;
+      this._buffer = this.recorder.getBuffer(this._bufferIdx);
+      this._offset = 0;
+
       return true;
     }
 
-    /**
-     * Returns whether the record pointed at by the cursor is included in the
-     * specified recording.
-     */
-    public isInRecording(recording: Recording) {
-      return recording.offset <= this._offset && this._offset < recording.offset + recording.length
-          && recording.buffer === this._buffer;
+    this._offset += Entry.size(this.type()) + 1;
+    return true;
+  }
+
+  /**
+   * Switches to the previous record, and returns `true` if the operation
+   * succeeded or `false` if the current record is the first one available.
+   */
+  public previous(): this is Cursor<Entry.Any> {
+    assert(this._offset >= 0);
+
+    if (this._offset === 0) {
+      if (this._bufferIdx === 0) {
+        return false;
+      }
+
+      this._bufferIdx--;
+      this._buffer = this.recorder.getBuffer(this._bufferIdx);
+      this._offset = this._buffer.length - 1;
+
+      return true;
     }
 
-    /**
-     * Returns `this` with a more generic type. Use when TypeScript merges types
-     * incorrectly.
-     */
-    public upcast(): Cursor<Entry.Any> {
-      return this;
-    }
+    this._offset -= Entry.size(this.previousType()) + 1;
+    return true;
+  }
+
+  /**
+   * Returns whether the record pointed at by the cursor is included in the
+   * specified recording.
+   */
+  public isInRecording(recording: Recording) {
+    return recording.offset <= this._offset && this._offset < recording.offset + recording.length
+        && recording.buffer === this._buffer;
+  }
+
+  /**
+   * Returns `this` with a more generic type. Use when TypeScript merges types
+   * incorrectly.
+   */
+  public upcast(): Cursor<Entry.Any> {
+    return this;
   }
 }
 
@@ -913,421 +914,423 @@ export class Recording {
 }
 
 /**
- * Represents an entry in the `Recorder`.
+ * Base class for all entries.
  */
-export type Entry = Entry.Any;
-
-export namespace Entry {
-  export type Identifier = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-
-  export type AnyClass = typeof entries extends readonly (infer A)[] ? A : never;
-  export type Any = InstanceType<AnyClass>;
-
-  export abstract class Base<Items extends readonly [...RecordValue[]]> {
-    public constructor(
-      /**
-       * The recorder to which this entry belongs.
-       */
-      public readonly recorder: Recorder,
-
-      /**
-       * The buffer in which the entry is recorded.
-       */
-      public readonly buffer: Recorder.Buffer,
-
-      /**
-       * The offset in the buffer at which the entry is recorded.
-       */
-      public readonly offset: number,
-    ) {}
+export abstract class BaseEntry<Items extends readonly [...RecordValue[]]> {
+  public constructor(
+    /**
+     * The recorder to which this entry belongs.
+     */
+    public readonly recorder: Recorder,
 
     /**
-     * Returns the identifier of the record.
+     * The buffer in which the entry is recorded.
      */
-    public get id() {
-      return this.type.id;
+    public readonly buffer: Recorder.Buffer,
+
+    /**
+     * The offset in the buffer at which the entry is recorded.
+     */
+    public readonly offset: number,
+  ) {}
+
+  /**
+   * Returns the identifier of the record.
+   */
+  public get id() {
+    return this.type.id;
+  }
+
+  /**
+   * Returns the size of the record, excluding identifier before and after.
+   */
+  public get size() {
+    return this.type.size;
+  }
+
+  /**
+   * Returns the type of the entry.
+   */
+  public get type() {
+    return this.constructor as Entry.AnyClass;
+  }
+
+  /**
+   * Returns the result of calling `items()`, for debugging purposes.
+   */
+  private get debugItems() {
+    return this.items();
+  }
+
+  /**
+   * Replays the recorded entry.
+   */
+  public abstract replay(context: Context.WithoutActiveEditor): Thenable<void>;
+
+  /**
+   * Returns the items that make up the entry.
+   */
+  public abstract items(): Items;
+
+  /**
+   * Returns the item at the given index.
+   */
+  protected item<I extends keyof Items & number>(index: I) {
+    return this.buffer[this.offset + 1 + index];
+  }
+
+  private static _entryIds = 0;
+
+  /**
+   * Returns an abstract class that should be extended to implement a new
+   * `Entry`.
+   */
+  public static define<Items extends readonly [...RecordValue[]]>(size: Items["length"]) {
+    const id = this._entryIds++;
+
+    abstract class EntryWithSize extends BaseEntry<Readonly<Items>> {
+      public static readonly size = size;
+      public static readonly id = id;
     }
 
-    /**
-     * Returns the size of the record, excluding identifier before and after.
-     */
-    public get size() {
-      return this.type.size;
-    }
+    // We need to wrap `EntryWithSize` into an actual, textually-representable
+    // type below in order to generate a valid declaration for `define` in a
+    // `.d.ts` file.
+    return EntryWithSize as unknown as {
+      readonly size: number;
+      readonly id: number;
 
-    /**
-     * Returns the type of the entry.
-     */
-    public get type() {
-      return this.constructor as Entry.AnyClass;
-    }
+      new(
+        ...args: typeof BaseEntry extends abstract new(...args: infer Args) => any ? Args : never
+      ): BaseEntry<Readonly<Items>>;
+    };
+  }
+}
 
-    /**
-     * Returns the result of calling `items()`, for debugging purposes.
-     */
-    private get debugItems() {
-      return this.items();
-    }
+/**
+ * An action that cannot be reliably replayed and that interrupts a
+ * recording.
+ */
+export class BreakEntry extends BaseEntry.define<[]>(0) {
+  public replay() {
+    return Promise.resolve();
+  }
 
-    /**
-     * Replays the recorded entry.
-     */
-    public abstract replay(context: Context.WithoutActiveEditor): Thenable<void>;
+  public items() {
+    return [] as const;
+  }
+}
 
-    /**
-     * Returns the items that make up the entry.
-     */
-    public abstract items(): Items;
+/**
+ * A selection translation.
+ */
+export class TranslateSelectionEntry extends BaseEntry.define<
+  [activeTranslation: number, anchorTranslation: number]
+>(2) {
+  public replay(context: Context.WithoutActiveEditor) {
+    Context.assert(context);
 
-    /**
-     * Returns the item at the given index.
-     */
-    protected item<I extends keyof Items & number>(index: I) {
-      return this.buffer[this.offset + 1 + index];
-    }
+    const document = context.document,
+          activeTranslation = this.activeTranslation(),
+          anchorTranslation = this.anchorTranslation();
 
-    private static _entryIds = 0;
+    context.run(() => Selections.updateByIndex((_, selection) => {
+      const newActive = Positions.offsetOrEdge(selection.active, activeTranslation, document),
+            newAnchor = Positions.offsetOrEdge(selection.anchor, anchorTranslation, document);
 
-    /**
-     * Returns an abstract class that should be extended to implement a new
-     * `Entry`.
-     */
-    public static define<Items extends readonly [...RecordValue[]]>(size: Items["length"]) {
-      const id = this._entryIds++;
+      return new vscode.Selection(newAnchor, newActive);
+    }));
 
-      abstract class EntryWithSize extends Base<Readonly<Items>> {
-        public static readonly size = size;
-        public static readonly id = id;
+    return Promise.resolve();
+  }
+
+  public activeTranslation() {
+    return this.item(0);
+  }
+
+  public anchorTranslation() {
+    return this.item(1);
+  }
+
+  public items() {
+    return [this.activeTranslation(), this.anchorTranslation()] as const;
+  }
+}
+
+/**
+ * An insertion before each selection (cursor moves forward).
+ */
+export class InsertBeforeEntry extends BaseEntry.define<[insertedText: string]>(1) {
+  public replay(context: Context.WithoutActiveEditor) {
+    Context.assert(context);
+
+    const editor = context.editor as vscode.TextEditor;
+
+    return editor.edit((editBuilder) => {
+      const insertedText = this.insertedText();
+
+      for (const selection of editor.selections) {
+        editBuilder.insert(selection.start, insertedText);
       }
-
-      // We need to wrap `EntryWithSize` into an actual, textually-representable
-      // type below in order to generate a valid declaration for `define` in a
-      // `.d.ts` file.
-      return EntryWithSize as unknown as {
-        readonly size: number;
-        readonly id: number;
-
-        new(
-          ...args: typeof Base extends abstract new(...args: infer Args) => any ? Args : never
-        ): Base<Readonly<Items>>;
-      };
-    }
+    }, noUndoStops).then(() => {});
   }
 
-  /**
-   * An action that cannot be reliably replayed and that interrupts a
-   * recording.
-   */
-  export class Break extends Base.define<[]>(0) {
-    public replay() {
-      return Promise.resolve();
-    }
-
-    public items() {
-      return [] as const;
-    }
+  public insertedText() {
+    return this.recorder.getString(this.item(0));
   }
 
-  /**
-   * A selection translation.
-   */
-  export class TranslateSelection extends Base.define<
-    [activeTranslation: number, anchorTranslation: number]
-  >(2) {
-    public replay(context: Context.WithoutActiveEditor) {
-      Context.assert(context);
-
-      const document = context.document,
-            activeTranslation = this.activeTranslation(),
-            anchorTranslation = this.anchorTranslation();
-
-      context.run(() => Selections.update.byIndex((_, selection) => {
-        const newActive = Positions.offset.orEdge(selection.active, activeTranslation, document),
-              newAnchor = Positions.offset.orEdge(selection.anchor, anchorTranslation, document);
-
-        return new vscode.Selection(newAnchor, newActive);
-      }));
-
-      return Promise.resolve();
-    }
-
-    public activeTranslation() {
-      return this.item(0);
-    }
-
-    public anchorTranslation() {
-      return this.item(1);
-    }
-
-    public items() {
-      return [this.activeTranslation(), this.anchorTranslation()] as const;
-    }
+  public items() {
+    return [this.insertedText()] as const;
   }
+}
 
-  /**
-   * An insertion before each selection (cursor moves forward).
-   */
-  export class InsertBefore extends Base.define<[insertedText: string]>(1) {
-    public replay(context: Context.WithoutActiveEditor) {
-      Context.assert(context);
+/**
+ * An insertion after each selection (cursor does not move).
+ */
+export class InsertAfterEntry extends BaseEntry.define<[insertedText: string]>(1) {
+  public replay(context: Context.WithoutActiveEditor) {
+    Context.assert(context);
 
-      const editor = context.editor as vscode.TextEditor;
+    const editor = context.editor as vscode.TextEditor;
 
-      return editor.edit((editBuilder) => {
-        const insertedText = this.insertedText();
+    return editor.edit((editBuilder) => {
+      const insertedText = this.insertedText();
 
-        for (const selection of editor.selections) {
-          editBuilder.insert(selection.start, insertedText);
-        }
-      }, noUndoStops).then(() => {});
-    }
-
-    public insertedText() {
-      return this.recorder.getString(this.item(0));
-    }
-
-    public items() {
-      return [this.insertedText()] as const;
-    }
-  }
-
-  /**
-   * An insertion after each selection (cursor does not move).
-   */
-  export class InsertAfter extends Base.define<[insertedText: string]>(1) {
-    public replay(context: Context.WithoutActiveEditor) {
-      Context.assert(context);
-
-      const editor = context.editor as vscode.TextEditor;
-
-      return editor.edit((editBuilder) => {
-        const insertedText = this.insertedText();
-
-        for (const selection of editor.selections) {
-          editBuilder.replace(selection.end, insertedText);
-        }
-      }, noUndoStops).then(() => {});
-    }
-
-    public insertedText() {
-      return this.recorder.getString(this.item(0));
-    }
-
-    public items() {
-      return [this.insertedText()] as const;
-    }
-  }
-
-  /**
-   * A deletion before each selection (cursor moves backward).
-   */
-  export class DeleteBefore extends Base.define<[deletionLength: number]>(1) {
-    public replay(context: Context.WithoutActiveEditor) {
-      Context.assert(context);
-
-      const editor = context.editor as vscode.TextEditor;
-
-      return editor.edit((editBuilder) => {
-        const deletionLength = this.deletionLength(),
-              document = editor.document;
-
-        for (const selection of editor.selections) {
-          const endPosition = selection.start,
-                startPosition = Positions.offset.orEdge(endPosition, -deletionLength, document);
-
-          editBuilder.delete(new vscode.Range(startPosition, endPosition));
-        }
-      }).then(() => {});
-    }
-
-    public deletionLength() {
-      return this.item(0);
-    }
-
-    public items() {
-      return [this.deletionLength()] as const;
-    }
-  }
-
-  /**
-   * A deletion after each selection (cursor does not move).
-   */
-  export class DeleteAfter extends Base.define<[deletionLength: number]>(1) {
-    public replay(context: Context.WithoutActiveEditor) {
-      Context.assert(context);
-
-      const editor = context.editor as vscode.TextEditor;
-
-      return editor.edit((editBuilder) => {
-        const deletionLength = this.deletionLength(),
-              document = editor.document;
-
-        for (const selection of editor.selections) {
-          const startPosition = selection.end,
-                endPosition = Positions.offset.orEdge(startPosition, deletionLength, document);
-
-          editBuilder.delete(new vscode.Range(startPosition, endPosition));
-        }
-      }).then(() => {});
-    }
-
-    public deletionLength() {
-      return this.item(0);
-    }
-
-    public items() {
-      return [this.deletionLength()] as const;
-    }
-  }
-
-  /**
-   * A text replacement.
-   */
-  export class ReplaceWith extends Base.define<[text: string]>(1) {
-    public replay(context: Context.WithoutActiveEditor) {
-      Context.assert(context);
-
-      const editor = context.editor as vscode.TextEditor;
-
-      return editor.edit((editBuilder) => {
-        const text = this.text();
-
-        for (const selection of editor.selections) {
-          editBuilder.replace(selection, text);
-        }
-      }).then(() => {});
-    }
-
-    public text() {
-      return this.recorder.getString(this.item(0));
-    }
-
-    public items() {
-      return [this.text()] as const;
-    }
-  }
-
-  /**
-   * An active text editor change.
-   */
-  export class ChangeTextEditor extends Base.define<[uri: vscode.Uri]>(1) {
-    public replay() {
-      return vscode.window.showTextDocument(this.uri()).then(() => {});
-    }
-
-    public uri() {
-      return this.recorder.getObject<vscode.Uri>(this.item(0));
-    }
-
-    public items() {
-      return [this.uri()] as const;
-    }
-  }
-
-  /**
-   * A change of the active text editor mode.
-   */
-  export class ChangeTextEditorMode extends Base.define<[mode: Mode]>(1) {
-    public replay(context: Context.WithoutActiveEditor) {
-      Context.assert(context);
-
-      return context.switchToMode(this.mode());
-    }
-
-    public mode() {
-      return this.recorder.getObject<Mode>(this.item(0));
-    }
-
-    public items() {
-      return [this.mode()] as const;
-    }
-  }
-
-  /**
-   * An internal command invocation.
-   */
-  export class ExecuteCommand extends Base.define<
-    [descriptor: CommandDescriptor, argument: object]
-  >(2) {
-    public async replay(context: Context.WithoutActiveEditor) {
-      const descriptor = this.descriptor(),
-            argument = this.argument();
-
-      if ((descriptor.flags & CommandDescriptor.Flags.DoNotReplay) === 0) {
-        await descriptor.replay(context, argument);
+      for (const selection of editor.selections) {
+        editBuilder.replace(selection.end, insertedText);
       }
-    }
+    }, noUndoStops).then(() => {});
+  }
 
-    public descriptor() {
-      return this.recorder.getDescriptor(this.item(0));
-    }
+  public insertedText() {
+    return this.recorder.getString(this.item(0));
+  }
 
-    public argument() {
-      return this.recorder.getObject<{}>(this.item(1));
-    }
+  public items() {
+    return [this.insertedText()] as const;
+  }
+}
 
-    public items() {
-      return [this.descriptor(), this.argument()] as const;
+/**
+ * A deletion before each selection (cursor moves backward).
+ */
+export class DeleteBeforeEntry extends BaseEntry.define<[deletionLength: number]>(1) {
+  public replay(context: Context.WithoutActiveEditor) {
+    Context.assert(context);
+
+    const editor = context.editor as vscode.TextEditor;
+
+    return editor.edit((editBuilder) => {
+      const deletionLength = this.deletionLength(),
+            document = editor.document;
+
+      for (const selection of editor.selections) {
+        const endPosition = selection.start,
+              startPosition = Positions.offsetOrEdge(endPosition, -deletionLength, document);
+
+        editBuilder.delete(new vscode.Range(startPosition, endPosition));
+      }
+    }).then(() => {});
+  }
+
+  public deletionLength() {
+    return this.item(0);
+  }
+
+  public items() {
+    return [this.deletionLength()] as const;
+  }
+}
+
+/**
+ * A deletion after each selection (cursor does not move).
+ */
+export class DeleteAfterEntry extends BaseEntry.define<[deletionLength: number]>(1) {
+  public replay(context: Context.WithoutActiveEditor) {
+    Context.assert(context);
+
+    const editor = context.editor as vscode.TextEditor;
+
+    return editor.edit((editBuilder) => {
+      const deletionLength = this.deletionLength(),
+            document = editor.document;
+
+      for (const selection of editor.selections) {
+        const startPosition = selection.end,
+              endPosition = Positions.offsetOrEdge(startPosition, deletionLength, document);
+
+        editBuilder.delete(new vscode.Range(startPosition, endPosition));
+      }
+    }).then(() => {});
+  }
+
+  public deletionLength() {
+    return this.item(0);
+  }
+
+  public items() {
+    return [this.deletionLength()] as const;
+  }
+}
+
+/**
+ * A text replacement.
+ */
+export class ReplaceWithEntry extends BaseEntry.define<[text: string]>(1) {
+  public replay(context: Context.WithoutActiveEditor) {
+    Context.assert(context);
+
+    const editor = context.editor as vscode.TextEditor;
+
+    return editor.edit((editBuilder) => {
+      const text = this.text();
+
+      for (const selection of editor.selections) {
+        editBuilder.replace(selection, text);
+      }
+    }).then(() => {});
+  }
+
+  public text() {
+    return this.recorder.getString(this.item(0));
+  }
+
+  public items() {
+    return [this.text()] as const;
+  }
+}
+
+/**
+ * An active text editor change.
+ */
+export class ChangeTextEditorEntry extends BaseEntry.define<[uri: vscode.Uri]>(1) {
+  public replay() {
+    return vscode.window.showTextDocument(this.uri()).then(() => {});
+  }
+
+  public uri() {
+    return this.recorder.getObject<vscode.Uri>(this.item(0));
+  }
+
+  public items() {
+    return [this.uri()] as const;
+  }
+}
+
+/**
+ * A change of the active text editor mode.
+ */
+export class ChangeTextEditorModeEntry extends BaseEntry.define<[mode: Mode]>(1) {
+  public replay(context: Context.WithoutActiveEditor) {
+    Context.assert(context);
+
+    return context.switchToMode(this.mode());
+  }
+
+  public mode() {
+    return this.recorder.getObject<Mode>(this.item(0));
+  }
+
+  public items() {
+    return [this.mode()] as const;
+  }
+}
+
+/**
+ * An internal command invocation.
+ */
+export class ExecuteCommandEntry extends BaseEntry.define<
+  [descriptor: CommandDescriptor, argument: object]
+>(2) {
+  public async replay(context: Context.WithoutActiveEditor) {
+    const descriptor = this.descriptor(),
+          argument = this.argument();
+
+    if ((descriptor.flags & CommandDescriptor.Flags.DoNotReplay) === 0) {
+      await descriptor.replay(context, argument);
     }
   }
 
-  /**
-   * An external command invocation.
-   */
-  export class ExecuteExternalCommand extends Base.define<
-    [identifier: string, argument: object]
-  >(2) {
-    public replay() {
-      return vscode.commands.executeCommand(this.identifier(), this.argument()).then(() => {});
-    }
-
-    public identifier() {
-      return this.recorder.getString(this.item(0));
-    }
-
-    public argument() {
-      return this.recorder.getObject<{}>(this.item(1));
-    }
-
-    public items() {
-      return [this.identifier(), this.argument()] as const;
-    }
+  public descriptor() {
+    return this.recorder.getDescriptor(this.item(0));
   }
 
-  const entries = [
-    Break,
-    ChangeTextEditor,
-    ChangeTextEditorMode,
-    DeleteAfter,
-    DeleteBefore,
-    ExecuteCommand,
-    ExecuteExternalCommand,
-    InsertAfter,
-    InsertBefore,
-    ReplaceWith,
-    TranslateSelection,
-  ] as const;
+  public argument() {
+    return this.recorder.getObject<{}>(this.item(1));
+  }
 
-  const sortedEntries = entries.slice().sort((a, b) => a.id - b.id);
+  public items() {
+    return [this.descriptor(), this.argument()] as const;
+  }
+}
+
+/**
+ * An external command invocation.
+ */
+export class ExecuteExternalCommandEntry extends BaseEntry.define<
+  [identifier: string, argument: object]
+>(2) {
+  public replay() {
+    return vscode.commands.executeCommand(this.identifier(), this.argument()).then(() => {});
+  }
+
+  public identifier() {
+    return this.recorder.getString(this.item(0));
+  }
+
+  public argument() {
+    return this.recorder.getObject<{}>(this.item(1));
+  }
+
+  public items() {
+    return [this.identifier(), this.argument()] as const;
+  }
+}
+
+export const EntryClasses = {
+  Break: BreakEntry,
+  ChangeTextEditor: ChangeTextEditorEntry,
+  ChangeTextEditorMode: ChangeTextEditorModeEntry,
+  DeleteAfter: DeleteAfterEntry,
+  DeleteBefore: DeleteBeforeEntry,
+  ExecuteCommand: ExecuteCommandEntry,
+  ExecuteExternalCommand: ExecuteExternalCommandEntry,
+  InsertAfter: InsertAfterEntry,
+  InsertBefore: InsertBeforeEntry,
+  ReplaceWith: ReplaceWithEntry,
+  TranslateSelection: TranslateSelectionEntry,
+};
+
+export const Entry = {
+  ...EntryClasses,
 
   /**
    * Returns the class of the entry corresponding to the given entry identifier.
    */
-  export function byId(id: Identifier) {
+  byId(id: Entry.Identifier) {
     return sortedEntries[id];
-  }
+  },
 
   /**
    * Returns the entry corresponding to the given entry identifier.
    */
-  export function instantiate(id: Identifier, ...args: ConstructorParameters<AnyClass>) {
+  instantiate(id: Entry.Identifier, ...args: ConstructorParameters<Entry.AnyClass>) {
     return new sortedEntries[id](...args);
-  }
+  },
 
   /**
    * Returns the size of the object at the given index.
    */
-  export function size(id: Identifier) {
-    return byId(id).size;
-  }
+  size(id: Entry.Identifier) {
+    return this.byId(id).size;
+  },
+};
+
+const sortedEntries = Object.values(EntryClasses).slice().sort((a, b) => a.id - b.id);
+
+export declare namespace Entry {
+  export type Identifier = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
+
+  export type AnyClass = (typeof EntryClasses)[keyof typeof EntryClasses];
+  export type Any = InstanceType<AnyClass>;
 }

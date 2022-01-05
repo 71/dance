@@ -223,6 +223,12 @@ export class ContextWithoutActiveEditor {
  */
 export class Context extends ContextWithoutActiveEditor {
   /**
+   * The base {@link Context} class, which does not require an active
+   * {@link vscode.TextEditor}.
+   */
+  public static readonly WithoutActiveEditor = ContextWithoutActiveEditor;
+
+  /**
    * Returns the current execution context, or throws an error if called outside
    * of an execution context or if the execution context does not have an
    * active editor.
@@ -252,6 +258,31 @@ export class Context extends ContextWithoutActiveEditor {
     if (!(context instanceof Context)) {
       throw new Error("current context does not have an active text editor");
     }
+  }
+
+  /**
+   * Returns a {@link Context} or {@link Context.WithoutActiveEditor} depending
+   * on whether there is an active text editor.
+   */
+  public static create(extension: Extension, command: CommandDescriptor) {
+    const activeEditorState = extension.editors.active,
+          cancellationToken = extension.cancellationToken;
+
+    return activeEditorState === undefined
+      ? new Context.WithoutActiveEditor(extension, cancellationToken, command)
+      : new Context(activeEditorState, cancellationToken, command);
+  }
+
+  /**
+   * Returns a {@link Context} or throws an exception if there is no active text
+   * editor.
+   */
+  public static createWithActiveTextEditor(extension: Extension, command: CommandDescriptor) {
+    const activeEditorState = extension.editors.active;
+
+    EditorRequiredError.throwUnlessAvailable(activeEditorState);
+
+    return new Context(activeEditorState, extension.cancellationToken, command);
   }
 
   private _document: vscode.TextDocument;
@@ -457,39 +488,8 @@ export class Context extends ContextWithoutActiveEditor {
   }
 }
 
-export namespace Context {
-  /**
-   * The base `Context` class, which does not require an active
-   * `vscode.TextEditor`.
-   */
-  export const WithoutActiveEditor = ContextWithoutActiveEditor;
-
+export declare namespace Context {
   export type WithoutActiveEditor = ContextWithoutActiveEditor;
-
-  /**
-   * Returns a `Context` or `Context.WithoutActiveEditor` depending on whether
-   * there is an active text editor.
-   */
-  export function create(extension: Extension, command: CommandDescriptor) {
-    const activeEditorState = extension.editors.active,
-          cancellationToken = extension.cancellationToken;
-
-    return activeEditorState === undefined
-      ? new Context.WithoutActiveEditor(extension, cancellationToken, command)
-      : new Context(activeEditorState, cancellationToken, command);
-  }
-
-  /**
-   * Returns a `Context` or throws an exception if there is no active text
-   * editor.
-   */
-  export function createWithActiveTextEditor(extension: Extension, command: CommandDescriptor) {
-    const activeEditorState = extension.editors.active;
-
-    EditorRequiredError.throwUnlessAvailable(activeEditorState);
-
-    return new Context(activeEditorState, extension.cancellationToken, command);
-  }
 }
 
 /**

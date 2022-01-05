@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import type { Argument, CommandDescriptor, RegisterOr } from ".";
 import type { Context } from "../api";
-import { ActiveRecording, Entry, Recorder } from "../state/recorder";
+import { ActiveRecording, Cursor, Entry, Recorder } from "../state/recorder";
 import type { Register } from "../state/registers";
 import { ArgumentError } from "../utils/errors";
 
@@ -105,8 +105,8 @@ export async function repeat_edit(_: Context, repetitions: number) {
 
   const recorder = _.extension.recorder,
         cursor = recorder.cursorFromEnd();
-  let startCursor: Recorder.Cursor | undefined,
-      endCursor: Recorder.Cursor | undefined;
+  let startCursor: Cursor | undefined,
+      endCursor: Cursor | undefined;
 
   for (;;) {
     if (cursor.is(Entry.ChangeTextEditorMode)) {

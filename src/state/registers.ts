@@ -4,7 +4,7 @@ import type { Recording } from "./recorder";
 import { Context, prompt, SelectionBehavior, Selections } from "../api";
 import { ArgumentError, assert, EditNotAppliedError, EditorRequiredError } from "../utils/errors";
 import { noUndoStops } from "../utils/misc";
-import type { TrackedSelection } from "../utils/tracked-selection";
+import type * as TrackedSelection from "../utils/tracked-selection";
 
 /**
  * The base class for all registers.
@@ -148,7 +148,7 @@ export abstract class Register {
   }
 }
 
-export namespace Register {
+export declare namespace Register {
   /**
    * Flags describing the capabilities of a `Register`.
    */

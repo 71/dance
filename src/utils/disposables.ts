@@ -229,7 +229,7 @@ export class AutoDisposable implements vscode.Disposable {
   }
 }
 
-export namespace AutoDisposable {
+export declare namespace AutoDisposable {
   export const enum EventType {
     OnEditorWasClosed = "editor-was-closed",
     OnModeDidChange = "mode-did-change",

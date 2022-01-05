@@ -5,7 +5,7 @@ import { NotASelectionError } from "./errors";
 import * as Positions from "./positions";
 import { Direction, SelectionBehavior, Shift } from "./types";
 import { execRange, splitRange } from "../utils/regexp";
-import { TrackedSelection } from "../utils/tracked-selection";
+import * as TrackedSelection from "../utils/tracked-selection";
 
 export { fromCharacterMode, toCharacterMode };
 
@@ -113,107 +113,109 @@ export function filter(
   predicate: filter.Predicate<boolean> | filter.Predicate<Thenable<boolean>>,
   selections?: readonly vscode.Selection[],
 ) {
-  return filter.byIndex(
+  return filterByIndex(
     (i, selection, document) => predicate(document.getText(selection), selection, i) as any,
     selections,
   ) as any;
 }
 
-export namespace filter {
+export declare namespace filter {
   /**
-   * A predicate passed to `filter`.
+   * A predicate passed to {@link filter}.
    */
   export interface Predicate<T extends boolean | Thenable<boolean>> {
     (text: string, selection: vscode.Selection, index: number): T;
   }
+}
 
-  /**
-   * A predicate passed to `filter.byIndex`.
-   */
-  export interface ByIndexPredicate<T extends boolean | Thenable<boolean>> {
-    (index: number, selection: vscode.Selection, document: vscode.TextDocument): T;
+/**
+ * Removes selections that do not match the given predicate.
+ *
+ * @param selections The `vscode.Selection` array to filter from, or
+ *   `undefined` to filter the selections of the active text editor.
+ */
+export function filterByIndex(
+  predicate: filterByIndex.Predicate<boolean>,
+  selections?: readonly vscode.Selection[],
+): vscode.Selection[];
+
+/**
+ * Removes selections that do not match the given async predicate.
+ *
+ * @param selections The `vscode.Selection` array to filter from, or
+ *   `undefined` to filter the selections of the active text editor.
+ */
+export function filterByIndex(
+  predicate: filterByIndex.Predicate<Thenable<boolean>>,
+  selections?: readonly vscode.Selection[],
+): Thenable<vscode.Selection[]>;
+
+export function filterByIndex(
+  predicate: filterByIndex.Predicate<boolean> | filterByIndex.Predicate<Thenable<boolean>>,
+  selections?: readonly vscode.Selection[],
+) {
+  const context = Context.current,
+        document = context.document;
+
+  if (selections === undefined) {
+    selections = context.selections;
   }
 
-  /**
-   * Removes selections that do not match the given predicate.
-   *
-   * @param selections The `vscode.Selection` array to filter from, or
-   *   `undefined` to filter the selections of the active text editor.
-   */
-  export function byIndex(
-    predicate: ByIndexPredicate<boolean>,
-    selections?: readonly vscode.Selection[],
-  ): vscode.Selection[];
+  const firstSelection = selections[0],
+        firstResult = predicate(0, firstSelection, document);
 
-  /**
-   * Removes selections that do not match the given async predicate.
-   *
-   * @param selections The `vscode.Selection` array to filter from, or
-   *   `undefined` to filter the selections of the active text editor.
-   */
-  export function byIndex(
-    predicate: ByIndexPredicate<Thenable<boolean>>,
-    selections?: readonly vscode.Selection[],
-  ): Thenable<vscode.Selection[]>;
-
-  export function byIndex(
-    predicate: ByIndexPredicate<boolean> | ByIndexPredicate<Thenable<boolean>>,
-    selections?: readonly vscode.Selection[],
-  ) {
-    const context = Context.current,
-          document = context.document;
-
-    if (selections === undefined) {
-      selections = context.selections;
+  if (typeof firstResult === "boolean") {
+    if (selections.length === 1) {
+      return firstResult ? [firstResult] : [];
     }
 
-    const firstSelection = selections[0],
-          firstResult = predicate(0, firstSelection, document);
+    const resultingSelections = firstResult ? [firstSelection] : [];
 
-    if (typeof firstResult === "boolean") {
-      if (selections.length === 1) {
-        return firstResult ? [firstResult] : [];
+    for (let i = 1; i < selections.length; i++) {
+      const selection = selections[i];
+
+      if (predicate(i, selection, document) as boolean) {
+        resultingSelections.push(selection);
       }
+    }
 
-      const resultingSelections = firstResult ? [firstSelection] : [];
+    return resultingSelections;
+  } else {
+    if (selections.length === 1) {
+      return context.then(firstResult, (value) => value ? [firstSelection] : []);
+    }
 
-      for (let i = 1; i < selections.length; i++) {
-        const selection = selections[i];
+    const promises = [firstResult];
 
-        if (predicate(i, selection, document) as boolean) {
-          resultingSelections.push(selection);
+    for (let i = 1; i < selections.length; i++) {
+      const selection = selections[i];
+
+      promises.push(predicate(i, selection, document) as Thenable<boolean>);
+    }
+
+    const savedSelections = selections.slice();  // In case the original
+    //                                              selections are mutated.
+
+    return context.then(Promise.all(promises), (results) => {
+      const resultingSelections = [];
+
+      for (let i = 0; i < results.length; i++) {
+        if (results[i]) {
+          resultingSelections.push(savedSelections[i]);
         }
       }
 
       return resultingSelections;
-    } else {
-      if (selections.length === 1) {
-        return context.then(firstResult, (value) => value ? [firstSelection] : []);
-      }
+    });
+  }
+}
 
-      const promises = [firstResult];
-
-      for (let i = 1; i < selections.length; i++) {
-        const selection = selections[i];
-
-        promises.push(predicate(i, selection, document) as Thenable<boolean>);
-      }
-
-      const savedSelections = selections.slice();  // In case the original
-      //                                              selections are mutated.
-
-      return context.then(Promise.all(promises), (results) => {
-        const resultingSelections = [];
-
-        for (let i = 0; i < results.length; i++) {
-          if (results[i]) {
-            resultingSelections.push(savedSelections[i]);
-          }
-        }
-
-        return resultingSelections;
-      });
-    }
+export declare namespace filterByIndex {
+  /**
+   * A predicate passed to {@link filterByIndex}.
+   */
+  export interface Predicate<T extends boolean | Thenable<boolean>> {
+    (index: number, selection: vscode.Selection, document: vscode.TextDocument): T;
   }
 }
 
@@ -277,108 +279,110 @@ export function map<T>(
   f: map.Mapper<T | undefined> | map.Mapper<Thenable<T | undefined>>,
   selections?: readonly vscode.Selection[],
 ) {
-  return map.byIndex(
+  return mapByIndex(
     (i, selection, document) => f(document.getText(selection), selection, i),
     selections,
   ) as any;
 }
 
-export namespace map {
+export declare namespace map {
   /**
-   * A mapper function passed to `map`.
+   * A mapper function passed to {@link map}.
    */
   export interface Mapper<T> {
     (text: string, selection: vscode.Selection, index: number): T;
   }
+}
 
-  /**
-   * A mapper function passed to `map.byIndex`.
-   */
-  export interface ByIndexMapper<T> {
-    (index: number, selection: vscode.Selection, document: vscode.TextDocument): T | undefined;
+/**
+ * Applies a function to all the given selections, and returns the array of
+ * all of its non-`undefined` results.
+ *
+ * @param selections The `vscode.Selection` array to map from, or `undefined`
+ *   to map the selections of the active text editor.
+ */
+export function mapByIndex<T>(
+  f: mapByIndex.Mapper<T | undefined>,
+  selections?: readonly vscode.Selection[],
+): T[];
+
+/**
+ * Applies an async function to all the given selections, and returns the
+ * array of all of its non-`undefined` results.
+ *
+ * @param selections The `vscode.Selection` array to map from, or `undefined`
+ *   to map the selections of the active text editor.
+ */
+export function mapByIndex<T>(
+  f: mapByIndex.Mapper<Thenable<T | undefined>>,
+  selections?: readonly vscode.Selection[],
+): Thenable<T[]>;
+
+export function mapByIndex<T>(
+  f: mapByIndex.Mapper<T | undefined> | mapByIndex.Mapper<Thenable<T | undefined>>,
+  selections?: readonly vscode.Selection[],
+) {
+  const context = Context.current,
+        document = context.document;
+
+  if (selections === undefined) {
+    selections = context.selections;
   }
 
-  /**
-   * Applies a function to all the given selections, and returns the array of
-   * all of its non-`undefined` results.
-   *
-   * @param selections The `vscode.Selection` array to map from, or `undefined`
-   *   to map the selections of the active text editor.
-   */
-  export function byIndex<T>(
-    f: ByIndexMapper<T | undefined>,
-    selections?: readonly vscode.Selection[],
-  ): T[];
+  const firstSelection = selections[0],
+        firstResult = f(0, firstSelection, document);
 
-  /**
-   * Applies an async function to all the given selections, and returns the
-   * array of all of its non-`undefined` results.
-   *
-   * @param selections The `vscode.Selection` array to map from, or `undefined`
-   *   to map the selections of the active text editor.
-   */
-  export function byIndex<T>(
-    f: ByIndexMapper<Thenable<T | undefined>>,
-    selections?: readonly vscode.Selection[],
-  ): Thenable<T[]>;
+  if (firstResult === undefined || typeof (firstResult as Thenable<T>)?.then !== "function") {
+    const results = firstResult !== undefined ? [firstResult as T] : [];
 
-  export function byIndex<T>(
-    f: ByIndexMapper<T | undefined> | ByIndexMapper<Thenable<T | undefined>>,
-    selections?: readonly vscode.Selection[],
-  ) {
-    const context = Context.current,
-          document = context.document;
+    for (let i = 1; i < selections.length; i++) {
+      const selection = selections[i],
+            value = f(i, selection, document) as T | undefined;
 
-    if (selections === undefined) {
-      selections = context.selections;
+      if (value !== undefined) {
+        results.push(value);
+      }
     }
 
-    const firstSelection = selections[0],
-          firstResult = f(0, firstSelection, document);
-
-    if (firstResult === undefined || typeof (firstResult as Thenable<T>)?.then !== "function") {
-      const results = firstResult !== undefined ? [firstResult as T] : [];
-
-      for (let i = 1; i < selections.length; i++) {
-        const selection = selections[i],
-              value = f(i, selection, document) as T | undefined;
-
-        if (value !== undefined) {
-          results.push(value);
-        }
-      }
-
-      return results;
-    } else {
-      if (selections.length === 1) {
-        return context.then(firstResult as Thenable<T | undefined>, (result) => {
-          return result !== undefined ? [result] : [];
-        });
-      }
-
-      const promises = [firstResult as Thenable<T | undefined>];
-
-      for (let i = 1; i < selections.length; i++) {
-        const selection = selections[i],
-              promise = f(i, selection, document) as Thenable<T | undefined>;
-
-        promises.push(promise);
-      }
-
-      return context.then(Promise.all(promises), (results) => {
-        const filteredResults = [];
-
-        for (let i = 0; i < results.length; i++) {
-          const result = results[i];
-
-          if (result !== undefined) {
-            filteredResults.push(result);
-          }
-        }
-
-        return filteredResults;
+    return results;
+  } else {
+    if (selections.length === 1) {
+      return context.then(firstResult as Thenable<T | undefined>, (result) => {
+        return result !== undefined ? [result] : [];
       });
     }
+
+    const promises = [firstResult as Thenable<T | undefined>];
+
+    for (let i = 1; i < selections.length; i++) {
+      const selection = selections[i],
+            promise = f(i, selection, document) as Thenable<T | undefined>;
+
+      promises.push(promise);
+    }
+
+    return context.then(Promise.all(promises), (results) => {
+      const filteredResults = [];
+
+      for (let i = 0; i < results.length; i++) {
+        const result = results[i];
+
+        if (result !== undefined) {
+          filteredResults.push(result);
+        }
+      }
+
+      return filteredResults;
+    });
+  }
+}
+
+export declare namespace mapByIndex {
+  /**
+   * A mapper function passed to {@link mapByIndex}.
+   */
+  export interface Mapper<T> {
+    (index: number, selection: vscode.Selection, document: vscode.TextDocument): T | undefined;
   }
 }
 
@@ -509,80 +513,88 @@ function mapFallbackSelections(values: (vscode.Selection | readonly [vscode.Sele
   return [];
 }
 
-export namespace update {
-  /**
-   * Sets the selections of the current editor after transforming them according
-   * to the given function.
-   */
-  export function byIndex(
-    f: map.ByIndexMapper<vscode.Selection | undefined>,
-    context?: Context,
-  ): vscode.Selection[];
+/**
+ * Sets the selections of the current editor after transforming them according
+ * to the given function.
+ */
+export function updateByIndex(
+  f: mapByIndex.Mapper<vscode.Selection | undefined>,
+  context?: Context,
+): vscode.Selection[];
 
-  /**
-   * Sets the selections of the current editor after transforming them according
-   * to the given async function.
-   */
-  export function byIndex(
-    f: map.ByIndexMapper<Thenable<vscode.Selection | undefined>>,
-    context?: Context,
-  ): Thenable<vscode.Selection[]>;
+/**
+ * Sets the selections of the current editor after transforming them according
+ * to the given async function.
+ */
+export function updateByIndex(
+  f: mapByIndex.Mapper<Thenable<vscode.Selection | undefined>>,
+  context?: Context,
+): Thenable<vscode.Selection[]>;
 
-  export function byIndex(
-    f: map.ByIndexMapper<vscode.Selection | undefined>
-     | map.ByIndexMapper<Thenable<vscode.Selection | undefined>>,
-    context?: Context,
-  ): any {
-    const selections = map.byIndex(f as any, context?.selections);
+export function updateByIndex(
+  f: mapByIndex.Mapper<vscode.Selection | undefined>
+   | mapByIndex.Mapper<Thenable<vscode.Selection | undefined>>,
+  context?: Context,
+): any {
+  const selections = mapByIndex(f as any, context?.selections);
 
-    if (Array.isArray(selections)) {
-      return set(selections, context);
-    }
-
-    return (selections as Thenable<vscode.Selection[]>).then((xs) => set(xs, context));
+  if (Array.isArray(selections)) {
+    return set(selections, context);
   }
 
+  return (selections as Thenable<vscode.Selection[]>).then((xs) => set(xs, context));
+}
+
+/**
+ * Same as {@link update}, but additionally lets `f` return a fallback
+ * selection. If no selection remains after the end of the update, fallback
+ * selections will be used instead.
+ */
+export function updateWithFallback<T extends updateWithFallback.SelectionOrFallback
+                                           | Thenable<updateWithFallback.SelectionOrFallback>>(
+  f: map.Mapper<T>,
+): T extends Thenable<updateWithFallback.SelectionOrFallback>
+    ? Thenable<vscode.Selection[]>
+    : vscode.Selection[] {
+  const selections = map(f as any);
+
+  if (Array.isArray(selections)) {
+    return set(mapFallbackSelections(selections)) as any;
+  }
+
+  return (selections as Thenable<(vscode.Selection | readonly [vscode.Selection])[]>)
+    .then((values) => set(mapFallbackSelections(values))) as any;
+}
+
+export declare namespace updateWithFallback {
   /**
-   * A possible return value for a function passed to `withFallback`. An
-   * array with a single selection corresponds to a fallback selection.
+   * A possible return value for a function passed to
+   * {@link updateWithFallback}. An array with a single selection corresponds to
+   * a fallback selection.
    */
   export type SelectionOrFallback = vscode.Selection | readonly [vscode.Selection] | undefined;
+}
 
-  /**
-   * Same as `updateSelections`, but additionally lets `f` return a fallback
-   * selection. If no selection remains after the end of the update, fallback
-   * selections will be used instead.
-   */
-  export function withFallback<T extends SelectionOrFallback | Thenable<SelectionOrFallback>>(
-    f: map.Mapper<T>,
-  ): T extends Thenable<SelectionOrFallback> ? Thenable<vscode.Selection[]> : vscode.Selection[] {
-    const selections = map(f as any);
+/**
+ * Same as {@link updateWithFallback}, but does not pass the text of each
+ * selection.
+ */
+export function updateWithFallbackByIndex<
+  T extends updateWithFallback.SelectionOrFallback
+          | Thenable<updateWithFallback.SelectionOrFallback>
+>(
+  f: mapByIndex.Mapper<T>,
+): T extends Thenable<updateWithFallback.SelectionOrFallback>
+    ? Thenable<vscode.Selection[]>
+    : vscode.Selection[] {
+  const selections = mapByIndex(f as any);
 
-    if (Array.isArray(selections)) {
-      return set(mapFallbackSelections(selections)) as any;
-    }
-
-    return (selections as Thenable<(vscode.Selection | readonly [vscode.Selection])[]>)
-      .then((values) => set(mapFallbackSelections(values))) as any;
+  if (Array.isArray(selections)) {
+    return set(mapFallbackSelections(selections)) as any;
   }
 
-  export namespace withFallback {
-    /**
-     * Same as `withFallback`, but does not pass the text of each selection.
-     */
-    export function byIndex<T extends SelectionOrFallback | Thenable<SelectionOrFallback>>(
-      f: map.ByIndexMapper<T>,
-    ): T extends Thenable<SelectionOrFallback> ? Thenable<vscode.Selection[]> : vscode.Selection[] {
-      const selections = map.byIndex(f as any);
-
-      if (Array.isArray(selections)) {
-        return set(mapFallbackSelections(selections)) as any;
-      }
-
-      return (selections as Thenable<(vscode.Selection | readonly [vscode.Selection])[]>)
-        .then((values) => set(mapFallbackSelections(values))) as any;
-    }
-  }
+  return (selections as Thenable<(vscode.Selection | readonly [vscode.Selection])[]>)
+    .then((values) => set(mapFallbackSelections(values))) as any;
 }
 
 /**

@@ -164,7 +164,7 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
   }
 }
 
-export namespace CommandDescriptor {
+export declare namespace CommandDescriptor {
   /**
    * Flags describing the behavior of some commands.
    */

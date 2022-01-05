@@ -4,11 +4,14 @@ import { Context } from "../context";
 import * as Positions from "../positions";
 import { Direction } from "../types";
 
+let didReachDocumentEdge = false;
+
 /**
  * Moves the given position towards the given direction as long as the given
  * function returns a non-`undefined` value.
  *
- * @see moveWhile.backward,takeWhile.forward
+ * @see {@link moveWithBackward}
+ * @see {@link moveWithForward}
  */
 export function moveWith<T>(
   direction: Direction,
@@ -18,254 +21,256 @@ export function moveWith<T>(
   document?: vscode.TextDocument,
 ): vscode.Position {
   return direction === Direction.Backward
-    ? moveWith.backward(reduce, startState, origin, document)
-    : moveWith.forward(reduce, startState, origin, document);
+    ? moveWithBackward(reduce, startState, origin, document)
+    : moveWithForward(reduce, startState, origin, document);
 }
 
-export namespace moveWith {
+export declare namespace moveWith {
   /**
-   * A reduce function passed to `moveWith`.
+   * A reduce function passed to {@link moveWith}.
    */
   export interface Reduce<T> {
     (character: string, state: T): T | undefined;
   }
+}
 
-  /**
-   * Whether the last call to `moveWith` (and variants) reached the edge of the
-   * document.
-   */
-  export declare const reachedDocumentEdge: boolean;
+/**
+ * Whether the last call to {@link moveWith} (and variants) reached the edge of
+ * the document.
+ */
+export function moveWithReachedDocumentEdge() {
+  return didReachDocumentEdge;
+}
 
-  /**
-   * Moves the given position backward as long as the state returned by the
-   * given function is not `undefined`.
-   *
-   * ### Example
-   *
-   * ```js
-   * assert.deepStrictEqual(
-   *   moveWith.backward((c, i) => +c === +i - 1 ? c : undefined,
-   *                     "8", new vscode.Position(0, 8)),
-   *   new vscode.Position(0, 7),
-   * );
-   * ```
-   *
-   * With:
-   * ```
-   * 1234578
-   * ```
-   */
-  export function backward<T>(
-    reduce: Reduce<T>,
-    startState: T,
-    origin: vscode.Position,
-    document = Context.current.document,
-  ) {
-    didReachDocumentEdge = false;
+/**
+ * Moves the given position backward as long as the state returned by the
+ * given function is not `undefined`.
+ *
+ * ### Example
+ *
+ * ```js
+ * // Go backward as long as the previous character is equal to the current
+ * // character minus one.
+ * assert.deepStrictEqual(
+ *   moveWithBackward((c, i) => +c === i - 1 ? +c : undefined,
+ *                    9, new vscode.Position(0, 7)),
+ *   new vscode.Position(0, 5),
+ * );
+ * ```
+ *
+ * With:
+ * ```
+ * 1234578
+ * ```
+ */
+export function moveWithBackward<T>(
+  reduce: moveWith.Reduce<T>,
+  startState: T,
+  origin: vscode.Position,
+  document = Context.current.document,
+) {
+  didReachDocumentEdge = false;
 
-    const currentLineText = document.lineAt(origin).text;
-    let state: T | undefined = startState;
+  const currentLineText = document.lineAt(origin).text;
+  let state: T | undefined = startState;
 
-    for (let i = origin.character - 1; i >= 0; i--) {
-      if ((state = reduce(currentLineText[i], state)) === undefined) {
-        return new vscode.Position(origin.line, i + 1);
-      }
+  for (let i = origin.character - 1; i >= 0; i--) {
+    if ((state = reduce(currentLineText[i], state)) === undefined) {
+      return new vscode.Position(origin.line, i + 1);
     }
-
-    for (let line = origin.line - 1; line >= 0; line--) {
-      const lineText = document.lineAt(line).text;
-
-      if ((state = reduce("\n", state)) === undefined) {
-        return new vscode.Position(line + 1, 0);
-      }
-
-      for (let i = lineText.length - 1; i >= 0; i--) {
-        if ((state = reduce(lineText[i], state)) === undefined) {
-          return new vscode.Position(line, i + 1);
-        }
-      }
-    }
-
-    didReachDocumentEdge = true;
-
-    return new vscode.Position(0, 0);
   }
 
-  /**
-   * Moves the given position forward as long as the state returned by the given
-   * function is not `undefined`.
-   *
-   * ### Example
-   *
-   * ```js
-   * assert.deepStrictEqual(
-   *   moveWith.forward((c, i) => +c === +i + 1 ? c : undefined,
-   *                    "1", new vscode.Position(0, 8)),
-   *   new vscode.Position(0, 7),
-   * );
-   * ```
-   *
-   * With:
-   * ```
-   * 1234578
-   * ```
-   */
-  export function forward<T>(
-    reduce: Reduce<T>,
-    startState: T,
-    origin: vscode.Position,
-    document = Context.current.document,
-  ) {
-    didReachDocumentEdge = false;
+  for (let line = origin.line - 1; line >= 0; line--) {
+    const lineText = document.lineAt(line).text;
 
-    const currentLineText = document.lineAt(origin).text;
-    let state: T | undefined = startState;
+    if ((state = reduce("\n", state)) === undefined) {
+      return new vscode.Position(line + 1, 0);
+    }
 
-    for (let i = origin.character; i < currentLineText.length; i++) {
-      if ((state = reduce(currentLineText[i], state)) === undefined) {
-        return new vscode.Position(origin.line, i);
+    for (let i = lineText.length - 1; i >= 0; i--) {
+      if ((state = reduce(lineText[i], state)) === undefined) {
+        return new vscode.Position(line, i + 1);
+      }
+    }
+  }
+
+  didReachDocumentEdge = true;
+
+  return new vscode.Position(0, 0);
+}
+
+/**
+ * Moves the given position forward as long as the state returned by the given
+ * function is not `undefined`.
+ *
+ * ### Example
+ *
+ * ```js
+ * assert.deepStrictEqual(
+ *   moveWithForward((c, i) => +c === i + 1 ? +c : undefined,
+ *                   0, new vscode.Position(0, 0)),
+ *   new vscode.Position(0, 5),
+ * );
+ * ```
+ *
+ * With:
+ * ```
+ * 1234578
+ * ```
+ */
+export function moveWithForward<T>(
+  reduce: moveWith.Reduce<T>,
+  startState: T,
+  origin: vscode.Position,
+  document = Context.current.document,
+) {
+  didReachDocumentEdge = false;
+
+  const currentLineText = document.lineAt(origin).text;
+  let state: T | undefined = startState;
+
+  for (let i = origin.character; i < currentLineText.length; i++) {
+    if ((state = reduce(currentLineText[i], state)) === undefined) {
+      return new vscode.Position(origin.line, i);
+    }
+  }
+
+  if ((state = reduce("\n", state)) === undefined) {
+    return new vscode.Position(origin.line, currentLineText.length);
+  }
+
+  for (let line = origin.line + 1; line < document.lineCount; line++) {
+    const lineText = document.lineAt(line).text;
+
+    for (let i = 0; i < lineText.length; i++) {
+      if ((state = reduce(lineText[i], state)) === undefined) {
+        return new vscode.Position(line, i);
       }
     }
 
     if ((state = reduce("\n", state)) === undefined) {
-      return new vscode.Position(origin.line, currentLineText.length);
+      return new vscode.Position(line, lineText.length);
     }
-
-    for (let line = origin.line + 1; line < document.lineCount; line++) {
-      const lineText = document.lineAt(line).text;
-
-      for (let i = 0; i < lineText.length; i++) {
-        if ((state = reduce(lineText[i], state)) === undefined) {
-          return new vscode.Position(line, i);
-        }
-      }
-
-      if ((state = reduce("\n", state)) === undefined) {
-        return new vscode.Position(line, lineText.length);
-      }
-    }
-
-    didReachDocumentEdge = true;
-
-    return document.lineAt(document.lineCount - 1).range.end;
   }
 
+  didReachDocumentEdge = true;
+
+  return document.lineAt(document.lineCount - 1).range.end;
+}
+
+/**
+ * Same as {@link moveWith}, but using raw char codes.
+ *
+ * @see {@link moveWithByCharCodeBackward}
+ * @see {@link moveWithByCharCodeForward}
+ */
+export function moveWithByCharCode<T>(
+  direction: Direction,
+  reduce: moveWithByCharCode.Reduce<T>,
+  startState: T,
+  origin: vscode.Position,
+  document?: vscode.TextDocument,
+): vscode.Position {
+  return direction === Direction.Backward
+    ? moveWithByCharCodeBackward(reduce, startState, origin, document)
+    : moveWithByCharCodeForward(reduce, startState, origin, document);
+}
+
+export declare namespace moveWithByCharCode {
   /**
-   * Same as `moveWith`, but using raw char codes.
-   *
-   * @see moveWith,byCharCode.backward,byCharCode.forward
+   * A reduce function passed to {@link moveWithByCharCode}.
    */
-  export function byCharCode<T>(
-    direction: Direction,
-    reduce: byCharCode.Reduce<T>,
-    startState: T,
-    origin: vscode.Position,
-    document?: vscode.TextDocument,
-  ): vscode.Position {
-    return direction === Direction.Backward
-      ? byCharCode.backward(reduce, startState, origin, document)
-      : byCharCode.forward(reduce, startState, origin, document);
+  export interface Reduce<T> {
+    (charCode: number, state: T): T | undefined;
+  }
+}
+
+/**
+ * Same as {@link moveWithBackward}, but using raw char codes.
+ */
+export function moveWithByCharCodeBackward<T>(
+  reduce: moveWithByCharCode.Reduce<T>,
+  startState: T,
+  origin: vscode.Position,
+  document = Context.current.document,
+) {
+  didReachDocumentEdge = false;
+
+  const currentLineText = document.lineAt(origin).text;
+  let state: T | undefined = startState;
+
+  for (let i = origin.character - 1; i >= 0; i--) {
+    if ((state = reduce(currentLineText.charCodeAt(i), state)) === undefined) {
+      return new vscode.Position(origin.line, i + 1);
+    }
   }
 
-  export namespace byCharCode {
-    /**
-     * A reduce function passed to `moveWith.byCharCode`.
-     */
-    export interface Reduce<T> {
-      (charCode: number, state: T): T | undefined;
+  for (let line = origin.line - 1; line >= 0; line--) {
+    const lineText = document.lineAt(line).text;
+
+    if ((state = reduce(10 /* \n */, state)) === undefined) {
+      return new vscode.Position(line + 1, 0);
     }
 
-    /**
-     * Same as `moveWith.backward`, but using raw char codes.
-     *
-     * @see moveWith.backward
-     */
-    export function backward<T>(
-      reduce: Reduce<T>,
-      startState: T,
-      origin: vscode.Position,
-      document = Context.current.document,
-    ) {
-      didReachDocumentEdge = false;
-
-      const currentLineText = document.lineAt(origin).text;
-      let state: T | undefined = startState;
-
-      for (let i = origin.character - 1; i >= 0; i--) {
-        if ((state = reduce(currentLineText.charCodeAt(i), state)) === undefined) {
-          return new vscode.Position(origin.line, i + 1);
-        }
+    for (let i = lineText.length - 1; i >= 0; i--) {
+      if ((state = reduce(lineText.charCodeAt(i), state)) === undefined) {
+        return new vscode.Position(line, i + 1);
       }
-
-      for (let line = origin.line - 1; line >= 0; line--) {
-        const lineText = document.lineAt(line).text;
-
-        if ((state = reduce(10 /* \n */, state)) === undefined) {
-          return new vscode.Position(line + 1, 0);
-        }
-
-        for (let i = lineText.length - 1; i >= 0; i--) {
-          if ((state = reduce(lineText.charCodeAt(i), state)) === undefined) {
-            return new vscode.Position(line, i + 1);
-          }
-        }
-      }
-
-      didReachDocumentEdge = true;
-      return new vscode.Position(0, 0);
-    }
-
-    /**
-     * Same as `moveWith.forward`, but using raw char codes.
-     *
-     * @see moveWith.forward
-     */
-    export function forward<T>(
-      reduce: Reduce<T>,
-      startState: T,
-      origin: vscode.Position,
-      document = Context.current.document,
-    ) {
-      didReachDocumentEdge = false;
-
-      const currentLineText = document.lineAt(origin).text;
-      let state: T | undefined = startState;
-
-      for (let i = origin.character; i < currentLineText.length; i++) {
-        if ((state = reduce(currentLineText.charCodeAt(i), state)) === undefined) {
-          return new vscode.Position(origin.line, i);
-        }
-      }
-
-      if ((state = reduce(10 /* \n */, state)) === undefined) {
-        return new vscode.Position(origin.line, currentLineText.length);
-      }
-
-      for (let line = origin.line + 1; line < document.lineCount; line++) {
-        const lineText = document.lineAt(line).text;
-
-        for (let i = 0; i < lineText.length; i++) {
-          if ((state = reduce(lineText.charCodeAt(i), state)) === undefined) {
-            return new vscode.Position(line, i);
-          }
-        }
-
-        if ((state = reduce(10 /* \n */, state)) === undefined) {
-          return new vscode.Position(line, lineText.length);
-        }
-      }
-
-      didReachDocumentEdge = true;
-      return document.lineAt(document.lineCount - 1).range.end;
     }
   }
+
+  didReachDocumentEdge = true;
+  return new vscode.Position(0, 0);
+}
+
+/**
+ * Same as {@link moveWithForward}, but using raw char codes.
+ */
+export function moveWithByCharCodeForward<T>(
+  reduce: moveWithByCharCode.Reduce<T>,
+  startState: T,
+  origin: vscode.Position,
+  document = Context.current.document,
+) {
+  didReachDocumentEdge = false;
+
+  const currentLineText = document.lineAt(origin).text;
+  let state: T | undefined = startState;
+
+  for (let i = origin.character; i < currentLineText.length; i++) {
+    if ((state = reduce(currentLineText.charCodeAt(i), state)) === undefined) {
+      return new vscode.Position(origin.line, i);
+    }
+  }
+
+  if ((state = reduce(10 /* \n */, state)) === undefined) {
+    return new vscode.Position(origin.line, currentLineText.length);
+  }
+
+  for (let line = origin.line + 1; line < document.lineCount; line++) {
+    const lineText = document.lineAt(line).text;
+
+    for (let i = 0; i < lineText.length; i++) {
+      if ((state = reduce(lineText.charCodeAt(i), state)) === undefined) {
+        return new vscode.Position(line, i);
+      }
+    }
+
+    if ((state = reduce(10 /* \n */, state)) === undefined) {
+      return new vscode.Position(line, lineText.length);
+    }
+  }
+
+  didReachDocumentEdge = true;
+  return document.lineAt(document.lineCount - 1).range.end;
 }
 
 /**
  * Moves the given position towards the given direction as long as the given
  * predicate is true.
  *
- * @see moveWhile.backward,takeWhile.forward
+ * @see {@link moveWhileBackward}
+ * @see {@link moveWhileForward}
  */
 export function moveWhile(
   direction: Direction,
@@ -274,154 +279,153 @@ export function moveWhile(
   document?: vscode.TextDocument,
 ): vscode.Position {
   return direction === Direction.Backward
-    ? moveWhile.backward(predicate, origin, document)
-    : moveWhile.forward(predicate, origin, document);
+    ? moveWhileBackward(predicate, origin, document)
+    : moveWhileForward(predicate, origin, document);
 }
 
-export namespace moveWhile {
+export declare namespace moveWhile {
   /**
-   * A predicate passed to `moveWhile`.
+   * A predicate passed to {@link moveWhile}.
    */
   export interface Predicate {
     (character: string): boolean;
   }
+}
 
+/**
+ * Whether the last call to {@link moveWhile} (and variants) reached the edge of
+ * the document.
+ */
+export function moveWhileReachedDocumentEdge() {
+  return didReachDocumentEdge;
+}
+
+/**
+ * Moves the given position backward as long as the given predicate is true.
+ *
+ * ### Example
+ *
+ * ```js
+ * assert.deepStrictEqual(
+ *   moveWhileBackward((c) => /\w/.test(c), new vscode.Position(0, 3)),
+ *   new vscode.Position(0, 0),
+ * );
+ *
+ * assert.deepStrictEqual(
+ *   moveWhileBackward((c) => c === "c", new vscode.Position(0, 3)),
+ *   new vscode.Position(0, 2),
+ * );
+ *
+ * assert.deepStrictEqual(
+ *   moveWhileBackward((c) => c === "b", new vscode.Position(0, 3)),
+ *   new vscode.Position(0, 3),
+ * );
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ * ```
+ */
+export function moveWhileBackward(
+  predicate: moveWhile.Predicate,
+  origin: vscode.Position,
+  document?: vscode.TextDocument,
+): vscode.Position {
+  return moveWithBackward((ch) => predicate(ch) ? null : undefined, null, origin, document);
+}
+
+/**
+ * Moves the given position forward as long as the given predicate is true.
+ *
+ * ### Example
+ *
+ * ```js
+ * assert.deepStrictEqual(
+ *   moveWhileForward((c) => /\w/.test(c), new vscode.Position(0, 0)),
+ *   new vscode.Position(0, 3),
+ * );
+ *
+ * assert.deepStrictEqual(
+ *   moveWhileForward((c) => c === "a", new vscode.Position(0, 0)),
+ *   new vscode.Position(0, 1),
+ * );
+ *
+ * assert.deepStrictEqual(
+ *   moveWhileForward((c) => c === "b", new vscode.Position(0, 0)),
+ *   new vscode.Position(0, 0),
+ * );
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ * ```
+ */
+export function moveWhileForward(
+  predicate: moveWhile.Predicate,
+  origin: vscode.Position,
+  document?: vscode.TextDocument,
+): vscode.Position {
+  return moveWithForward((ch) => predicate(ch) ? null : undefined, null, origin, document);
+}
+
+/**
+ * Same as {@link moveWhile}, but using raw char codes.
+ *
+ * @see {@link moveWhileByCharCodeBackward}
+ * @see {@link moveWhileByCharCodeForward}
+ */
+export function moveWhileByCharCode(
+  direction: Direction,
+  predicate: moveWhileByCharCode.Predicate,
+  origin: vscode.Position,
+  document?: vscode.TextDocument,
+): vscode.Position {
+  return direction === Direction.Backward
+    ? moveWhileByCharCodeBackward(predicate, origin, document)
+    : moveWhileByCharCodeForward(predicate, origin, document);
+}
+
+export declare namespace moveWhileByCharCode {
   /**
-   * Whether the last call to `moveWhile` (and variants) reached the edge of the
-   * document.
+   * A predicate passed to {@link moveWhileByCharCode}.
    */
-  export declare const reachedDocumentEdge: boolean;
-
-  /**
-   * Moves the given position backward as long as the given predicate is true.
-   *
-   * ### Example
-   *
-   * ```js
-   * assert.deepStrictEqual(
-   *   moveWhile.backward((c) => /\w/.test(c), new vscode.Position(0, 3)),
-   *   new vscode.Position(0, 0),
-   * );
-   *
-   * assert.deepStrictEqual(
-   *   moveWhile.backward((c) => c === "c", new vscode.Position(0, 3)),
-   *   new vscode.Position(0, 2),
-   * );
-   *
-   * assert.deepStrictEqual(
-   *   moveWhile.backward((c) => c === "b", new vscode.Position(0, 3)),
-   *   new vscode.Position(0, 3),
-   * );
-   * ```
-   *
-   * With:
-   * ```
-   * abc
-   * ```
-   */
-  export function backward(
-    predicate: Predicate,
-    origin: vscode.Position,
-    document?: vscode.TextDocument,
-  ): vscode.Position {
-    return moveWith.backward((ch) => predicate(ch) ? null : undefined, null, origin, document);
+  export interface Predicate {
+    (charCode: number): boolean;
   }
+}
 
-  /**
-   * Moves the given position forward as long as the given predicate is true.
-   *
-   * ### Example
-   *
-   * ```js
-   * assert.deepStrictEqual(
-   *   moveWhile.forward((c) => /\w/.test(c), new vscode.Position(0, 0)),
-   *   new vscode.Position(0, 3),
-   * );
-   *
-   * assert.deepStrictEqual(
-   *   moveWhile.forward((c) => c === "a", new vscode.Position(0, 0)),
-   *   new vscode.Position(0, 1),
-   * );
-   *
-   * assert.deepStrictEqual(
-   *   moveWhile.forward((c) => c === "b", new vscode.Position(0, 0)),
-   *   new vscode.Position(0, 0),
-   * );
-   * ```
-   *
-   * With:
-   * ```
-   * abc
-   * ```
-   */
-  export function forward(
-    predicate: Predicate,
-    origin: vscode.Position,
-    document?: vscode.TextDocument,
-  ): vscode.Position {
-    return moveWith.forward((ch) => predicate(ch) ? null : undefined, null, origin, document);
-  }
+/**
+ * Same as {@link moveWhileBackward}, but using raw char codes.
+ */
+export function moveWhileByCharCodeBackward(
+  predicate: moveWhileByCharCode.Predicate,
+  origin: vscode.Position,
+  document?: vscode.TextDocument,
+): vscode.Position {
+  return moveWithByCharCodeBackward(
+    (ch) => predicate(ch) ? null : undefined,
+    null,
+    origin,
+    document,
+  );
+}
 
-  /**
-   * Same as `moveWith`, but using raw char codes.
-   *
-   * @see moveWith,byCharCode.backward,byCharCode.forward
-   */
-  export function byCharCode(
-    direction: Direction,
-    predicate: byCharCode.Predicate,
-    origin: vscode.Position,
-    document?: vscode.TextDocument,
-  ): vscode.Position {
-    return direction === Direction.Backward
-      ? byCharCode.backward(predicate, origin, document)
-      : byCharCode.forward(predicate, origin, document);
-  }
-
-  export namespace byCharCode {
-    /**
-     * A predicate passed to `moveWhile.byCharCode`.
-     */
-    export interface Predicate {
-      (charCode: number): boolean;
-    }
-
-    /**
-     * Same as `moveWhile.backward`, but using raw char codes.
-     *
-     * @see moveWhile.backward
-     */
-    export function backward(
-      predicate: Predicate,
-      origin: vscode.Position,
-      document?: vscode.TextDocument,
-    ): vscode.Position {
-      return moveWith.byCharCode.backward(
-        (ch) => predicate(ch) ? null : undefined,
-        null,
-        origin,
-        document,
-      );
-    }
-
-    /**
-     * Same as `moveWhile.forward`, but using raw char codes.
-     *
-     * @see moveWhile.forward
-     */
-    export function forward(
-      predicate: Predicate,
-      origin: vscode.Position,
-      document?: vscode.TextDocument,
-    ): vscode.Position {
-      return moveWith.byCharCode.forward(
-        (ch) => predicate(ch) ? null : undefined,
-        null,
-        origin,
-        document,
-      );
-    }
-  }
+/**
+ * Same as {@link moveWhileForward}, but using raw char codes.
+ */
+export function moveWhileByCharCodeForward(
+  predicate: moveWhileByCharCode.Predicate,
+  origin: vscode.Position,
+  document?: vscode.TextDocument,
+): vscode.Position {
+  return moveWithByCharCodeForward(
+    (ch) => predicate(ch) ? null : undefined,
+    null,
+    origin,
+    document,
+  );
 }
 
 /**
@@ -429,7 +433,8 @@ export namespace moveWhile {
  * the given function returns `undefined`, and returns the first non-`undefined`
  * value it returns or `undefined` if the edge of the document is reached.
  *
- * @see lineByLine.backward,lineByLine.forward
+ * @see {@link lineByLineBackward}
+ * @see {@link lineByLineForward}
  */
 export function lineByLine<T>(
   direction: Direction,
@@ -438,91 +443,93 @@ export function lineByLine<T>(
   document?: vscode.TextDocument,
 ) {
   return direction === Direction.Backward
-    ? lineByLine.backward(seek, origin, document)
-    : lineByLine.forward(seek, origin, document);
+    ? lineByLineBackward(seek, origin, document)
+    : lineByLineForward(seek, origin, document);
 }
 
-export namespace lineByLine {
+export declare namespace lineByLine {
   /**
-   * A reduce function passed to `lineByLine`.
+   * A reduce function passed to {@link lineByLine}.
    */
   export interface Seek<T> {
     (lineText: string, lineStart: vscode.Position): T | undefined;
   }
+}
 
-  /**
-   * Whether the last call to `lineByLine` (and variants) reached the edge of
-   * the document.
-   */
-  export declare const reachedDocumentEdge: boolean;
+/**
+ * Whether the last call to {@link lineByLine} (and variants) reached the edge of
+ * the document.
+ */
+export function lineByLineReachedDocumentEdge() {
+  return didReachDocumentEdge;
+}
 
-  /**
-   * Moves the given position backward line-by-line as long as the given
-   * function returns `undefined`, and returns the first non-`undefined`
-   * value it returns or `undefined` if the start of the document is reached.
-   */
-  export function backward<T>(
-    seek: Seek<T>,
-    origin: vscode.Position,
-    document = Context.current.document,
-  ) {
-    didReachDocumentEdge = false;
+/**
+ * Moves the given position backward line-by-line as long as the given
+ * function returns `undefined`, and returns the first non-`undefined`
+ * value it returns or `undefined` if the start of the document is reached.
+ */
+export function lineByLineBackward<T>(
+  seek: lineByLine.Seek<T>,
+  origin: vscode.Position,
+  document = Context.current.document,
+) {
+  didReachDocumentEdge = false;
 
-    const originLine = document.lineAt(origin),
-          originLineText = originLine.text.slice(0, origin.character),
-          originResult = seek(originLineText, Positions.lineStart(origin.line));
+  const originLine = document.lineAt(origin),
+        originLineText = originLine.text.slice(0, origin.character),
+        originResult = seek(originLineText, Positions.lineStart(origin.line));
 
-    if (originResult !== undefined) {
-      return originResult;
-    }
-
-    for (let line = origin.line - 1; line >= 0; line--) {
-      const lineText = document.lineAt(line).text,
-            result = seek(lineText, Positions.lineStart(line));
-
-      if (result !== undefined) {
-        return result;
-      }
-    }
-
-    didReachDocumentEdge = true;
-
-    return undefined;
+  if (originResult !== undefined) {
+    return originResult;
   }
 
-  /**
-   * Moves the given position forward line-by-line as long as the given
-   * function returns `undefined`, and returns the first non-`undefined`
-   * value it returns or `undefined` if the end of the document is reached.
-   */
-  export function forward<T>(
-    seek: Seek<T>,
-    origin: vscode.Position,
-    document = Context.current.document,
-  ) {
-    didReachDocumentEdge = false;
+  for (let line = origin.line - 1; line >= 0; line--) {
+    const lineText = document.lineAt(line).text,
+          result = seek(lineText, Positions.lineStart(line));
 
-    const originLine = document.lineAt(origin),
-          originLineText = originLine.text.slice(origin.character),
-          originResult = seek(originLineText, origin);
-
-    if (originResult !== undefined) {
-      return originResult;
+    if (result !== undefined) {
+      return result;
     }
-
-    for (let line = origin.line + 1, lineCount = document.lineCount; line < lineCount; line++) {
-      const lineText = document.lineAt(line).text,
-            result = seek(lineText, Positions.lineStart(line));
-
-      if (result !== undefined) {
-        return result;
-      }
-    }
-
-    didReachDocumentEdge = true;
-
-    return undefined;
   }
+
+  didReachDocumentEdge = true;
+
+  return undefined;
+}
+
+/**
+ * Moves the given position forward line-by-line as long as the given
+ * function returns `undefined`, and returns the first non-`undefined`
+ * value it returns or `undefined` if the end of the document is reached.
+ */
+export function lineByLineForward<T>(
+  seek: lineByLine.Seek<T>,
+  origin: vscode.Position,
+  document = Context.current.document,
+) {
+  didReachDocumentEdge = false;
+
+  const originLine = document.lineAt(origin),
+        originLineText = originLine.text.slice(origin.character),
+        originResult = seek(originLineText, origin);
+
+  if (originResult !== undefined) {
+    return originResult;
+  }
+
+  for (let line = origin.line + 1, lineCount = document.lineCount; line < lineCount; line++) {
+    const lineText = document.lineAt(line).text,
+          result = seek(lineText, Positions.lineStart(line));
+
+    if (result !== undefined) {
+      return result;
+    }
+  }
+
+  didReachDocumentEdge = true;
+
+  return undefined;
 }
 
 /**
@@ -557,46 +564,30 @@ export function skipEmptyLines(
   return Positions.edge(direction, document);
 }
 
-export namespace skipEmptyLines {
-  /**
-   * Whether the last call to `skipEmptyLines` (and variants) reached the edge
-   * of the document.
-   */
-  export declare const reachedDocumentEdge: boolean;
-
-  /**
-   * Same as `skipEmptyLines` with a `Backward` direction.
-   *
-   * @see skipEmptyLines
-   */
-  export function backward(origin: number | vscode.Position, document?: vscode.TextDocument) {
-    return skipEmptyLines(Direction.Backward, origin, document);
-  }
-
-  /**
-   * Same as `skipEmptyLines` with a `Forward` direction.
-   *
-   * @see skipEmptyLines
-   */
-  export function forward(origin: number | vscode.Position, document?: vscode.TextDocument) {
-    return skipEmptyLines(Direction.Forward, origin, document);
-  }
+/**
+ * Returns whether the last call to {@link skipEmptyLines} (and variants)
+ * reached the edge of the document.
+ */
+export function skipEmptyLinesReachedDocumentEdge() {
+  return didReachDocumentEdge;
 }
 
-let didReachDocumentEdge = false;
-const getReachedDocumentEdge = {
-  get() {
-    return didReachDocumentEdge;
-  },
-};
+/**
+ * Same as {@link skipEmptyLines} with a `Backward` direction.
+ */
+export function skipEmptyLinesBackward(
+  origin: number | vscode.Position,
+  document?: vscode.TextDocument,
+) {
+  return skipEmptyLines(Direction.Backward, origin, document);
+}
 
-for (const obj of [
-  lineByLine,
-  moveWhile,
-  moveWhile.byCharCode,
-  moveWith,
-  moveWith.byCharCode,
-  skipEmptyLines,
-]) {
-  Object.defineProperty(obj, "reachedDocumentEdge", getReachedDocumentEdge);
+/**
+ * Same as {@link skipEmptyLines} with a `Forward` direction.
+ */
+export function skipEmptyLinesForward(
+  origin: number | vscode.Position,
+  document?: vscode.TextDocument,
+) {
+  return skipEmptyLines(Direction.Forward, origin, document);
 }

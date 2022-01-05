@@ -159,7 +159,7 @@ export class CancellationError extends Error {
   }
 }
 
-export namespace CancellationError {
+export declare namespace CancellationError {
   export const enum Reason {
     CancellationToken = "cancellation token was used",
     PressedEscape = "user pressed <escape>",

@@ -487,8 +487,8 @@ export class PerEditorState implements vscode.Disposable {
   }
 }
 
-export namespace PerEditorState {
-  export declare class Token<T> {
+export declare namespace PerEditorState {
+  export class Token<T> {
     private can_never_implement_this: never;
   }
 }

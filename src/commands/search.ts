@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument, Input, RegisterOr, SetInput } from ".";
-import { search as apiSearch, Context, Direction, EmptySelectionsError, Positions, prompt, Selections, Shift } from "../api";
+import { search as apiSearch, Context, Direction, EmptySelectionsError, manipulateSelectionsInteractively, Positions, promptRegexpOpts, Selections, Shift } from "../api";
 import type { Register } from "../state/registers";
 import { CharSet, getCharSetFunction } from "../utils/charset";
 import { escapeForRegExp } from "../utils/regexp";
@@ -35,8 +35,8 @@ export async function search(
   input: Input<string | RegExp>,
   setInput: SetInput<RegExp>,
 ) {
-  return prompt.manipulateSelectionsInteractively(_, input, setInput, interactive, {
-    ...prompt.regexpOpts("mu"),
+  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
+    ...promptRegexpOpts("mu"),
     value: (await register.get())?.[0],
   }, (input, selections) => {
     if (typeof input === "string") {
@@ -48,7 +48,7 @@ export async function search(
     const newSelections = add ? selections.slice() : [],
           regexpMatches = [] as RegExpMatchArray[];
 
-    newSelections.push(...Selections.map.byIndex((_i, selection, document) => {
+    newSelections.push(...Selections.mapByIndex((_i, selection, document) => {
       let newSelection = selection;
 
       for (let j = 0; j < repetitions; j++) {

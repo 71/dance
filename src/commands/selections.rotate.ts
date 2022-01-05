@@ -1,5 +1,5 @@
 import type { Argument } from ".";
-import { Context, rotate } from "../api";
+import { Context, rotate, rotateContents, rotateSelections } from "../api";
 
 /**
  * Rotate selection indices and contents.
@@ -39,7 +39,7 @@ export function contents(_: Context, repetitions: number, reverse: Argument<bool
     repetitions = -repetitions;
   }
 
-  return rotate.contentsOnly(repetitions);
+  return rotateContents(repetitions);
 }
 
 /**
@@ -58,5 +58,5 @@ export function selections(_: Context, repetitions: number, reverse: Argument<bo
     repetitions = -repetitions;
   }
 
-  return rotate.selectionsOnly(repetitions);
+  return rotateSelections(repetitions);
 }

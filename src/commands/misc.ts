@@ -1,5 +1,5 @@
 import type { Argument, InputOr, RegisterOr } from ".";
-import { commands as apiCommands, run as apiRun, command, Context, findMenu, keypress, Menu, prompt, showLockedMenu, showMenu, validateMenu } from "../api";
+import { commands as apiCommands, run as apiRun, command, compileFunction, Context, findMenu, keypressForRegister, Menu, notifyPromptActionRequested, prompt, promptNumber, runIsEnabled, showLockedMenu, showMenu, showMenuAfterDelay, validateMenu } from "../api";
 import type { Extension } from "../state/extension";
 import type { Register } from "../state/registers";
 import { ArgumentError, CancellationError, InputError } from "../utils/errors";
@@ -147,7 +147,7 @@ export async function run(
   commands?: Argument<command.Any[]>,
 ) {
   if (Array.isArray(commands)) {
-    if (typeof input === "string" && apiRun.isEnabled()) {
+    if (typeof input === "string" && runIsEnabled()) {
       // Prefer "input" to the "commands" array.
     } else {
       return apiCommands(...commands);
@@ -158,7 +158,7 @@ export async function run(
     prompt: "Code to run",
     validateInput(value) {
       try {
-        apiRun.compileFunction(value);
+        compileFunction(value);
 
         return;
       } catch (e) {
@@ -166,7 +166,7 @@ export async function run(
           return `invalid syntax: ${e.message}`;
         }
 
-        return e?.message ?? `${e}`;
+        return (e as Error)?.message ?? `${e}`;
       }
     },
     history: runHistory,
@@ -193,7 +193,7 @@ export async function run(
  * @noreplay
  */
 export async function selectRegister(_: Context, inputOr: InputOr<string | Register>) {
-  const input = await inputOr(() => keypress.forRegister(_));
+  const input = await inputOr(() => keypressForRegister(_));
 
   if (typeof input === "string") {
     if (input.length === 0) {
@@ -292,7 +292,7 @@ export async function updateCount(
     return;
   }
 
-  const input = +await inputOr(() => prompt.number({ integer: true, range: [0, 1_000_000] }, _));
+  const input = +await inputOr(() => promptNumber({ integer: true, range: [0, 1_000_000] }, _));
 
   InputError.validateInput(!isNaN(input), "value is not a number");
   InputError.validateInput(input >= 0, "value is negative");
@@ -354,7 +354,7 @@ export async function openMenu(
   }
 
   if (delay > 0) {
-    return showMenu.withDelay(delay, menu, pass, prefix);
+    return showMenuAfterDelay(delay, menu, pass, prefix);
   }
 
   return showMenu(menu, pass, prefix);
@@ -373,7 +373,7 @@ export async function openMenu(
  * @noreplay
  */
 export function changeInput(
-  action: Argument<Parameters<typeof prompt.notifyActionRequested>[0]>,
+  action: Argument<Parameters<typeof notifyPromptActionRequested>[0]>,
 ) {
   ArgumentError.validate(
     "action",
@@ -381,5 +381,5 @@ export function changeInput(
     `must be "previous" or "next"`,
   );
 
-  prompt.notifyActionRequested(action);
+  notifyPromptActionRequested(action);
 }

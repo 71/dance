@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { Context, edit } from "../context";
 import * as Positions from "../positions";
 import * as Selections from "../selections";
-import { TrackedSelection } from "../../utils/tracked-selection";
+import * as TrackedSelection from "../../utils/tracked-selection";
 
 const enum Constants {
   PositionMask = 0b00_11_1,
@@ -166,16 +166,16 @@ export function insert(
   f: insert.Callback<insert.Result> | insert.Callback<insert.AsyncResult>,
   selections?: readonly vscode.Selection[],
 ): Thenable<vscode.Selection[]> {
-  return insert.byIndex(
+  return insertByIndex(
     flags,
     (i, selection, document) => f(document.getText(selection), selection, i, document) as any,
     selections,
   );
 }
 
-export namespace insert {
+export declare namespace insert {
   /**
-   * Insertion flags for `insert`.
+   * Insertion flags for {@link insert}.
    */
   export const enum Flags {
     /**
@@ -219,358 +219,373 @@ export namespace insert {
     Extend = 0b10_00_1,
   }
 
-  export const Replace = Flags.Replace,
-               Start = Flags.Start,
-               End = Flags.End,
-               Active = Flags.Active,
-               Anchor = Flags.Anchor,
-               Keep = Flags.Keep,
-               Select = Flags.Select,
-               Extend = Flags.Extend;
-
-  export function flagsAtEdge(edge?: "active" | "anchor" | "start" | "end") {
-    switch (edge) {
-    case undefined:
-      return Flags.Replace;
-
-    case "active":
-      return Flags.Active;
-    case "anchor":
-      return Flags.Anchor;
-    case "start":
-      return Flags.Start;
-    case "end":
-      return Flags.End;
-    }
-  }
-
   /**
-   * The result of a callback passed to `insert` or `insert.byIndex`.
+   * The result of a callback passed to {@link insert} or
+   * {@link insertByIndex}.
    */
   export type Result = string | undefined;
 
   /**
-   * The result of an async callback passed to `insert` or `insert.byIndex`.
+   * The result of an async callback passed to {@link insert} or
+   * {@link insertByIndex}.
    */
   export type AsyncResult = Thenable<Result>;
 
   /**
-   * A callback passed to `insert`.
+   * A callback passed to {@link insert}.
    */
   export interface Callback<T> {
     (text: string, selection: vscode.Selection, index: number, document: vscode.TextDocument): T;
   }
 
-  /**
-   * A callback passed to `insert.byIndex`.
-   */
-  export interface ByIndexCallback<T> {
-    (index: number, selection: vscode.Selection, document: vscode.TextDocument): T;
+  export const Replace: Flags.Replace,
+               Start: Flags.Start,
+               End: Flags.End,
+               Active: Flags.Active,
+               Anchor: Flags.Anchor,
+               Keep: Flags.Keep,
+               Select: Flags.Select,
+               Extend: Flags.Extend;
+}
+
+for (const [k, v] of Object.entries({
+  Replace: insert.Flags.Replace,
+  Start: insert.Flags.Start,
+  End: insert.Flags.End,
+  Active: insert.Flags.Active,
+  Anchor: insert.Flags.Anchor,
+  Keep: insert.Flags.Keep,
+  Select: insert.Flags.Select,
+  Extend: insert.Flags.Extend,
+})) {
+  Object.defineProperty(insert, k, { value: v });
+}
+
+export function insertFlagsAtEdge(edge?: "active" | "anchor" | "start" | "end") {
+  switch (edge) {
+  case undefined:
+    return insert.Flags.Replace;
+
+  case "active":
+    return insert.Flags.Active;
+  case "anchor":
+    return insert.Flags.Anchor;
+  case "start":
+    return insert.Flags.Start;
+  case "end":
+    return insert.Flags.End;
+  }
+}
+
+/**
+ * Inserts text next to the given selections according to the given function.
+ *
+ * @param f A mapping function called for each selection; given the index,
+ *   range and editor of each selection, it should return the new text content
+ *   of the selection, or `undefined` if it is to be removed. Also works for
+ *   `async` (i.e. `Promise`-returning) functions, in which case **all**
+ *   results must be promises.
+ * @param selections If `undefined`, the selections of the active editor will
+ *   be used. Otherwise, must be a `vscode.Selection` array which will be
+ *   mapped in the active editor.
+ *
+ * ### Example
+ * ```js
+ * Selections.set(await insertByIndex(insert.Start, (i) => `${i + 1}`));
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * 1a 2b 3c
+ *  ^ 0
+ *     ^ 1
+ *        ^ 2
+ * ```
+ *
+ * ### Example
+ * ```js
+ * Selections.set(await insertByIndex(insert.Start | insert.Select, (i) => `${i + 1}`));
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * 1a 2b 3c
+ * ^ 0
+ *    ^ 1
+ *       ^ 2
+ * ```
+ *
+ * ### Example
+ * ```js
+ * Selections.set(await insertByIndex(insert.Start | insert.Extend, (i) => `${i + 1}`));
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * 1a 2b 3c
+ * ^^ 0
+ *    ^^ 1
+ *       ^^ 2
+ * ```
+ *
+ * ### Example
+ * ```js
+ * Selections.set(await insertByIndex(insert.End, (i) => `${i + 1}`));
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * a1 b2 c3
+ * ^ 0
+ *    ^ 1
+ *       ^ 2
+ * ```
+ *
+ * ### Example
+ * ```js
+ * Selections.set(await insertByIndex(insert.End | insert.Select, (i) => `${i + 1}`));
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * a1 b2 c3
+ *  ^ 0
+ *     ^ 1
+ *        ^ 2
+ * ```
+ *
+ * ### Example
+ * ```js
+ * Selections.set(await insertByIndex(insert.End | insert.Extend, (i) => `${i + 1}`));
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * a1 b2 c3
+ * ^^ 0
+ *    ^^ 1
+ *       ^^ 2
+ * ```
+ */
+export function insertByIndex(
+  flags: insert.Flags,
+  f: insertByIndex.Callback<insert.Result> | insertByIndex.Callback<insert.AsyncResult>,
+  selections: readonly vscode.Selection[] = Context.current.selections,
+): Thenable<vscode.Selection[]> {
+  if (selections.length === 0) {
+    return Context.wrap(Promise.resolve([]));
   }
 
-  /**
-   * Inserts text next to the given selections according to the given function.
-   *
-   * @param f A mapping function called for each selection; given the index,
-   *   range and editor of each selection, it should return the new text content
-   *   of the selection, or `undefined` if it is to be removed. Also works for
-   *   `async` (i.e. `Promise`-returning) functions, in which case **all**
-   *   results must be promises.
-   * @param selections If `undefined`, the selections of the active editor will
-   *   be used. Otherwise, must be a `vscode.Selection` array which will be
-   *   mapped in the active editor.
-   *
-   * ### Example
-   * ```js
-   * Selections.set(await insert.byIndex(insert.Start, (i) => `${i + 1}`));
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * 1a 2b 3c
-   *  ^ 0
-   *     ^ 1
-   *        ^ 2
-   * ```
-   *
-   * ### Example
-   * ```js
-   * Selections.set(await insert.byIndex(insert.Start | insert.Select, (i) => `${i + 1}`));
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * 1a 2b 3c
-   * ^ 0
-   *    ^ 1
-   *       ^ 2
-   * ```
-   *
-   * ### Example
-   * ```js
-   * Selections.set(await insert.byIndex(insert.Start | insert.Extend, (i) => `${i + 1}`));
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * 1a 2b 3c
-   * ^^ 0
-   *    ^^ 1
-   *       ^^ 2
-   * ```
-   *
-   * ### Example
-   * ```js
-   * Selections.set(await insert.byIndex(insert.End, (i) => `${i + 1}`));
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * a1 b2 c3
-   * ^ 0
-   *    ^ 1
-   *       ^ 2
-   * ```
-   *
-   * ### Example
-   * ```js
-   * Selections.set(await insert.byIndex(insert.End | insert.Select, (i) => `${i + 1}`));
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * a1 b2 c3
-   *  ^ 0
-   *     ^ 1
-   *        ^ 2
-   * ```
-   *
-   * ### Example
-   * ```js
-   * Selections.set(await insert.byIndex(insert.End | insert.Extend, (i) => `${i + 1}`));
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * a1 b2 c3
-   * ^^ 0
-   *    ^^ 1
-   *       ^^ 2
-   * ```
-   */
-  export function byIndex(
-    flags: Flags,
-    f: ByIndexCallback<Result> | ByIndexCallback<AsyncResult>,
-    selections: readonly vscode.Selection[] = Context.current.selections,
-  ): Thenable<vscode.Selection[]> {
-    if (selections.length === 0) {
-      return Context.wrap(Promise.resolve([]));
-    }
+  const document = Context.current.document,
+        firstResult = f(0, selections[0], document);
 
-    const document = Context.current.document,
-          firstResult = f(0, selections[0], document);
-
-    if (typeof firstResult === "object") {
-      // `f` returns promises.
-      const promises = [firstResult];
-
-      for (let i = 1, len = selections.length; i < len; i++) {
-        promises.push(f(i, selections[i], document) as AsyncResult);
-      }
-
-      return Context.wrap(
-        Promise
-          .all(promises)
-          .then((results) => mapResults(flags, document, selections, results)),
-      );
-    }
-
-    // `f` returns regular values.
-    const allResults: Result[] = [firstResult];
+  if (typeof firstResult === "object") {
+    // `f` returns promises.
+    const promises = [firstResult];
 
     for (let i = 1, len = selections.length; i < len; i++) {
-      allResults.push(f(i, selections[i], document) as Result);
+      promises.push(f(i, selections[i], document) as insert.AsyncResult);
     }
 
-    return mapResults(flags, document, selections, allResults);
+    return Context.wrap(
+      Promise
+        .all(promises)
+        .then((results) => mapResults(flags, document, selections, results)),
+    );
   }
 
-  export namespace byIndex {
-    /**
-     * Same as `insert.byIndex`, but also inserts strings that end with a
-     * newline character on the next or previous line.
-     */
-    export async function withFullLines(
-      flags: Flags,
-      f: ByIndexCallback<Result> | ByIndexCallback<AsyncResult>,
-      selections: readonly vscode.Selection[] = Context.current.selections,
-    ) {
-      const document = Context.current.document,
-            allResults = await Promise.all(selections.map((sel, i) => f(i, sel, document)));
+  // `f` returns regular values.
+  const allResults: insert.Result[] = [firstResult];
 
-      // Separate full-line results from all results.
-      const results: Result[] = [],
-            resultsSelections: vscode.Selection[] = [],
-            fullLineResults: Result[] = [],
-            fullLineResultsSelections: vscode.Selection[] = [],
-            isFullLines: boolean[] = [];
+  for (let i = 1, len = selections.length; i < len; i++) {
+    allResults.push(f(i, selections[i], document) as insert.Result);
+  }
 
-      for (let i = 0; i < allResults.length; i++) {
-        const result = allResults[i];
+  return mapResults(flags, document, selections, allResults);
+}
 
-        if (result === undefined) {
-          continue;
-        }
+export declare namespace insertByIndex {
+  /**
+   * A callback passed to {@link insertByIndex}.
+   */
+  export interface Callback<T> {
+    (index: number, selection: vscode.Selection, document: vscode.TextDocument): T;
+  }
+}
 
-        if (result.endsWith("\n")) {
-          fullLineResults.push(result);
-          fullLineResultsSelections.push(selections[i]);
-          isFullLines.push(true);
-        } else {
-          results.push(result);
-          resultsSelections.push(selections[i]);
-          isFullLines.push(false);
-        }
-      }
+/**
+ * Same as {@link insertByIndex}, but also inserts strings that end with a
+ * newline character on the next or previous line.
+ */
+export async function insertByIndexWithFullLines(
+  flags: insert.Flags,
+  f: insertByIndex.Callback<insert.Result> | insertByIndex.Callback<insert.AsyncResult>,
+  selections: readonly vscode.Selection[] = Context.current.selections,
+) {
+  const document = Context.current.document,
+        allResults = await Promise.all(selections.map((sel, i) => f(i, sel, document)));
 
-      if (fullLineResults.length === 0) {
-        return await mapResults(flags, document, resultsSelections, results);
-      }
+  // Separate full-line results from all results.
+  const results: insert.Result[] = [],
+        resultsSelections: vscode.Selection[] = [],
+        fullLineResults: insert.Result[] = [],
+        fullLineResultsSelections: vscode.Selection[] = [],
+        isFullLines: boolean[] = [];
 
-      let savedSelections = new TrackedSelection.Set(
-        TrackedSelection.fromArray(fullLineResultsSelections, document),
-        document,
-      );
+  for (let i = 0; i < allResults.length; i++) {
+    const result = allResults[i];
 
-      // Insert non-full lines.
-      const normalSelections = await mapResults(flags, document, resultsSelections, results);
+    if (result === undefined) {
+      continue;
+    }
 
-      // Insert full lines.
-      const fullLineSelections = savedSelections.restore();
+    if (result.endsWith("\n")) {
+      fullLineResults.push(result);
+      fullLineResultsSelections.push(selections[i]);
+      isFullLines.push(true);
+    } else {
+      results.push(result);
+      resultsSelections.push(selections[i]);
+      isFullLines.push(false);
+    }
+  }
 
-      savedSelections.dispose();
+  if (fullLineResults.length === 0) {
+    return await mapResults(flags, document, resultsSelections, results);
+  }
 
-      const nextFullLineSelections: vscode.Selection[] = [],
-            insertionPositions: vscode.Position[] = [];
+  let savedSelections = new TrackedSelection.Set(
+    TrackedSelection.fromArray(fullLineResultsSelections, document),
+    document,
+  );
 
-      if ((flags & Constants.PositionMask) === Flags.Start) {
-        for (const selection of fullLineSelections) {
-          const insertionPosition = Positions.lineStart(selection.start.line);
+  // Insert non-full lines.
+  const normalSelections = await mapResults(flags, document, resultsSelections, results);
 
-          insertionPositions.push(insertionPosition);
+  // Insert full lines.
+  const fullLineSelections = savedSelections.restore();
 
-          if ((flags & Constants.BehaviorMask) === Flags.Extend) {
-            nextFullLineSelections.push(
-              Selections.fromStartEnd(
-                insertionPosition, selection.end, selection.isReversed, document),
-            );
-          } else if ((flags & Constants.BehaviorMask) === Flags.Select) {
-            nextFullLineSelections.push(Selections.empty(insertionPosition));
-          } else {
-            // Keep selection as is.
-            nextFullLineSelections.push(selection);
-          }
-        }
+  savedSelections.dispose();
+
+  const nextFullLineSelections: vscode.Selection[] = [],
+        insertionPositions: vscode.Position[] = [];
+
+  if ((flags & Constants.PositionMask) === insert.Flags.Start) {
+    for (const selection of fullLineSelections) {
+      const insertionPosition = Positions.lineStart(selection.start.line);
+
+      insertionPositions.push(insertionPosition);
+
+      if ((flags & Constants.BehaviorMask) === insert.Flags.Extend) {
+        nextFullLineSelections.push(
+          Selections.fromStartEnd(
+            insertionPosition, selection.end, selection.isReversed, document),
+        );
+      } else if ((flags & Constants.BehaviorMask) === insert.Flags.Select) {
+        nextFullLineSelections.push(Selections.empty(insertionPosition));
       } else {
-        for (const selection of fullLineSelections) {
-          const insertionPosition = Positions.lineStart(Selections.endLine(selection) + 1);
-
-          insertionPositions.push(insertionPosition);
-
-          if ((flags & Constants.BehaviorMask) === Flags.Extend) {
-            nextFullLineSelections.push(
-              Selections.fromStartEnd(
-                selection.start, insertionPosition, selection.isReversed, document),
-            );
-          } else if ((flags & Constants.BehaviorMask) === Flags.Select) {
-            nextFullLineSelections.push(Selections.empty(insertionPosition));
-          } else {
-            // Keep selection as is.
-            nextFullLineSelections.push(selection);
-          }
-        }
+        // Keep selection as is.
+        nextFullLineSelections.push(selection);
       }
+    }
+  } else {
+    for (const selection of fullLineSelections) {
+      const insertionPosition = Positions.lineStart(Selections.endLine(selection) + 1);
 
-      savedSelections = new TrackedSelection.Set(
-        TrackedSelection.fromArray(nextFullLineSelections, document),
-        document,
-        (flags & Constants.BehaviorMask) === Flags.Keep
-          ? TrackedSelection.Flags.Strict
-          : TrackedSelection.Flags.Inclusive,
-      );
+      insertionPositions.push(insertionPosition);
 
-      await edit((editBuilder) => {
-        for (let i = 0; i < insertionPositions.length; i++) {
-          editBuilder.replace(insertionPositions[i], fullLineResults[i]!);
-        }
-      });
-
-      const finalFullLineSelections = savedSelections.restore();
-
-      savedSelections.dispose();
-
-      // Merge back selections.
-      const allSelections: vscode.Selection[] = [];
-
-      for (let i = 0, normalIdx = 0, fullLineIdx = 0; i < isFullLines.length; i++) {
-        if (isFullLines[i]) {
-          allSelections.push(finalFullLineSelections[fullLineIdx++]);
-        } else {
-          allSelections.push(normalSelections[normalIdx++]);
-        }
+      if ((flags & Constants.BehaviorMask) === insert.Flags.Extend) {
+        nextFullLineSelections.push(
+          Selections.fromStartEnd(
+            selection.start, insertionPosition, selection.isReversed, document),
+        );
+      } else if ((flags & Constants.BehaviorMask) === insert.Flags.Select) {
+        nextFullLineSelections.push(Selections.empty(insertionPosition));
+      } else {
+        // Keep selection as is.
+        nextFullLineSelections.push(selection);
       }
-
-      return allSelections;
     }
   }
+
+  savedSelections = new TrackedSelection.Set(
+    TrackedSelection.fromArray(nextFullLineSelections, document),
+    document,
+    (flags & Constants.BehaviorMask) === insert.Flags.Keep
+      ? TrackedSelection.Flags.Strict
+      : TrackedSelection.Flags.Inclusive,
+  );
+
+  await edit((editBuilder) => {
+    for (let i = 0; i < insertionPositions.length; i++) {
+      editBuilder.replace(insertionPositions[i], fullLineResults[i]!);
+    }
+  });
+
+  const finalFullLineSelections = savedSelections.restore();
+
+  savedSelections.dispose();
+
+  // Merge back selections.
+  const allSelections: vscode.Selection[] = [];
+
+  for (let i = 0, normalIdx = 0, fullLineIdx = 0; i < isFullLines.length; i++) {
+    if (isFullLines[i]) {
+      allSelections.push(finalFullLineSelections[fullLineIdx++]);
+    } else {
+      allSelections.push(normalSelections[normalIdx++]);
+    }
+  }
+
+  return allSelections;
 }
 
 /**
@@ -613,69 +628,73 @@ export function replace(
   return insert(insert.Flags.Replace, f, selections);
 }
 
-export namespace replace {
+export declare namespace replace {
   /**
-   * The result of a callback passed to `replace` or `replace.byIndex`.
+   * The result of a callback passed to {@link replace} or
+   * {@link replaceByIndex}.
    */
   export type Result = string | undefined;
 
   /**
-   * The result of an async callback passed to `replace` or `replace.byIndex`.
+   * The result of an async callback passed to {@link replace} or
+   * {@link replaceByIndex}.
    */
   export type AsyncResult = Thenable<Result>;
 
   /**
-   * A callback passed to `replace`.
+   * A callback passed to {@link replace}.
    */
   export interface Callback<T> {
     (text: string, selection: vscode.Selection, index: number, document: vscode.TextDocument): T;
   }
+}
 
+/**
+ * Replaces the given selections according to the given function.
+ *
+ * @param f A mapping function called for each selection; given the index,
+ *   range and editor of each selection, it should return the new text content
+ *   of the selection, or `undefined` if it is to be removed. Also works for
+ *   `async` (i.e. `Promise`-returning) functions, in which case **all**
+ *   results must be promises.
+ * @param selections If `undefined`, the selections of the active editor will
+ *   be used. Otherwise, must be a `vscode.Selection` array which will be
+ *   mapped in the active editor.
+ *
+ * ### Example
+ * ```js
+ * await replaceByIndex((i) => `${i + 1}`);
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * 1 2 3
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ */
+export function replaceByIndex(
+  f: replaceByIndex.Callback<replace.Result> | replaceByIndex.Callback<replace.AsyncResult>,
+  selections?: readonly vscode.Selection[],
+): Thenable<vscode.Selection[]> {
+  return insertByIndex(insert.Flags.Replace, f, selections);
+}
+
+export declare namespace replaceByIndex {
   /**
-   * A callback passed to `replace.byIndex`.
+   * A callback passed to {@link replaceByIndex}.
    */
-  export interface ByIndexCallback<T> {
+  export interface Callback<T> {
     (index: number, selection: vscode.Selection, document: vscode.TextDocument): T;
-  }
-
-  /**
-   * Replaces the given selections according to the given function.
-   *
-   * @param f A mapping function called for each selection; given the index,
-   *   range and editor of each selection, it should return the new text content
-   *   of the selection, or `undefined` if it is to be removed. Also works for
-   *   `async` (i.e. `Promise`-returning) functions, in which case **all**
-   *   results must be promises.
-   * @param selections If `undefined`, the selections of the active editor will
-   *   be used. Otherwise, must be a `vscode.Selection` array which will be
-   *   mapped in the active editor.
-   *
-   * ### Example
-   * ```js
-   * await replace.byIndex((i) => `${i + 1}`);
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * 1 2 3
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   */
-  export function byIndex(
-    f: ByIndexCallback<Result> | ByIndexCallback<AsyncResult>,
-    selections?: readonly vscode.Selection[],
-  ): Thenable<vscode.Selection[]> {
-    return insert.byIndex(insert.Flags.Replace, f, selections);
   }
 }
 
@@ -708,84 +727,80 @@ export namespace replace {
  * ```
  */
 export function rotate(by: number, selections?: readonly vscode.Selection[]) {
-  return rotate
-    .contentsOnly(by, selections)
-    .then((selections) => rotate.selectionsOnly(by, selections));
+  return rotateContents(by, selections).then((selections) => rotateSelections(by, selections));
 }
 
-export namespace rotate {
-  /**
-   * Rotates the contents of the given selections by the given offset.
-   *
-   * @see rotate
-   *
-   * ### Example
-   * ```js
-   * await rotate.contentsOnly(1);
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * b c a
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   */
-  export function contentsOnly(
-    by: number,
-    selections: readonly vscode.Selection[] = Context.current.selections,
-  ) {
-    const len = selections.length;
+/**
+ * Rotates the contents of the given selections by the given offset.
+ *
+ * @see {@link rotate}
+ *
+ * ### Example
+ * ```js
+ * await rotateContents(1);
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * b c a
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ */
+export function rotateContents(
+  by: number,
+  selections: readonly vscode.Selection[] = Context.current.selections,
+) {
+  const len = selections.length;
 
-    // Handle negative values for `by`:
-    by = (by % len) + len;
+  // Handle negative values for `by`:
+  by = (by % len) + len;
 
-    if (by === len) {
-      return Context.wrap(Promise.resolve(selections.slice()));
-    }
-
-    return replace.byIndex(
-      (i, _, document) => document.getText(selections[(i + by) % len]),
-      selections,
-    );
+  if (by === len) {
+    return Context.wrap(Promise.resolve(selections.slice()));
   }
 
-  /**
-   * Rotates the given selections (but not their contents) by the given offset.
-   *
-   * @see rotate
-   *
-   * ### Example
-   * ```js
-   * rotate.selectionsOnly(1);
-   * ```
-   *
-   * Before:
-   * ```
-   * a b c
-   * ^ 0
-   *   ^ 1
-   *     ^ 2
-   * ```
-   *
-   * After:
-   * ```
-   * a b c
-   * ^ 1
-   *   ^ 2
-   *     ^ 0
-   * ```
-   */
-  export function selectionsOnly(by: number, selections?: readonly vscode.Selection[]) {
-    Selections.set(Selections.rotate(by, selections));
-  }
+  return replaceByIndex(
+    (i, _, document) => document.getText(selections[(i + by) % len]),
+    selections,
+  );
+}
+
+/**
+ * Rotates the given selections (but not their contents) by the given offset.
+ *
+ * @see {@link rotate}
+ *
+ * ### Example
+ * ```js
+ * rotateSelections(1);
+ * ```
+ *
+ * Before:
+ * ```
+ * a b c
+ * ^ 0
+ *   ^ 1
+ *     ^ 2
+ * ```
+ *
+ * After:
+ * ```
+ * a b c
+ * ^ 1
+ *   ^ 2
+ *     ^ 0
+ * ```
+ */
+export function rotateSelections(by: number, selections?: readonly vscode.Selection[]) {
+  Selections.set(Selections.rotate(by, selections));
 }

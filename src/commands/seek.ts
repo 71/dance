@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { Argument, InputOr } from ".";
-import { closestSurroundedBy, Context, Direction, keypress, Lines, moveTo, moveWhile, Pair, pair, Positions, prompt, Range, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
+import { closestSurroundedBy, Context, Direction, keypress, Lines, moveTo, moveToExcluded, moveWhile, moveWhileBackward, moveWhileForward, Pair, pair, Positions, prompt, Range, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
 import { CharSet } from "../utils/charset";
 import { ArgumentError, assert } from "../utils/errors";
 import { escapeForRegExp, execRange } from "../utils/regexp";
@@ -39,7 +39,7 @@ export async function seek(
 ) {
   const input = await inputOr(() => keypress(_));
 
-  Selections.update.byIndex((_, selection, document) => {
+  Selections.updateByIndex((_, selection, document) => {
     let position: vscode.Position | undefined = Selections.seekFrom(selection, -direction);
 
     for (let i = 0; i < repetitions; i++) {
@@ -49,7 +49,7 @@ export async function seek(
         return undefined;
       }
 
-      position = moveTo.excluded(direction, input, position, document);
+      position = moveToExcluded(direction, input, position, document);
 
       if (position === undefined) {
         return undefined;
@@ -139,7 +139,7 @@ export function enclosing(
   // It only finds one next enclosing character and drags only once to its
   // matching counterpart. Repetitions > 1 does exactly the same with rep=1,
   // even though executing the command again will jump back and forth.
-  Selections.update.byIndex((_, selection, document) => {
+  Selections.updateByIndex((_, selection, document) => {
     // First, find an enclosing char (which may be the current character).
     let currentCharacter = selection.active;
 
@@ -203,7 +203,7 @@ export function word(
 ) {
   const charset = ws ? CharSet.NonBlank : CharSet.Word;
 
-  Selections.update.withFallback.byIndex((_i, selection) => {
+  Selections.updateWithFallbackByIndex((_i, selection) => {
     const anchor = Selections.seekFrom(selection, direction, selection.anchor, _);
     let active = Selections.seekFrom(selection, direction, selection.active, _);
 
@@ -298,7 +298,7 @@ export async function object(
           p = pair(openRe, closeRe);
 
     if (where === "start") {
-      return Selections.update.byIndex((_i, selection) => {
+      return Selections.updateByIndex((_i, selection) => {
         const startResult = p.searchOpening(Selections.activeStart(selection, _));
 
         if (startResult === undefined) {
@@ -314,7 +314,7 @@ export async function object(
     }
 
     if (where === "end") {
-      return Selections.update.byIndex((_i, selection) => {
+      return Selections.updateByIndex((_i, selection) => {
         const endResult = p.searchClosing(Selections.activeEnd(selection, _));
 
         if (endResult === undefined) {
@@ -332,7 +332,7 @@ export async function object(
     if (_.selectionBehavior === SelectionBehavior.Character) {
       const startRe = new RegExp("^" + openRe.source, openRe.flags);
 
-      return Selections.update.byIndex((_i, selection) => {
+      return Selections.updateByIndex((_i, selection) => {
         // If the selection behavior is character and the current character
         // corresponds to the start of a pair, we select from here.
         const searchStart = Selections.activeStart(selection, _),
@@ -362,7 +362,7 @@ export async function object(
       });
     }
 
-    return Selections.update.byIndex(
+    return Selections.updateByIndex(
       (_i, selection) => surroundedBy([p], Selections.activeStart(selection, _), !inner, _.document),
     );
   }
@@ -376,15 +376,15 @@ export async function object(
     return shiftWhere(
       _,
       (selection, _) => {
-        let start = moveWhile.backward((c) => re.test(c), selection.active, _.document),
-            end = moveWhile.forward((c) => re.test(c), selection.active, _.document);
+        let start = moveWhileBackward((c) => re.test(c), selection.active, _.document),
+            end = moveWhileForward((c) => re.test(c), selection.active, _.document);
 
         if (beforeRe !== undefined) {
-          start = moveWhile.backward((c) => beforeRe.test(c), start, _.document);
+          start = moveWhileBackward((c) => beforeRe.test(c), start, _.document);
         }
 
         if (afterRe !== undefined) {
-          end = moveWhile.forward((c) => afterRe.test(c), end, _.document);
+          end = moveWhileForward((c) => afterRe.test(c), end, _.document);
         }
 
         return new vscode.Selection(start, end);
@@ -454,7 +454,7 @@ export async function object(
     let newSelections: vscode.Selection[];
 
     if (where === "start") {
-      newSelections = Selections.map.byIndex((_i, selection, document) => {
+      newSelections = Selections.mapByIndex((_i, selection, document) => {
         const activePosition = Selections.activePosition(selection, _.document);
         let shiftTo = f.start(activePosition, inner, document);
 
@@ -469,7 +469,7 @@ export async function object(
         return Selections.shift(selection, shiftTo, shift, _);
       });
     } else if (where === "end") {
-      newSelections = Selections.map.byIndex((_i, selection, document) =>
+      newSelections = Selections.mapByIndex((_i, selection, document) =>
         Selections.shift(
           selection,
           f.end(selection.active, inner, document),
@@ -478,7 +478,7 @@ export async function object(
         ),
       );
     } else {
-      newSelections = Selections.map.byIndex((_, selection, document) =>
+      newSelections = Selections.mapByIndex((_, selection, document) =>
         f(selection.active, inner, document),
       );
     }
@@ -503,7 +503,7 @@ function shiftWhere(
   shift: Shift,
   where: "start" | "end" | undefined,
 ) {
-  Selections.update.byIndex((_, selection) => {
+  Selections.updateByIndex((_, selection) => {
     const result = f(selection, context);
 
     if (result === undefined) {

@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import type { RegisterOr } from ".";
-import { Context, prompt, todo } from "../api";
+import { Context, prompt, promptMany, promptOne, todo } from "../api";
 import type { Register } from "../state/registers";
 
 /**
@@ -16,7 +16,7 @@ export async function setup(_: Context, register: RegisterOr<"dquote", Register.
   await vscode.commands.executeCommand("workbench.action.openGlobalKeybindingsFile");
   await _.switchToDocument(_.extension.editors.active!.editor.document);
 
-  const action = await prompt.one([
+  const action = await promptOne([
     ["y", "yank keybindings to register"],
     ["a", "append keybindings"],
     ["p", "prepend keybindings"],
@@ -26,7 +26,7 @@ export async function setup(_: Context, register: RegisterOr<"dquote", Register.
     return;
   }
 
-  const keybindings = await prompt.many([
+  const keybindings = await promptMany([
     ["d", "default keybindings"],
   ]);
 

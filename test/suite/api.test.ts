@@ -3,7 +3,7 @@ import * as assert from "assert";
 import * as vscode from "vscode";
 
 import { expect, ExpectedDocument } from "./utils";
-import { Context, deindentLines, EmptySelectionsError, indentLines, insert, isPosition, isRange, isSelection, joinLines, moveWhile, NotASelectionError, Positions, replace, rotate, search, Select, SelectionBehavior, Selections, text } from "../../src/api";
+import { Context, deindentLines, edit, EmptySelectionsError, indentLines, insert, insertByIndex, isPosition, isRange, isSelection, joinLines, mapActive, mapBoth, mapEnd, mapStart, moveWhileBackward, moveWhileForward, moveWithBackward, moveWithForward, NotASelectionError, pipe, Positions, replace, replaceByIndex, rotate, rotateContents, rotateSelections, searchBackward, searchForward, Select, SelectionBehavior, Selections, text } from "../../src/api";
 import { Extension } from "../../src/state/extension";
 
 function setSelectionBehavior(selectionBehavior: SelectionBehavior) {
@@ -87,6 +87,32 @@ suite("API tests", function () {
       });
 
       // No expected end document.
+    });
+
+    test("function edit", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              hello world
+              ^^^^^ 0
+            `),
+            after = ExpectedDocument.parseIndented(14, String.raw`
+              heo world
+              ^^^ 0
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await edit((editBuilder) => {
+          const start = new vscode.Position(0, 2),
+                end = new vscode.Position(0, 4);
+
+          editBuilder.delete(new vscode.Range(start, end));
+        });
+      });
+
+      after.assertEquals(editor);
     });
 
     test("function selectionsToCharacterMode", async function () {
@@ -247,6 +273,141 @@ suite("API tests", function () {
       // No expected end document.
     });
 
+    test("function mapStart", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const p1 = new vscode.Position(0, 0),
+              p2 = new vscode.Position(0, 1);
+
+        assert.deepStrictEqual(
+          mapStart(p1, (x) => x.translate(1)),
+          new vscode.Position(1, 0),
+        );
+        assert.deepStrictEqual(
+          mapStart(new vscode.Range(p1, p2), (x) => x.translate(1)),
+          new vscode.Range(p2, new vscode.Position(1, 0)),
+        );
+        assert.deepStrictEqual(
+          mapStart(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+          new vscode.Selection(new vscode.Position(1, 0), p2),
+        );
+        assert.deepStrictEqual(
+          mapStart(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+          new vscode.Selection(p2, new vscode.Position(1, 0)),
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function mapEnd", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const p1 = new vscode.Position(0, 0),
+              p2 = new vscode.Position(0, 1);
+
+        assert.deepStrictEqual(
+          mapEnd(p1, (x) => x.translate(1)),
+          new vscode.Position(1, 0),
+        );
+        assert.deepStrictEqual(
+          mapEnd(new vscode.Range(p1, p2), (x) => x.translate(1)),
+          new vscode.Range(p1, new vscode.Position(1, 1)),
+        );
+        assert.deepStrictEqual(
+          mapEnd(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+          new vscode.Selection(p1, new vscode.Position(1, 1)),
+        );
+        assert.deepStrictEqual(
+          mapEnd(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+          new vscode.Selection(new vscode.Position(1, 1), p1),
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function mapActive", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const p1 = new vscode.Position(0, 0),
+              p2 = new vscode.Position(0, 1);
+
+        assert.deepStrictEqual(
+          mapActive(p1, (x) => x.translate(1)),
+          new vscode.Position(1, 0),
+        );
+        assert.deepStrictEqual(
+          mapActive(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+          new vscode.Selection(p1, new vscode.Position(1, 1)),
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function mapBoth", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const p1 = new vscode.Position(0, 0),
+              p2 = new vscode.Position(0, 1);
+
+        assert.deepStrictEqual(
+          mapBoth(p1, (x) => x.translate(1)),
+          new vscode.Position(1, 0),
+        );
+        assert.deepStrictEqual(
+          mapBoth(new vscode.Range(p1, p2), (x) => x.translate(1)),
+          new vscode.Range(new vscode.Position(1, 0), new vscode.Position(1, 1)),
+        );
+        assert.deepStrictEqual(
+          mapBoth(new vscode.Selection(p1, p2), (x) => x.translate(1)),
+          new vscode.Selection(new vscode.Position(1, 0), new vscode.Position(1, 1)),
+        );
+        assert.deepStrictEqual(
+          mapBoth(new vscode.Selection(p2, p1), (x) => x.translate(1)),
+          new vscode.Selection(new vscode.Position(1, 1), new vscode.Position(1, 0)),
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function pipe", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken);
+
+      // No setup needed.
+
+      await context.runAsync(async () => {
+        const doubleNumbers = pipe((n) => typeof n === "number" ? n : undefined,
+                                   (n) => n * 2);
+
+        assert.deepStrictEqual(
+          doubleNumbers([1, "a", 2, null, 3, {}]),
+          [2, 4, 6],
+        );
+      });
+
+      // No expected end document.
+    });
+
   });
 
   suite("./src/api/edit/index.ts", function () {
@@ -276,7 +437,7 @@ suite("API tests", function () {
       after.assertEquals(editor);
     });
 
-    test("function byIndex", async function () {
+    test("function insertByIndex", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -295,13 +456,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        Selections.set(await insert.byIndex(insert.Start, (i) => `${i + 1}`));
+        Selections.set(await insertByIndex(insert.Start, (i) => `${i + 1}`));
       });
 
       after.assertEquals(editor);
     });
 
-    test("function byIndex#1", async function () {
+    test("function insertByIndex#1", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -320,13 +481,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        Selections.set(await insert.byIndex(insert.Start | insert.Select, (i) => `${i + 1}`));
+        Selections.set(await insertByIndex(insert.Start | insert.Select, (i) => `${i + 1}`));
       });
 
       after.assertEquals(editor);
     });
 
-    test("function byIndex#2", async function () {
+    test("function insertByIndex#2", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -345,13 +506,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        Selections.set(await insert.byIndex(insert.Start | insert.Extend, (i) => `${i + 1}`));
+        Selections.set(await insertByIndex(insert.Start | insert.Extend, (i) => `${i + 1}`));
       });
 
       after.assertEquals(editor);
     });
 
-    test("function byIndex#3", async function () {
+    test("function insertByIndex#3", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -370,13 +531,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        Selections.set(await insert.byIndex(insert.End, (i) => `${i + 1}`));
+        Selections.set(await insertByIndex(insert.End, (i) => `${i + 1}`));
       });
 
       after.assertEquals(editor);
     });
 
-    test("function byIndex#4", async function () {
+    test("function insertByIndex#4", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -395,13 +556,13 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        Selections.set(await insert.byIndex(insert.End | insert.Select, (i) => `${i + 1}`));
+        Selections.set(await insertByIndex(insert.End | insert.Select, (i) => `${i + 1}`));
       });
 
       after.assertEquals(editor);
     });
 
-    test("function byIndex#5", async function () {
+    test("function insertByIndex#5", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -420,7 +581,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        Selections.set(await insert.byIndex(insert.End | insert.Extend, (i) => `${i + 1}`));
+        Selections.set(await insertByIndex(insert.End | insert.Extend, (i) => `${i + 1}`));
       });
 
       after.assertEquals(editor);
@@ -451,7 +612,7 @@ suite("API tests", function () {
       after.assertEquals(editor);
     });
 
-    test("function byIndex#6", async function () {
+    test("function replaceByIndex", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -470,7 +631,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        await replace.byIndex((i) => `${i + 1}`);
+        await replaceByIndex((i) => `${i + 1}`);
       });
 
       after.assertEquals(editor);
@@ -501,7 +662,32 @@ suite("API tests", function () {
       after.assertEquals(editor);
     });
 
-    test("function selectionsOnly", async function () {
+    test("function rotateContents", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              a b c
+              ^ 0
+                ^ 1
+                  ^ 2
+            `),
+            after = ExpectedDocument.parseIndented(14, String.raw`
+              b c a
+              ^ 0
+                ^ 1
+                  ^ 2
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        await rotateContents(1);
+      });
+
+      after.assertEquals(editor);
+    });
+
+    test("function rotateSelections", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -520,7 +706,7 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        rotate.selectionsOnly(1);
+        rotateSelections(1);
       });
 
       after.assertEquals(editor);
@@ -530,7 +716,7 @@ suite("API tests", function () {
 
   suite("./src/api/search/index.ts", function () {
 
-    test("function backward", async function () {
+    test("function searchBackward", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -540,23 +726,23 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        const [p1, [t1]] = search.backward(/\w/, new vscode.Position(0, 1))!;
+        const [p1, [t1]] = searchBackward(/\w/, new vscode.Position(0, 1))!;
 
         assert.deepStrictEqual(p1, new vscode.Position(0, 0));
         assert.strictEqual(t1, "a");
 
-        const [p2, [t2]] = search.backward(/\w/, new vscode.Position(0, 2))!;
+        const [p2, [t2]] = searchBackward(/\w/, new vscode.Position(0, 2))!;
 
         assert.deepStrictEqual(p2, new vscode.Position(0, 1));
         assert.strictEqual(t2, "b");
 
-        const [p3, [t3]] = search.backward(/\w+/, new vscode.Position(0, 2))!;
+        const [p3, [t3]] = searchBackward(/\w+/, new vscode.Position(0, 2))!;
 
         assert.deepStrictEqual(p3, new vscode.Position(0, 0));
         assert.strictEqual(t3, "ab");
 
         assert.strictEqual(
-          search.backward(/\w/, new vscode.Position(0, 0)),
+          searchBackward(/\w/, new vscode.Position(0, 0)),
           undefined,
         );
       });
@@ -564,7 +750,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function forward", async function () {
+    test("function searchForward", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -574,23 +760,23 @@ suite("API tests", function () {
       await before.apply(editor);
 
       await context.runAsync(async () => {
-        const [p1, [t1]] = search.forward(/\w/, new vscode.Position(0, 0))!;
+        const [p1, [t1]] = searchForward(/\w/, new vscode.Position(0, 0))!;
 
         assert.deepStrictEqual(p1, new vscode.Position(0, 0));
         assert.strictEqual(t1, "a");
 
-        const [p2, [t2]] = search.forward(/\w/, new vscode.Position(0, 1))!;
+        const [p2, [t2]] = searchForward(/\w/, new vscode.Position(0, 1))!;
 
         assert.deepStrictEqual(p2, new vscode.Position(0, 1));
         assert.strictEqual(t2, "b");
 
-        const [p3, [t3]] = search.forward(/\w+/, new vscode.Position(0, 1))!;
+        const [p3, [t3]] = searchForward(/\w+/, new vscode.Position(0, 1))!;
 
         assert.deepStrictEqual(p3, new vscode.Position(0, 1));
         assert.strictEqual(t3, "bc");
 
         assert.strictEqual(
-          search.forward(/\w/, new vscode.Position(0, 3)),
+          searchForward(/\w/, new vscode.Position(0, 3)),
           undefined,
         );
       });
@@ -816,7 +1002,49 @@ suite("API tests", function () {
 
   suite("./src/api/search/move.ts", function () {
 
-    test("function backward", async function () {
+    test("function moveWithBackward", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              1234578
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        // Go backward as long as the previous character is equal to the current
+        // character minus one.
+        assert.deepStrictEqual(
+          moveWithBackward((c, i) => +c === i - 1 ? +c : undefined,
+                           9, new vscode.Position(0, 7)),
+          new vscode.Position(0, 5),
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function moveWithForward", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              1234578
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        assert.deepStrictEqual(
+          moveWithForward((c, i) => +c === i + 1 ? +c : undefined,
+                          0, new vscode.Position(0, 0)),
+          new vscode.Position(0, 5),
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function moveWhileBackward", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -827,17 +1055,17 @@ suite("API tests", function () {
 
       await context.runAsync(async () => {
         assert.deepStrictEqual(
-          moveWhile.backward((c) => /\w/.test(c), new vscode.Position(0, 3)),
+          moveWhileBackward((c) => /\w/.test(c), new vscode.Position(0, 3)),
           new vscode.Position(0, 0),
         );
 
         assert.deepStrictEqual(
-          moveWhile.backward((c) => c === "c", new vscode.Position(0, 3)),
+          moveWhileBackward((c) => c === "c", new vscode.Position(0, 3)),
           new vscode.Position(0, 2),
         );
 
         assert.deepStrictEqual(
-          moveWhile.backward((c) => c === "b", new vscode.Position(0, 3)),
+          moveWhileBackward((c) => c === "b", new vscode.Position(0, 3)),
           new vscode.Position(0, 3),
         );
       });
@@ -845,7 +1073,7 @@ suite("API tests", function () {
       // No expected end document.
     });
 
-    test("function forward", async function () {
+    test("function moveWhileForward", async function () {
       const editorState = extension.editors.getState(editor)!,
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
@@ -856,17 +1084,17 @@ suite("API tests", function () {
 
       await context.runAsync(async () => {
         assert.deepStrictEqual(
-          moveWhile.forward((c) => /\w/.test(c), new vscode.Position(0, 0)),
+          moveWhileForward((c) => /\w/.test(c), new vscode.Position(0, 0)),
           new vscode.Position(0, 3),
         );
 
         assert.deepStrictEqual(
-          moveWhile.forward((c) => c === "a", new vscode.Position(0, 0)),
+          moveWhileForward((c) => c === "a", new vscode.Position(0, 0)),
           new vscode.Position(0, 1),
         );
 
         assert.deepStrictEqual(
-          moveWhile.forward((c) => c === "b", new vscode.Position(0, 0)),
+          moveWhileForward((c) => c === "b", new vscode.Position(0, 0)),
           new vscode.Position(0, 0),
         );
       });
@@ -956,6 +1184,48 @@ suite("API tests", function () {
         assert.deepStrictEqual(
           await Selections.filter(async (text) => !isNaN(+text)),
           [new vscode.Selection(atChar(4), atChar(7))],
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function map", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              foo 123
+              ^^^ 0
+                  ^^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        assert.deepStrictEqual(
+          Selections.map((text) => isNaN(+text) ? undefined : +text),
+          [123],
+        );
+      });
+
+      // No expected end document.
+    });
+
+    test("function map#1", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              foo 123
+              ^^^ 0
+                  ^^^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        assert.deepStrictEqual(
+          await Selections.map(async (text) => isNaN(+text) ? undefined : +text),
+          [123],
         );
       });
 

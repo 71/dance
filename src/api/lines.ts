@@ -148,61 +148,57 @@ export function column(
   return new vscode.Position(line.line, text.length + diffAddedByTabs(text, editor));
 }
 
-export namespace column {
-  /**
-   * Returns the `vscode.Position`-compatible position for the given position.
-   * Reverses the diff added by `column`.
-   */
-  export function character(
-    position: vscode.Position,
-    editor?: Pick<vscode.TextEditor, "document" | "options">,
-    roundUp?: boolean,
-  ): vscode.Position;
+/**
+ * Returns the {@link vscode.Position}-compatible position for the given
+ * position. Reverses the diff added by {@link column}.
+ */
+export function character(
+  position: vscode.Position,
+  editor?: Pick<vscode.TextEditor, "document" | "options">,
+  roundUp?: boolean,
+): vscode.Position;
 
-  /**
-   * Returns the `vscode.Position`-compatible character for the given column.
-   * Reverses the diff added by `column`.
-   */
-  export function character(
-    line: number,
-    character: number,
-    editor?: Pick<vscode.TextEditor, "document" | "options">,
-    roundUp?: boolean,
-  ): number;
+/**
+ * Returns the {@link vscode.Position}-compatible character for the given
+ * column. Reverses the diff added by {@link column}.
+ */
+export function character(
+  line: number,
+  character: number,
+  editor?: Pick<vscode.TextEditor, "document" | "options">,
+  roundUp?: boolean,
+): number;
 
-  export function character(
-    lineOrPosition: number | vscode.Position,
-    characterOrEditor?: number | Pick<vscode.TextEditor, "document" | "options">,
-    editorOrRoundUp?: Pick<vscode.TextEditor, "document" | "options"> | boolean,
-    roundUp?: boolean,
-  ) {
-    if (typeof lineOrPosition === "number") {
-      // Second overload.
-      const line = lineOrPosition,
-            character = characterOrEditor as number,
-            editor = editorOrRoundUp as vscode.TextEditor ?? Context.current.editor;
+export function character(
+  lineOrPosition: number | vscode.Position,
+  characterOrEditor?: number | Pick<vscode.TextEditor, "document" | "options">,
+  editorOrRoundUp?: Pick<vscode.TextEditor, "document" | "options"> | boolean,
+  roundUp?: boolean,
+) {
+  if (typeof lineOrPosition === "number") {
+    // Second overload.
+    const line = lineOrPosition,
+          character = characterOrEditor as number,
+          editor = editorOrRoundUp as vscode.TextEditor ?? Context.current.editor;
 
-      return getCharacter(editor.document.lineAt(line).text, character, editor, roundUp ?? false);
-    }
-
-    // First overload.
-    const position = lineOrPosition,
-          editor = characterOrEditor as vscode.TextEditor ?? Context.current.editor;
-
-    roundUp = editorOrRoundUp as boolean ?? false;
-
-    const text = editor.document.lineAt(position.line).text;
-
-    return new vscode.Position(
-      position.line, getCharacter(text, position.character, editor, roundUp));
+    return getCharacter(editor.document.lineAt(line).text, character, editor, roundUp ?? false);
   }
+
+  // First overload.
+  const position = lineOrPosition,
+        editor = characterOrEditor as vscode.TextEditor ?? Context.current.editor;
+
+  roundUp = editorOrRoundUp as boolean ?? false;
+
+  const text = editor.document.lineAt(position.line).text;
+
+  return new vscode.Position(
+    position.line, getCharacter(text, position.character, editor, roundUp));
 }
 
 /**
- * Same as `Lines.length`, but also increases the count according to tab
+ * Same as {@link length}, but also increases the count according to tab
  * characters so that the result matches the rendered view.
- *
- * @see Lines.length
  */
 export function columns(
   line: number | vscode.Position,

@@ -24,10 +24,10 @@ export function run(strings: string | readonly string[], context: object = {}) {
   const functions: ((...args: any[]) => Thenable<unknown>)[] = [];
 
   for (const code of strings) {
-    functions.push(run.compileFunction(code, Object.keys(context)));
+    functions.push(compileFunction(code, Object.keys(context)));
   }
 
-  const parameterValues = run.parameterValues();
+  const parameterValues = runParameterValues();
 
   if (isSingleStringArgument) {
     return Context.WithoutActiveEditor.wrap(
@@ -63,134 +63,132 @@ function ensureCacheIsPopulated() {
   cachedParameters.push(vscode);
 }
 
-export namespace run {
-  /**
-   * Sets the globals available within {@link run} expressions.
-   */
-  export function setGlobals(globals: object) {
-    cachedParameterNames.length = 0;
-    cachedParameters.length = 0;
+/**
+ * Sets the globals available within {@link run} expressions.
+ */
+export function setRunGlobals(globals: object) {
+  cachedParameterNames.length = 0;
+  cachedParameters.length = 0;
 
-    globalsObject = globals;
+  globalsObject = globals;
+}
+
+/**
+ * Returns the parameter names given to dynamically run functions.
+ */
+export function runParameterNames() {
+  ensureCacheIsPopulated();
+
+  return cachedParameterNames as readonly string[];
+}
+
+/**
+ * Returns the parameter values given to dynamically run functions.
+ */
+export function runParameterValues() {
+  ensureCacheIsPopulated();
+
+  return cachedParameters as readonly unknown[];
+}
+
+let canRunArbitraryCode = true;
+
+/**
+ * Disables usage of the {@link compileFunction} and {@link run} functions,
+ * preventing the execution of arbitrary user inputs.
+ *
+ * For security purposes, execution cannot be re-enabled after calling this
+ * function.
+ */
+export function disableRunFunction() {
+  canRunArbitraryCode = false;
+}
+
+/**
+ * Returns whether {@link compileFunction} and {@link run} can be used.
+ */
+export function runIsEnabled() {
+  return canRunArbitraryCode;
+}
+
+interface CompiledFunction {
+  (...args: any[]): Thenable<unknown>;
+}
+
+const AsyncFunction: new (...names: string[]) => CompiledFunction =
+        async function () {}.constructor as any,
+      functionCache = new Map<string, CachedFunction>();
+
+type CachedFunction = [funct: CompiledFunction, lastAccessTimestamp: number];
+
+/**
+ * A few common inputs.
+ */
+const safeExpressions = [
+  /^(\$\$?|[in]|\d+) *([=!]==?|[<>]=?|&{1,2}|\|{1,2}) *(\$\$?|[in]|\d+)$/,
+  /^i( + 1)?$/,
+  /^`\${await register\(["']\w+["'], *[i0-9]\)}` !== ["']false["']$/,
+];
+
+/**
+ * Compiles the given JavaScript code into a function.
+ */
+export function compileFunction(code: string, additionalParameterNames: readonly string[] = []) {
+  if (!canRunArbitraryCode && !safeExpressions.some((re) => re.test(code))) {
+    throw new Error("execution of arbitrary code is disabled");
   }
 
-  /**
-   * Returns the parameter names given to dynamically run functions.
-   */
-  export function parameterNames() {
-    ensureCacheIsPopulated();
+  const cacheId = additionalParameterNames.join(";") + code,
+        cached = functionCache.get(cacheId);
 
-    return cachedParameterNames as readonly string[];
+  if (cached !== undefined) {
+    cached[1] = Date.now();
+
+    return cached[0];
   }
 
-  /**
-   * Returns the parameter values given to dynamically run functions.
-   */
-  export function parameterValues() {
-    ensureCacheIsPopulated();
+  let func: CompiledFunction;
 
-    return cachedParameters as readonly unknown[];
+  try {
+    // Wrap code in block to allow shadowing of parameters.
+    func = new AsyncFunction(...runParameterNames(), ...additionalParameterNames, `{\n${code}\n}`);
+  } catch (e) {
+    throw new Error(`cannot parse function body: ${code}: ${e}`);
   }
 
-  let canRunArbitraryCode = true;
+  functionCache.set(cacheId, [func, Date.now()]);
 
-  /**
-   * Disables usage of the `compileFunction` and `run` functions, preventing the
-   * execution of arbitrary user inputs.
-   *
-   * For security purposes, execution cannot be re-enabled after calling this
-   * function.
-   */
-  export function disable() {
-    canRunArbitraryCode = false;
+  return func;
+}
+
+/**
+ * Removes all functions that were not used in the last n milliseconds from
+ * the cache.
+ */
+export function clearCompiledFunctionsCache(olderThanMs: number): void;
+
+/**
+ * Removes all functions that were not used in the last 5 minutes from the
+ * cache.
+ */
+export function clearCompiledFunctionsCache(): void;
+
+export function clearCompiledFunctionsCache(olderThanMs = 1000 * 60 * 5) {
+  if (olderThanMs === 0) {
+    return functionCache.clear();
   }
 
-  /**
-   * Returns whether `compileFunction` and `run` can be used.
-   */
-  export function isEnabled() {
-    return canRunArbitraryCode;
-  }
+  const olderThan = Date.now() - olderThanMs,
+        toDelete = [] as string[];
 
-  interface CompiledFunction {
-    (...args: any[]): Thenable<unknown>;
-  }
-
-  const AsyncFunction: new (...names: string[]) => CompiledFunction =
-          async function () {}.constructor as any,
-        functionCache = new Map<string, CachedFunction>();
-
-  type CachedFunction = [funct: CompiledFunction, lastAccessTimestamp: number];
-
-  /**
-   * A few common inputs.
-   */
-  const safeExpressions = [
-    /^(\$\$?|[in]|\d+) *([=!]==?|[<>]=?|&{1,2}|\|{1,2}) *(\$\$?|[in]|\d+)$/,
-    /^i( + 1)?$/,
-    /^`\${await register\(["']\w+["'], *[i0-9]\)}` !== ["']false["']$/,
-  ];
-
-  /**
-   * Compiles the given JavaScript code into a function.
-   */
-  export function compileFunction(code: string, additionalParameterNames: readonly string[] = []) {
-    if (!canRunArbitraryCode && !safeExpressions.some((re) => re.test(code))) {
-      throw new Error("execution of arbitrary code is disabled");
+  for (const [code, value] of functionCache) {
+    if (value[1] < olderThan) {
+      toDelete.push(code);
     }
-
-    const cacheId = additionalParameterNames.join(";") + code,
-          cached = functionCache.get(cacheId);
-
-    if (cached !== undefined) {
-      cached[1] = Date.now();
-
-      return cached[0];
-    }
-
-    let func: CompiledFunction;
-
-    try {
-      // Wrap code in block to allow shadowing of parameters.
-      func = new AsyncFunction(...parameterNames(), ...additionalParameterNames, `{\n${code}\n}`);
-    } catch (e) {
-      throw new Error(`cannot parse function body: ${code}: ${e}`);
-    }
-
-    functionCache.set(cacheId, [func, Date.now()]);
-
-    return func;
   }
 
-  /**
-   * Removes all functions that were not used in the last n milliseconds from
-   * the cache.
-   */
-  export function clearCache(olderThanMs: number): void;
-
-  /**
-   * Removes all functions that were not used in the last 5 minutes from the
-   * cache.
-   */
-  export function clearCache(): void;
-
-  export function clearCache(olderThanMs = 1000 * 60 * 5) {
-    if (olderThanMs === 0) {
-      return functionCache.clear();
-    }
-
-    const olderThan = Date.now() - olderThanMs,
-          toDelete = [] as string[];
-
-    for (const [code, value] of functionCache) {
-      if (value[1] < olderThan) {
-        toDelete.push(code);
-      }
-    }
-
-    for (const code of toDelete) {
-      functionCache.delete(code);
-    }
+  for (const code of toDelete) {
+    functionCache.delete(code);
   }
 }
 
@@ -315,14 +313,14 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
   return results;
 }
 
-export namespace command {
+export declare namespace command {
   /**
-   * A tuple given to `command`.
+   * A tuple given to {@link command}.
    */
   export type Tuple = readonly [commandId: string, ...args: any[]];
 
   /**
-   * An object given to `command`.
+   * An object given to {@link command}.
    */
   export interface Command {
     readonly command: string;
@@ -390,17 +388,15 @@ export function execute(
   return Context.WithoutActiveEditor.wrap(promise);
 }
 
-export namespace execute {
-  /**
-   * Disables usage of the `execute` function, preventing the execution of
-   * arbitrary user commands.
-   *
-   * For security purposes, execution cannot be re-enabled after calling this
-   * function.
-   */
-  export function disable() {
-    canExecuteArbitraryCommands = false;
-  }
+/**
+ * Disables usage of the {@link execute} function, preventing the execution of
+ * arbitrary user commands.
+ *
+ * For security purposes, execution cannot be re-enabled after calling this
+ * function.
+ */
+export function disableExecuteFunction() {
+  canExecuteArbitraryCommands = false;
 }
 
 function getShell() {
@@ -464,28 +460,26 @@ export function switchRun(string: string, context: { $: string } & Record<string
   return run("return " + string, context);
 }
 
-export namespace switchRun {
-  /**
-   * Validates the given input string. If it is invalid, an exception will be
-   * thrown.
-   */
-  export function validate(string: string) {
-    if (string.trim().length === 0) {
-      throw new Error("the given string cannot be empty");
-    }
-
-    if (string[0] === "/") {
-      parseRegExpWithReplacement(string);
-      return;
-    }
-
-    if (string[0] === "#") {
-      if (string.slice(1).trim().length === 0) {
-        throw new Error("the given shell command cannot be empty");
-      }
-      return;
-    }
-
-    run.compileFunction("return " + string);
+/**
+ * Validates the given input string for use in {@link switchRun}. If it is
+ * invalid, an exception will be thrown.
+ */
+export function validateForSwitchRun(string: string) {
+  if (string.trim().length === 0) {
+    throw new Error("the given string cannot be empty");
   }
+
+  if (string[0] === "/") {
+    parseRegExpWithReplacement(string);
+    return;
+  }
+
+  if (string[0] === "#") {
+    if (string.slice(1).trim().length === 0) {
+      throw new Error("the given shell command cannot be empty");
+    }
+    return;
+  }
+
+  compileFunction("return " + string);
 }

@@ -1,13 +1,13 @@
 import * as vscode from "vscode";
 
 import { Context } from "./context";
-import { keypress, prompt } from "./prompt";
+import { keypress, promptLocked, promptOne } from "./prompt";
 
 export interface Menu {
   readonly items: Menu.Items;
 }
 
-export namespace Menu {
+export declare namespace Menu {
   export interface Items {
     [keys: string]: Item;
   }
@@ -100,7 +100,7 @@ export async function showMenu(
 ) {
   const entries = Object.entries(menu.items);
   const items = entries.map((x) => [x[0], x[1].text] as const);
-  const choice = await prompt.one(items);
+  const choice = await promptOne(items);
 
   if (typeof choice === "string") {
     if (prefix !== undefined) {
@@ -118,66 +118,64 @@ export async function showMenu(
   );
 }
 
-export namespace showMenu {
-  /**
-   * Shows the menu with the given name.
-   */
-  export function byName(
-    menuName: string,
-    additionalArgs: readonly any[] = [],
-    prefix?: string,
-  ) {
-    return showMenu(findMenu(menuName), additionalArgs, prefix);
-  }
+/**
+ * Shows the menu with the given name.
+ */
+export function showMenuByName(
+  menuName: string,
+  additionalArgs: readonly any[] = [],
+  prefix?: string,
+) {
+  return showMenu(findMenu(menuName), additionalArgs, prefix);
+}
 
-  /**
-   * Same as `showMenu`, but only displays the menu after a specified delay.
-   */
-  export async function withDelay(
-    delayMs: number,
-    menu: Menu,
-    additionalArgs: readonly any[] = [],
-    prefix?: string,
-  ) {
-    const cancellationTokenSource = new vscode.CancellationTokenSource(),
-          currentContext = Context.current;
+/**
+ * Same as {@link showMenu}, but only displays the menu after a specified delay.
+ */
+export async function showMenuAfterDelay(
+  delayMs: number,
+  menu: Menu,
+  additionalArgs: readonly any[] = [],
+  prefix?: string,
+) {
+  const cancellationTokenSource = new vscode.CancellationTokenSource(),
+        currentContext = Context.current;
 
-    currentContext.cancellationToken.onCancellationRequested(() =>
-      cancellationTokenSource.cancel());
+  currentContext.cancellationToken.onCancellationRequested(() =>
+    cancellationTokenSource.cancel());
 
-    const keypressContext = currentContext.withCancellationToken(cancellationTokenSource.token),
-          timeout = setTimeout(() => cancellationTokenSource.cancel(), delayMs);
+  const keypressContext = currentContext.withCancellationToken(cancellationTokenSource.token),
+        timeout = setTimeout(() => cancellationTokenSource.cancel(), delayMs);
 
-    try {
-      const key = await keypress(keypressContext);
+  try {
+    const key = await keypress(keypressContext);
 
-      clearTimeout(timeout);
+    clearTimeout(timeout);
 
-      for (const itemKeys in menu.items) {
-        if (!itemKeys.includes(key)) {
-          continue;
-        }
-
-        const pickedItem = menu.items[itemKeys],
-              args = mergeArgs(pickedItem.args, additionalArgs);
-
-        return Context.WithoutActiveEditor.wrap(
-          vscode.commands.executeCommand(pickedItem.command, ...args),
-        );
+    for (const itemKeys in menu.items) {
+      if (!itemKeys.includes(key)) {
+        continue;
       }
 
-      if (prefix !== undefined) {
-        await vscode.commands.executeCommand("default:type", { text: prefix + key });
-      }
-    } catch (e) {
-      if (!currentContext.cancellationToken.isCancellationRequested) {
-        return showMenu(menu, additionalArgs, prefix);
-      }
+      const pickedItem = menu.items[itemKeys],
+            args = mergeArgs(pickedItem.args, additionalArgs);
 
-      throw e;
-    } finally {
-      cancellationTokenSource.dispose();
+      return Context.WithoutActiveEditor.wrap(
+        vscode.commands.executeCommand(pickedItem.command, ...args),
+      );
     }
+
+    if (prefix !== undefined) {
+      await vscode.commands.executeCommand("default:type", { text: prefix + key });
+    }
+  } catch (e) {
+    if (!currentContext.cancellationToken.isCancellationRequested) {
+      return showMenu(menu, additionalArgs, prefix);
+    }
+
+    throw e;
+  } finally {
+    cancellationTokenSource.dispose();
   }
 }
 
@@ -194,19 +192,17 @@ export async function showLockedMenu(
             vscode.commands.executeCommand(
               item.command, ...mergeArgs(item.args, additionalArgs))] as const);
 
-  await prompt.one.locked(items);
+  await promptLocked(items);
 }
 
-export namespace showLockedMenu {
-  /**
-   * Shows the menu with the given name.
-   */
-  export function byName(
-    menuName: string,
-    additionalArgs: readonly any[] = [],
-  ) {
-    return showLockedMenu(findMenu(menuName), additionalArgs);
-  }
+/**
+ * Shows the menu with the given name.
+ */
+export function showLockedMenyByName(
+  menuName: string,
+  additionalArgs: readonly any[] = [],
+) {
+  return showLockedMenu(findMenu(menuName), additionalArgs);
 }
 
 function mergeArgs(args: readonly any[] | undefined, additionalArgs: readonly any[]) {

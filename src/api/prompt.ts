@@ -5,7 +5,7 @@ import { set as setSelections } from "./selections";
 import type { Input, SetInput } from "../commands";
 import { ArgumentError, CancellationError } from "../utils/errors";
 
-const actionEvent = new vscode.EventEmitter<Parameters<typeof prompt.notifyActionRequested>[0]>();
+const actionEvent = new vscode.EventEmitter<Parameters<typeof notifyPromptActionRequested>[0]>();
 
 /**
  * Displays a prompt to the user.
@@ -167,299 +167,302 @@ export function prompt(
   return context.wrap(promise);
 }
 
-export namespace prompt {
-  type RegExpFlag = "m" | "u" | "s" | "y" | "i" | "g";
-  type RegExpFlags = RegExpFlag
-                   | `${RegExpFlag}${RegExpFlag}`
-                   | `${RegExpFlag}${RegExpFlag}${RegExpFlag}`
-                   | `${RegExpFlag}${RegExpFlag}${RegExpFlag}${RegExpFlag}`;
-
+export declare namespace prompt {
   /**
-   * Options for spawning a `prompt`.
+   * Options for spawning a {@link prompt}.
    */
   export interface Options extends vscode.InputBoxOptions {
     readonly history?: string[];
     readonly historySize?: number;
   }
+}
 
-  /**
-   * Returns `vscode.InputBoxOptions` that only validate if a number in a given
-   * range is entered.
-   */
-  export function numberOpts(
-    opts: { integer?: boolean; range?: [number, number] } = {},
-  ): vscode.InputBoxOptions {
-    return {
-      validateInput(input) {
-        const n = +input;
+/**
+ * Returns {@link vscode.InputBoxOptions} that only validate if a number in a
+ * given range is entered.
+ */
+export function promptNumberOpts(
+  opts: { integer?: boolean; range?: [number, number] } = {},
+): vscode.InputBoxOptions {
+  return {
+    validateInput(input) {
+      const n = +input;
 
-        if (isNaN(n)) {
-          return "Invalid number.";
-        }
-
-        if (opts.range && (n < opts.range[0] || n > opts.range[1])) {
-          return `Number out of range ${JSON.stringify(opts.range)}.`;
-        }
-
-        if (opts.integer && (n | 0) !== n) {
-          return `Number must be an integer.`;
-        }
-
-        return;
-      },
-    };
-  }
-
-  /**
-   * Equivalent to `+await prompt(numberOpts(), context)`.
-   */
-  export function number(
-    opts: Parameters<typeof numberOpts>[0],
-    context = Context.WithoutActiveEditor.current,
-  ) {
-    return prompt(numberOpts(opts), context).then((x) => +x);
-  }
-
-  /**
-   * Last used inputs for `regexp` prompts.
-   */
-  export const regexpHistory: string[] = [];
-
-  /**
-   * Returns `vscode.InputBoxOptions` that only validate if a valid ECMAScript
-   * regular expression is entered.
-   */
-  export function regexpOpts(flags: RegExpFlags): prompt.Options {
-    return {
-      prompt: "Regular expression",
-      validateInput(input) {
-        if (input.length === 0) {
-          return "RegExp cannot be empty";
-        }
-
-        try {
-          new RegExp(input, flags);
-
-          return undefined;
-        } catch {
-          return "invalid RegExp";
-        }
-      },
-
-      history: regexpHistory,
-    };
-  }
-
-  /**
-   * Equivalent to `new RegExp(await prompt(regexpOpts(flags), context), flags)`.
-   */
-  export function regexp(
-    flags: RegExpFlags,
-    context = Context.WithoutActiveEditor.current,
-  ) {
-    return prompt(regexpOpts(flags), context).then((x) => new RegExp(x, flags));
-  }
-
-  /**
-   * Prompts the user for a result interactively.
-   */
-  export function interactive<T>(
-    compute: (input: string) => T | Thenable<T>,
-    reset: () => void,
-    options: vscode.InputBoxOptions = {},
-    interactive: boolean = true,
-  ): Thenable<T> {
-    let result: T;
-    const validateInput = options.validateInput;
-
-    if (!interactive) {
-      return prompt(options).then((value) => compute(value));
-    }
-
-    return prompt({
-      ...options,
-      async validateInput(input) {
-        const validationError = await validateInput?.(input);
-
-        if (validationError) {
-          return validationError;
-        }
-
-        try {
-          result = await compute(input);
-          return;
-        } catch (e) {
-          return `${e}`;
-        }
-      },
-    }).then(
-      () => result,
-      (err) => {
-        reset();
-        throw err;
-      },
-    );
-  }
-
-  /**
-   * @internal
-   */
-  export async function manipulateSelectionsInteractively<I, R>(
-    _: Context,
-    input: Input<I>,
-    setInput: SetInput<R>,
-    interactive: boolean,
-    options: prompt.Options,
-    f: (input: string | I, selections: readonly vscode.Selection[]) => Thenable<R>,
-  ) {
-    const selections = _.selections;
-
-    function execute(input: string | I) {
-      return _.runAsync(() => f(input, selections));
-    }
-
-    function undo() {
-      setSelections(selections);
-    }
-
-    if (input === undefined) {
-      setInput(await prompt.interactive(execute, undo, options, interactive));
-    } else {
-      await execute(input);
-    }
-  }
-
-  export type ListPair = readonly [string, string];
-
-  /**
-   * Prompts the user to choose one item among a list of items, and returns the
-   * index of the item that was picked.
-   */
-  export function one(
-    items: readonly ListPair[],
-    init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
-    options?: Readonly<{ defaultPickName?: string, defaultPick?: string }>,
-    context = Context.WithoutActiveEditor.current,
-  ) {
-    if (options?.defaultPick != null) {
-      const defaultPick = options.defaultPick,
-            index = items.findIndex((pair) => pair[0] === defaultPick);
-
-      if (index === -1) {
-        const pickName = options.defaultPickName ?? "options.defaultPick",
-              choices = items.map((pair) => '"' + pair[0] + '"').join(", ");
-
-        return Promise.reject(new ArgumentError(`"${pickName}" must be one of ${choices}`));
+      if (isNaN(n)) {
+        return "Invalid number.";
       }
 
-      return Promise.resolve(index);
-    }
+      if (opts.range && (n < opts.range[0] || n > opts.range[1])) {
+        return `Number out of range ${JSON.stringify(opts.range)}.`;
+      }
 
-    return promptInList(false, items, init ?? (() => {}), context.cancellationToken);
+      if (opts.integer && (n | 0) !== n) {
+        return `Number must be an integer.`;
+      }
+
+      return;
+    },
+  };
+}
+
+/**
+ * Equivalent to `+await prompt(numberOpts(), context)`.
+ */
+export function promptNumber(
+  opts: Parameters<typeof promptNumberOpts>[0],
+  context = Context.WithoutActiveEditor.current,
+) {
+  return prompt(promptNumberOpts(opts), context).then((x) => +x);
+}
+
+/**
+ * Last used inputs for {@link promptRegexp}.
+ */
+export const regexpHistory: string[] = [];
+
+/**
+ * Returns {@link vscode.InputBoxOptions} that only validate if a valid
+ * ECMAScript regular expression is entered.
+ */
+export function promptRegexpOpts(flags: promptRegexp.Flags): prompt.Options {
+  return {
+    prompt: "Regular expression",
+    validateInput(input) {
+      if (input.length === 0) {
+        return "RegExp cannot be empty";
+      }
+
+      try {
+        new RegExp(input, flags);
+
+        return undefined;
+      } catch {
+        return "invalid RegExp";
+      }
+    },
+
+    history: regexpHistory,
+  };
+}
+
+/**
+ * Equivalent to `new RegExp(await prompt(regexpOpts(flags), context), flags)`.
+ */
+export function promptRegexp(
+  flags: promptRegexp.Flags,
+  context = Context.WithoutActiveEditor.current,
+) {
+  return prompt(promptRegexpOpts(flags), context).then((x) => new RegExp(x, flags));
+}
+
+export declare namespace promptRegexp {
+  export type Flag = "m" | "u" | "s" | "y" | "i" | "g";
+  export type Flags = Flag
+                    | `${Flag}${Flag}`
+                    | `${Flag}${Flag}${Flag}`
+                    | `${Flag}${Flag}${Flag}${Flag}`;
+}
+
+/**
+ * Prompts the user for a result interactively.
+ */
+export function promptInteractively<T>(
+  compute: (input: string) => T | Thenable<T>,
+  reset: () => void,
+  options: vscode.InputBoxOptions = {},
+  interactive: boolean = true,
+): Thenable<T> {
+  let result: T;
+  const validateInput = options.validateInput;
+
+  if (!interactive) {
+    return prompt(options).then((value) => compute(value));
   }
 
-  export namespace one {
-    /**
-     * Prompts the user for actions in a menu, only hiding it when a
-     * cancellation is requested or `Escape` pressed.
-     */
-    export function locked(
-      items: readonly (readonly [string, string, () => void])[],
-      init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
-      cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
-    ) {
-      const itemsKeys = items.map(([k, _]) => k.includes(", ") ? k.split(", ") : [...k]);
+  return prompt({
+    ...options,
+    async validateInput(input) {
+      const validationError = await validateInput?.(input);
 
-      return new Promise<void>((resolve, reject) => {
-        const quickPick = vscode.window.createQuickPick(),
-              quickPickItems = [] as vscode.QuickPickItem[];
+      if (validationError) {
+        return validationError;
+      }
 
-        let isCaseSignificant = false;
+      try {
+        result = await compute(input);
+        return;
+      } catch (e) {
+        return `${e}`;
+      }
+    },
+  }).then(
+    () => result,
+    (err) => {
+      reset();
+      throw err;
+    },
+  );
+}
 
-        for (let i = 0; i < items.length; i++) {
-          const [label, description] = items[i];
+/**
+ * Calls `f` and updates the `input` with `setInput` when the prompt created
+ * with the given `options` is interacted with.
+ *
+ * @internal
+ */
+export async function manipulateSelectionsInteractively<I, R>(
+  _: Context,
+  input: Input<I>,
+  setInput: SetInput<R>,
+  interactive: boolean,
+  options: prompt.Options,
+  f: (input: string | I, selections: readonly vscode.Selection[]) => Thenable<R>,
+) {
+  const selections = _.selections;
 
-          quickPickItems.push({ label, description });
-          isCaseSignificant = isCaseSignificant || label.toLowerCase() !== label;
+  function execute(input: string | I) {
+    return _.runAsync(() => f(input, selections));
+  }
+
+  function undo() {
+    setSelections(selections);
+  }
+
+  if (input === undefined) {
+    setInput(await promptInteractively(execute, undo, options, interactive));
+  } else {
+    await execute(input);
+  }
+}
+
+export type ListPair = readonly [string, string];
+
+/**
+ * Prompts the user to choose one item among a list of items, and returns the
+ * index of the item that was picked.
+ */
+export function promptOne(
+  items: readonly ListPair[],
+  init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
+  options?: Readonly<{ defaultPickName?: string, defaultPick?: string }>,
+  context = Context.WithoutActiveEditor.current,
+) {
+  if (options?.defaultPick != null) {
+    const defaultPick = options.defaultPick,
+          index = items.findIndex((pair) => pair[0] === defaultPick);
+
+    if (index === -1) {
+      const pickName = options.defaultPickName ?? "options.defaultPick",
+            choices = items.map((pair) => '"' + pair[0] + '"').join(", ");
+
+      return Promise.reject(new ArgumentError(`"${pickName}" must be one of ${choices}`));
+    }
+
+    return Promise.resolve(index);
+  }
+
+  return promptInList(false, items, init ?? (() => {}), context.cancellationToken);
+}
+
+/**
+ * Prompts the user for actions in a menu, only hiding it when a
+ * cancellation is requested or `Escape` pressed.
+ */
+export function promptLocked(
+  items: readonly (readonly [string, string, () => void])[],
+  init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
+  cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
+) {
+  const itemsKeys = items.map(([k, _]) => k.includes(", ") ? k.split(", ") : [...k]);
+
+  return new Promise<void>((resolve, reject) => {
+    const quickPick = vscode.window.createQuickPick(),
+          quickPickItems = [] as vscode.QuickPickItem[];
+
+    let isCaseSignificant = false;
+
+    for (let i = 0; i < items.length; i++) {
+      const [label, description] = items[i];
+
+      quickPickItems.push({ label, description });
+      isCaseSignificant = isCaseSignificant || label.toLowerCase() !== label;
+    }
+
+    quickPick.items = quickPickItems;
+    quickPick.placeholder = "Press one of the below keys.";
+
+    const subscriptions = [
+      quickPick.onDidChangeValue((rawKey) => {
+        quickPick.value = "";
+
+        // This causes the menu to disappear and reappear for a frame, but
+        // without this the shown items don't get refreshed after the value
+        // change above.
+        quickPick.items = quickPickItems;
+
+        let key = rawKey;
+
+        if (!isCaseSignificant) {
+          key = key.toLowerCase();
         }
 
-        quickPick.items = quickPickItems;
-        quickPick.placeholder = "Press one of the below keys.";
+        const index = itemsKeys.findIndex((x) => x.includes(key));
 
-        const subscriptions = [
-          quickPick.onDidChangeValue((rawKey) => {
-            quickPick.value = "";
+        if (index !== -1) {
+          items[index][2]();
+        }
+      }),
 
-            // This causes the menu to disappear and reappear for a frame, but
-            // without this the shown items don't get refreshed after the value
-            // change above.
-            quickPick.items = quickPickItems;
+      quickPick.onDidHide(() => {
+        subscriptions.splice(0).forEach((s) => s.dispose());
 
-            let key = rawKey;
+        resolve();
+      }),
 
-            if (!isCaseSignificant) {
-              key = key.toLowerCase();
-            }
+      quickPick.onDidAccept(() => {
+        subscriptions.splice(0).forEach((s) => s.dispose());
 
-            const index = itemsKeys.findIndex((x) => x.includes(key));
+        const picked = quickPick.selectedItems[0];
 
-            if (index !== -1) {
-              items[index][2]();
-            }
-          }),
+        try {
+          items.find((x) => x[1] === picked.description)![2]();
+        } finally {
+          resolve();
+        }
+      }),
 
-          quickPick.onDidHide(() => {
-            subscriptions.splice(0).forEach((s) => s.dispose());
+      cancellationToken?.onCancellationRequested(() => {
+        subscriptions.splice(0).forEach((s) => s.dispose());
 
-            resolve();
-          }),
+        reject(new CancellationError(CancellationError.Reason.CancellationToken));
+      }),
 
-          quickPick.onDidAccept(() => {
-            subscriptions.splice(0).forEach((s) => s.dispose());
+      quickPick,
+    ];
 
-            const picked = quickPick.selectedItems[0];
+    init?.(quickPick);
 
-            try {
-              items.find((x) => x[1] === picked.description)![2]();
-            } finally {
-              resolve();
-            }
-          }),
+    quickPick.show();
+  });
+}
 
-          cancellationToken?.onCancellationRequested(() => {
-            subscriptions.splice(0).forEach((s) => s.dispose());
+/**
+ * Prompts the user to choose many items among a list of items, and returns a
+ * list of indices of picked items.
+ */
+export function promptMany(
+  items: readonly ListPair[],
+  init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
+  context = Context.WithoutActiveEditor.current,
+) {
+  return promptInList(true, items, init ?? (() => {}), context.cancellationToken);
+}
 
-            reject(new CancellationError(CancellationError.Reason.CancellationToken));
-          }),
-
-          quickPick,
-        ];
-
-        init?.(quickPick);
-
-        quickPick.show();
-      });
-    }
-  }
-
-  /**
-   * Prompts the user to choose many items among a list of items, and returns a
-   * list of indices of picked items.
-   */
-  export function many(
-    items: readonly ListPair[],
-    init?: (quickPick: vscode.QuickPick<vscode.QuickPickItem>) => void,
-    context = Context.WithoutActiveEditor.current,
-  ) {
-    return promptInList(true, items, init ?? (() => {}), context.cancellationToken);
-  }
-
-  /**
-   * Notifies an active prompt, if any, that an action has been requested.
-   */
-  export function notifyActionRequested(action: "next" | "previous" | "clear") {
-    actionEvent.fire(action);
-  }
+/**
+ * Notifies an active prompt, if any, that an action has been requested.
+ */
+export function notifyPromptActionRequested(action: "next" | "previous" | "clear") {
+  actionEvent.fire(action);
 }
 
 /**
@@ -502,21 +505,19 @@ export function keypress(context = Context.current): Promise<string> {
   );
 }
 
-export namespace keypress {
-  /**
-   * Awaits a keypress describing a register and returns the specified register.
-   */
-  export async function forRegister(context = Context.current) {
-    const firstKey = await keypress(context);
+/**
+ * Awaits a keypress describing a register and returns the specified register.
+ */
+export async function keypressForRegister(context = Context.current) {
+  const firstKey = await keypress(context);
 
-    if (firstKey !== " ") {
-      return context.extension.registers.get(firstKey);
-    }
-
-    const secondKey = await keypress(context);
-
-    return context.extension.registers.forDocument(context.document).get(secondKey);
+  if (firstKey !== " ") {
+    return context.extension.registers.get(firstKey);
   }
+
+  const secondKey = await keypress(context);
+
+  return context.extension.registers.forDocument(context.document).get(secondKey);
 }
 
 function promptInList(

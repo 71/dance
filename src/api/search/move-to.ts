@@ -56,46 +56,40 @@ export function moveTo(
   }
 }
 
-export namespace moveTo {
-  /**
-   * Same as `moveTo`, but also ensures that the result is excluded by
-   * translating the resulting position by `input.length` when going backward.
-   *
-   * @see moveTo
-   */
-  export function excluded(
-    direction: Direction,
-    string: string,
-    origin: vscode.Position,
-    document?: vscode.TextDocument,
-  ) {
-    const result = moveTo(direction, string, origin, document);
+/**
+ * Same as {@link moveTo}, but also ensures that the result is excluded by
+ * translating the resulting position by `input.length` when going backward.
+ */
+export function moveToExcluded(
+  direction: Direction,
+  string: string,
+  origin: vscode.Position,
+  document?: vscode.TextDocument,
+) {
+  const result = moveTo(direction, string, origin, document);
 
-    if (result !== undefined && direction === Direction.Backward) {
-      return Positions.offset(result, string.length, document);
-    }
-
-    return result;
+  if (result !== undefined && direction === Direction.Backward) {
+    return Positions.offset(result, string.length, document);
   }
 
-  /**
-   * Same as `moveTo`, but also ensures that the result is included by
-   * translating the resulting position by `input.length` when going forward.
-   *
-   * @see moveTo
-   */
-  export function included(
-    direction: Direction,
-    string: string,
-    origin: vscode.Position,
-    document?: vscode.TextDocument,
-  ) {
-    const result = moveTo(direction, string, origin, document);
+  return result;
+}
 
-    if (result !== undefined && direction === Direction.Forward) {
-      return Positions.offset(result, string.length, document);
-    }
+/**
+ * Same as {@link moveTo}, but also ensures that the result is included by
+ * translating the resulting position by `input.length` when going forward.
+ */
+export function moveToIncluded(
+  direction: Direction,
+  string: string,
+  origin: vscode.Position,
+  document?: vscode.TextDocument,
+) {
+  const result = moveTo(direction, string, origin, document);
 
-    return result;
+  if (result !== undefined && direction === Direction.Forward) {
+    return Positions.offset(result, string.length, document);
   }
+
+  return result;
 }
