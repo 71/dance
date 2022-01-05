@@ -797,7 +797,7 @@ This command:
 
 <a name=".openMenu" />
 
-### [`openMenu`](./misc.ts#L305-L327)
+### [`openMenu`](./misc.ts#L305-L328)
 
 Open menu.
 
@@ -817,11 +817,12 @@ This command:
 - takes an argument `menu` of type `Menu`.
 - takes an argument `pass` of type `any[]`.
 - takes an argument `prefix` of type `string`.
+- takes an argument `title` of type `string`.
 - takes an input of type `string`.
 
 <a name=".changeInput" />
 
-### [`changeInput`](./misc.ts#L363-L377)
+### [`changeInput`](./misc.ts#L368-L382)
 
 Change current input.
 
@@ -1049,8 +1050,8 @@ Select object.
 
 | Title                        | Identifier                     | Keybinding                     | Command                                                                                        |
 | ---------------------------- | ------------------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------- |
-| Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { input: "object"                                                           }]` |
-| Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { input: "object", pass: [{ inner: true                                  }] }]` |
+| Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { input: "object",                          title: "Select whole object..." }]` |
+| Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { input: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
 | Select to whole object start | `askObject.start`              | `[` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start"                  }] }]` |
 | Extend to whole object start | `askObject.start.extend`       | `{` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start", shift: "extend" }] }]` |
 | Select to inner object start | `askObject.inner.start`        | `a-[` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "start"                  }] }]` |

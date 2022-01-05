@@ -324,6 +324,7 @@ export async function openMenu(
   pass: Argument<any[]> = [],
   locked: Argument<boolean> = false,
   delay: Argument<number> = 0,
+  title?: Argument<string>,
 ) {
   if (typeof menu !== "object") {
     const menus = _.extension.menus;
@@ -341,6 +342,10 @@ export async function openMenu(
     }, _));
 
     menu = findMenu(input, _);
+  }
+
+  if (title !== undefined) {
+    menu = { ...menu, title };
   }
 
   const errors = validateMenu(menu);

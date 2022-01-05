@@ -266,8 +266,8 @@ let lastObjectInput: string | undefined;
  *
  * | Title                        | Identifier                     | Keybinding                     | Command                                                                                        |
  * | ---------------------------- | ------------------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------- |
- * | Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { input: "object"                                                           }]` |
- * | Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { input: "object", pass: [{ inner: true                                  }] }]` |
+ * | Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { input: "object",                          title: "Select whole object..." }]` |
+ * | Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { input: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
  * | Select to whole object start | `askObject.start`              | `[` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start"                  }] }]` |
  * | Extend to whole object start | `askObject.start.extend`       | `{` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start", shift: "extend" }] }]` |
  * | Select to inner object start | `askObject.inner.start`        | `a-[` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "start"                  }] }]` |

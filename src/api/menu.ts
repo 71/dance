@@ -4,6 +4,7 @@ import { Context } from "./context";
 import { keypress, promptLocked, promptOne } from "./prompt";
 
 export interface Menu {
+  readonly title?: string;
   readonly items: Menu.Items;
 }
 
@@ -35,6 +36,10 @@ export function validateMenu(menu: Menu) {
 
   const seenKeyCodes = new Map<number, string>(),
         errors = [] as string[];
+
+  if (menu.title !== undefined && typeof menu.title !== "string") {
+    errors.push("menu title must be a string");
+  }
 
   for (const key in menu.items) {
     const item = menu.items[key],
@@ -100,7 +105,7 @@ export async function showMenu(
 ) {
   const entries = Object.entries(menu.items);
   const items = entries.map((x) => [x[0], x[1].text] as const);
-  const choice = await promptOne(items);
+  const choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
 
   if (typeof choice === "string") {
     if (prefix !== undefined) {
@@ -192,7 +197,7 @@ export async function showLockedMenu(
             vscode.commands.executeCommand(
               item.command, ...mergeArgs(item.args, additionalArgs))] as const);
 
-  await promptLocked(items);
+  await promptLocked(items, (quickPick) => quickPick.title = menu.title);
 }
 
 /**

@@ -449,7 +449,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.openMenu",
-      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.pass, argument.locked, argument.delay)),
+      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.pass, argument.locked, argument.delay, argument.title)),
       CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -636,7 +636,7 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.seek.askObject",
-      (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", title: "Select whole object...", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -651,7 +651,7 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.seek.askObject.inner",
-      (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", pass: [{ inner: true, ...argument }], ...argument }])),
+      (_, argument) => _.runAsync(() => commands([".openMenu", { input: "object", pass: [{ inner: true, ...argument }], title: "Select inner object...", ...argument }])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(

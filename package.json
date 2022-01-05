@@ -435,6 +435,9 @@
           "additionalProperties": {
             "type": "object",
             "properties": {
+              "title": {
+                "type": "string"
+              },
               "items": {
                 "type": "object",
                 "additionalProperties": {
@@ -463,6 +466,7 @@
           },
           "default": {
             "object": {
+              "title": "Select object...",
               "items": {
                 "b()": {
                   "command": "dance.seek.object",
@@ -606,6 +610,7 @@
               }
             },
             "goto": {
+              "title": "Go...",
               "items": {
                 "h": {
                   "text": "to line start",
@@ -674,6 +679,7 @@
               }
             },
             "view": {
+              "title": "View",
               "items": {
                 "vc": {
                   "text": "center cursor vertically",

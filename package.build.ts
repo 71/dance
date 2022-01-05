@@ -342,6 +342,9 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           additionalProperties: {
             type: "object",
             properties: {
+              title: {
+                type: "string",
+              },
               items: {
                 type: "object",
                 additionalProperties: {
@@ -368,6 +371,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           },
           default: {
             "object": {
+              title: "Select object...",
               items: ((command = "dance.seek.object") => ({
                 "b()": {
                   command,
@@ -452,6 +456,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             },
 
             "goto": {
+              title: "Go...",
               items: {
                 "h": {
                   text: "to line start",
@@ -505,6 +510,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             },
 
             "view": {
+              title: "View",
               items: {
                 // AFAIK, we can't implement these yet since VS Code only
                 // exposes vertical view ranges:
