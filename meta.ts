@@ -210,7 +210,7 @@ function parseDocComments(code: string, modulePath: string) {
                                              properties[k] = v?.replace(/\n {2}/g, " ").trim();
                                              return "";
                                            }),
-          summary = (/((?:.+(?:\n|$))+)/.exec(doc) === null ? console.log(functionName, JSON.stringify(doc)) : 0, /((?:.+(?:\n|$))+)/.exec(doc)![0].trim().replace(/\.$/, "")),
+          summary = /((?:.+(?:\n|$))+)/.exec(doc)![0].trim().replace(/\.$/, ""),
           examplesStrings = splitDocComment.slice(1),
           nameWithDot = functionName.replace(/_/g, ".");
 
