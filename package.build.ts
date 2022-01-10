@@ -497,6 +497,10 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                   text: "to last displayed line",
                   command: "dance.select.lastVisibleLine",
                 },
+                "a": {
+                  text: "to last buffer",
+                  command: "workbench.action.openPreviousRecentlyUsedEditorInGroup",
+                },
                 "f": {
                   text: "to file whose name is selected",
                   command: "dance.selections.open",
