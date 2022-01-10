@@ -3659,6 +3659,11 @@
       },
       {
         "command": "dance.ignore",
+        "key": "\\",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.ignore",
         "key": "Shift+D",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
@@ -3680,6 +3685,11 @@
       {
         "command": "dance.ignore",
         "key": "Shift+6",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.ignore",
+        "key": "Shift+Space",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
