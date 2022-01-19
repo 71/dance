@@ -31,7 +31,7 @@ export function validateMenu(menu: Menu) {
   }
 
   if (typeof menu.items !== "object" || Object.keys(menu.items ?? {}).length === 0) {
-    return ['menu must have an subobject "items" with at least two entries.'];
+    return ['menu must have an subobject "items" with at least one entry'];
   }
 
   const seenKeyCodes = new Map<number, string>(),
@@ -46,22 +46,22 @@ export function validateMenu(menu: Menu) {
           itemDisplay = JSON.stringify(key);
 
     if (typeof item !== "object" || item === null) {
-      errors.push(`item ${itemDisplay} must be an object.`);
+      errors.push(`item ${itemDisplay} must be an object`);
       continue;
     }
 
     if (typeof item.text !== "string" || item.text.length === 0) {
-      errors.push(`item ${itemDisplay} must have a non-empty "text" property.`);
+      errors.push(`item ${itemDisplay} must have a non-empty "text" property`);
       continue;
     }
 
     if (typeof item.command !== "string" || item.command.length === 0) {
-      errors.push(`item ${itemDisplay} must have a non-empty "command" property.`);
+      errors.push(`item ${itemDisplay} must have a non-empty "command" property`);
       continue;
     }
 
     if (key.length === 0) {
-      errors.push(`item ${itemDisplay} must be a non-empty string key.`);
+      errors.push(`item ${itemDisplay} must be a non-empty string key`);
       continue;
     }
 
@@ -70,7 +70,7 @@ export function validateMenu(menu: Menu) {
             prevKey = seenKeyCodes.get(keyCode);
 
       if (prevKey) {
-        errors.push(`menu has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`);
+        errors.push(`menu has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}')`);
         continue;
       }
 
