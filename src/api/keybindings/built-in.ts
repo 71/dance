@@ -226,7 +226,7 @@ const builtinKeybindings = [
   },
   {
     key: "Escape",
-    when: "editorTextFocus && dance.mode == 'normal'",
+    when: "editorTextFocus && dance.mode == 'normal' && !markersNavigationVisible",
     title: "Cancel Dance operation",
     command: "dance.cancel",
   },

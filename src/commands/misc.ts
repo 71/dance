@@ -19,7 +19,7 @@ declare module "./misc";
 /**
  * Cancel Dance operation.
  *
- * @keys `escape` (normal), `escape` (input)
+ * @keys `escape` (normal, "!markersNavigationVisible"), `escape` (input)
  */
 export function cancel(extension: Extension) {
   // Calling a new command resets pending operations, so we don't need to do

@@ -451,8 +451,16 @@ export function parseKeys(keys: string) {
         whenClauses.push("inputFocus && !textInputFocus");
         break;
 
-      default:
-        throw new Error("unknown keybinding tag " + tag);
+      default: {
+        const match = /^"(!?\w+)"$/.exec(tag);
+
+        if (match === null) {
+          throw new Error("unknown keybinding tag " + tag);
+        }
+
+        whenClauses.push(match[1]);
+        break;
+      }
       }
     }
 
