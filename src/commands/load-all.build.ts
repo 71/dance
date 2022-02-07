@@ -162,7 +162,7 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
         givenParameters.push("_");
       } else if (type.startsWith("Argument<")) {
         takeArgument = true;
-        givenParameters.push("argument." + name);
+        givenParameters.push("argument[" + JSON.stringify(name) + "]");
       } else {
         throw new Error(`unknown parameter ${JSON.stringify([name, type])}`);
       }

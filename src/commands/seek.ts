@@ -415,10 +415,10 @@ export async function object(
               const match = m[2];
 
               if ("before" in match.groups!) {
-                start += match.groups.before.length;
+                start += match.groups["before"].length;
               }
               if ("after" in match.groups!) {
-                end -= match.groups.after.length;
+                end -= match.groups["after"].length;
               }
             }
 

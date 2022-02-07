@@ -233,7 +233,7 @@ export class Context extends ContextWithoutActiveEditor {
    * of an execution context or if the execution context does not have an
    * active editor.
    */
-  public static get current() {
+  public static override get current() {
     if (!(currentContext instanceof Context)) {
       throw new Error("current context does not have an active text editor");
     }
@@ -246,7 +246,7 @@ export class Context extends ContextWithoutActiveEditor {
    * an execution context or if the execution context does not have an active
    * editor.
    */
-  public static get currentOrUndefined() {
+  public static override get currentOrUndefined() {
     if (currentContext === undefined || !(currentContext instanceof Context)) {
       return undefined;
     }
@@ -386,7 +386,7 @@ export class Context extends ContextWithoutActiveEditor {
    * Returns a new context whose cancellation is controlled by the specified
    * cancellation token.
    */
-  public withCancellationToken(cancellationToken: vscode.CancellationToken) {
+  public override withCancellationToken(cancellationToken: vscode.CancellationToken) {
     return new Context(this.getState(), cancellationToken, this.commandDescriptor);
   }
 

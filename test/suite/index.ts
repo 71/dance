@@ -5,16 +5,16 @@ import { promises as fs } from "fs";
 
 export async function run(testsRoot: string) {
   // Create the mocha test.
-  const currentFile = (process.env.CURRENT_FILE ?? "").replace(/\\/g, "/"),
-        currentLine = process.env.CURRENT_LINE ? +process.env.CURRENT_LINE - 1 : undefined,
+  const currentFile = (process.env["CURRENT_FILE"] ?? "").replace(/\\/g, "/"),
+        currentLine = process.env["CURRENT_LINE"] ? +process.env["CURRENT_LINE"] - 1 : undefined,
         rootPath = path.join(__dirname, "../../.."),
         mocha = new Mocha({ ui: "tdd", color: true, timeout: 0 });
 
-  if (process.env.MOCHA_REPORTER) {
+  if (process.env["MOCHA_REPORTER"]) {
     // Note: most reporters do not work due to
     // https://github.com/microsoft/vscode/issues/56211. Here, using a faulty
     // reporter is not necessarily bad; we can do this to avoid writing results.
-    mocha.reporter(process.env.MOCHA_REPORTER);
+    mocha.reporter(process.env["MOCHA_REPORTER"]);
   }
 
   let files = await new Promise<readonly string[]>((resolve, reject) => {

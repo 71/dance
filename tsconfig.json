@@ -7,6 +7,8 @@
     "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
     "preserveConstEnums": true,
   },
   "exclude": ["node_modules", ".vscode-test", "src/commands/old-*.ts"],

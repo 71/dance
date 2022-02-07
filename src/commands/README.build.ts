@@ -28,7 +28,7 @@ export async function build(builder: Builder) {
                 ? ""
                 : "This command:" + supportedInputs.map((x) => `\n- ${x}.`).join("") + "\n";
             })()}
-            ${"keys" in f.properties ? `Default keybinding: ${f.properties.keys}\n` : ""}
+            ${"keys" in f.properties ? `Default keybinding: ${f.properties["keys"]}\n` : ""}
         `).trim()).join("\n\n")}
     `).trim()).join("\n\n")}
   `);
@@ -56,7 +56,7 @@ function toTable(modules: readonly Builder.ParsedModule[]) {
     return allCommands.map((f, i, { length }) => {
       const identifier = "name" in f ? modulePrefix + f.nameWithDot : f.qualifiedIdentifier,
             summary = "summary" in f ? f.summary : f.title,
-            keys = parseKeys(("properties" in f ? f.properties.keys : f.keys) ?? ""),
+            keys = parseKeys(("properties" in f ? f.properties["keys"] : f.keys) ?? ""),
             link = "name" in f
               ? `#${modulePrefix + f.nameWithDot}`
               : `./${module.name}.ts#L${f.line + 1}`;

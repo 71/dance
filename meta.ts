@@ -500,7 +500,7 @@ function getCommands(module: Omit<Builder.ParsedModule, "commands">) {
  */
 function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
   return [
-    ...module.functions.flatMap((f) => parseKeys(f.properties.keys ?? "").map((key) => ({
+    ...module.functions.flatMap((f) => parseKeys(f.properties["keys"] ?? "").map((key) => ({
       ...key,
       title: f.summary,
       command: `dance.${f.qualifiedName}`,

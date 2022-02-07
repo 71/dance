@@ -180,18 +180,18 @@ export class AutoDisposable implements vscode.Disposable {
     case AutoDisposable.EventType.OnModeDidChange:
       const except = [] as string[];
 
-      if (Array.isArray(eventOpts.except)) {
-        except.push(...eventOpts.except);
-      } else if (typeof eventOpts.except === "string") {
-        except.push(eventOpts.except);
+      if (Array.isArray(eventOpts["except"])) {
+        except.push(...eventOpts["except"]);
+      } else if (typeof eventOpts["except"] === "string") {
+        except.push(eventOpts["except"]);
       }
 
       const include = [] as string[];
 
-      if (Array.isArray(eventOpts.include)) {
-        include.push(...eventOpts.include);
-      } else if (typeof eventOpts.include === "string") {
-        include.push(eventOpts.include);
+      if (Array.isArray(eventOpts["include"])) {
+        include.push(...eventOpts["include"]);
+      } else if (typeof eventOpts["include"] === "string") {
+        include.push(eventOpts["include"]);
       }
 
       editorState.extension.editors.onModeDidChange((e) => {

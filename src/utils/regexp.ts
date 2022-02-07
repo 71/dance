@@ -536,7 +536,7 @@ export class Group extends Disjunction<Group | NumericEscape | Backreference> {
     super(alternatives);
   }
 
-  protected prefix() {
+  protected override prefix() {
     if (this.name !== undefined) {
       return "(?<" + this.name + ">";
     }
@@ -863,7 +863,7 @@ export class Lookaround extends Disjunction<Lookaround> {
     super(alternatives);
   }
 
-  protected prefix() {
+  protected override prefix() {
     return "(?" + (this.isLookbehind ? "<" : "") + (this.isNegative ? "!" : "=");
   }
 
@@ -1016,11 +1016,11 @@ export class Expression extends Disjunction<Expression> {
     super(alternatives);
   }
 
-  protected prefix() {
+  protected override prefix() {
     return "";
   }
 
-  protected suffix() {
+  protected override suffix() {
     return "";
   }
 

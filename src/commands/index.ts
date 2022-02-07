@@ -103,13 +103,13 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
 
     const ownedArgument = Object.assign({}, argument) as Record<string, unknown>;
 
-    if (ownedArgument.count === undefined && extension.currentCount !== 0) {
-      ownedArgument.count = extension.currentCount;
+    if (ownedArgument["count"] === undefined && extension.currentCount !== 0) {
+      ownedArgument["count"] = extension.currentCount;
     }
-    if (ownedArgument.register === undefined && extension.currentRegister !== undefined) {
-      ownedArgument.register = extension.currentRegister;
+    if (ownedArgument["register"] === undefined && extension.currentRegister !== undefined) {
+      ownedArgument["register"] = extension.currentRegister;
     }
-    if (ownedArgument.record === false) {
+    if (ownedArgument["record"] === false) {
       context.doNotRecord();
     }
 

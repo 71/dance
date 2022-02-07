@@ -157,7 +157,7 @@ async function loadDevModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.dev.setSelectionBehavior",
-      (_, argument) => _.runAsync((_) => setSelectionBehavior(_, _.extension, argument.mode, argument.value)),
+      (_, argument) => _.runAsync((_) => setSelectionBehavior(_, _.extension, argument["mode"], argument["value"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];
@@ -188,7 +188,7 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.edit.align",
-      (_, argument) => _.runAsync((_) => align(_, _.selections, argument.fill)),
+      (_, argument) => _.runAsync((_) => align(_, _.selections, argument["fill"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -233,27 +233,27 @@ async function loadEditModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.edit.insert",
-      (_, argument) => _.runAsync((_) => insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument.adjust, argument.handleNewLine, getRepetitions(_, argument), argument.select, getShift(argument), argument.text, argument.where)),
+      (_, argument) => _.runAsync((_) => insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument["adjust"], argument["handleNewLine"], getRepetitions(_, argument), argument["select"], getShift(argument), argument["text"], argument["where"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.join",
-      (_, argument) => _.runAsync((_) => join(_, argument.separator)),
+      (_, argument) => _.runAsync((_) => join(_, argument["separator"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.join.select",
-      (_, argument) => _.runAsync((_) => join_select(_, argument.separator)),
+      (_, argument) => _.runAsync((_) => join_select(_, argument["separator"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.above",
-      (_, argument) => _.runAsync((_) => newLine_above(_, getRepetitions(_, argument), argument.select, getShift(argument))),
+      (_, argument) => _.runAsync((_) => newLine_above(_, getRepetitions(_, argument), argument["select"], getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.edit.newLine.below",
-      (_, argument) => _.runAsync((_) => newLine_below(_, getRepetitions(_, argument), argument.select, getShift(argument))),
+      (_, argument) => _.runAsync((_) => newLine_below(_, getRepetitions(_, argument), argument["select"], getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -368,7 +368,7 @@ async function loadHistoryModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.history.repeat",
-      (_, argument) => _.runAsync((_) => repeat(_, getRepetitions(_, argument), argument.include)),
+      (_, argument) => _.runAsync((_) => repeat(_, getRepetitions(_, argument), argument["include"])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -439,7 +439,7 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.changeInput",
-      (_, argument) => _.runAsync((_) => changeInput(argument.action)),
+      (_, argument) => _.runAsync((_) => changeInput(argument["action"])),
       CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
@@ -449,12 +449,12 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.openMenu",
-      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument.menu, argument.prefix, argument.pass, argument.locked, argument.delay, argument.title)),
+      (_, argument) => _.runAsync((_) => openMenu(_, getInputOr(argument), argument["menu"], argument["prefix"], argument["pass"], argument["locked"], argument["delay"], argument["title"])),
       CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.run",
-      (_, argument) => _.runAsync((_) => run(_, getInput(argument), getInputOr(argument), getCount(_, argument), getRepetitions(_, argument), getRegister(_, argument, "null", Register.Flags.None), argument.commands)),
+      (_, argument) => _.runAsync((_) => run(_, getInput(argument), getInputOr(argument), getCount(_, argument), getRepetitions(_, argument), getRegister(_, argument, "null", Register.Flags.None), argument["commands"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -464,12 +464,12 @@ async function loadMiscModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.updateCount",
-      (_, argument) => _.runAsync((_) => updateCount(_, getCount(_, argument), _.extension, getInputOr(argument), argument.addDigits)),
+      (_, argument) => _.runAsync((_) => updateCount(_, getCount(_, argument), _.extension, getInputOr(argument), argument["addDigits"])),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
     new CommandDescriptor(
       "dance.updateRegister",
-      (_, argument) => _.runAsync((_) => updateRegister(_, getRegister(_, argument, "dquote", Register.Flags.CanWrite), argument.copyFrom, getInputOr(argument))),
+      (_, argument) => _.runAsync((_) => updateRegister(_, getRegister(_, argument, "dquote", Register.Flags.CanWrite), argument["copyFrom"], getInputOr(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     ),
   ];
@@ -551,17 +551,17 @@ async function loadSearchModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.search",
-      (_, argument) => _.runAsync((_) => search(_, getRegister<[Register.Flags.CanRead, Register.Flags.CanWrite]>(_, argument, "slash", Register.Flags.CanRead | Register.Flags.CanWrite), getRepetitions(_, argument), argument.add, getDirection(argument), argument.interactive, getShift(argument), getInput(argument), getSetInput(argument))),
+      (_, argument) => _.runAsync((_) => search(_, getRegister<[Register.Flags.CanRead, Register.Flags.CanWrite]>(_, argument, "slash", Register.Flags.CanRead | Register.Flags.CanWrite), getRepetitions(_, argument), argument["add"], getDirection(argument), argument["interactive"], getShift(argument), getInput(argument), getSetInput(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.next",
-      (_, argument) => _.runAsync((_) => next(_, _.document, getRegister(_, argument, "slash", Register.Flags.CanRead), getRepetitions(_, argument), argument.add, getDirection(argument))),
+      (_, argument) => _.runAsync((_) => next(_, _.document, getRegister(_, argument, "slash", Register.Flags.CanRead), getRepetitions(_, argument), argument["add"], getDirection(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.search.selection",
-      (_, argument) => _.runAsync((_) => selection(_.document, _.selections, getRegister(_, argument, "slash", Register.Flags.CanWrite), argument.smart)),
+      (_, argument) => _.runAsync((_) => selection(_.document, _.selections, getRegister(_, argument, "slash", Register.Flags.CanWrite), argument["smart"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -616,22 +616,22 @@ async function loadSeekModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.seek",
-      (_, argument) => _.runAsync((_) => seek(_, getInputOr(argument), getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.include)),
+      (_, argument) => _.runAsync((_) => seek(_, getInputOr(argument), getRepetitions(_, argument), getDirection(argument), getShift(argument), argument["include"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.enclosing",
-      (_, argument) => _.runAsync((_) => enclosing(_, getDirection(argument), getShift(argument), argument.open, argument.pairs)),
+      (_, argument) => _.runAsync((_) => enclosing(_, getDirection(argument), getShift(argument), argument["open"], argument["pairs"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.object",
-      (_, argument) => _.runAsync((_) => object(_, getInputOr(argument), argument.inner, argument.where, getShift(argument))),
+      (_, argument) => _.runAsync((_) => object(_, getInputOr(argument), argument["inner"], argument["where"], getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.seek.word",
-      (_, argument) => _.runAsync((_) => word(_, getRepetitions(_, argument), argument.stopAtEnd, argument.ws, getDirection(argument), getShift(argument))),
+      (_, argument) => _.runAsync((_) => word(_, getRepetitions(_, argument), argument["stopAtEnd"], argument["ws"], getDirection(argument), getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -826,7 +826,7 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.horizontally",
-      (_, argument) => _.runAsync((_) => horizontally(_, argument.avoidEol, getRepetitions(_, argument), getDirection(argument), getShift(argument))),
+      (_, argument) => _.runAsync((_) => horizontally(_, argument["avoidEol"], getRepetitions(_, argument), getDirection(argument), getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -861,12 +861,12 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.lineEnd",
-      (_, argument) => _.runAsync((_) => lineEnd(_, getCount(_, argument), getShift(argument), argument.lineBreak)),
+      (_, argument) => _.runAsync((_) => lineEnd(_, getCount(_, argument), getShift(argument), argument["lineBreak"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.select.lineStart",
-      (_, argument) => _.runAsync((_) => lineStart(_, getCount(_, argument), getShift(argument), argument.skipBlank)),
+      (_, argument) => _.runAsync((_) => lineStart(_, getCount(_, argument), getShift(argument), argument["skipBlank"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -881,7 +881,7 @@ async function loadSelectModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.select.vertically",
-      (_, argument) => _.runAsync((_) => vertically(_, _.selections, argument.avoidEol, getRepetitions(_, argument), getDirection(argument), getShift(argument), argument.by)),
+      (_, argument) => _.runAsync((_) => vertically(_, _.selections, argument["avoidEol"], getRepetitions(_, argument), getDirection(argument), getShift(argument), argument["by"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1065,7 +1065,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.filter",
-      (_, argument) => _.runAsync((_) => filter(_, getInput(argument), getSetInput(argument), argument.defaultInput, argument.inverse, argument.interactive, getCount(_, argument))),
+      (_, argument) => _.runAsync((_) => filter(_, getInput(argument), getSetInput(argument), argument["defaultInput"], argument["inverse"], argument["interactive"], getCount(_, argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1085,7 +1085,7 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.reduce",
-      (_, argument) => _.runAsync((_) => reduce(_, argument.where, argument.empty)),
+      (_, argument) => _.runAsync((_) => reduce(_, argument["where"], argument["empty"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1095,12 +1095,12 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.restore.withCurrent",
-      (_, argument) => _.runAsync((_) => restore_withCurrent(_, _.document, getRegister(_, argument, "caret", Register.Flags.CanReadSelections), argument.reverse, argument.action)),
+      (_, argument) => _.runAsync((_) => restore_withCurrent(_, _.document, getRegister(_, argument, "caret", Register.Flags.CanReadSelections), argument["reverse"], argument["action"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.save",
-      (_, argument) => _.runAsync((_) => save(_, _.document, _.selections, getRegister(_, argument, "caret", Register.Flags.CanWriteSelections), argument.style, argument.until, argument.untilDelay)),
+      (_, argument) => _.runAsync((_) => save(_, _.document, _.selections, getRegister(_, argument, "caret", Register.Flags.CanWriteSelections), argument["style"], argument["until"], argument["untilDelay"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1110,22 +1110,22 @@ async function loadSelectionsModule(): Promise<CommandDescriptor[]> {
     ),
     new CommandDescriptor(
       "dance.selections.select",
-      (_, argument) => _.runAsync((_) => select(_, argument.interactive, getInput(argument), getSetInput(argument))),
+      (_, argument) => _.runAsync((_) => select(_, argument["interactive"], getInput(argument), getSetInput(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.split",
-      (_, argument) => _.runAsync((_) => split(_, argument.excludeEmpty, argument.interactive, getInput(argument), getSetInput(argument))),
+      (_, argument) => _.runAsync((_) => split(_, argument["excludeEmpty"], argument["interactive"], getInput(argument), getSetInput(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.splitLines",
-      (_, argument) => _.runAsync((_) => splitLines(_, _.document, _.selections, getRepetitions(_, argument), argument.excludeEol)),
+      (_, argument) => _.runAsync((_) => splitLines(_, _.document, _.selections, getRepetitions(_, argument), argument["excludeEol"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.toggleIndices",
-      (_, argument) => _.runAsync((_) => toggleIndices(_, argument.display, argument.until)),
+      (_, argument) => _.runAsync((_) => toggleIndices(_, argument["display"], argument["until"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1219,17 +1219,17 @@ async function loadSelectionsRotateModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.selections.rotate.both",
-      (_, argument) => _.runAsync((_) => both(_, getRepetitions(_, argument), argument.reverse)),
+      (_, argument) => _.runAsync((_) => both(_, getRepetitions(_, argument), argument["reverse"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.rotate.contents",
-      (_, argument) => _.runAsync((_) => contents(_, getRepetitions(_, argument), argument.reverse)),
+      (_, argument) => _.runAsync((_) => contents(_, getRepetitions(_, argument), argument["reverse"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
       "dance.selections.rotate.selections",
-      (_, argument) => _.runAsync((_) => selections(_, getRepetitions(_, argument), argument.reverse)),
+      (_, argument) => _.runAsync((_) => selections(_, getRepetitions(_, argument), argument["reverse"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     new CommandDescriptor(
@@ -1261,7 +1261,7 @@ async function loadViewModule(): Promise<CommandDescriptor[]> {
   return [
     new CommandDescriptor(
       "dance.view.line",
-      (_, argument) => _.runAsync((_) => line(_, argument.at)),
+      (_, argument) => _.runAsync((_) => line(_, argument["at"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
   ];

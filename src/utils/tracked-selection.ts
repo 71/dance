@@ -293,7 +293,7 @@ export class StyledSet extends Set {
     this._updateDecorations();
   }
 
-  public addArray(selections: Array) {
+  public override addArray(selections: Array) {
     super.addArray(selections);
 
     for (let i = 0, len = selections.length; i < len; i += 2) {
@@ -306,7 +306,7 @@ export class StyledSet extends Set {
     return this;
   }
 
-  protected updateAfterDocumentChanged(e: vscode.TextDocumentChangeEvent) {
+  protected override updateAfterDocumentChanged(e: vscode.TextDocumentChangeEvent) {
     if (!super.updateAfterDocumentChanged(e)) {
       return false;
     }
@@ -316,7 +316,7 @@ export class StyledSet extends Set {
     return true;
   }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
 
     this._decorationType.dispose();

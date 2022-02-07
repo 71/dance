@@ -423,7 +423,7 @@ function getShell() {
   const config = vscode.workspace.getConfiguration("terminal");
 
   return config.get<string | null>(`integrated.automationShell.${os}`)
-      ?? process.env.SHELL
+      ?? process.env["SHELL"]
       ?? undefined;
 }
 
