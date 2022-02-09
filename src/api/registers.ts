@@ -118,7 +118,7 @@ export function selection(
 }
 
 /**
- * Stores and returns the selections in the the specified register.
+ * Stores and returns the selections in the specified register.
  */
 export function storeSelections(
   registerOrName: string | Register.WithFlags<Register.Flags.CanWriteSelections>,
