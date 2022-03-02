@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 
 import { Context } from "./context";
 import type { CommandDescriptor } from "../commands";
+import type { Register } from "../state/registers";
 import { parseRegExpWithReplacement } from "../utils/regexp";
 
 /**
@@ -272,10 +273,23 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
       results.push(await vscode.commands.executeCommand(batch[0], batch[1]));
     } else {
       const context = Context.WithoutActiveEditor.current;
+      let { currentCount, currentRegister } = context.extension;
 
       for (const pair of batch as [CommandDescriptor, any][]) {
         const [descriptor, argument] = pair,
               ownedArgument = pair[1] = Object.assign({}, argument);
+
+        if (currentCount !== context.extension.currentCount) {
+          currentCount = ownedArgument["count"] = context.extension.currentCount;
+
+          context.extension.currentCount = 0;
+        }
+
+        if (currentRegister !== context.extension.currentRegister) {
+          currentRegister = ownedArgument["register"] = context.extension.currentRegister;
+
+          context.extension.currentRegister = undefined;
+        }
 
         if (ownedArgument.try) {
           delete ownedArgument.try;
