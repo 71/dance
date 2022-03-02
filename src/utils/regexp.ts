@@ -320,6 +320,7 @@ function characterSetCanMatchLineFeed(i: number, re: RegExp, inverse: boolean) {
 
     case 45:  // '-'
       mayHaveRange = true;
+      i++;
       break;
 
     default:
