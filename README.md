@@ -3,22 +3,6 @@
 [Kakoune]-inspired key bindings, modes, menus and scripting for
 [Visual Studio Code][vsc].
 
-## Important note
-
-The next release of Dance (available in this branch) is a complete rewrite from
-the previous release. It adds many features (to list a few, custom modes, better
-commands, and a scripting API) and has many QOL improvements (better status bar
-buttons, better [character mode](#selection-behaviors), better history, support
-for multiple editors for one document, more tests, and better internal
-architecture).
-
-While this will improve the quality of Dance over time, in the short term this
-will make it much less stable due to bugs. If you encounter a bug, please file
-an issue (or directly submit a PR) containing [test cases](./test) for the
-command.
-
-Thanks for bearing with me!
-
 ## Huh?
 
 Dance provides [Kakoune]-inspired commands and key bindings for
@@ -161,6 +145,12 @@ contextually:
 - current count prefix: click to reset to 0
 - current register: click to unset
 - dance error: click to copy the full description of the last error
+
+### Dance view
+
+Dance also provides a [custom view](
+https://code.visualstudio.com/docs/getstarted/userinterface#_views) which lists
+all registers and their contents.
 
 ### Miscellaneous changes
 
