@@ -515,7 +515,9 @@ export abstract class RegisterSet implements vscode.Disposable {
    * The read-only "#" (`hash`) register, mapped to the indices of the current
    * selections.
    */
-  public readonly hash = new SpecialRegister("#", "symbol-numeric",
+  public readonly hash = new SpecialRegister(
+    "#",
+    "symbol-numeric",
     () => Promise.resolve(activeEditor().selections.map((_, i) => i.toString())),
     undefined,
     (fire) => vscode.window.onDidChangeTextEditorSelection(fire),

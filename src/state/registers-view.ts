@@ -130,7 +130,7 @@ export class RegistersView implements vscode.TreeDataProvider<TreeItem> {
     return {
       dispose: () => {
         for (const item of this._documentToItemMap.values()) {
-          item.dispose()
+          item.dispose();
         }
 
         for (const item of this._registerToItemMap.values()) {

@@ -37,7 +37,10 @@ module.exports = {
       "VariableDeclarator": "first",
       "flatTernaryExpressions": true,
       "offsetTernaryExpressions": true,
-      "ignoredNodes": ["TemplateLiteral *"],
+      "ignoredNodes": [
+        "TemplateLiteral *",
+        "VariableDeclaration VariableDeclarator:first-child ObjectExpression",
+      ],
     }],
     "curly": ["error", "all"],
     "dot-location": ["error", "property"],
