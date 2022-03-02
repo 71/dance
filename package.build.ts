@@ -666,6 +666,28 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
       },
     },
 
+    // Views.
+    // ========================================================================
+
+    viewsContainers: {
+      activitybar: [
+        {
+          id: "dance",
+          title: "Dance",
+          icon: "assets/dance-white.svg",
+        },
+      ],
+    },
+
+    views: {
+      dance: [
+        {
+          id: "registers",
+          name: "Registers",
+        },
+      ],
+    },
+
     // Commands.
     // ========================================================================
 

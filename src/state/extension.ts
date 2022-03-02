@@ -11,6 +11,7 @@ import { extensionName } from "../utils/constants";
 import { AutoDisposable } from "../utils/disposables";
 import { assert, CancellationError } from "../utils/errors";
 import { SettingsValidator } from "../utils/settings-validator";
+import { RegistersView } from "./registers-view";
 
 // ===============================================================================================
 // ==  EXTENSION  ================================================================================
@@ -167,6 +168,9 @@ export class Extension implements vscode.Disposable {
     for (const descriptor of Object.values(commands)) {
       this._subscriptions.push(descriptor.register(this));
     }
+
+    // Render views.
+    this._subscriptions.push(new RegistersView(this.registers).register());
   }
 
   /**

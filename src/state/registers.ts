@@ -10,15 +10,33 @@ import type * as TrackedSelection from "../utils/tracked-selection";
  * The base class for all registers.
  */
 export abstract class Register {
+  private readonly _onChangeEvent = new vscode.EventEmitter<Register.ChangeKind>();
+
   /**
    * The name of the register.
    */
   public readonly abstract name: string;
 
   /**
+   * The name of the icon of the register, as seen in the [VS Code product icon
+   * reference](https://code.visualstudio.com/api/references/icons-in-labels#icon-listing).
+   *
+   * `undefined` if the register shouldn't be displayed.
+   */
+  public readonly abstract iconName: string | undefined;
+
+  /**
    * The flags of the register, which define what a register can do.
    */
   public readonly abstract flags: Register.Flags;
+
+  /**
+   * Event fired when the contents, selections or recording of the register
+   * change.
+   */
+  public get onChange() {
+    return this._onChangeEvent.event;
+  }
 
   /**
    * Returns whether the register is readable.
@@ -146,6 +164,13 @@ export abstract class Register {
 
     return this as any;
   }
+
+  /**
+   * Notifies listeners that a {@link onChange change} occured to the register.
+   */
+  protected notifyChange(kind: Register.ChangeKind) {
+    this._onChangeEvent.fire(kind);
+  }
 }
 
 export declare namespace Register {
@@ -210,6 +235,12 @@ export declare namespace Register {
     getRecording(): Recording | undefined;
     setRecording(recording: Recording): void;
   }
+
+  export const enum ChangeKind {
+    Contents,
+    Selections,
+    Recording,
+  }
 }
 
 /**
@@ -232,12 +263,14 @@ class GeneralPurposeRegister extends Register implements Register.Readable,
 
   public constructor(
     public readonly name: string,
+    public readonly iconName: string,
   ) {
     super();
   }
 
   public set(values: readonly string[]) {
     this._values = values;
+    this.notifyChange(Register.ChangeKind.Contents);
 
     return Promise.resolve();
   }
@@ -258,6 +291,7 @@ class GeneralPurposeRegister extends Register implements Register.Readable,
     const previousSelectionSet = this._selections;
 
     this._selections = trackedSelections;
+    this.notifyChange(Register.ChangeKind.Selections);
 
     return previousSelectionSet;
   }
@@ -268,6 +302,7 @@ class GeneralPurposeRegister extends Register implements Register.Readable,
 
   public setRecording(recording: Recording) {
     this._recording = recording;
+    this.notifyChange(Register.ChangeKind.Recording);
   }
 }
 
@@ -280,10 +315,20 @@ class SpecialRegister extends Register implements Register.Readable,
     ? Register.Flags.CanRead
     : Register.Flags.CanRead | Register.Flags.CanWrite;
 
+  public override get onChange(): vscode.Event<Register.ChangeKind> {
+    if (this._listenToChanges === undefined) {
+      return super.onChange;
+    }
+
+    return (listener) => this._listenToChanges!(() => listener(Register.ChangeKind.Contents));
+  }
+
   public constructor(
     public readonly name: string,
+    public readonly iconName: string | undefined,
     public readonly getter: () => Thenable<readonly string[]>,
     public readonly setter?: (values: readonly string[]) => Thenable<void>,
+    private readonly _listenToChanges?: (fire: () => void) => vscode.Disposable,
   ) {
     super();
   }
@@ -292,12 +337,14 @@ class SpecialRegister extends Register implements Register.Readable,
     return this.getter();
   }
 
-  public set(values: readonly string[]) {
+  public async set(values: readonly string[]) {
     if (this.setter === undefined) {
       throw new Error("cannot set read-only register");
     }
 
-    return this.setter(values);
+    await this.setter(values);
+
+    this.notifyChange(Register.ChangeKind.Contents);
   }
 }
 
@@ -310,6 +357,7 @@ class ClipboardRegister extends Register implements Register.Readable,
   private _lastRawText?: string;
 
   public readonly name = '"';
+  public readonly iconName = "clippy";
   public readonly flags = Register.Flags.CanRead | Register.Flags.CanWrite;
 
   public get() {
@@ -327,6 +375,7 @@ class ClipboardRegister extends Register implements Register.Readable,
 
     this._lastStrings = values;
     this._lastRawText = values.join(newline);
+    this.notifyChange(Register.ChangeKind.Contents);
 
     return vscode.env.clipboard.writeText(this._lastRawText);
   }
@@ -343,18 +392,42 @@ function activeEditor() {
 /**
  * A set of registers.
  */
-export abstract class RegisterSet {
+export abstract class RegisterSet implements vscode.Disposable {
+  private readonly _onRegisterChange
+    = new vscode.EventEmitter<{ register: Register; kind: "added" | "removed"; }>();
+  private readonly _onLastMatchesChange = new vscode.EventEmitter<void>();
+
   private readonly _named = new Map<string, Register>();
   private readonly _letters = Array.from(
     { length: 26 },
-    (_, i) => new GeneralPurposeRegister(String.fromCharCode(97 + i)) as Register,
+    (_, i) => new GeneralPurposeRegister(String.fromCharCode(97 + i), "symbol-text") as Register,
   );
   private readonly _digits = Array.from(
-    { length: 10 },
-    (_, i) => new SpecialRegister((i + 1).toString(), () => Promise.resolve(this._lastMatches[i])),
+    { length: 9 },
+    (_, i) => new SpecialRegister(
+      (i + 1).toString(),
+      "regex",
+      () => Promise.resolve(this._lastMatches[i]),
+      undefined,
+      (fire) => this._onLastMatchesChange.event(fire),
+    ),
   );
 
   private _lastMatches: readonly (readonly string[])[] = [];
+
+  /**
+   * The set of registers.
+   */
+  public get registers() {
+    return new Set(this._named.values());
+  }
+
+  /**
+   * Event fired when a change to the set occurs.
+   */
+  public get onRegisterChange() {
+    return this._onRegisterChange.event;
+  }
 
   /**
    * The '"' (`dquote`) register, mapped to the system clipboard and default
@@ -365,29 +438,30 @@ export abstract class RegisterSet {
   /**
    * The "/" (`slash`) register, default register for search / regex operations.
    */
-  public readonly slash = new GeneralPurposeRegister("/");
+  public readonly slash = new GeneralPurposeRegister("/", "search-view-icon");
 
   /**
    * The "@" (`arobase`) register, default register for recordings (aka macros).
    */
-  public readonly arobase = new GeneralPurposeRegister("@");
+  public readonly arobase = new GeneralPurposeRegister("@", "record");
 
   /**
    * The "^" (`caret`) register, default register for saving selections.
    */
-  public readonly caret = new GeneralPurposeRegister("^");
+  public readonly caret = new GeneralPurposeRegister("^", "save");
 
   /**
    * The "|" (`pipe`) register, default register for outputs of external
    * commands.
    */
-  public readonly pipe = new GeneralPurposeRegister("|");
+  public readonly pipe = new GeneralPurposeRegister("|", "console");
 
   /**
    * The "%" (`percent`) register, mapped to the name of the current document.
    */
   public readonly percent = new SpecialRegister(
     "%",
+    "file",
     () => Promise.resolve([activeEditor().document.fileName]),
     (values) => {
       if (values.length !== 1) {
@@ -396,6 +470,7 @@ export abstract class RegisterSet {
 
       return vscode.workspace.openTextDocument(values[0]).then(() => {});
     },
+    (fire) => vscode.window.onDidChangeActiveTextEditor(fire),
   );
 
   /**
@@ -403,6 +478,7 @@ export abstract class RegisterSet {
    */
   public readonly dot = new SpecialRegister(
     ".",
+    "selection",
     () => {
       const editor = activeEditor(),
             document = editor.document,
@@ -432,20 +508,25 @@ export abstract class RegisterSet {
         }
       }, noUndoStops).then((succeeded) => EditNotAppliedError.throwIfNotApplied(succeeded));
     },
+    (fire) => vscode.window.onDidChangeTextEditorSelection(fire),
   );
 
   /**
    * The read-only "#" (`hash`) register, mapped to the indices of the current
    * selections.
    */
-  public readonly hash = new SpecialRegister("#", () =>
-    Promise.resolve(activeEditor().selections.map((_, i) => i.toString())),
+  public readonly hash = new SpecialRegister("#", "symbol-numeric",
+    () => Promise.resolve(activeEditor().selections.map((_, i) => i.toString())),
+    undefined,
+    (fire) => vscode.window.onDidChangeTextEditorSelection(fire),
   );
 
   /**
    * The read-only "_" (`underscore`) register, mapped to an empty string.
    */
-  public readonly underscore = new SpecialRegister("_", () => Promise.resolve([""]));
+  public readonly underscore = new SpecialRegister("_", undefined, () =>
+    Promise.resolve([""]),
+  );
 
   /**
    * The ":" (`colon`) register.
@@ -453,7 +534,7 @@ export abstract class RegisterSet {
    * In Kakoune it is mapped to the last entered command, but since we don't
    * have access to that information in Dance, we map it to a prompt.
    */
-  public readonly colon = new SpecialRegister(":", () =>
+  public readonly colon = new SpecialRegister(":", undefined, () =>
     prompt({ prompt: ":" }).then((result) => [result]),
   );
 
@@ -463,6 +544,7 @@ export abstract class RegisterSet {
    */
   public readonly null = new SpecialRegister(
     "null",
+    undefined,
     () => Promise.resolve([]),
     () => Promise.resolve(),
   );
@@ -484,8 +566,23 @@ export abstract class RegisterSet {
       this._named.set(longName, register);
     }
 
+    for (let i = 0; i < this._digits.length; i++) {
+      this._named.set(`${i + 1}`, this._digits[i]);
+    }
+
+    for (let i = 0; i < this._letters.length; i++) {
+      const letter = this._letters[i];
+
+      this._named.set(String.fromCharCode(i + 65), letter);
+      this._named.set(String.fromCharCode(i + 97), letter);
+    }
+
     this._named.set("", this.null);
     this._named.set("null", this.null);
+  }
+
+  public dispose() {
+    this._onRegisterChange.dispose();
   }
 
   /**
@@ -520,14 +617,6 @@ export abstract class RegisterSet {
         return this.colon;
 
       default:
-        if (charCode >= 97 /* a */ && charCode <= 122 /* z */) {
-          return this._letters[charCode - 97];
-        }
-
-        if (charCode >= 65 /* A */ && charCode <= 90 /* Z */) {
-          return this._letters[charCode - 65];
-        }
-
         if (charCode >= 49 /* 1 */ && charCode <= 57 /* 9 */) {
           return this._digits[charCode - 49];
         }
@@ -536,10 +625,10 @@ export abstract class RegisterSet {
 
     key = key.toLowerCase();
 
-    let register = this._named.get(key.toLowerCase());
+    let register = this._named.get(key);
 
     if (register === undefined) {
-      this._named.set(key, register = new GeneralPurposeRegister(key));
+      this._named.set(key, register = new GeneralPurposeRegister(key, "symbol-text"));
     }
 
     return register;
@@ -568,6 +657,7 @@ export abstract class RegisterSet {
     }
 
     this._lastMatches = transposed;
+    this._onLastMatchesChange.fire();
   }
 }
 

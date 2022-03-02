@@ -867,6 +867,23 @@
         }
       }
     },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dance",
+          "title": "Dance",
+          "icon": "assets/dance-white.svg"
+        }
+      ]
+    },
+    "views": {
+      "dance": [
+        {
+          "id": "registers",
+          "name": "Registers"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "dance.dev.copyLastErrorMessage",
