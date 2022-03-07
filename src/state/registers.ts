@@ -332,6 +332,48 @@ class ClipboardRegister extends Register implements Register.Readable,
   }
 }
 
+class ColorRegister extends Register implements Register.Readable, Register.ReadableSelections, Register.WriteableSelections {
+  public override readonly flags = Register.Flags.CanRead
+                                 | Register.Flags.CanReadSelections
+                                 | Register.Flags.CanWriteSelections;
+
+  private _selections?: TrackedSelection.Set;
+
+  public constructor(
+    public override readonly name: string,
+  ) {
+    super();
+  }
+
+  public get(): Thenable<readonly string[] | undefined> {
+    const selections = this.getSelectionSet();
+
+    if (selections === undefined) {
+      return Promise.resolve(undefined);
+    }
+
+    return Promise.resolve(
+      selections.restore().map((selection) => selections.document.getText(selection)),
+    );
+  }
+
+  public getSelections(): readonly vscode.Selection[] | undefined {
+    return this._selections?.restore();
+  }
+
+  public getSelectionSet(): TrackedSelection.Set | undefined {
+    return this._selections;
+  }
+
+  public replaceSelectionSet(selections?: TrackedSelection.Set): TrackedSelection.Set | undefined {
+    const previousSelections = this._selections;
+
+    this._selections = selections;
+
+    return previousSelections;
+  }
+}
+
 function activeEditor() {
   const activeEditor = vscode.window.activeTextEditor;
 
