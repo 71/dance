@@ -178,12 +178,18 @@ const builtinKeybindings = [
   },
   {
     key: "Shift+Q",
-    when: "editorTextFocus && dance.mode == 'normal'",
+    when: "editorTextFocus && dance.mode == 'normal' && !dance.isRecording",
     title: "Start recording",
     command: "dance.history.recording.start",
   },
   {
     key: "Escape",
+    when: "editorTextFocus && dance.mode == 'normal' && dance.isRecording",
+    title: "Stop recording",
+    command: "dance.history.recording.stop",
+  },
+  {
+    key: "Shift+Q",
     when: "editorTextFocus && dance.mode == 'normal' && dance.isRecording",
     title: "Stop recording",
     command: "dance.history.recording.stop",
@@ -226,7 +232,7 @@ const builtinKeybindings = [
   },
   {
     key: "Escape",
-    when: "editorTextFocus && dance.mode == 'normal' && !markersNavigationVisible",
+    when: "editorTextFocus && dance.mode == 'normal' && !dance.isRecording && !markersNavigationVisible",
     title: "Cancel Dance operation",
     command: "dance.cancel",
   },

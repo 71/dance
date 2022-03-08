@@ -166,7 +166,7 @@ const recordingPerRegister = new WeakMap<Register, ActiveRecording>();
 /**
  * Start recording.
  *
- * @keys `s-q` (normal)
+ * @keys `s-q` (normal, !recording)
  * @noreplay
  */
 export function recording_start(
@@ -187,7 +187,7 @@ export function recording_start(
 /**
  * Stop recording.
  *
- * @keys `escape` (normal, recording)
+ * @keys `escape` (normal, recording), `s-q` (normal, recording)
  * @noreplay
  */
 export function recording_stop(

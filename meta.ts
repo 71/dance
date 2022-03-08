@@ -434,20 +434,25 @@ export function parseKeys(keys: string) {
     const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
           whenClauses = ["editorTextFocus"];
 
-    for (const tag of match[3].split(", ")) {
+    for (let tag of match[3].split(", ")) {
+      const negate = tag.startsWith("!");
+      if (negate) {
+        tag = tag.slice(1);
+      }
       switch (tag) {
       case "normal":
       case "insert":
       case "input":
-        whenClauses.push(`dance.mode == '${tag}'`);
+        whenClauses.push(`dance.mode ${negate ? "!=" : "=="} '${tag}'`);
         break;
 
       case "recording":
-        whenClauses.push("dance.isRecording");
+        whenClauses.push(`${negate ? "!" : ""}dance.isRecording`);
         break;
 
       case "prompt":
-        whenClauses.shift();  // Remove "editorTextFocus" clause.
+        assert(!negate);
+        whenClauses.splice(whenClauses.indexOf("editorTextFocus"), 1);
         whenClauses.push("inputFocus && !textInputFocus");
         break;
 
@@ -458,7 +463,7 @@ export function parseKeys(keys: string) {
           throw new Error("unknown keybinding tag " + tag);
         }
 
-        whenClauses.push(match[1]);
+        whenClauses.push((negate ? "!" : "") + match[1]);
         break;
       }
       }
