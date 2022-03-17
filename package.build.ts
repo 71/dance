@@ -83,7 +83,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   name: "dance",
   description: "Kakoune-inspired key bindings, modes, menus and scripting.",
-  version: "0.5.8",
+  version: "0.5.9",
   license: "ISC",
 
   author: {
