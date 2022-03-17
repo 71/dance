@@ -100,7 +100,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   browser: "./out/web/extension.js",
 
   engines: {
-    vscode: "^1.60.0",
+    vscode: "^1.63.0",
   },
 
   scripts: {
@@ -114,8 +114,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "compile-web": "webpack --mode production --devtool hidden-source-map --config ./webpack.web.config.js",
     "compile-web:watch": "webpack --watch --config ./webpack.web.config.js",
     "test": "yarn run compile && node ./out/test/run.js",
-    "package": "vsce package",
-    "publish": "vsce publish",
+    "package": "vsce package --allow-star-activation",
+    "publish": "vsce publish --allow-star-activation",
   },
 
   devDependencies: {
@@ -125,6 +125,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "@types/vscode": "^1.63.0",
     "@typescript-eslint/eslint-plugin": "^4.18.0",
     "@typescript-eslint/parser": "^4.18.0",
+    "@vscode/test-electron": "^2.1.3",
     "chokidar": "^3.5.1",
     "dependency-cruiser": "^10.0.5",
     "eslint": "^7.22.0",
@@ -135,8 +136,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "ts-node": "^9.1.1",
     "typescript": "^4.5.5",
     "unexpected": "^12.0.0",
-    "vsce": "^1.99.0",
-    "vscode-test": "^1.5.2",
+    "vsce": "^2.7.0",
     "webpack": "^5.52.1",
     "webpack-cli": "^4.8.0",
   },
