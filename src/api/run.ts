@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 
 import { Context } from "./context";
 import type { CommandDescriptor } from "../commands";
-import type { Register } from "../state/registers";
 import { parseRegExpWithReplacement } from "../utils/regexp";
 
 /**
@@ -345,6 +344,7 @@ export declare namespace command {
 }
 
 let canExecuteArbitraryCommands = true;
+const commonSpawnOptions = { stdio: "pipe", windowsHide: true } as const;
 
 /**
  * Executes a shell command.
@@ -368,8 +368,13 @@ export function execute(
 
   const promise = import("child_process").then((cp) =>
     new Promise<string>((resolve, reject) => {
-      const shell = getShell() ?? true,
-            child = cp.spawn(command, { shell, stdio: "pipe" });
+      const automationProfile = getAutomationProfile(),
+            shell = typeof automationProfile?.path === "string" ? automationProfile.path : "",
+            args = Array.isArray(automationProfile?.args) ? automationProfile!.args : [],
+            env = typeof automationProfile?.env === "object" ? automationProfile.env : {},
+            child = shell.length === 0
+              ? cp.spawn(command, { ...commonSpawnOptions,shell: true, env })
+              : cp.spawn(shell, [...args, command], { ...commonSpawnOptions,shell: false, env });
 
       let stdout = "",
           stderr = "";
@@ -413,7 +418,13 @@ export function disableExecuteFunction() {
   canExecuteArbitraryCommands = false;
 }
 
-function getShell() {
+interface AutomationProfile {
+  readonly path?: string;
+  readonly args?: readonly string[];
+  readonly env?: Record<string, string>;
+}
+
+function getAutomationProfile() {
   let os: string;
 
   switch (process.platform) {
@@ -434,11 +445,10 @@ function getShell() {
     return undefined;
   }
 
-  const config = vscode.workspace.getConfiguration("terminal");
+  const config = vscode.workspace.getConfiguration("terminal.integrated.automationProfile");
 
-  return config.get<string | null>(`integrated.automationShell.${os}`)
-      ?? process.env["SHELL"]
-      ?? undefined;
+  return config.get<AutomationProfile | null>(os)
+      ?? { path: process.env["SHELL"] };
 }
 
 /**

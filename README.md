@@ -106,8 +106,8 @@ const { api } = await vscode.extensions.getExtension("gregoire.dance").activate(
 
 Pipes no longer accept shell commands, but instead accept "expressions", those
 being:
-- `#<shell command>`: Pipes each selection into a shell command (the shell is
-  taken from the `terminal.external.exec` value).
+- `#<shell command>`: Pipes each selection into a shell command (the shell
+  respects the `terminal.integrated.automationProfile.<os>` profile).
 - `/<pattern>[/<replacement>[/<flags>]`: A RegExp literal, as
   [defined in JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions).
   Do note the addition of a `replacement`, for commands that add or replace
