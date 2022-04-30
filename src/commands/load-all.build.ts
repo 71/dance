@@ -195,7 +195,7 @@ function determineFunctionFlags(f: Builder.ParsedFunction) {
 }
 
 function buildCommandsExpression(f: Builder.AdditionalCommand) {
-  const commands = f.commands!.replace(/ +/g, " ").replace(/ \}\]/g, ", ...argument }]");
+  const commands = f.commands!.replace(/ +/g, " ");
 
-  return `(_, argument) => _.runAsync(() => commands(${commands}))`;
+  return `(_, argument) => _.runAsync(() => runCommands(argument, ${commands}))`;
 }
