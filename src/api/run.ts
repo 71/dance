@@ -445,10 +445,8 @@ function getAutomationProfile() {
     return undefined;
   }
 
-  const config = vscode.workspace.getConfiguration("terminal.integrated.automationProfile");
-
-  return config.get<AutomationProfile | null>(os)
-      ?? { path: process.env["SHELL"] };
+  return vscode.workspace.getConfiguration("terminal.integrated.automationProfile")
+    .get<AutomationProfile | null>(os);
 }
 
 /**
