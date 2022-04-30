@@ -211,3 +211,42 @@ abcdefghijk
 abcdefghijk
   ^ 0
 ```
+
+# 3
+
+```
+abc
+def
+ghi
+ | 0
+jkl
+mno
+```
+
+## 3 select-to-line-end
+[up](#3)
+
+- .seek { input: "\n" }
+
+```
+abc
+def
+ghi
+ ^^ 0
+jkl
+mno
+```
+
+## 3 select-to-line-end-included
+[up](#3)
+
+- .seek { input: "\n", include: true }
+
+```
+abc
+def
+ghi
+ ^^^ 0
+jkl
+mno
+```

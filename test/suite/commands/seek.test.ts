@@ -351,5 +351,55 @@ suite("./test/suite/commands/seek.md", function () {
     `);
   });
 
+  test("3 > select-to-line-end", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      abc
+      def
+      ghi
+       | 0
+      jkl
+      mno
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek", { input: "\n" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek.md:226:1", 6, String.raw`
+      abc
+      def
+      ghi
+       ^^ 0
+      jkl
+      mno
+    `);
+  });
+
+  test("3 > select-to-line-end-included", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      abc
+      def
+      ghi
+       | 0
+      jkl
+      mno
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek", { input: "\n", include: true });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek.md:240:1", 6, String.raw`
+      abc
+      def
+      ghi
+       ^^^ 0
+      jkl
+      mno
+    `);
+  });
+
   groupTestsByParentName(this);
 });

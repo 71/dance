@@ -16,10 +16,11 @@ export function search(
   re: RegExp,
   origin: vscode.Position,
   end?: vscode.Position,
+  document?: vscode.TextDocument,
 ) {
   return direction === Direction.Backward
-    ? searchBackward(re, origin, end)
-    : searchForward(re, origin, end);
+    ? searchBackward(re, origin, end, document)
+    : searchForward(re, origin, end, document);
 }
 
 export declare namespace search {
@@ -62,11 +63,15 @@ export declare namespace search {
  * abc
  * ```
  */
-export function searchBackward(re: RegExp, origin: vscode.Position, end?: vscode.Position): search.Result {
+export function searchBackward(
+  re: RegExp,
+  origin: vscode.Position,
+  end?: vscode.Position,
+  document = Context.current.document,
+): search.Result {
   end ??= Positions.zero;
 
-  const document = Context.current.document,
-        searchStart = document.offsetAt(end),
+  const searchStart = document.offsetAt(end),
         searchEnd = document.offsetAt(origin),
         possibleSearchLength = searchEnd - searchStart;
 
@@ -121,9 +126,12 @@ export function searchBackward(re: RegExp, origin: vscode.Position, end?: vscode
  * abc
  * ```
  */
-export function searchForward(re: RegExp, origin: vscode.Position, end?: vscode.Position): search.Result {
-  const document = Context.current.document;
-
+export function searchForward(
+  re: RegExp,
+  origin: vscode.Position,
+  end?: vscode.Position,
+  document = Context.current.document,
+): search.Result {
   end ??= Positions.last(document);
 
   const searchStart = document.offsetAt(origin),
@@ -370,7 +378,9 @@ function searchOneOfForward(
           match = re.exec(text);
 
     if (match !== null) {
-      return [new vscode.Position(line, match.index), match] as search.Result;
+      const character = line === originLine ? origin.character + match.index : match.index;
+
+      return [new vscode.Position(line, character), match] as search.Result;
     }
 
     for (let i = 1; i < lineRange; i++) {

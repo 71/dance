@@ -1,8 +1,10 @@
 import * as vscode from "vscode";
 
+import { search } from ".";
 import { Context } from "../context";
 import * as Positions from "../positions";
 import { Direction } from "../types";
+import { escapeForRegExp } from "../../utils/regexp";
 
 /**
  * Moves the given position towards the given direction until the given string
@@ -19,41 +21,11 @@ export function moveTo(
   origin: vscode.Position,
   document = Context.current.document,
 ) {
-  let line = origin.line,
-      character: number | undefined = origin.character;
-
-  for (;;) {
-    const text = document.lineAt(line).text;
-
-    if (character === undefined) {
-      character = text.length;
-    }
-
-    const idx = direction === Direction.Backward
-      ? text.lastIndexOf(string, character)
-      : text.indexOf(string, character);
-
-    if (idx !== -1) {
-      return new vscode.Position(line, idx);
-    }
-
-    // No match on this line, let's keep going.
-    if (direction === Direction.Backward) {
-      if (line === 0) {
-        return undefined;
-      }
-
-      line--;
-      character = undefined;
-    } else {
-      if (line === document.lineCount - 1) {
-        return undefined;
-      }
-
-      line++;
-      character = 0;
-    }
+  if (direction === Direction.Backward) {
+    origin = Positions.offsetOrEdge(origin, string.length, document);
   }
+
+  return search(direction, new RegExp(escapeForRegExp(string)), origin, undefined, document)?.[0];
 }
 
 /**
