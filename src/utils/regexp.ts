@@ -1068,6 +1068,134 @@ export const enum CharCodes {
 }
 
 /**
+ * Returns the nature of the escaped at the start of the given string.
+ */
+function parseEscaped<InCharSet extends boolean>(
+  src: string,
+  inCharSet: InCharSet,
+): readonly [number, Raw | CharacterSet | Escaped | CharacterClass
+   | (InCharSet extends true ? never : NumericEscape | Backreference)] {
+  assert(src.length > 0);
+
+  let i = 0;
+
+  switch (src.charCodeAt(i++)) {
+  case 110: // n
+    return [i, new Raw("\n")];
+  case 114: // r
+    return [i, new Raw("\r")];
+  case 116: // t
+    return [i, new Raw("\t")];
+  case 102: // f
+    return [i, new Raw("\f")];
+  case 118: // v
+    return [i, new Raw("\n")];
+
+  case 119: // w
+    return [i, CharacterSet.word];
+  case 87: // W
+    return [i, CharacterSet.notWord];
+
+  case 100: // d
+    return [i, CharacterSet.digit];
+  case 68: // D
+    return [i, CharacterSet.notDigit];
+
+  case 115: // s
+    return [i, CharacterSet.whitespace];
+  case 83: // S
+    return [i, CharacterSet.notWhitespace];
+
+  case 99: // c
+    const controlCh = src.charCodeAt(i),
+          isUpper = 65 <= controlCh && controlCh <= 90,
+          offset = (isUpper ? 65 /* A */ : 107 /* a */) - 1,
+          value = controlCh - offset;
+
+    i++;
+    return [i, new Escaped("c", value)];
+
+  case 48: // 0
+    if (isRange(src, i, 2, 48 /* 0 */, 55 /* 7 */)) {
+      const value = parseInt(src.substr(i, 2), 8);
+
+      i += 2;
+      return [i, new Escaped("0", value)];
+    } else {
+      return [i, new Raw("\0")];
+    }
+
+  case 120: // x
+    if (isHex(src, i, 2)) {
+      const value = parseInt(src.substr(i, 2), 16);
+
+      i += 2;
+      return [i, new Escaped("x", value)];
+    } else {
+      return [i, new Raw("x")];
+    }
+
+  case 117: // u
+    if (src.charCodeAt(i) === CharCodes.LCurly) {
+      const end = src.indexOf("}", i + 1);
+
+      assert(end !== -1);
+
+      const value = parseInt(src.slice(i + 1, end), 16);
+
+      i = end + 1;
+      return [i, new Escaped("u", value)];
+    } else if (isHex(src, i, 4)) {
+      const value = parseInt(src.substr(i, 4), 16);
+
+      i += 4;
+      return [i, new Escaped("u", value)];
+    } else {
+      return [i, new Raw("u")];
+    }
+
+  case 112: // p
+  case 80: // P
+    assert(src.charCodeAt(i) === CharCodes.LCurly);
+
+    const start = i + 1,
+          end = src.indexOf("}", start);
+
+    assert(end > start);
+
+    i = end + 1;
+    return [i, new CharacterClass(src.slice(start, end), src.charCodeAt(start - 2) === 80)];
+
+  default:
+    if (!inCharSet && isDigit(src.charCodeAt(i - 1))) {
+      // Escaped integer, corresponding to a group reference by index.
+      const start = i - 1;
+
+      while (isDigit(src.charCodeAt(i))) {
+        i++;
+      }
+
+      return [i, new NumericEscape(+src.slice(start, i)) as any];
+    }
+
+    if (!inCharSet && src.charCodeAt(i - 1) === 107 /* k */) {
+      assert(src.charCodeAt(i) === CharCodes.LAngle);
+
+      // Group reference by name.
+      const start = i + 1,
+            end = src.indexOf(">", start);
+
+      assert(end > start);
+
+      i = end + 1;
+      return [i, new Backreference(src.slice(start, end)) as any];
+    }
+
+    return [i, new Raw(src[i - 1])];
+  }
+}
+
+/**
  * Returns the AST of the given `RegExp`.
  */
 export function parse(re: RegExp) {
@@ -1156,118 +1284,11 @@ export function parse(re: RegExp) {
     inCharSet: InCharSet,
   ): Raw | CharacterSet | Escaped | CharacterClass
    | (InCharSet extends true ? never : NumericEscape | Backreference) {
-    switch (src.charCodeAt(i++)) {
-    case 110: // n
-      return new Raw("\n");
-    case 114: // r
-      return new Raw("\r");
-    case 116: // t
-      return new Raw("\t");
-    case 102: // f
-      return new Raw("\f");
-    case 118: // v
-      return new Raw("\n");
+    const [offset, result] = parseEscaped(src, inCharSet);
 
-    case 119: // w
-      return CharacterSet.word;
-    case 87: // W
-      return CharacterSet.notWord;
+    i += offset;
 
-    case 100: // d
-      return CharacterSet.digit;
-    case 68: // D
-      return CharacterSet.notDigit;
-
-    case 115: // s
-      return CharacterSet.whitespace;
-    case 83: // S
-      return CharacterSet.notWhitespace;
-
-    case 99: // c
-      const controlCh = src.charCodeAt(i),
-            isUpper = 65 <= controlCh && controlCh <= 90,
-            offset = (isUpper ? 65 /* A */ : 107 /* a */) - 1,
-            value = controlCh - offset;
-
-      i++;
-      return new Escaped("c", value);
-
-    case 48: // 0
-      if (isRange(src, i, 2, 48 /* 0 */, 55 /* 7 */)) {
-        const value = parseInt(src.substr(i, 2), 8);
-
-        i += 2;
-        return new Escaped("0", value);
-      } else {
-        return new Raw("\0");
-      }
-
-    case 120: // x
-      if (isHex(src, i, 2)) {
-        const value = parseInt(src.substr(i, 2), 16);
-
-        i += 2;
-        return new Escaped("x", value);
-      } else {
-        return new Raw("x");
-      }
-
-    case 117: // u
-      if (src.charCodeAt(i) === CharCodes.LCurly) {
-        const end = src.indexOf("}", i + 1);
-
-        assert(end !== -1);
-
-        const value = parseInt(src.slice(i + 1, end), 16);
-
-        i = end + 1;
-        return new Escaped("u", value);
-      } else if (isHex(src, i, 4)) {
-        const value = parseInt(src.substr(i, 4), 16);
-
-        i += 4;
-        return new Escaped("u", value);
-      } else {
-        return new Raw("u");
-      }
-
-    case 112: // p
-    case 80: // P
-      assert(src.charCodeAt(i) === CharCodes.LCurly);
-
-      const start = i + 1,
-            end = src.indexOf("}", start);
-
-      assert(end > start);
-
-      i = end + 1;
-      return new CharacterClass(src.slice(start, end), src.charCodeAt(start - 2) === 80);
-
-    default:
-      if (!inCharSet && isDigit(src.charCodeAt(i - 1))) {
-        const start = i - 1;
-
-        while (isDigit(src.charCodeAt(i))) {
-          i++;
-        }
-
-        return new NumericEscape(+src.slice(start, i)) as any;
-      }
-
-      if (!inCharSet && src.charCodeAt(i - 1) === 107 /* k */) {
-        assert(src.charCodeAt(i) === CharCodes.LAngle);
-
-        const start = i + 1,
-              end = src.indexOf(">", start);
-
-        assert(end > start);
-
-        i = end + 1;
-        return new Backreference(src.slice(start, end)) as any;
-      }
-
-      return new Raw(src[i - 1]);
-    }
+    return result;
   }
 
   function characterSet() {
@@ -1537,7 +1558,18 @@ export function parseRegExpWithReplacement(regexp: string) {
           throw new Error("unexpected end of RegExp");
         }
 
-        replacement += ch + regexp[++i];
+        const [offset, result] = parseEscaped(regexp.slice(i + 1), /* inCharSet= */ false);
+
+        if (result instanceof Raw) {
+          i += offset;
+          replacement += result.string;
+        } else if (result instanceof Escaped) {
+          i += offset;
+          replacement += String.fromCharCode(result.value);
+        } else {
+          i += 1;
+          replacement += ch + regexp[i];
+        }
       } else {
         replacement += ch;
       }
