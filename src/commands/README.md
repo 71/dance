@@ -49,7 +49,7 @@
     <tr><td><a href="#history.redo"><code>history.redo</code></a></td><td>Redo</td><td><code>Shift+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#history.redo.selections"><code>history.redo.selections</code></a></td><td>Redo a change of selections</td><td><code>Shift+Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#history.repeat"><code>history.repeat</code></a></td><td>Repeat last change</td><td></td></tr>
-    <tr><td><a href="#history.repeat.edit"><code>history.repeat.edit</code></a></td><td>Repeat last edit without a command</td><td><code>.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#history.repeat.edit"><code>history.repeat.edit</code></a></td><td>Repeat last edit without a command</td><td><code>.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Decimal</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#history.undo"><code>history.undo</code></a></td><td>Undo</td><td><code>U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#history.undo.selections"><code>history.undo.selections</code></a></td><td>Undo a change of selections</td><td><code>Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=1><a href="#keybindings"><code>keybindings</code></a></td><td><a href="#keybindings.setup"><code>keybindings.setup</code></a></td><td>Set up Dance keybindings</td><td></td></tr>
@@ -72,14 +72,14 @@
     <tr><td><a href="#modes.set"><code>modes.set</code></a></td><td>Set Dance mode</td><td></td></tr>
     <tr><td><a href="#modes.set.temporarily"><code>modes.set.temporarily</code></a></td><td>Set Dance mode temporarily</td><td></td></tr>
     <tr><td rowspan=10><a href="#search"><code>search</code></a></td><td><a href="#search.next"><code>search.next</code></a></td><td>Select next match</td><td><code>N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="#search.search"><code>search.search</code></a></td><td>Search</td><td><code>/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#search.search"><code>search.search</code></a></td><td>Search</td><td><code>/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Divide</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L22"><code>search.backward</code></a></td><td>Search backward</td><td><code>Alt+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L23"><code>search.backward.extend</code></a></td><td>Search backward (extend)</td><td><code>Shift+Alt+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L21"><code>search.extend</code></a></td><td>Search (extend)</td><td><code>Shift+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L157"><code>search.next.add</code></a></td><td>Add next match</td><td><code>Shift+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L158"><code>search.previous</code></a></td><td>Select previous match</td><td><code>Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L159"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L89"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L89"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#search.selection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Shift+Alt+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=35><a href="#seek"><code>seek</code></a></td><td><a href="#seek.enclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#seek.object"><code>seek.object</code></a></td><td>Select object</td><td></td></tr>
@@ -546,7 +546,7 @@ Repeat last edit without a command.
 This command:
 - may be repeated with a given number of repetitions.
 
-Default keybinding: `.` (normal)
+Default keybinding: `.` (normal), `NumPad_Decimal` (normal)
 
 <a name="history.recording.play" />
 
@@ -776,18 +776,18 @@ Update the current counter used to repeat the next command.
 
 #### Additional keybindings
 
-| Title                          | Keybinding   | Command                              |
-| ------------------------------ | ------------ | ------------------------------------ |
-| Add the digit 0 to the counter | `0` (normal) | `[".updateCount", { addDigits: 0 }]` |
-| Add the digit 1 to the counter | `1` (normal) | `[".updateCount", { addDigits: 1 }]` |
-| Add the digit 2 to the counter | `2` (normal) | `[".updateCount", { addDigits: 2 }]` |
-| Add the digit 3 to the counter | `3` (normal) | `[".updateCount", { addDigits: 3 }]` |
-| Add the digit 4 to the counter | `4` (normal) | `[".updateCount", { addDigits: 4 }]` |
-| Add the digit 5 to the counter | `5` (normal) | `[".updateCount", { addDigits: 5 }]` |
-| Add the digit 6 to the counter | `6` (normal) | `[".updateCount", { addDigits: 6 }]` |
-| Add the digit 7 to the counter | `7` (normal) | `[".updateCount", { addDigits: 7 }]` |
-| Add the digit 8 to the counter | `8` (normal) | `[".updateCount", { addDigits: 8 }]` |
-| Add the digit 9 to the counter | `9` (normal) | `[".updateCount", { addDigits: 9 }]` |
+| Title                          | Keybinding                       | Command                              |
+| ------------------------------ | -------------------------------- | ------------------------------------ |
+| Add the digit 0 to the counter | `0` (normal), `NumPad0` (normal) | `[".updateCount", { addDigits: 0 }]` |
+| Add the digit 1 to the counter | `1` (normal), `NumPad1` (normal) | `[".updateCount", { addDigits: 1 }]` |
+| Add the digit 2 to the counter | `2` (normal), `NumPad2` (normal) | `[".updateCount", { addDigits: 2 }]` |
+| Add the digit 3 to the counter | `3` (normal), `NumPad3` (normal) | `[".updateCount", { addDigits: 3 }]` |
+| Add the digit 4 to the counter | `4` (normal), `NumPad4` (normal) | `[".updateCount", { addDigits: 4 }]` |
+| Add the digit 5 to the counter | `5` (normal), `NumPad5` (normal) | `[".updateCount", { addDigits: 5 }]` |
+| Add the digit 6 to the counter | `6` (normal), `NumPad6` (normal) | `[".updateCount", { addDigits: 6 }]` |
+| Add the digit 7 to the counter | `7` (normal), `NumPad7` (normal) | `[".updateCount", { addDigits: 7 }]` |
+| Add the digit 8 to the counter | `8` (normal), `NumPad8` (normal) | `[".updateCount", { addDigits: 8 }]` |
+| Add the digit 9 to the counter | `9` (normal), `NumPad9` (normal) | `[".updateCount", { addDigits: 9 }]` |
 
 
 This command:
@@ -909,7 +909,7 @@ This command:
 - takes an argument `interactive` of type `boolean`.
 - takes an input of type `Input<string | RegExp>`.
 
-Default keybinding: `/` (normal)
+Default keybinding: `/` (normal), `NumPad_Divide` (normal)
 
 <a name="search.selection" />
 
@@ -918,9 +918,9 @@ Default keybinding: `/` (normal)
 Search current selection.
 
 
-| Title                            | Identifier        | Keybinding   | Command                                  |
-| -------------------------------- | ----------------- | ------------ | ---------------------------------------- |
-| Search current selection (smart) | `selection.smart` | `*` (normal) | `[".search.selection", { smart: true }]` |
+| Title                            | Identifier        | Keybinding                               | Command                                  |
+| -------------------------------- | ----------------- | ---------------------------------------- | ---------------------------------------- |
+| Search current selection (smart) | `selection.smart` | `*` (normal), `NumPad_Multiply` (normal) | `[".search.selection", { smart: true }]` |
 
 This command:
 - accepts a register (by default, it uses `slash`).

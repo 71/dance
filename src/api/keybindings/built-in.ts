@@ -213,6 +213,12 @@ const builtinKeybindings = [
     command: "dance.history.repeat.edit",
   },
   {
+    key: "NumPad_Decimal",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Repeat last edit without a command",
+    command: "dance.history.repeat.edit",
+  },
+  {
     key: "Alt+.",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Repeat last seek",
@@ -274,7 +280,25 @@ const builtinKeybindings = [
     },
   },
   {
+    key: "NumPad0",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 0 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 0,
+    },
+  },
+  {
     key: "1",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 1 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 1,
+    },
+  },
+  {
+    key: "NumPad1",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Add the digit 1 to the counter",
     command: "dance.updateCount",
@@ -292,7 +316,25 @@ const builtinKeybindings = [
     },
   },
   {
+    key: "NumPad2",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 2 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 2,
+    },
+  },
+  {
     key: "3",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 3 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 3,
+    },
+  },
+  {
+    key: "NumPad3",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Add the digit 3 to the counter",
     command: "dance.updateCount",
@@ -310,7 +352,25 @@ const builtinKeybindings = [
     },
   },
   {
+    key: "NumPad4",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 4 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 4,
+    },
+  },
+  {
     key: "5",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 5 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 5,
+    },
+  },
+  {
+    key: "NumPad5",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Add the digit 5 to the counter",
     command: "dance.updateCount",
@@ -328,7 +388,25 @@ const builtinKeybindings = [
     },
   },
   {
+    key: "NumPad6",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 6 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 6,
+    },
+  },
+  {
     key: "7",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 7 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 7,
+    },
+  },
+  {
+    key: "NumPad7",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Add the digit 7 to the counter",
     command: "dance.updateCount",
@@ -346,7 +424,25 @@ const builtinKeybindings = [
     },
   },
   {
+    key: "NumPad8",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 8 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 8,
+    },
+  },
+  {
     key: "9",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Add the digit 9 to the counter",
+    command: "dance.updateCount",
+    args: {
+      addDigits: 9,
+    },
+  },
+  {
+    key: "NumPad9",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Add the digit 9 to the counter",
     command: "dance.updateCount",
@@ -408,6 +504,12 @@ const builtinKeybindings = [
     command: "dance.search",
   },
   {
+    key: "NumPad_Divide",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Search",
+    command: "dance.search",
+  },
+  {
     key: "Alt+/",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Search backward",
@@ -457,6 +559,12 @@ const builtinKeybindings = [
   },
   {
     key: "Shift+8",
+    when: "editorTextFocus && dance.mode == 'normal'",
+    title: "Search current selection (smart)",
+    command: "dance.search.selection.smart",
+  },
+  {
+    key: "NumPad_Multiply",
     when: "editorTextFocus && dance.mode == 'normal'",
     title: "Search current selection (smart)",
     command: "dance.search.selection.smart",

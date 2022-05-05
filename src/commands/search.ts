@@ -14,7 +14,7 @@ declare module "./search";
 /**
  * Search.
  *
- * @keys `/` (normal)
+ * @keys `/` (normal), `NumPad_Divide` (normal)
  *
  * | Title                    | Identifier        | Keybinding     | Command                                           |
  * | ------------------------ | ----------------- | -------------- | ------------------------------------------------- |
@@ -84,9 +84,9 @@ export async function search(
  *
  * @keys `a-*` (normal)
  *
- * | Title                            | Identifier        | Keybinding   | Command                                  |
- * | -------------------------------- | ----------------- | ------------ | ---------------------------------------- |
- * | Search current selection (smart) | `selection.smart` | `*` (normal) | `[".search.selection", { smart: true }]` |
+ * | Title                            | Identifier        | Keybinding                               | Command                                  |
+ * | -------------------------------- | ----------------- | ---------------------------------------- | ---------------------------------------- |
+ * | Search current selection (smart) | `selection.smart` | `*` (normal), `NumPad_Multiply` (normal) | `[".search.selection", { smart: true }]` |
  */
 export function selection(
   document: vscode.TextDocument,

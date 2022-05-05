@@ -97,7 +97,7 @@ export async function repeat(
 /**
  * Repeat last edit without a command.
  *
- * @keys `.` (normal)
+ * @keys `.` (normal), `NumPad_Decimal` (normal)
  * @noreplay
  */
 export async function repeat_edit(_: Context, repetitions: number) {

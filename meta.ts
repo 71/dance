@@ -296,7 +296,7 @@ export const specialCharacterMapping = {
 /**
  * RegExp for keys of `specialCharacterMapping`.
  */
-export const specialCharacterRegExp = /[~!@#$%^&*()_+{}|:"<>?]/g;
+export const specialCharacterRegExp = /[~!@#$%^&*()+{}|:"<>?]|(?<!NumPad)_/g;
 
 /**
  * Async wrapper around the `glob` package.

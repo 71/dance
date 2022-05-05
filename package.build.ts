@@ -710,7 +710,14 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     keybindings: (() => {
       const keybindings = modules.flatMap((module) => module.keybindings),
             alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
-            keysToAssign = new Set([...alphanum, ...alphanum.map((x) => `Shift+${x}`), ...",'"]);
+            keysToAssign = new Set([
+              ...alphanum,
+              ...alphanum.map((x) => `Shift+${x}`),
+              ...",'-",
+              "Shift+=",
+              "NumPad_Add",
+              "NumPad_Subtract",
+            ]);
 
       for (const keybinding of keybindings) {
         keysToAssign.delete(keybinding.key);
