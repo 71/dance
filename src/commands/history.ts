@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import type { Argument, CommandDescriptor, RegisterOr } from ".";
 import type { Context } from "../api";
-import { ActiveRecording, Cursor, Entry, Recorder } from "../state/recorder";
+import { ActiveRecording, Cursor, Entry } from "../state/recorder";
 import type { Register } from "../state/registers";
 import { ArgumentError } from "../utils/errors";
 
@@ -52,10 +52,10 @@ export function redo_selections() {
  *
  * @noreplay
  *
- * | Title                        | Identifier         | Keybinding     | Commands                                                                   |
- * | ---------------------------- | ------------------ | -------------- | -------------------------------------------------------------------------- |
- * | Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { filter: "dance\\.(seek|select|selections)\\..+" }]` |
- * | Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { filter: "dance\\.seek\\..+" }]`                     |
+ * | Title                        | Identifier         | Keybinding     | Commands                                                                      |
+ * | ---------------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------- |
+ * | Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
+ * | Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
  */
 export async function repeat(
   _: Context,
@@ -77,7 +77,7 @@ export async function repeat(
       const entry = cursor.entry(),
             descriptor = entry.descriptor();
 
-      if (filter.test(descriptor.identifier)) {
+      if (descriptor.shouldBeReplayed && filter.test(descriptor.identifier)) {
         commandDescriptor = descriptor;
         commandArgument = entry.argument();
         break;

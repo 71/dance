@@ -738,13 +738,13 @@ export const commands: Commands = function () {
     commands,
     "dance.history.repeat.selection",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".history.repeat", { filter: "dance\\.(seek|select|selections)\\..+" }]],
+    [[".history.repeat", { filter: "dance\\.(seek|select|selections)", $include: ["count"] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.history.repeat.seek",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".history.repeat", { filter: "dance\\.seek\\..+" }]],
+    [[".history.repeat", { filter: "dance\\.seek", $include: ["count"] }]],
   );
   describeAdditionalCommand(
     commands,

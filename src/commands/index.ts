@@ -50,6 +50,10 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
     return (this.flags & CommandDescriptor.Flags.RequiresActiveEditor) !== 0;
   }
 
+  public get shouldBeReplayed() {
+    return (this.flags & CommandDescriptor.Flags.DoNotReplay) === 0;
+  }
+
   public constructor(
     /**
      * The unique identifier of the command.

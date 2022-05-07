@@ -526,10 +526,10 @@ Default keybinding: `s-a-u` (normal)
 Repeat last change.
 
 
-| Title                        | Identifier         | Keybinding     | Commands                                                                   |
-| ---------------------------- | ------------------ | -------------- | -------------------------------------------------------------------------- |
-| Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { filter: "dance\\.(seek\|select\|selections)\\..+" }]` |
-| Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { filter: "dance\\.seek\\..+" }]`                     |
+| Title                        | Identifier         | Keybinding     | Commands                                                                      |
+| ---------------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------- |
+| Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { filter: "dance\\.(seek\|select\|selections)", +count }]` |
+| Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
 
 This command:
 - may be repeated with a given number of repetitions.
