@@ -2989,7 +2989,10 @@
       {
         "key": "Shift+;",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "command": "workbench.action.showCommands"
+        "command": "workbench.action.showCommands",
+        "args": {
+          "$exclude": []
+        }
       },
       {
         "key": "A",
@@ -3694,7 +3697,8 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "command": "dance.selections.restore.withCurrent",
         "args": {
-          "reverse": true
+          "reverse": true,
+          "$exclude": []
         }
       },
       {
@@ -3775,7 +3779,8 @@
         "title": "Show view menu",
         "command": "dance.openMenu",
         "args": {
-          "input": "view"
+          "menu": "view",
+          "$exclude": []
         }
       },
       {
@@ -3784,8 +3789,9 @@
         "title": "Show view menu (locked)",
         "command": "dance.openMenu",
         "args": {
-          "input": "view",
-          "locked": true
+          "menu": "view",
+          "locked": true,
+          "$exclude": []
         }
       },
       {

@@ -36,12 +36,12 @@ const preferredColumnsToken =
  *
  * #### Variants
  *
- * | Title       | Identifier    | Keybinding                        | Command                                                      |
- * | ----------- | ------------- | --------------------------------- | ------------------------------------------------------------ |
- * | Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"   }]` |
- * | Extend down | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend" }]` |
- * | Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"   }]` |
- * | Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend" }]` |
+ * | Title       | Identifier    | Keybinding                        | Command                                                           |
+ * | ----------- | ------------- | --------------------------------- | ----------------------------------------------------------------- |
+ * | Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
+ * | Extend down | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
+ * | Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
+ * | Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
  *
  * The following keybindings are also defined:
  *
@@ -222,12 +222,12 @@ export function vertically(
  *
  * #### Variants
  *
- * | Title        | Identifier     | Keybinding                         | Command                                                        |
- * | ------------ | -------------- | ---------------------------------- | -------------------------------------------------------------- |
- * | Jump right   | `right.jump`   | `l` (normal)  , `right` (normal)   | `[".select.horizontally", { direction:  1, shift: "jump"   }]` |
- * | Extend right | `right.extend` | `s-l` (normal), `s-right` (normal) | `[".select.horizontally", { direction:  1, shift: "extend" }]` |
- * | Jump left    | `left.jump`    | `h` (normal)  , `left` (normal)    | `[".select.horizontally", { direction: -1, shift: "jump"   }]` |
- * | Extend left  | `left.extend`  | `s-h` (normal), `s-left` (normal)  | `[".select.horizontally", { direction: -1, shift: "extend" }]` |
+ * | Title        | Identifier     | Keybinding                         | Command                                                             |
+ * | ------------ | -------------- | ---------------------------------- | ------------------------------------------------------------------- |
+ * | Jump right   | `right.jump`   | `l` (normal)  , `right` (normal)   | `[".select.horizontally", { direction:  1, shift: "jump"  , ... }]` |
+ * | Extend right | `right.extend` | `s-l` (normal), `s-right` (normal) | `[".select.horizontally", { direction:  1, shift: "extend", ... }]` |
+ * | Jump left    | `left.jump`    | `h` (normal)  , `left` (normal)    | `[".select.horizontally", { direction: -1, shift: "jump"  , ... }]` |
+ * | Extend left  | `left.extend`  | `s-h` (normal), `s-left` (normal)  | `[".select.horizontally", { direction: -1, shift: "extend", ... }]` |
  */
 export function horizontally(
   _: Context,
@@ -291,10 +291,10 @@ export function horizontally(
  *
  * #### Variants
  *
- * | Title     | Identifier  | Keybinding     | Command                               |
- * | --------- | ----------- | -------------- | ------------------------------------- |
- * | Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { shift: "jump"   }]` |
- * | Extend to | `to.extend` | `s-g` (normal) | `[".select.to", { shift: "extend" }]` |
+ * | Title     | Identifier  | Keybinding     | Command                                    |
+ * | --------- | ----------- | -------------- | ------------------------------------------ |
+ * | Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { shift: "jump"  , ... }]` |
+ * | Extend to | `to.extend` | `s-g` (normal) | `[".select.to", { shift: "extend", ... }]` |
  */
 export function to(
   _: Context,
@@ -456,14 +456,14 @@ export function line_above_extend(_: Context, count: number) {
  *
  * #### Variants
  *
- * | Title                             | Identifier                   | Keybinding                          | Command                                                       |
- * | --------------------              | ------------------           | ----------------------------------- | ------------------------------------------------------------- |
- * | Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", {                  shift: "jump"   }]` |
- * | Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", {                  shift: "extend" }]` |
- * | Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { skipBlank: true, shift: "jump"   }]` |
- * | Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                     | `[".select.lineStart", { skipBlank: true, shift: "extend" }]` |
- * | Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { count: 0,        shift: "jump"   }]` |
- * | Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { count: 0,        shift: "extend" }]` |
+ * | Title                             | Identifier                   | Keybinding                          | Command                                                            |
+ * | --------------------              | ------------------           | ----------------------------------- | ------------------------------------------------------------------ |
+ * | Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", {                  shift: "jump"  , ... }]` |
+ * | Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", {                  shift: "extend", ... }]` |
+ * | Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { skipBlank: true, shift: "jump"  , ... }]` |
+ * | Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                     | `[".select.lineStart", { skipBlank: true, shift: "extend", ... }]` |
+ * | Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { count: 0,        shift: "jump"  , ... }]` |
+ * | Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { count: 0,        shift: "extend", ... }]` |
  */
 export function lineStart(
   _: Context,
@@ -506,11 +506,11 @@ export function lineStart(
  *
  * #### Variants
  *
- * | Title                    | Identifier           | Keybinding                         | Command                                                    |
- * | ------------------------ | -------------------- | ---------------------------------- | ---------------------------------------------------------- |
- * | Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", {                 shift: "extend" }]` |
- * | Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "jump"   }]` |
- * | Extend to last character | `documentEnd.extend` |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "extend" }]` |
+ * | Title                    | Identifier           | Keybinding                         | Command                                                         |
+ * | ------------------------ | -------------------- | ---------------------------------- | --------------------------------------------------------------- |
+ * | Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", {                 shift: "extend", ... }]` |
+ * | Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "jump"  , ... }]` |
+ * | Extend to last character | `documentEnd.extend` |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "extend", ... }]` |
  */
 export function lineEnd(
   _: Context,

@@ -2,64 +2,86 @@ import * as assert from "assert";
 import { Builder, unindent } from "../../meta";
 
 export async function build(builder: Builder) {
-  const modules = await builder.getCommandModules();
+  const modules = await builder.getCommandModules(),
+        availableCommands = new Set(
+          modules.flatMap((m) => m.functions.map((f) => "dance." + f.qualifiedName))),
+        additionalCommands = [] as Builder.AdditionalCommand[];
+
+  // Build list of additional commands, only adding new commands when all their
+  // dependencies have already been added as well.
+  let unorderedAdditionalCommands = modules.flatMap((module) =>
+    module.additional
+      .concat(...module.functions.map((f) => f.additional))
+      .filter((x) => x.identifier !== undefined && x.commands !== undefined));
+
+  while (unorderedAdditionalCommands.length > 0) {
+    const commandsWithMissingDependencies = [] as Builder.AdditionalCommand[];
+
+    outer: for (const command of unorderedAdditionalCommands) {
+      const dependencies = command.commands!.matchAll(/"(\.[\w.-]+)"/g);
+
+      for (const match of dependencies) {
+        const dependency = "dance" + match[1];
+
+        if (!availableCommands.has(dependency)) {
+          commandsWithMissingDependencies.push(command);
+
+          continue outer;
+        }
+      }
+
+      availableCommands.add(`dance.${command.qualifiedIdentifier}`);
+      additionalCommands.push(command);
+    }
+
+    if (unorderedAdditionalCommands.length === commandsWithMissingDependencies.length) {
+      throw new Error(
+          `cannot resolve dependencies: ${JSON.stringify(commandsWithMissingDependencies)}`);
+    }
+    unorderedAdditionalCommands = commandsWithMissingDependencies;
+  }
 
   return unindent(4, `
     ${modules.map((module) => unindent(8, `
-        /**
-         * Loads the "${module.name}" module and returns its defined commands.
-         */
-        async function load${capitalize(module.name!)}Module(): Promise<CommandDescriptor[]> {
-          const {${
-            module.functionNames
-              .map((name) => "\n" + " ".repeat(16) + name + ",")
-              .sort()
-              .join("")}
-          } = await import("./${module.name}");
-
-          return [${
-            module.functions
-              .map((f) => `
-                new CommandDescriptor(
-                  "dance.${f.qualifiedName}",
-                  ${determineFunctionExpression(f)},
-                  ${determineFunctionFlags(f)},
-                ),`)
-              .sort()
-              .join("")}${
-            module.additional.concat(...module.functions.map((f) => f.additional))
-              .filter((x) => x.identifier !== undefined && x.commands !== undefined)
-              .map((x) => `
-                new CommandDescriptor(
-                  "dance.${x.qualifiedIdentifier}",
-                  ${buildCommandsExpression(x)},
-                  CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-                ),`)
-              .sort()
-              .join("")}
-          ];
-        }
+        import {${
+          module.functions
+            .map((f) => `\n${" ".repeat(14)}${f.name} as ${f.qualifiedName.replace(/\./g, "_")},`)
+            .sort()
+            .join("")}
+        } from "./${module.name}";
     `).trim()).join("\n\n")}
 
     /**
-     * Loads and returns all defined commands.
+     * All defined Dance commands.
      */
-    export async function loadCommands(): Promise<Commands> {
-      const allModules = await Promise.all([${
-        modules
-          .map((module) => `\n${" ".repeat(8)}load${capitalize(module.name!)}Module(),`)
-          .join("")}
-      ]);
+    export const commands: Commands = function () {
+      // Normal commands.
+      const commands = {
+        ${modules
+          .flatMap((m) => m.functions)
+          .map((f) => unindent(4, `"dance.${f.qualifiedName}": new CommandDescriptor(
+              "dance.${f.qualifiedName}",
+              ${determineFunctionExpression(f)},
+              ${determineFunctionFlags(f)},
+            ),`))
+          .sort()
+          .join("\n" + " ".repeat(8))}
+      };
 
-      return Object.freeze(
-        Object.fromEntries(allModules.flat().map((desc) => [desc.identifier, desc])),
-      );
-    }
+      // Additional commands.
+      ${additionalCommands
+          .map((x) => unindent(6, `describeAdditionalCommand(
+              commands,
+              "dance.${x.qualifiedIdentifier}",
+              CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+              [${x.commands}],
+            );`))
+          .join("\n" + " ".repeat(6))}
+
+      // Finalize \`commands\`.
+      return Object.freeze(commands);
+    }();
   `);
-}
-
-function capitalize(text: string) {
-  return text.replace(/(\.|^)[a-z]/g, (x, dot) => x.slice(dot.length).toUpperCase());
 }
 
 function determineFunctionExpression(f: Builder.ParsedFunction) {
@@ -67,27 +89,14 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
   let takeArgument = false;
 
   for (const [name, type] of f.parameters) {
+    let match: RegExpExecArray | null;
+
     switch (name) {
 
     // Arguments, input.
     case "argument":
       takeArgument = true;
       givenParameters.push("argument");
-      break;
-
-    case "input":
-      takeArgument = true;
-      givenParameters.push("getInput(argument)");
-      break;
-
-    case "setInput":
-      takeArgument = true;
-      givenParameters.push("getSetInput(argument)");
-      break;
-
-    case "inputOr":
-      takeArgument = true;
-      givenParameters.push("getInputOr(argument)");
       break;
 
     case "direction":
@@ -135,7 +144,7 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
     case "register":
       takeArgument = true;
 
-      const match = /^RegisterOr<"(\w+)"(?:, (.+))?>$/.exec(type);
+      match = /^RegisterOr<"(\w+)"(?:, (.+))?>$/.exec(type);
 
       assert(match !== null);
 
@@ -163,6 +172,9 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
       } else if (type.startsWith("Argument<")) {
         takeArgument = true;
         givenParameters.push("argument[" + JSON.stringify(name) + "]");
+      } else if (match = /^InputOr<("\w+"),.+>$/.exec(type)) {
+        takeArgument = true;
+        givenParameters.push(`getInputOr(${match[1]}, argument)`);
       } else {
         throw new Error(`unknown parameter ${JSON.stringify([name, type])}`);
       }
@@ -170,7 +182,7 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
   }
 
   const inputParameters = ["_", ...(takeArgument ? ["argument"] : [])],
-        call = `${f.name}(${givenParameters.join(", ")})`;
+        call = `${f.qualifiedName.replace(/\./g, "_")}(${givenParameters.join(", ")})`;
 
   return `(${inputParameters.join(", ")}) => _.runAsync((_) => ${call})`;
 }
@@ -194,8 +206,6 @@ function determineFunctionFlags(f: Builder.ParsedFunction) {
   return flags.map((flag) => "CommandDescriptor.Flags." + flag).join(" | ");
 }
 
-function buildCommandsExpression(f: Builder.AdditionalCommand) {
-  const commands = f.commands!.replace(/ +/g, " ");
-
-  return `(_, argument) => _.runAsync(() => runCommands(argument, ${commands}))`;
+function additionalCommandName(f: Builder.AdditionalCommand) {
+  return f.qualifiedIdentifier!.replace(/[.-]/g, "_");
 }

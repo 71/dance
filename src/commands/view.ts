@@ -8,10 +8,10 @@ import { Context, Selections } from "../api";
  *
  * #### Predefined keybindings
  *
- * | Title                   | Keybinding     | Command                                          |
- * | ----------------------- | -------------- | ------------------------------------------------ |
- * | Show view menu          | `v` (normal)   | `[".openMenu", { input: "view"               }]` |
- * | Show view menu (locked) | `s-v` (normal) | `[".openMenu", { input: "view", locked: true }]` |
+ * | Title                   | Keybinding     | Command                                              |
+ * | ----------------------- | -------------- | ---------------------------------------------------- |
+ * | Show view menu          | `v` (normal)   | `[".openMenu", { menu: "view", ...               }]` |
+ * | Show view menu (locked) | `s-v` (normal) | `[".openMenu", { menu: "view", locked: true, ... }]` |
  */
 declare module "./view";
 

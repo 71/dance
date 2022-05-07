@@ -76,10 +76,10 @@
     <tr><td><a href="./search.ts#L22"><code>search.backward</code></a></td><td>Search backward</td><td><code>Alt+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L23"><code>search.backward.extend</code></a></td><td>Search backward (extend)</td><td><code>Shift+Alt+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L21"><code>search.extend</code></a></td><td>Search (extend)</td><td><code>Shift+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L157"><code>search.next.add</code></a></td><td>Add next match</td><td><code>Shift+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L158"><code>search.previous</code></a></td><td>Select previous match</td><td><code>Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L159"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L89"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L156"><code>search.next.add</code></a></td><td>Add next match</td><td><code>Shift+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L157"><code>search.previous</code></a></td><td>Select previous match</td><td><code>Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L158"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L88"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#search.selection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Shift+Alt+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=35><a href="#seek"><code>seek</code></a></td><td><a href="#seek.enclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#seek.object"><code>seek.object</code></a></td><td>Select object</td><td></td></tr>
@@ -172,17 +172,17 @@
     <tr><td><a href="#selections.select"><code>selections.select</code></a></td><td>Select within selections</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L319"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L318"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L702"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L666"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L665"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L699"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L663"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L662"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L316"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L317"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L781"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L778"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
     <tr><td><a href="./selections.ts#L254"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L255"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L253"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L584"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L780"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L581"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L777"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
     <tr><td><a href="#selections.split"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.splitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.toggleIndices"><code>selections.toggleIndices</code></a></td><td>Toggle selection indices</td><td><code>Enter</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -248,18 +248,18 @@ current selections.
 
 #### Additional commands
 
-| Title                              | Identifier              | Keybinding                     | Commands                                                                                                    |
-| ---------------------------------- | ----------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert) | `[".selectRegister"], [".edit.insert"]`                                                                     |
-| Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "start"               }]`                                   |
-| Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { handleNewLine: true, where: "end"                 }]`                                   |
-| Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select" }]`                                |
-| Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select" }]`                                |
-| Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { register: "_" }]`                                                                       |
-| Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".modes.set", { input: "insert" }], [".edit.insert", { register: "_" }]`                                  |
-| Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText"],                                      [".edit.insert", { register: "_" }]`        |
-| Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal)                   | `[".selections.saveText"], [".modes.set", { input: "insert" }], [".edit.insert", { register: "_" }]`        |
-| Copy and replace                   | `yank-replace`          | `s-r` (normal)                 | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp" }]` |
+| Title                              | Identifier              | Keybinding                     | Commands                                                                                                                       |
+| ---------------------------------- | ----------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                                |
+| Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
+| Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                               |
+| Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                              |
+| Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                              |
+| Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { register: "_", ... }]`                                                                                     |
+| Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]`                                          |
+| Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
+| Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal)                   | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
+| Copy and replace                   | `yank-replace`          | `s-r` (normal)                 | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]`               |
 
 This command:
 - accepts a register (by default, it uses `dquote`).
@@ -384,7 +384,6 @@ Replace characters.
 
 This command:
 - may be repeated with a given number of repetitions.
-- takes an input of type `string`.
 
 Default keybinding: `r` (normal)
 
@@ -432,9 +431,9 @@ keep the current selections.
 
 #### Additional keybindings
 
-| Title                                      | Identifier             | Keybinding     | Commands                                                                 |
-| ------------------------------------------ | ---------------------- | -------------- | ------------------------------------------------------------------------ |
-| Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before"]` |
+| Title                                      | Identifier             | Keybinding     | Commands                                                                          |
+| ------------------------------------------ | ---------------------- | -------------- | --------------------------------------------------------------------------------- |
+| Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before", { ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -457,9 +456,9 @@ keep the current selections.
 
 #### Additional keybindings
 
-| Title                                      | Identifier             | Keybinding   | Commands                                                                 |
-| ------------------------------------------ | ---------------------- | ------------ | ------------------------------------------------------------------------ |
-| Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before"]` |
+| Title                                      | Identifier             | Keybinding   | Commands                                                                          |
+| ------------------------------------------ | ---------------------- | ------------ | --------------------------------------------------------------------------------- |
+| Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before", { ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -527,14 +526,14 @@ Default keybinding: `s-a-u` (normal)
 Repeat last change.
 
 
-| Title                        | Identifier         | Keybinding     | Commands                                                                    |
-| ---------------------------- | ------------------ | -------------- | --------------------------------------------------------------------------- |
-| Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { include: "dance\\.(seek\|select\|selections)\\..+" }]` |
-| Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { include: "dance\\.seek\\..+" }]`                     |
+| Title                        | Identifier         | Keybinding     | Commands                                                                   |
+| ---------------------------- | ------------------ | -------------- | -------------------------------------------------------------------------- |
+| Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { filter: "dance\\.(seek\|select\|selections)\\..+" }]` |
+| Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { filter: "dance\\.seek\\..+" }]`                     |
 
 This command:
 - may be repeated with a given number of repetitions.
-- takes an argument `include` of type `string | RegExp`.
+- takes an argument `filter` of type `string | RegExp`.
 
 <a name="history.repeat.edit" />
 
@@ -606,9 +605,9 @@ Miscellaneous commands that don't deserve their own category.
 By default, Dance also exports the following keybindings for existing
 commands:
 
-| Keybinding     | Command                             |
-| -------------- | ----------------------------------- |
-| `s-;` (normal) | `["workbench.action.showCommands"]` |
+| Keybinding     | Command                                      |
+| -------------- | -------------------------------------------- |
+| `s-;` (normal) | `["workbench.action.showCommands", { ... }]` |
 
 <a name=".cancel" />
 
@@ -646,7 +645,7 @@ instance,
 {
   "command": "dance.run",
   "args": {
-    "input": "Selections.set(Selections.filter(text => text.includes('foo')))",
+    "code": "Selections.set(Selections.filter(text => text.includes('foo')))",
   },
 },
 ```
@@ -659,7 +658,7 @@ easier to read:
 {
   "command": "dance.run",
   "args": {
-    "input": [
+    "code": [
       "for (const selection of Selections.current) {",
       "  console.log(text(selection));",
       "}",
@@ -690,7 +689,7 @@ But arguments can also be provided by passing an array:
   "command": "dance.run",
   "args": {
     "commands": [
-      ["dance.modes.set", { "input": "normal" }],
+      ["dance.modes.set", { "mode": "normal" }],
     ],
   },
 },
@@ -705,7 +704,7 @@ Or by passing an object, like regular VS Code key bindings:
     "commands": [
       {
         "command": "dance.modes.set",
-        "args": { "input": "normal" },
+        "args": { "mode": "normal" },
       },
     ],
   },
@@ -722,7 +721,7 @@ These values can be mixed:
       ["dance.selections.saveText", { "register": "^" }],
       {
         "command": "dance.modes.set",
-        "args": { "input": "normal" },
+        "args": { "mode": "normal" },
       },
       "hideSuggestWidget",
     ],
@@ -730,19 +729,19 @@ These values can be mixed:
 },
 ```
 
-If both `input` and `commands` are given, Dance will use `run` if arbitrary
-command execution is enabled, or `commands` otherwise.
+If both `code` and `commands` are given, Dance will use `code` if arbitrary
+code execution is enabled, or `commands` otherwise.
 
 This command:
 - accepts a register (by default, it uses `null`).
+- accepts an argument of type `Record<"code" | "input", string | readonly string[]>`.
 - may be repeated with a given number of repetitions.
 - may be repeated with a given number of repetitions.
 - takes an argument `commands` of type `command.Any[]`.
-- takes an input of type `string`.
 
 <a name=".selectRegister" />
 
-### [`selectRegister`](./misc.ts#L184-L195)
+### [`selectRegister`](./misc.ts#L186-L200)
 
 Select register for next command.
 
@@ -757,18 +756,17 @@ Default keybinding: `"` (normal)
 
 <a name=".updateRegister" />
 
-### [`updateRegister`](./misc.ts#L211-L222)
+### [`updateRegister`](./misc.ts#L216-L227)
 
 Update the contents of a register.
 
 
 This command:
 - accepts a register (by default, it uses `dquote`).
-- takes an input of type `string`.
 
 <a name=".updateCount" />
 
-### [`updateCount`](./misc.ts#L248-L277)
+### [`updateCount`](./misc.ts#L253-L282)
 
 Update Dance count.
 
@@ -793,11 +791,10 @@ Update the current counter used to repeat the next command.
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `addDigits` of type `number`.
-- takes an input of type `number`.
 
 <a name=".openMenu" />
 
-### [`openMenu`](./misc.ts#L305-L328)
+### [`openMenu`](./misc.ts#L310-L332)
 
 Open menu.
 
@@ -814,15 +811,13 @@ This command:
 - does not require an active text editor.
 - takes an argument `delay` of type `number`.
 - takes an argument `locked` of type `boolean`.
-- takes an argument `menu` of type `Menu`.
 - takes an argument `pass` of type `any[]`.
 - takes an argument `prefix` of type `string`.
 - takes an argument `title` of type `string`.
-- takes an input of type `string`.
 
 <a name=".changeInput" />
 
-### [`changeInput`](./misc.ts#L368-L382)
+### [`changeInput`](./misc.ts#L373-L387)
 
 Change current input.
 
@@ -849,23 +844,19 @@ Set Dance mode.
 
 #### Variants
 
-| Title              | Identifier   | Keybinding        | Command                                                      |
-| ------------------ | ------------ | ----------------- | ------------------------------------------------------------ |
-| Set mode to Normal | `set.normal` | `escape` (insert) | `[".modes.set", { input: "normal" }], ["hideSuggestWidget"]` |
-| Set mode to Insert | `set.insert` |                   | `[".modes.set", { input: "insert" }]`                        |
+| Title              | Identifier   | Keybinding        | Command                                                     |
+| ------------------ | ------------ | ----------------- | ----------------------------------------------------------- |
+| Set mode to Normal | `set.normal` | `escape` (insert) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
+| Set mode to Insert | `set.insert` |                   | `[".modes.set", { mode: "insert" }]`                        |
 
 Other variants are provided to switch to insert mode:
 
-| Title                | Identifier         | Keybinding     | Commands                                                                                                                                                                 |
-| -------------------- | ------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward", { record: false }],           [".modes.set", { input: "insert" }], [".selections.reduce", { where: "start", record: false, empty: true }]` |
-| Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward" , { record: false }],           [".modes.set", { input: "insert" }], [".selections.reduce", { where: "end"  , record: false, empty: true }]` |
-| Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { input: "insert" }], [".selections.reduce", { where: "start", record: false, empty: true }]` |
-| Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { input: "insert" }], [".selections.reduce", { where: "end"  , record: false, empty: true }]` |
-
-
-This command:
-- takes an input of type `string`.
+| Title                | Identifier         | Keybinding     | Commands                                                                                                                                                                            |
+| -------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward", { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
+| Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward" , { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
+| Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
+| Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
 
 <a name="modes.set.temporarily" />
 
@@ -875,15 +866,14 @@ Set Dance mode temporarily.
 
 #### Variants
 
-| Title                 | Identifier               | Keybindings    | Commands                                          |
-| --------------------- | ------------------------ | -------------- | ------------------------------------------------- |
-| Temporary Normal mode | `set.temporarily.normal` | `c-v` (insert) | `[".modes.set.temporarily", { input: "normal" }]` |
-| Temporary Insert mode | `set.temporarily.insert` | `c-v` (normal) | `[".modes.set.temporarily", { input: "insert" }]` |
+| Title                 | Identifier               | Keybindings    | Commands                                         |
+| --------------------- | ------------------------ | -------------- | ------------------------------------------------ |
+| Temporary Normal mode | `set.temporarily.normal` | `c-v` (insert) | `[".modes.set.temporarily", { mode: "normal" }]` |
+| Temporary Insert mode | `set.temporarily.insert` | `c-v` (normal) | `[".modes.set.temporarily", { mode: "insert" }]` |
 
 
 This command:
 - may be repeated with a given number of repetitions.
-- takes an input of type `string`.
 
 ## [`search`](./search.ts)
 
@@ -891,36 +881,36 @@ Search for patterns and replace or add selections.
 
 <a name="search.search" />
 
-### [`search.search`](./search.ts#L14-L37)
+### [`search.search`](./search.ts#L14-L36)
 
 Search.
 
 
-| Title                    | Identifier        | Keybinding     | Command                                           |
-| ------------------------ | ----------------- | -------------- | ------------------------------------------------- |
-| Search (extend)          | `extend`          | `?` (normal)   | `[".search", {                shift: "extend" }]` |
-| Search backward          | `backward`        | `a-/` (normal) | `[".search", { direction: -1                  }]` |
-| Search backward (extend) | `backward.extend` | `a-?` (normal) | `[".search", { direction: -1, shift: "extend" }]` |
+| Title                    | Identifier        | Keybinding     | Command                                                |
+| ------------------------ | ----------------- | -------------- | ------------------------------------------------------ |
+| Search (extend)          | `extend`          | `?` (normal)   | `[".search", {                shift: "extend", ... }]` |
+| Search backward          | `backward`        | `a-/` (normal) | `[".search", { direction: -1                 , ... }]` |
+| Search backward (extend) | `backward.extend` | `a-?` (normal) | `[".search", { direction: -1, shift: "extend", ... }]` |
 
 This command:
 - accepts a register (by default, it uses `slash`).
+- accepts an argument of type `{ input?: string | RegExp }`.
 - may be repeated with a given number of repetitions.
 - takes an argument `add` of type `boolean`.
 - takes an argument `interactive` of type `boolean`.
-- takes an input of type `Input<string | RegExp>`.
 
 Default keybinding: `/` (normal), `NumPad_Divide` (normal)
 
 <a name="search.selection" />
 
-### [`search.selection`](./search.ts#L82-L97)
+### [`search.selection`](./search.ts#L81-L96)
 
 Search current selection.
 
 
-| Title                            | Identifier        | Keybinding                               | Command                                  |
-| -------------------------------- | ----------------- | ---------------------------------------- | ---------------------------------------- |
-| Search current selection (smart) | `selection.smart` | `*` (normal), `NumPad_Multiply` (normal) | `[".search.selection", { smart: true }]` |
+| Title                            | Identifier        | Keybinding                               | Command                                             |
+| -------------------------------- | ----------------- | ---------------------------------------- | --------------------------------------------------- |
+| Search current selection (smart) | `selection.smart` | `*` (normal), `NumPad_Multiply` (normal) | `[".search.selection", { smart: true, +register }]` |
 
 This command:
 - accepts a register (by default, it uses `slash`).
@@ -930,16 +920,16 @@ Default keybinding: `a-*` (normal)
 
 <a name="search.next" />
 
-### [`search.next`](./search.ts#L150-L169)
+### [`search.next`](./search.ts#L149-L168)
 
 Select next match.
 
 
-| Title                 | Identifier     | Keybinding       | Command                                          |
-| --------------------- | -------------- | ---------------- | ------------------------------------------------ |
-| Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", {                add: true }]` |
-| Select previous match | `previous`     | `a-n` (normal)   | `[".search.next", { direction: -1            }]` |
-| Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search.next", { direction: -1, add: true }]` |
+| Title                 | Identifier     | Keybinding       | Command                                               |
+| --------------------- | -------------- | ---------------- | ----------------------------------------------------- |
+| Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", {                add: true, ... }]` |
+| Select previous match | `previous`     | `a-n` (normal)   | `[".search.next", { direction: -1           , ... }]` |
+| Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search.next", { direction: -1, add: true, ... }]` |
 
 This command:
 - accepts a register (by default, it uses `slash`).
@@ -961,20 +951,19 @@ Select to character (excluded).
 
 #### Variants
 
-| Title                                    | Identifier                 | Keybinding       | Command                                                        |
-| ---------------------------------------- | -------------------------- | ---------------- | -------------------------------------------------------------- |
-| Extend to character (excluded)           | `extend`                   | `s-t` (normal)   | `[".seek", {                shift: "extend"                }]` |
-| Select to character (excluded, backward) | `backward`                 | `a-t` (normal)   | `[".seek", {                                 direction: -1 }]` |
-| Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (normal) | `[".seek", {                shift: "extend", direction: -1 }]` |
-| Select to character (included)           | `included`                 | `f` (normal)     | `[".seek", { include: true                                 }]` |
-| Extend to character (included)           | `included.extend`          | `s-f` (normal)   | `[".seek", { include: true, shift: "extend"                }]` |
-| Select to character (included, backward) | `included.backward`        | `a-f` (normal)   | `[".seek", { include: true,                  direction: -1 }]` |
-| Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (normal) | `[".seek", { include: true, shift: "extend", direction: -1 }]` |
+| Title                                    | Identifier                 | Keybinding       | Command                                                             |
+| ---------------------------------------- | -------------------------- | ---------------- | ------------------------------------------------------------------- |
+| Extend to character (excluded)           | `extend`                   | `s-t` (normal)   | `[".seek", {                shift: "extend"               , ... }]` |
+| Select to character (excluded, backward) | `backward`                 | `a-t` (normal)   | `[".seek", {                                 direction: -1, ... }]` |
+| Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (normal) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
+| Select to character (included)           | `included`                 | `f` (normal)     | `[".seek", { include: true                                , ... }]` |
+| Extend to character (included)           | `included.extend`          | `s-f` (normal)   | `[".seek", { include: true, shift: "extend"               , ... }]` |
+| Select to character (included, backward) | `included.backward`        | `a-f` (normal)   | `[".seek", { include: true,                  direction: -1, ... }]` |
+| Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (normal) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `include` of type `boolean`.
-- takes an input of type `string`.
 
 Default keybinding: `t` (normal)
 
@@ -987,11 +976,11 @@ Select to next enclosing character.
 
 #### Variants
 
-| Title                                  | Identifier                  | Keybinding       | Command                                                   |
-| -------------------------------------- | --------------------------- | ---------------- | --------------------------------------------------------- |
-| Extend to next enclosing character     | `enclosing.extend`          | `s-m` (normal)   | `[".seek.enclosing", { shift: "extend"                }]` |
-| Select to previous enclosing character | `enclosing.backward`        | `a-m` (normal)   | `[".seek.enclosing", {                  direction: -1 }]` |
-| Extend to previous enclosing character | `enclosing.extend.backward` | `s-a-m` (normal) | `[".seek.enclosing", { shift: "extend", direction: -1 }]` |
+| Title                                  | Identifier                  | Keybinding       | Command                                                        |
+| -------------------------------------- | --------------------------- | ---------------- | -------------------------------------------------------------- |
+| Extend to next enclosing character     | `enclosing.extend`          | `s-m` (normal)   | `[".seek.enclosing", { shift: "extend"               , ... }]` |
+| Select to previous enclosing character | `enclosing.backward`        | `a-m` (normal)   | `[".seek.enclosing", {                  direction: -1, ... }]` |
+| Extend to previous enclosing character | `enclosing.extend.backward` | `s-a-m` (normal) | `[".seek.enclosing", { shift: "extend", direction: -1, ... }]` |
 
 This command:
 - takes an argument `open` of type `boolean`.
@@ -1010,19 +999,19 @@ Select the word and following whitespaces on the right of the end of each select
 
 #### Variants
 
-| Title                                        | Identifier                | Keybinding       | Command                                                                          |
-| -------------------------------------------- | ------------------------- | ---------------- | -------------------------------------------------------------------------------- |
-| Extend to next word start                    | `word.extend`             | `s-w` (normal)   | `[".seek.word", {                             shift: "extend"                }]` |
-| Select to previous word start                | `word.backward`           | `b` (normal)     | `[".seek.word", {                                              direction: -1 }]` |
-| Extend to previous word start                | `word.extend.backward`    | `s-b` (normal)   | `[".seek.word", {                             shift: "extend", direction: -1 }]` |
-| Select to next non-whitespace word start     | `word.ws`                 | `a-w` (normal)   | `[".seek.word", {                   ws: true                                 }]` |
-| Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (normal) | `[".seek.word", {                   ws: true, shift: "extend"                }]` |
-| Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (normal)   | `[".seek.word", {                   ws: true,                  direction: -1 }]` |
-| Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (normal) | `[".seek.word", {                   ws: true, shift: "extend", direction: -1 }]` |
-| Select to next word end                      | `wordEnd`                 | `e` (normal)     | `[".seek.word", { stopAtEnd: true                                            }]` |
-| Extend to next word end                      | `wordEnd.extend`          | `s-e` (normal)   | `[".seek.word", { stopAtEnd: true ,           shift: "extend"                }]` |
-| Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (normal)   | `[".seek.word", { stopAtEnd: true , ws: true                                 }]` |
-| Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (normal) | `[".seek.word", { stopAtEnd: true , ws: true, shift: "extend"                }]` |
+| Title                                        | Identifier                | Keybinding       | Command                                                                               |
+| -------------------------------------------- | ------------------------- | ---------------- | ------------------------------------------------------------------------------------- |
+| Extend to next word start                    | `word.extend`             | `s-w` (normal)   | `[".seek.word", {                             shift: "extend"               , ... }]` |
+| Select to previous word start                | `word.backward`           | `b` (normal)     | `[".seek.word", {                                              direction: -1, ... }]` |
+| Extend to previous word start                | `word.extend.backward`    | `s-b` (normal)   | `[".seek.word", {                             shift: "extend", direction: -1, ... }]` |
+| Select to next non-whitespace word start     | `word.ws`                 | `a-w` (normal)   | `[".seek.word", {                   ws: true                                , ... }]` |
+| Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (normal) | `[".seek.word", {                   ws: true, shift: "extend"               , ... }]` |
+| Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (normal)   | `[".seek.word", {                   ws: true,                  direction: -1, ... }]` |
+| Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (normal) | `[".seek.word", {                   ws: true, shift: "extend", direction: -1, ... }]` |
+| Select to next word end                      | `wordEnd`                 | `e` (normal)     | `[".seek.word", { stopAtEnd: true                                           , ... }]` |
+| Extend to next word end                      | `wordEnd.extend`          | `s-e` (normal)   | `[".seek.word", { stopAtEnd: true ,           shift: "extend"               , ... }]` |
+| Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (normal)   | `[".seek.word", { stopAtEnd: true , ws: true                                , ... }]` |
+| Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (normal) | `[".seek.word", { stopAtEnd: true , ws: true, shift: "extend"               , ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -1048,23 +1037,22 @@ Select object.
 
 #### Variants
 
-| Title                        | Identifier                     | Keybinding                     | Command                                                                                        |
-| ---------------------------- | ------------------------------ | ------------------------------ | ---------------------------------------------------------------------------------------------- |
-| Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { input: "object",                          title: "Select whole object..." }]` |
-| Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { input: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
-| Select to whole object start | `askObject.start`              | `[` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start"                  }] }]` |
-| Extend to whole object start | `askObject.start.extend`       | `{` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "start", shift: "extend" }] }]` |
-| Select to inner object start | `askObject.inner.start`        | `a-[` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "start"                  }] }]` |
-| Extend to inner object start | `askObject.inner.start.extend` | `a-{` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "start", shift: "extend" }] }]` |
-| Select to whole object end   | `askObject.end`                | `]` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "end"                    }] }]` |
-| Extend to whole object end   | `askObject.end.extend`         | `}` (normal)                   | `[".openMenu", { input: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
-| Select to inner object end   | `askObject.inner.end`          | `a-]` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "end"                    }] }]` |
-| Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (normal)                 | `[".openMenu", { input: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
+| Title                        | Identifier                     | Keybinding                     | Command                                                                                       |
+| ---------------------------- | ------------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------- |
+| Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { menu: "object",                          title: "Select whole object..." }]` |
+| Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { menu: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
+| Select to whole object start | `askObject.start`              | `[` (normal)                   | `[".openMenu", { menu: "object", pass: [{              where: "start"                  }] }]` |
+| Extend to whole object start | `askObject.start.extend`       | `{` (normal)                   | `[".openMenu", { menu: "object", pass: [{              where: "start", shift: "extend" }] }]` |
+| Select to inner object start | `askObject.inner.start`        | `a-[` (normal)                 | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start"                  }] }]` |
+| Extend to inner object start | `askObject.inner.start.extend` | `a-{` (normal)                 | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start", shift: "extend" }] }]` |
+| Select to whole object end   | `askObject.end`                | `]` (normal)                   | `[".openMenu", { menu: "object", pass: [{              where: "end"                    }] }]` |
+| Extend to whole object end   | `askObject.end.extend`         | `}` (normal)                   | `[".openMenu", { menu: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
+| Select to inner object end   | `askObject.inner.end`          | `a-]` (normal)                 | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"                    }] }]` |
+| Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (normal)                 | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
 
 This command:
 - takes an argument `inner` of type `boolean`.
 - takes an argument `where` of type `"start" | "end"`.
-- takes an input of type `string`.
 
 ## [`select`](./select.ts)
 
@@ -1089,12 +1077,12 @@ Select vertically.
 
 #### Variants
 
-| Title       | Identifier    | Keybinding                        | Command                                                      |
-| ----------- | ------------- | --------------------------------- | ------------------------------------------------------------ |
-| Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"   }]` |
-| Extend down | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend" }]` |
-| Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"   }]` |
-| Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend" }]` |
+| Title       | Identifier    | Keybinding                        | Command                                                           |
+| ----------- | ------------- | --------------------------------- | ----------------------------------------------------------------- |
+| Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
+| Extend down | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
+| Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
+| Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
 
 The following keybindings are also defined:
 
@@ -1119,12 +1107,12 @@ Select horizontally.
 
 #### Variants
 
-| Title        | Identifier     | Keybinding                         | Command                                                        |
-| ------------ | -------------- | ---------------------------------- | -------------------------------------------------------------- |
-| Jump right   | `right.jump`   | `l` (normal)  , `right` (normal)   | `[".select.horizontally", { direction:  1, shift: "jump"   }]` |
-| Extend right | `right.extend` | `s-l` (normal), `s-right` (normal) | `[".select.horizontally", { direction:  1, shift: "extend" }]` |
-| Jump left    | `left.jump`    | `h` (normal)  , `left` (normal)    | `[".select.horizontally", { direction: -1, shift: "jump"   }]` |
-| Extend left  | `left.extend`  | `s-h` (normal), `s-left` (normal)  | `[".select.horizontally", { direction: -1, shift: "extend" }]` |
+| Title        | Identifier     | Keybinding                         | Command                                                             |
+| ------------ | -------------- | ---------------------------------- | ------------------------------------------------------------------- |
+| Jump right   | `right.jump`   | `l` (normal)  , `right` (normal)   | `[".select.horizontally", { direction:  1, shift: "jump"  , ... }]` |
+| Extend right | `right.extend` | `s-l` (normal), `s-right` (normal) | `[".select.horizontally", { direction:  1, shift: "extend", ... }]` |
+| Jump left    | `left.jump`    | `h` (normal)  , `left` (normal)    | `[".select.horizontally", { direction: -1, shift: "jump"  , ... }]` |
+| Extend left  | `left.extend`  | `s-h` (normal), `s-left` (normal)  | `[".select.horizontally", { direction: -1, shift: "extend", ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -1141,10 +1129,10 @@ line. If no count is specified, this command will shift open the `goto` menu.
 
 #### Variants
 
-| Title     | Identifier  | Keybinding     | Command                               |
-| --------- | ----------- | -------------- | ------------------------------------- |
-| Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { shift: "jump"   }]` |
-| Extend to | `to.extend` | `s-g` (normal) | `[".select.to", { shift: "extend" }]` |
+| Title     | Identifier  | Keybinding     | Command                                    |
+| --------- | ----------- | -------------- | ------------------------------------------ |
+| Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { shift: "jump"  , ... }]` |
+| Extend to | `to.extend` | `s-g` (normal) | `[".select.to", { shift: "extend", ... }]` |
 
 This command:
 - accepts an argument of type `object`.
@@ -1201,14 +1189,14 @@ Select to line start.
 
 #### Variants
 
-| Title                             | Identifier                   | Keybinding                          | Command                                                       |
-| --------------------              | ------------------           | ----------------------------------- | ------------------------------------------------------------- |
-| Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", {                  shift: "jump"   }]` |
-| Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", {                  shift: "extend" }]` |
-| Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { skipBlank: true, shift: "jump"   }]` |
-| Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                     | `[".select.lineStart", { skipBlank: true, shift: "extend" }]` |
-| Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { count: 0,        shift: "jump"   }]` |
-| Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { count: 0,        shift: "extend" }]` |
+| Title                             | Identifier                   | Keybinding                          | Command                                                            |
+| --------------------              | ------------------           | ----------------------------------- | ------------------------------------------------------------------ |
+| Jump to line start                | `lineStart.jump`             |                                     | `[".select.lineStart", {                  shift: "jump"  , ... }]` |
+| Extend to line start              | `lineStart.extend`           | `s-a-h` (normal), `s-home` (normal) | `[".select.lineStart", {                  shift: "extend", ... }]` |
+| Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                     | `[".select.lineStart", { skipBlank: true, shift: "jump"  , ... }]` |
+| Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                     | `[".select.lineStart", { skipBlank: true, shift: "extend", ... }]` |
+| Jump to first line                | `firstLine.jump`             |                                     | `[".select.lineStart", { count: 0,        shift: "jump"  , ... }]` |
+| Extend to first line              | `firstLine.extend`           |                                     | `[".select.lineStart", { count: 0,        shift: "extend", ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -1226,11 +1214,11 @@ Select to line end.
 
 #### Variants
 
-| Title                    | Identifier           | Keybinding                         | Command                                                    |
-| ------------------------ | -------------------- | ---------------------------------- | ---------------------------------------------------------- |
-| Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", {                 shift: "extend" }]` |
-| Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "jump"   }]` |
-| Extend to last character | `documentEnd.extend` |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "extend" }]` |
+| Title                    | Identifier           | Keybinding                         | Command                                                         |
+| ------------------------ | -------------------- | ---------------------------------- | --------------------------------------------------------------- |
+| Extend to line end       | `lineEnd.extend`     | `s-a-l` (normal), `s-end` (normal) | `[".select.lineEnd", {                 shift: "extend", ... }]` |
+| Jump to last character   | `documentEnd.jump`   |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "jump"  , ... }]` |
+| Extend to last character | `documentEnd.extend` |                                    | `[".select.lineEnd", { count: MAX_INT, shift: "extend", ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -1342,9 +1330,9 @@ Combine register selections with current ones.
 
 The following keybinding is also available:
 
-| Keybinding       | Command                                                  |
-| ---------------- | -------------------------------------------------------- |
-| `s-a-z` (normal) | `[".selections.restore.withCurrent", { reverse: true }]` |
+| Keybinding       | Command                                                       |
+| ---------------- | ------------------------------------------------------------- |
+| `s-a-z` (normal) | `[".selections.restore.withCurrent", { reverse: true, ... }]` |
 
 See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
 
@@ -1369,73 +1357,72 @@ See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes
 
 #### Additional commands
 
-| Title               | Identifier     | Keybinding     | Commands                                                                    |
-| ------------------- | -------------- | -------------- | --------------------------------------------------------------------------- |
-| Pipe and replace    | `pipe.replace` | `\|` (normal)   | `[".selections.pipe"], [".edit.insert", { register: "\|"                 }]` |
-| Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe"], [".edit.insert", { register: "\|", where: "end"   }]` |
-| Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe"], [".edit.insert", { register: "\|", where: "start" }]` |
+| Title               | Identifier     | Keybinding     | Commands                                                                                              |
+| ------------------- | -------------- | -------------- | ----------------------------------------------------------------------------------------------------- |
+| Pipe and replace    | `pipe.replace` | `\|` (normal)   | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "\|"                , ... }]` |
+| Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "\|", where: "end"  , ... }]` |
+| Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "\|", where: "start", ... }]` |
 
 This command:
 - accepts a register (by default, it uses `pipe`).
-- takes an input of type `string`.
 
 Default keybinding: `a-|` (normal)
 
 <a name="selections.filter" />
 
-### [`selections.filter`](./selections.ts#L307-L330)
+### [`selections.filter`](./selections.ts#L307-L329)
 
 Filter selections.
 
 
 #### Variants
 
-| Title                      | Identifier              | Keybinding         | Commands                                                       |
-| -------------------------- | ----------------------- | ------------------ | -------------------------------------------------------------- |
-| Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"                }]` |
-| Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true }]` |
-| Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === count" }]`             |
-| Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== count" }]`             |
+| Title                      | Identifier              | Keybinding         | Commands                                                            |
+| -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------- |
+| Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"               , ... }]` |
+| Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true, ... }]` |
+| Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === count"            , ... }]` |
+| Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== count"            , ... }]` |
 
 This command:
+- accepts an argument of type `{ input?: string }`.
 - may be repeated with a given number of repetitions.
 - takes an argument `defaultInput` of type `string`.
 - takes an argument `interactive` of type `boolean`.
 - takes an argument `inverse` of type `boolean`.
-- takes an input of type `Input<string>`.
 
 Default keybinding: `$` (normal)
 
 <a name="selections.select" />
 
-### [`selections.select`](./selections.ts#L359-L370)
+### [`selections.select`](./selections.ts#L358-L368)
 
 Select within selections.
 
 
 This command:
+- accepts an argument of type `{ input?: string | RegExp }`.
 - takes an argument `interactive` of type `boolean`.
-- takes an input of type `Input<string | RegExp>`.
 
 Default keybinding: `s` (normal)
 
 <a name="selections.split" />
 
-### [`selections.split`](./selections.ts#L389-L401)
+### [`selections.split`](./selections.ts#L387-L398)
 
 Split selections.
 
 
 This command:
+- accepts an argument of type `{ input?: string | RegExp }`.
 - takes an argument `excludeEmpty` of type `boolean`.
 - takes an argument `interactive` of type `boolean`.
-- takes an input of type `Input<string | RegExp>`.
 
 Default keybinding: `s-s` (normal)
 
 <a name="selections.splitLines" />
 
-### [`selections.splitLines`](./selections.ts#L426-L437)
+### [`selections.splitLines`](./selections.ts#L423-L434)
 
 Split selections at line boundaries.
 
@@ -1448,7 +1435,7 @@ Default keybinding: `a-s` (normal)
 
 <a name="selections.expandToLines" />
 
-### [`selections.expandToLines`](./selections.ts#L480-L487)
+### [`selections.expandToLines`](./selections.ts#L477-L484)
 
 Expand to lines.
 
@@ -1460,7 +1447,7 @@ Default keybinding: `a-x` (normal)
 
 <a name="selections.trimLines" />
 
-### [`selections.trimLines`](./selections.ts#L514-L521)
+### [`selections.trimLines`](./selections.ts#L511-L518)
 
 Trim lines.
 
@@ -1472,7 +1459,7 @@ Default keybinding: `s-a-x` (normal)
 
 <a name="selections.trimWhitespace" />
 
-### [`selections.trimWhitespace`](./selections.ts#L546-L553)
+### [`selections.trimWhitespace`](./selections.ts#L543-L550)
 
 Trim whitespace.
 
@@ -1484,7 +1471,7 @@ Default keybinding: `_` (normal)
 
 <a name="selections.reduce" />
 
-### [`selections.reduce`](./selections.ts#L572-L591)
+### [`selections.reduce`](./selections.ts#L569-L588)
 
 Reduce selections to their cursor.
 
@@ -1492,9 +1479,9 @@ Reduce selections to their cursor.
 
 #### Variant
 
-| Title                           | Identifier     | Keybinding       | Command                                                   |
-| ------------------------------- | -------------- | ---------------- | --------------------------------------------------------- |
-| Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both", empty: false }]` |
+| Title                           | Identifier     | Keybinding       | Command                                                        |
+| ------------------------------- | -------------- | ---------------- | -------------------------------------------------------------- |
+| Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both", empty: false, ... }]` |
 
 This command:
 - takes an argument `empty` of type `boolean`.
@@ -1504,7 +1491,7 @@ Default keybinding: `;` (normal)
 
 <a name="selections.changeDirection" />
 
-### [`selections.changeDirection`](./selections.ts#L653-L668)
+### [`selections.changeDirection`](./selections.ts#L650-L665)
 
 Change direction of selections.
 
@@ -1522,7 +1509,7 @@ Default keybinding: `a-;` (normal)
 
 <a name="selections.copy" />
 
-### [`selections.copy`](./selections.ts#L693-L711)
+### [`selections.copy`](./selections.ts#L690-L708)
 
 Copy selections below.
 
@@ -1540,7 +1527,7 @@ Default keybinding: `s-c` (normal)
 
 <a name="selections.merge" />
 
-### [`selections.merge`](./selections.ts#L745-L750)
+### [`selections.merge`](./selections.ts#L742-L747)
 
 Merge contiguous selections.
 
@@ -1550,23 +1537,23 @@ Default keybinding: `a-_` (normal)
 
 <a name="selections.open" />
 
-### [`selections.open`](./selections.ts#L754-L757)
+### [`selections.open`](./selections.ts#L751-L754)
 
 Open selected file.
 
 <a name="selections.toggleIndices" />
 
-### [`selections.toggleIndices`](./selections.ts#L771-L788)
+### [`selections.toggleIndices`](./selections.ts#L768-L785)
 
 Toggle selection indices.
 
 
 #### Variants
 
-| Title                  | Identifier    | Command                                             |
-| ---------------------- | ------------- | --------------------------------------------------- |
-| Show selection indices | `showIndices` | `[".selections.toggleIndices", { display: true  }]` |
-| Hide selection indices | `hideIndices` | `[".selections.toggleIndices", { display: false }]` |
+| Title                  | Identifier    | Command                                                  |
+| ---------------------- | ------------- | -------------------------------------------------------- |
+| Show selection indices | `showIndices` | `[".selections.toggleIndices", { display: true , ... }]` |
+| Hide selection indices | `hideIndices` | `[".selections.toggleIndices", { display: false, ... }]` |
 
 This command:
 - takes an argument `display` of type `boolean | undefined`.
@@ -1638,10 +1625,10 @@ Moving the editor view.
 
 #### Predefined keybindings
 
-| Title                   | Keybinding     | Command                                          |
-| ----------------------- | -------------- | ------------------------------------------------ |
-| Show view menu          | `v` (normal)   | `[".openMenu", { input: "view"               }]` |
-| Show view menu (locked) | `s-v` (normal) | `[".openMenu", { input: "view", locked: true }]` |
+| Title                   | Keybinding     | Command                                              |
+| ----------------------- | -------------- | ---------------------------------------------------- |
+| Show view menu          | `v` (normal)   | `[".openMenu", { menu: "view", ...               }]` |
+| Show view menu (locked) | `s-v` (normal) | `[".openMenu", { menu: "view", locked: true, ... }]` |
 
 <a name="view.line" />
 

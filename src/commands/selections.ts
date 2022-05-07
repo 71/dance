@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import type { Argument, Input, InputOr, RegisterOr, SetInput } from ".";
+import type { Argument, InputOr, RegisterOr } from ".";
 import { Context, Direction, manipulateSelectionsInteractively, moveWhile, moveWhileBackward, moveWhileForward, Positions, prompt, promptOne, promptRegexpOpts, SelectionBehavior, Selections, switchRun, validateForSwitchRun } from "../api";
 import { PerEditorState } from "../state/editors";
 import { Mode } from "../state/modes";
@@ -117,9 +117,9 @@ export function restore(
  *
  * The following keybinding is also available:
  *
- * | Keybinding       | Command                                                  |
- * | ---------------- | -------------------------------------------------------- |
- * | `s-a-z` (normal) | `[".selections.restore.withCurrent", { reverse: true }]` |
+ * | Keybinding       | Command                                                       |
+ * | ---------------- | ------------------------------------------------------------- |
+ * | `s-a-z` (normal) | `[".selections.restore.withCurrent", { reverse: true, ... }]` |
  *
  * See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#marks
  */
@@ -248,16 +248,16 @@ const pipeHistory: string[] = [];
  *
  * #### Additional commands
  *
- * | Title               | Identifier     | Keybinding     | Commands                                                                    |
- * | ------------------- | -------------- | -------------- | --------------------------------------------------------------------------- |
- * | Pipe and replace    | `pipe.replace` | `|` (normal)   | `[".selections.pipe"], [".edit.insert", { register: "|"                 }]` |
- * | Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe"], [".edit.insert", { register: "|", where: "end"   }]` |
- * | Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe"], [".edit.insert", { register: "|", where: "start" }]` |
+ * | Title               | Identifier     | Keybinding     | Commands                                                                                              |
+ * | ------------------- | -------------- | -------------- | ----------------------------------------------------------------------------------------------------- |
+ * | Pipe and replace    | `pipe.replace` | `|` (normal)   | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "|"                , ... }]` |
+ * | Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "|", where: "end"  , ... }]` |
+ * | Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "|", where: "start", ... }]` |
  */
 export async function pipe(
   _: Context,
   register: RegisterOr<"pipe", Register.Flags.CanWrite>,
-  inputOr: InputOr<string>,
+  inputOr: InputOr<"input", string>,
 ) {
   const input = await inputOr(() => prompt({
     prompt: "Expression",
@@ -311,18 +311,17 @@ const filterHistory: string[] = [];
  *
  * #### Variants
  *
- * | Title                      | Identifier              | Keybinding         | Commands                                                       |
- * | -------------------------- | ----------------------- | ------------------ | -------------------------------------------------------------- |
- * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"                }]` |
- * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true }]` |
- * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === count" }]`             |
- * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== count" }]`             |
+ * | Title                      | Identifier              | Keybinding         | Commands                                                            |
+ * | -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------- |
+ * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"               , ... }]` |
+ * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true, ... }]` |
+ * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === count"            , ... }]` |
+ * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== count"            , ... }]` |
  */
 export function filter(
   _: Context,
 
-  input: Input<string>,
-  setInput: SetInput<string>,
+  argument: { input?: string },
   defaultInput?: Argument<string>,
   inverse: Argument<boolean> = false,
   interactive: Argument<boolean> = true,
@@ -331,7 +330,7 @@ export function filter(
   const document = _.document,
         strings = _.selections.map((selection) => document.getText(selection));
 
-  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
+  return manipulateSelectionsInteractively(_, "input", argument, interactive, {
     prompt: "Expression",
     validateInput(value) {
       try {
@@ -365,13 +364,12 @@ export function select(
   _: Context,
 
   interactive: Argument<boolean> = true,
-  input: Input<string | RegExp>,
-  setInput: SetInput<RegExp>,
+  argument: { input?: string | RegExp },
 ) {
   return manipulateSelectionsInteractively(
     _,
-    input,
-    setInput,
+    "input",
+    argument,
     interactive,
     promptRegexpOpts("mu"),
     (input, selections) => {
@@ -396,13 +394,12 @@ export function split(
 
   excludeEmpty: Argument<boolean> = false,
   interactive: Argument<boolean> = true,
-  input: Input<string | RegExp>,
-  setInput: SetInput<RegExp>,
+  argument: { input?: string | RegExp },
 ) {
   return manipulateSelectionsInteractively(
     _,
-    input,
-    setInput,
+    "input",
+    argument,
     interactive,
     promptRegexpOpts("mu"),
     (input, selections) => {
@@ -579,9 +576,9 @@ export function trimWhitespace(_: Context) {
  *
  * #### Variant
  *
- * | Title                           | Identifier     | Keybinding       | Command                                                   |
- * | ------------------------------- | -------------- | ---------------- | --------------------------------------------------------- |
- * | Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both", empty: false }]` |
+ * | Title                           | Identifier     | Keybinding       | Command                                                        |
+ * | ------------------------------- | -------------- | ---------------- | -------------------------------------------------------------- |
+ * | Reduce selections to their ends | `reduce.edges` | `s-a-s` (normal) | `[".selections.reduce", { where: "both", empty: false, ... }]` |
  */
 export function reduce(
   _: Context,
@@ -775,10 +772,10 @@ const indicesToken = PerEditorState.registerState<AutoDisposable>(/* isDisposabl
  *
  * #### Variants
  *
- * | Title                  | Identifier    | Command                                             |
- * | ---------------------- | ------------- | --------------------------------------------------- |
- * | Show selection indices | `showIndices` | `[".selections.toggleIndices", { display: true  }]` |
- * | Hide selection indices | `hideIndices` | `[".selections.toggleIndices", { display: false }]` |
+ * | Title                  | Identifier    | Command                                                  |
+ * | ---------------------- | ------------- | -------------------------------------------------------- |
+ * | Show selection indices | `showIndices` | `[".selections.toggleIndices", { display: true , ... }]` |
+ * | Hide selection indices | `hideIndices` | `[".selections.toggleIndices", { display: false, ... }]` |
  */
 export function toggleIndices(
   _: Context,

@@ -10,9 +10,9 @@ import { ArgumentError, CancellationError, InputError } from "../utils/errors";
  * By default, Dance also exports the following keybindings for existing
  * commands:
  *
- * | Keybinding     | Command                             |
- * | -------------- | ----------------------------------- |
- * | `s-;` (normal) | `["workbench.action.showCommands"]` |
+ * | Keybinding     | Command                                      |
+ * | -------------- | -------------------------------------------- |
+ * | `s-;` (normal) | `["workbench.action.showCommands", { ... }]` |
  */
 declare module "./misc";
 
@@ -48,7 +48,7 @@ const runHistory: string[] = [];
  * {
  *   "command": "dance.run",
  *   "args": {
- *     "input": "Selections.set(Selections.filter(text => text.includes('foo')))",
+ *     "code": "Selections.set(Selections.filter(text => text.includes('foo')))",
  *   },
  * },
  * ```
@@ -61,7 +61,7 @@ const runHistory: string[] = [];
  * {
  *   "command": "dance.run",
  *   "args": {
- *     "input": [
+ *     "code": [
  *       "for (const selection of Selections.current) {",
  *       "  console.log(text(selection));",
  *       "}",
@@ -92,7 +92,7 @@ const runHistory: string[] = [];
  *   "command": "dance.run",
  *   "args": {
  *     "commands": [
- *       ["dance.modes.set", { "input": "normal" }],
+ *       ["dance.modes.set", { "mode": "normal" }],
  *     ],
  *   },
  * },
@@ -107,7 +107,7 @@ const runHistory: string[] = [];
  *     "commands": [
  *       {
  *         "command": "dance.modes.set",
- *         "args": { "input": "normal" },
+ *         "args": { "mode": "normal" },
  *       },
  *     ],
  *   },
@@ -124,7 +124,7 @@ const runHistory: string[] = [];
  *       ["dance.selections.saveText", { "register": "^" }],
  *       {
  *         "command": "dance.modes.set",
- *         "args": { "input": "normal" },
+ *         "args": { "mode": "normal" },
  *       },
  *       "hideSuggestWidget",
  *     ],
@@ -132,13 +132,13 @@ const runHistory: string[] = [];
  * },
  * ```
  *
- * If both `input` and `commands` are given, Dance will use `run` if arbitrary
- * command execution is enabled, or `commands` otherwise.
+ * If both `code` and `commands` are given, Dance will use `code` if arbitrary
+ * code execution is enabled, or `commands` otherwise.
  */
 export async function run(
   _: Context,
-  input: string,
-  inputOr: InputOr<string | readonly string[]>,
+  argument: Record<"code" | "input", string | readonly string[]>,
+  codeOr: InputOr<"code", string | readonly string[]>,
 
   count: number,
   repetitions: number,
@@ -146,15 +146,17 @@ export async function run(
 
   commands?: Argument<command.Any[]>,
 ) {
+  argument["code"] ??= argument["input"];
+
   if (Array.isArray(commands)) {
-    if (typeof input === "string" && runIsEnabled()) {
+    if (typeof argument["code"] === "string" && runIsEnabled()) {
       // Prefer "input" to the "commands" array.
     } else {
       return apiCommands(...commands);
     }
   }
 
-  let code = await inputOr(() => prompt({
+  let code = await codeOr(() => prompt({
     prompt: "Code to run",
     validateInput(value) {
       try {
@@ -192,8 +194,11 @@ export async function run(
  * @keys `"` (normal)
  * @noreplay
  */
-export async function selectRegister(_: Context, inputOr: InputOr<string | Register>) {
-  const input = await inputOr(() => keypressForRegister(_));
+export async function selectRegister(
+  _: Context,
+  registerOr: InputOr<"register", string | Register>,
+) {
+  const input = await registerOr(() => keypressForRegister(_));
 
   if (typeof input === "string") {
     if (input.length === 0) {
@@ -218,7 +223,7 @@ export async function updateRegister(
 
   register: RegisterOr<"dquote", Register.Flags.CanWrite>,
   copyFrom: Argument<Register | string | undefined>,
-  inputOr: InputOr<string>,
+  inputOr: InputOr<"input", string>,
 ) {
   if (copyFrom !== undefined) {
     const copyFromRegister: Register = typeof copyFrom === "string"
@@ -271,7 +276,7 @@ export async function updateCount(
   _: Context,
   count: number,
   extension: Extension,
-  inputOr: InputOr<number>,
+  countOr: InputOr<"count", number>,
 
   addDigits?: Argument<number>,
 ) {
@@ -292,7 +297,7 @@ export async function updateCount(
     return;
   }
 
-  const input = +await inputOr(() => promptNumber({ integer: true, range: [0, 1_000_000] }, _));
+  const input = +await countOr(() => promptNumber({ integer: true, range: [0, 1_000_000] }, _));
 
   InputError.validateInput(!isNaN(input), "value is not a number");
   InputError.validateInput(input >= 0, "value is negative");
@@ -318,30 +323,30 @@ const menuHistory: string[] = [];
 export async function openMenu(
   _: Context.WithoutActiveEditor,
 
-  inputOr: InputOr<string>,
-  menu?: Argument<Menu>,
+  menuOr: InputOr<"menu", string | Menu>,
   prefix?: Argument<string>,
   pass: Argument<any[]> = [],
   locked: Argument<boolean> = false,
   delay: Argument<number> = 0,
   title?: Argument<string>,
 ) {
-  if (typeof menu !== "object") {
-    const menus = _.extension.menus;
-    const input = await inputOr(() => prompt({
-      prompt: "Menu name",
-      validateInput(value) {
-        if (menus.has(value)) {
-          return;
-        }
+  const menus = _.extension.menus;
 
-        return `menu ${JSON.stringify(value)} does not exist`;
-      },
-      placeHolder: [...menus.keys()].sort().join(", ") || "no menu defined",
-      history: menuHistory,
-    }, _));
+  let menu = await menuOr(() => prompt({
+    prompt: "Menu name",
+    validateInput(value) {
+      if (menus.has(value)) {
+        return;
+      }
 
-    menu = findMenu(input, _);
+      return `menu ${JSON.stringify(value)} does not exist`;
+    },
+    placeHolder: [...menus.keys()].sort().join(", ") || "no menu defined",
+    history: menuHistory,
+  }, _));
+
+  if (typeof menu === "string") {
+    menu = findMenu(menu, _);
   }
 
   if (title !== undefined) {

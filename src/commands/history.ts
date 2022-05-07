@@ -52,19 +52,19 @@ export function redo_selections() {
  *
  * @noreplay
  *
- * | Title                        | Identifier         | Keybinding     | Commands                                                                    |
- * | ---------------------------- | ------------------ | -------------- | --------------------------------------------------------------------------- |
- * | Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { include: "dance\\.(seek|select|selections)\\..+" }]` |
- * | Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { include: "dance\\.seek\\..+" }]`                     |
+ * | Title                        | Identifier         | Keybinding     | Commands                                                                   |
+ * | ---------------------------- | ------------------ | -------------- | -------------------------------------------------------------------------- |
+ * | Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { filter: "dance\\.(seek|select|selections)\\..+" }]` |
+ * | Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { filter: "dance\\.seek\\..+" }]`                     |
  */
 export async function repeat(
   _: Context,
   repetitions: number,
 
-  include: Argument<string | RegExp> = /.+/,
+  filter: Argument<string | RegExp> = /.+/,
 ) {
-  if (typeof include === "string") {
-    include = new RegExp(include, "u");
+  if (typeof filter === "string") {
+    filter = new RegExp(filter, "u");
   }
 
   let commandDescriptor: CommandDescriptor,
@@ -77,7 +77,7 @@ export async function repeat(
       const entry = cursor.entry(),
             descriptor = entry.descriptor();
 
-      if (include.test(descriptor.identifier)) {
+      if (filter.test(descriptor.identifier)) {
         commandDescriptor = descriptor;
         commandArgument = entry.argument();
         break;
@@ -85,7 +85,7 @@ export async function repeat(
     }
 
     if (!cursor.previous()) {
-      throw new Error("no previous command matching " + include);
+      throw new Error("no previous command matching " + filter);
     }
   }
 

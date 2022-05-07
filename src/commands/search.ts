@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import type { Argument, Input, RegisterOr, SetInput } from ".";
+import type { Argument, RegisterOr } from ".";
 import { search as apiSearch, Context, Direction, EmptySelectionsError, manipulateSelectionsInteractively, Positions, promptRegexpOpts, Selections, Shift } from "../api";
 import type { Register } from "../state/registers";
 import { CharSet, getCharSetFunction } from "../utils/charset";
@@ -16,11 +16,11 @@ declare module "./search";
  *
  * @keys `/` (normal), `NumPad_Divide` (normal)
  *
- * | Title                    | Identifier        | Keybinding     | Command                                           |
- * | ------------------------ | ----------------- | -------------- | ------------------------------------------------- |
- * | Search (extend)          | `extend`          | `?` (normal)   | `[".search", {                shift: "extend" }]` |
- * | Search backward          | `backward`        | `a-/` (normal) | `[".search", { direction: -1                  }]` |
- * | Search backward (extend) | `backward.extend` | `a-?` (normal) | `[".search", { direction: -1, shift: "extend" }]` |
+ * | Title                    | Identifier        | Keybinding     | Command                                                |
+ * | ------------------------ | ----------------- | -------------- | ------------------------------------------------------ |
+ * | Search (extend)          | `extend`          | `?` (normal)   | `[".search", {                shift: "extend", ... }]` |
+ * | Search backward          | `backward`        | `a-/` (normal) | `[".search", { direction: -1                 , ... }]` |
+ * | Search backward (extend) | `backward.extend` | `a-?` (normal) | `[".search", { direction: -1, shift: "extend", ... }]` |
  */
 export async function search(
   _: Context,
@@ -32,10 +32,9 @@ export async function search(
   interactive: Argument<boolean> = true,
   shift: Shift = Shift.Jump,
 
-  input: Input<string | RegExp>,
-  setInput: SetInput<RegExp>,
+  argument: { input?: string | RegExp },
 ) {
-  return manipulateSelectionsInteractively(_, input, setInput, interactive, {
+  return manipulateSelectionsInteractively(_, "input", argument, interactive, {
     ...promptRegexpOpts("mu"),
     value: (await register.get())?.[0],
   }, (input, selections) => {
@@ -84,9 +83,9 @@ export async function search(
  *
  * @keys `a-*` (normal)
  *
- * | Title                            | Identifier        | Keybinding                               | Command                                  |
- * | -------------------------------- | ----------------- | ---------------------------------------- | ---------------------------------------- |
- * | Search current selection (smart) | `selection.smart` | `*` (normal), `NumPad_Multiply` (normal) | `[".search.selection", { smart: true }]` |
+ * | Title                            | Identifier        | Keybinding                               | Command                                             |
+ * | -------------------------------- | ----------------- | ---------------------------------------- | --------------------------------------------------- |
+ * | Search current selection (smart) | `selection.smart` | `*` (normal), `NumPad_Multiply` (normal) | `[".search.selection", { smart: true, +register }]` |
  */
 export function selection(
   document: vscode.TextDocument,
@@ -152,11 +151,11 @@ export function selection(
  *
  * @keys `n` (normal)
  *
- * | Title                 | Identifier     | Keybinding       | Command                                          |
- * | --------------------- | -------------- | ---------------- | ------------------------------------------------ |
- * | Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", {                add: true }]` |
- * | Select previous match | `previous`     | `a-n` (normal)   | `[".search.next", { direction: -1            }]` |
- * | Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search.next", { direction: -1, add: true }]` |
+ * | Title                 | Identifier     | Keybinding       | Command                                               |
+ * | --------------------- | -------------- | ---------------- | ----------------------------------------------------- |
+ * | Add next match        | `next.add`     | `s-n` (normal)   | `[".search.next", {                add: true, ... }]` |
+ * | Select previous match | `previous`     | `a-n` (normal)   | `[".search.next", { direction: -1           , ... }]` |
+ * | Add previous match    | `previous.add` | `s-a-n` (normal) | `[".search.next", { direction: -1, add: true, ... }]` |
  */
 export async function next(
   _: Context,

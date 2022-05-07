@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 
 import { Context } from "./context";
 import { set as setSelections } from "./selections";
-import type { Input, SetInput } from "../commands";
 import { ArgumentError, CancellationError } from "../utils/errors";
 
 const actionEvent = new vscode.EventEmitter<Parameters<typeof notifyPromptActionRequested>[0]>();
@@ -310,17 +309,17 @@ export function promptInteractively<T>(
  *
  * @internal
  */
-export async function manipulateSelectionsInteractively<I, R>(
+export async function manipulateSelectionsInteractively<R extends object, N extends keyof R>(
   _: Context,
-  input: Input<I>,
-  setInput: SetInput<R>,
+  inputName: N,
+  argument: R,
   interactive: boolean,
   options: prompt.Options,
-  f: (input: string | I, selections: readonly vscode.Selection[]) => Thenable<R>,
+  f: (input: string | Exclude<R[N], undefined>, selections: readonly vscode.Selection[]) => Thenable<R[N]>,
 ) {
   const selections = _.selections;
 
-  function execute(input: string | I) {
+  function execute(input: string | Exclude<R[N], undefined>) {
     return _.runAsync(() => f(input, selections));
   }
 
@@ -328,10 +327,10 @@ export async function manipulateSelectionsInteractively<I, R>(
     setSelections(selections);
   }
 
-  if (input === undefined) {
-    setInput(await promptInteractively(execute, undo, options, interactive));
+  if (argument[inputName] === undefined) {
+    argument[inputName] = await promptInteractively(execute, undo, options, interactive);
   } else {
-    await execute(input);
+    await execute(argument[inputName] as Exclude<R[N], undefined>);
   }
 }
 

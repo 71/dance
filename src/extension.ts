@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 
 import * as api from "./api";
-import { loadCommands } from "./commands/load-all";
 import { Extension } from "./state/extension";
 import { extensionId, extensionName } from "./utils/constants";
 
@@ -15,7 +14,7 @@ let isActivated = false;
 /**
  * Function called by VS Code to activate the extension.
  */
-export function activate() {
+export async function activate() {
   isActivated = true;
 
   const extensionData = vscode.extensions.getExtension(extensionId),
@@ -31,12 +30,13 @@ export function activate() {
     api.disableExecuteFunction();
   }
 
-  return loadCommands().then((commands) => {
-    if (isActivated) {
-      return { api, extension: (extensionState = new Extension(commands)) };
-    }
+  const { commands } = await import("./commands/load-all");
+
+  if (!isActivated) {
     return;
-  });
+  }
+
+  return { api, extension: (extensionState = new Extension(commands)) };
 }
 
 /**

@@ -17,22 +17,9 @@ export type RegisterOr<_Default extends keyof Registers,
  * function will be used to update the input value in subsequent executions of
  * this command.
  */
-export interface InputOr<T> {
+export interface InputOr<ArgumentName extends string, T> {
   (promptDefaultInput: () => T): T;
   (promptDefaultInput: () => Thenable<T>): Thenable<T>;
-}
-
-/**
- * Indicates that an input is expected.
- */
-export type Input<T> = T | undefined;
-
-/**
- * A function used to update the input value in subsequent executions of this
- * command.
- */
-export interface SetInput<T> {
-  (input: T): void;
 }
 
 /**

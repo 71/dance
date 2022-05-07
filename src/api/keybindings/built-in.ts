@@ -454,6 +454,9 @@ const builtinKeybindings = [
     key: "Shift+;",
     when: "editorTextFocus && dance.mode == 'normal'",
     command: "workbench.action.showCommands",
+    args: {
+      "$exclude": [],
+    },
   },
   {
     key: "A",
@@ -1159,6 +1162,7 @@ const builtinKeybindings = [
     command: "dance.selections.restore.withCurrent",
     args: {
       reverse: true,
+      "$exclude": [],
     },
   },
   {
@@ -1239,7 +1243,8 @@ const builtinKeybindings = [
     title: "Show view menu",
     command: "dance.openMenu",
     args: {
-      input: "view",
+      menu: "view",
+      "$exclude": [],
     },
   },
   {
@@ -1248,8 +1253,9 @@ const builtinKeybindings = [
     title: "Show view menu (locked)",
     command: "dance.openMenu",
     args: {
-      input: "view",
+      menu: "view",
       locked: true,
+      "$exclude": [],
     },
   },
 ];

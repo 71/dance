@@ -50,6 +50,13 @@ const valueConverter: Record<keyof Builder.AdditionalCommand, (x: string) => str
   commands(commands) {
     return commands
       .replace(/^`+|`+$/g, "")
+      .replace(/ +/g, " ")
+      .replace(/\.{3}(?= })/g, () =>
+        "-" + [...commands.matchAll(/(?<=\+)([a-zA-Z,]+)/g)].map((x) => x[0]).join(","))
+      .replace(/-([a-zA-Z,]*)(?= })/g, (_, exclude) =>
+          `$exclude: ${exclude === "" ? "[]" : JSON.stringify(exclude.split(","))}`)
+      .replace(/\+([a-zA-Z,]+)(?= })/g, (_, include) =>
+          `$include: ${JSON.stringify(include.split(","))}`)
       .replace(/MAX_INT/g, `${2 ** 31 - 1}`);  // Max integer supported in JSON.
   },
   identifier(identifier) {
@@ -525,7 +532,7 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
         }
 
         const parsedCommands =
-          JSON.parse("[" + commands!.replace(/(\w+):/g, "\"$1\":") + "]") as any[];
+          JSON.parse("[" + commands!.replace(/([$\w]+):/g, "\"$1\":") + "]") as any[];
 
         if (parsedCommands.length === 1) {
           let [command]: [string] = parsedCommands[0];

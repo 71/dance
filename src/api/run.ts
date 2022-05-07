@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 import { Context } from "./context";
-import type { CommandDescriptor } from "../commands";
+import type { CommandDescriptor, Commands } from "../commands";
 import { parseRegExpWithReplacement } from "../utils/regexp";
 
 /**
@@ -191,20 +191,82 @@ export function clearCompiledFunctionsCache(olderThanMs = 1000 * 60 * 5) {
   }
 }
 
-/**
- * Runs the VS Code command with the given identifier and optional arguments.
- */
-export function command(commandName: string, ...args: readonly any[]): Thenable<any> {
-  return commands([commandName, ...args]).then((x) => x[0]);
+interface ArgumentAssignment {
+  baseValue: Record<string, any>;
+  include?: readonly string[];
+  exclude?: ReadonlySet<string>;
+}
+
+type ArgumentAssignments = readonly ArgumentAssignment[];
+
+function assignArgument(
+  assignment: ArgumentAssignment,
+  argument: Record<string, any>,
+): Record<string, any> {
+  const ownedArgument = Object.assign({}, assignment.baseValue);
+
+  if ("include" in assignment) {
+    for (const propName of assignment.include!) {
+      const propValue = argument[propName];
+
+      if (propValue !== undefined) {
+        ownedArgument[propName] = propValue;
+      }
+    }
+  } else if ("exclude" in assignment) {
+    const excluded = assignment.exclude!;
+
+    for (const propName in argument) {
+      if (excluded.has(propName)) {
+        continue;
+      }
+
+      ownedArgument[propName] = argument[propName];
+    }
+  }
+
+  return ownedArgument;
+}
+
+function buildAssignment(argument: Record<string, any>): ArgumentAssignment {
+  if (argument == null) {
+    return { baseValue: {} };
+  }
+
+  const { $include, $exclude, ...baseValue } = argument,
+        assignment: ArgumentAssignment = { baseValue };
+
+  if (Array.isArray($include)) {
+    assignment.include = $include;
+  } else if (Array.isArray($exclude)) {
+    assignment.exclude = new Set<string>($exclude);
+  }
+
+  return assignment;
+}
+
+function assignArguments(
+  assignment: ArgumentAssignments,
+  argument: Record<string, any>,
+): readonly Record<string, any>[] {
+  return assignment.map((assignment) => assignArgument(assignment, argument));
+}
+
+function buildAssignments(args: readonly Record<string, any>[]): ArgumentAssignments {
+  return args.map(buildAssignment);
 }
 
 /**
- * Runs the VS Code commands with the given identifiers and optional arguments.
+ * Builds a function which can be called with an `argument` object, which will
+ * execute the list of given commands.
  */
-export async function commands(...commands: readonly command.Any[]): Promise<any[]> {
-  const extension = Context.WithoutActiveEditor.current.extension,
-        batches = [] as ([CommandDescriptor, any][] | [string, any])[],
-        currentBatch = [] as [CommandDescriptor, any][];
+export function buildCommands(
+  commands: readonly command.Any[],
+  extension: { readonly commands: Commands } = Context.WithoutActiveEditor.current.extension,
+) {
+  const batches = [] as (
+          [CommandDescriptor, ArgumentAssignment][] | [string, ArgumentAssignments])[],
+        currentBatch = [] as [CommandDescriptor, ArgumentAssignment][];
 
   // Build and validate commands.
   for (let i = 0, len = commands.length; i < len; i++) {
@@ -247,15 +309,16 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
         throw new Error(`command ${JSON.stringify(commandName)} does not exist`);
       }
 
-      const argument = Array.isArray(commandArguments) ? commandArguments[0] : commandArguments;
+      const argument = Array.isArray(commandArguments) ? commandArguments[0] : commandArguments,
+            assignment = buildAssignment(argument);
 
-      currentBatch.push([descriptor, argument]);
+      currentBatch.push([descriptor, assignment]);
     } else {
       if (currentBatch.length > 0) {
         batches.push(currentBatch.splice(0));
       }
 
-      batches.push([commandName, commandArguments]);
+      batches.push([commandName, buildAssignments(commandArguments)]);
     }
   }
 
@@ -263,66 +326,92 @@ export async function commands(...commands: readonly command.Any[]): Promise<any
     batches.push(currentBatch);
   }
 
-  // Execute all commands.
-  const results = [];
-
-  for (const batch of batches) {
-    if (typeof batch[0] === "string") {
-      results.push(await vscode.commands.executeCommand(batch[0], batch[1]));
-    } else {
-      const context = Context.WithoutActiveEditor.current;
-      let { currentCount, currentRegister } = context.extension;
-
-      for (const pair of batch as [CommandDescriptor, any][]) {
-        const [descriptor, argument] = pair,
-              ownedArgument = pair[1] = Object.assign({}, argument);
-
-        if (currentCount !== context.extension.currentCount) {
-          currentCount = ownedArgument["count"] = context.extension.currentCount;
-
-          context.extension.currentCount = 0;
-        }
-
-        if (currentRegister !== context.extension.currentRegister) {
-          currentRegister = ownedArgument["register"] = context.extension.currentRegister;
-
-          context.extension.currentRegister = undefined;
-        }
-
-        if (ownedArgument.try) {
-          delete ownedArgument.try;
-
-          try {
-            results.push(await descriptor.handler(context, ownedArgument));
-          } catch {
-            results.push(undefined);
-          }
-        } else {
-          results.push(await descriptor.handler(context, ownedArgument));
-        }
-      }
-    }
-  }
-
-  if (Context.WithoutActiveEditor.currentOrUndefined?.shouldRecord() ?? true) {
-    const recorder = extension.recorder;
+  return async (argument: Record<string, any>, context = Context.WithoutActiveEditor.current) => {
+    // Execute all commands.
+    const results = [],
+          ownedArguments: any[] = [];
 
     for (const batch of batches) {
       if (typeof batch[0] === "string") {
-        recorder.recordExternalCommand(batch[0], batch[1]);
+        const ownedArgument = assignArguments(batch[1] as ArgumentAssignments, argument);
+
+        results.push(await vscode.commands.executeCommand(batch[0], ...ownedArgument));
+        ownedArguments.push(ownedArgument);
       } else {
-        for (const [descriptor, argument] of batch as [CommandDescriptor, any][]) {
-          if (argument.record === false) {
-            continue;
+        const context = Context.WithoutActiveEditor.current;
+        let { currentCount, currentRegister } = context.extension;
+
+        for (const [descriptor, assignment] of batch as [CommandDescriptor, ArgumentAssignment][]) {
+          const ownedArgument = assignArgument(assignment, argument);
+
+          if (currentCount !== context.extension.currentCount) {
+            currentCount = ownedArgument["count"] = context.extension.currentCount;
+
+            context.extension.currentCount = 0;
           }
 
-          recorder.recordCommand(descriptor, argument);
+          if (currentRegister !== context.extension.currentRegister) {
+            currentRegister = ownedArgument["register"] = context.extension.currentRegister;
+
+            context.extension.currentRegister = undefined;
+          }
+
+          if (ownedArgument["try"]) {
+            delete ownedArgument["try"];
+
+            try {
+              results.push(await descriptor.handler(context, ownedArgument));
+            } catch {
+              results.push(undefined);
+            }
+          } else {
+            results.push(await descriptor.handler(context, ownedArgument));
+          }
+
+          ownedArguments.push(ownedArgument);
         }
       }
     }
-  }
 
-  return results;
+    if (context.shouldRecord()) {
+      const recorder = context.extension.recorder;
+      let i = 0;
+
+      for (const batch of batches) {
+        if (typeof batch[0] === "string") {
+          const ownedArgument = ownedArguments[i++];
+
+          recorder.recordExternalCommand(batch[0], ownedArgument);
+        } else {
+          for (const [descriptor] of batch as [CommandDescriptor, never][]) {
+            const ownedArgument = ownedArguments[i++];
+
+            if (ownedArgument["record"] === false) {
+              continue;
+            }
+
+            recorder.recordCommand(descriptor, ownedArgument);
+          }
+        }
+      }
+    }
+
+    return results;
+  };
+}
+
+/**
+ * Runs the VS Code command with the given identifier and optional arguments.
+ */
+export async function command(commandName: string, ...args: readonly any[]): Promise<any> {
+  return (await commands([commandName, ...args]))[0];
+}
+
+/**
+ * Runs the VS Code commands with the given identifiers and optional arguments.
+ */
+export async function commands(...commands: readonly command.Any[]): Promise<any[]> {
+  return await buildCommands(commands)({});
 }
 
 export declare namespace command {

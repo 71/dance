@@ -3,7 +3,7 @@
     "module": "CommonJS",
     "target": "ES2018",
     "outDir": "out",
-    "lib": ["ES2019", "ESNext.WeakRef"],
+    "lib": ["ES2020", "ESNext.WeakRef"],
     "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true,
