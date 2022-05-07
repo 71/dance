@@ -125,9 +125,8 @@ type CachedFunction = [funct: CompiledFunction, lastAccessTimestamp: number];
  * A few common inputs.
  */
 const safeExpressions = [
-  /^(\$\$?|[in]|\d+) *([=!]==?|[<>]=?|&{1,2}|\|{1,2}) *(\$\$?|[in]|\d+)$/,
-  /^i( + 1)?$/,
-  /^`\${await register\(["']\w+["'], *[i0-9]\)}` !== ["']false["']$/,
+  /^(return +)?(\$\$?|[in]|\d+|count) *([=!]==?|[<>]=?|&{1,2}|\|{1,2}|[-+*/^]) *(\$\$?|[in]|\d+|count)$/,
+  /^(return +)?`\${await register\(["']\w+["'], *[i0-9]\)}` !== ["']false["']$/,
 ];
 
 /**
