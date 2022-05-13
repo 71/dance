@@ -30,7 +30,7 @@ suite("./test/suite/commands/selections-select.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.selections.select", { input: "b" });
+    await executeCommand("dance.selections.select", { re: "b" });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/selections-select.md:10:1", 6, String.raw`

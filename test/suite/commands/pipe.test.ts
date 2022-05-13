@@ -28,7 +28,7 @@ suite("./test/suite/commands/pipe.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.selections.pipe.replace", { input: String.raw`/\s/-/g` });
+    await executeCommand("dance.selections.pipe.replace", { expression: String.raw`/\s/-/g` });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/pipe.md:8:1", 6, String.raw`
@@ -45,7 +45,7 @@ suite("./test/suite/commands/pipe.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.selections.pipe.replace", { input: String.raw`/\s/\n/g` });
+    await executeCommand("dance.selections.pipe.replace", { expression: String.raw`/\s/\n/g` });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/pipe.md:18:1", 6, String.raw`
@@ -66,7 +66,7 @@ suite("./test/suite/commands/pipe.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.selections.pipe.replace", { input: String.raw`/\s/\\n/g` });
+    await executeCommand("dance.selections.pipe.replace", { expression: String.raw`/\s/\\n/g` });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/pipe.md:32:1", 6, String.raw`
@@ -83,7 +83,7 @@ suite("./test/suite/commands/pipe.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.selections.pipe.replace", { input: String.raw`/\s/\\\n/g` });
+    await executeCommand("dance.selections.pipe.replace", { expression: String.raw`/\s/\\\n/g` });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/pipe.md:42:1", 6, String.raw`
@@ -104,7 +104,7 @@ suite("./test/suite/commands/pipe.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.selections.pipe.replace", { input: String.raw`$.replace(/\s/g, "-")` });
+    await executeCommand("dance.selections.pipe.replace", { expression: String.raw`$.replace(/\s/g, "-")` });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/pipe.md:56:1", 6, String.raw`
@@ -121,7 +121,7 @@ suite("./test/suite/commands/pipe.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.selections.pipe.replace", { input: String.raw`$.replace(/\s/g, "\n")` });
+    await executeCommand("dance.selections.pipe.replace", { expression: String.raw`$.replace(/\s/g, "\n")` });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/pipe.md:66:1", 6, String.raw`

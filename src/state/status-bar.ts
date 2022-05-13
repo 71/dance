@@ -62,12 +62,12 @@ export class StatusBar implements vscode.Disposable {
     this.countSegment = this.addSegment(
       "Dance - Reset count",
       "symbol-number",
-      { command: "dance.updateCount", arguments: [{ input: "0" }], title: "" },
+      { command: "dance.updateCount", arguments: [{ count: "0" }], title: "" },
     );
     this.registerSegment = this.addSegment(
       "Dance - Unset register",
       "clone",
-      { command: "dance.selectRegister", arguments: [{ input: "" }], title: "" },
+      { command: "dance.selectRegister", arguments: [{ register: "" }], title: "" },
     );
     this.errorSegment = this.addSegment(
       "Dance - Copy and dismiss error",

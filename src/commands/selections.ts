@@ -248,18 +248,18 @@ const pipeHistory: string[] = [];
  *
  * #### Additional commands
  *
- * | Title               | Identifier     | Keybinding     | Commands                                                                                              |
- * | ------------------- | -------------- | -------------- | ----------------------------------------------------------------------------------------------------- |
- * | Pipe and replace    | `pipe.replace` | `|` (normal)   | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "|"                , ... }]` |
- * | Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "|", where: "end"  , ... }]` |
- * | Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "|", where: "start", ... }]` |
+ * | Title               | Identifier     | Keybinding     | Commands                                                                                                   |
+ * | ------------------- | -------------- | -------------- | ---------------------------------------------------------------------------------------------------------- |
+ * | Pipe and replace    | `pipe.replace` | `|` (normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|"                , ... }]` |
+ * | Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "end"  , ... }]` |
+ * | Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "start", ... }]` |
  */
 export async function pipe(
   _: Context,
   register: RegisterOr<"pipe", Register.Flags.CanWrite>,
-  inputOr: InputOr<"input", string>,
+  expressionOr: InputOr<"expression", string>,
 ) {
-  const input = await inputOr(() => prompt({
+  const expression = await expressionOr(() => prompt({
     prompt: "Expression",
     validateInput(value) {
       try {
@@ -276,7 +276,7 @@ export async function pipe(
         selectionsStrings = selections.map((selection) => document.getText(selection));
 
   const results = await Promise.all(_.run((_) => selectionsStrings.map((string, i, strings) =>
-    switchRun(input!, { $: string, $$: strings, i, n: strings.length }),
+    switchRun(expression!, { $: string, $$: strings, i, n: strings.length }),
   )));
 
   const strings = results.map(resultToString);
@@ -293,18 +293,18 @@ const filterHistory: string[] = [];
  *
  * #### Variants
  *
- * | Title                      | Identifier              | Keybinding         | Commands                                                            |
- * | -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------- |
- * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"               , ... }]` |
- * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true, ... }]` |
- * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === count"            , ... }]` |
- * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== count"            , ... }]` |
+ * | Title                      | Identifier              | Keybinding         | Commands                                                                 |
+ * | -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------------ |
+ * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
+ * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
+ * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { expression: "i === count"            , ... }]` |
+ * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { expression: "i !== count"            , ... }]` |
  */
 export function filter(
   _: Context,
 
-  argument: { input?: string },
-  defaultInput?: Argument<string>,
+  argument: { expression?: string },
+  defaultExpression?: Argument<string>,
   inverse: Argument<boolean> = false,
   interactive: Argument<boolean> = true,
   count: number = 0,
@@ -312,7 +312,7 @@ export function filter(
   const document = _.document,
         strings = _.selections.map((selection) => document.getText(selection));
 
-  return manipulateSelectionsInteractively(_, "input", argument, interactive, {
+  return manipulateSelectionsInteractively(_, "expression", argument, interactive, {
     prompt: "Expression",
     validateInput(value) {
       try {
@@ -321,19 +321,21 @@ export function filter(
         return (e as Error)?.message ?? `${e}`;
       }
     },
-    value: defaultInput,
-    valueSelection: defaultInput ? [defaultInput.length, defaultInput.length] : undefined,
+    value: defaultExpression,
+    valueSelection: defaultExpression
+      ? [defaultExpression.length, defaultExpression.length]
+      : undefined,
     history: filterHistory,
-  }, (input, selections) => {
+  }, (expression, selections) => {
     return Selections.filterByIndex(async (i) => {
       const context = { $: strings[i], $$: strings, i, n: strings.length, count };
 
       try {
-        return !!(await switchRun(input, context)) !== inverse;
+        return !!(await switchRun(expression, context)) !== inverse;
       } catch {
         return inverse;
       }
-    }, selections).then(Selections.set).then(() => input);
+    }, selections).then(Selections.set).then(() => expression);
   });
 }
 
@@ -346,22 +348,22 @@ export function select(
   _: Context,
 
   interactive: Argument<boolean> = true,
-  argument: { input?: string | RegExp },
+  argument: { re?: string | RegExp },
 ) {
   return manipulateSelectionsInteractively(
     _,
-    "input",
+    "re",
     argument,
     interactive,
     promptRegexpOpts("mu"),
-    (input, selections) => {
-      if (typeof input === "string") {
-        input = new RegExp(input, "mu");
+    (re, selections) => {
+      if (typeof re === "string") {
+        re = new RegExp(re, "mu");
       }
 
-      Selections.set(Selections.bottomToTop(Selections.selectWithin(input, selections)));
+      Selections.set(Selections.bottomToTop(Selections.selectWithin(re, selections)));
 
-      return Promise.resolve(input);
+      return Promise.resolve(re);
     },
   );
 }
@@ -376,20 +378,20 @@ export function split(
 
   excludeEmpty: Argument<boolean> = false,
   interactive: Argument<boolean> = true,
-  argument: { input?: string | RegExp },
+  argument: { re?: string | RegExp },
 ) {
   return manipulateSelectionsInteractively(
     _,
-    "input",
+    "re",
     argument,
     interactive,
     promptRegexpOpts("mu"),
-    (input, selections) => {
-      if (typeof input === "string") {
-        input = new RegExp(input, "mu");
+    (re, selections) => {
+      if (typeof re === "string") {
+        re = new RegExp(re, "mu");
       }
 
-      let split = Selections.split(input, selections);
+      let split = Selections.split(re, selections);
 
       if (excludeEmpty) {
         split = split.filter((s) => !s.isEmpty);
@@ -397,7 +399,7 @@ export function split(
 
       Selections.set(Selections.bottomToTop(split));
 
-      return Promise.resolve(input);
+      return Promise.resolve(re);
     },
   );
 }

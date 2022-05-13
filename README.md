@@ -81,7 +81,7 @@ character.
 
 Most keybindings exposed by Dance are actually implemented by running several
 Dance commands in a row. For instance, `dance.modes.set.normal` is actually a
-wrapper around `dance.modes.set` with the argument `{ input: "normal" }`.
+wrapper around `dance.modes.set` with the argument `{ mode: "normal" }`.
 Commands that take an input, like `dance.modes.set`, will prompt a user for a
 value if no argument is given.
 

@@ -120,7 +120,7 @@ foo bar
 ## 1 search-b
 [up](#1)
 
-- .search { input: "b" }
+- .search { re: "b" }
 
 ```
 foo bar

@@ -10,7 +10,7 @@ baz
 ## 1 select
 [up](#1)
 
-- .selections.select { input: "b" }
+- .selections.select { re: "b" }
 
 ```
 foo bar

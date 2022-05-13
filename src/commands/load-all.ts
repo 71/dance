@@ -575,7 +575,7 @@ export const commands: Commands = function () {
     ),
     "dance.selections.filter": new CommandDescriptor(
       "dance.selections.filter",
-      (_, argument) => _.runAsync((_) => selections_filter(_, argument, argument["defaultInput"], argument["inverse"], argument["interactive"], getCount(_, argument))),
+      (_, argument) => _.runAsync((_) => selections_filter(_, argument, argument["defaultExpression"], argument["inverse"], argument["interactive"], getCount(_, argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.selections.merge": new CommandDescriptor(
@@ -590,7 +590,7 @@ export const commands: Commands = function () {
     ),
     "dance.selections.pipe": new CommandDescriptor(
       "dance.selections.pipe",
-      (_, argument) => _.runAsync((_) => selections_pipe(_, getRegister(_, argument, "pipe", Register.Flags.CanWrite), getInputOr("input", argument))),
+      (_, argument) => _.runAsync((_) => selections_pipe(_, getRegister(_, argument, "pipe", Register.Flags.CanWrite), getInputOr("expression", argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.selections.reduce": new CommandDescriptor(
@@ -1188,43 +1188,43 @@ export const commands: Commands = function () {
     commands,
     "dance.selections.pipe.replace",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.pipe", { $include: ["input","register"] }], [".edit.insert", { register: "|" , $exclude: ["input","register"] }]],
+    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|" , $exclude: ["expression","register"] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.pipe.append",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.pipe", { $include: ["input","register"] }], [".edit.insert", { register: "|", where: "end" , $exclude: ["input","register"] }]],
+    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|", where: "end" , $exclude: ["expression","register"] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.pipe.prepend",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.pipe", { $include: ["input","register"] }], [".edit.insert", { register: "|", where: "start", $exclude: ["input","register"] }]],
+    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|", where: "start", $exclude: ["expression","register"] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.filter.regexp",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.filter", { defaultInput: "/" , $exclude: [] }]],
+    [[".selections.filter", { defaultExpression: "/" , $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.filter.regexp.inverse",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.filter", { defaultInput: "/", inverse: true, $exclude: [] }]],
+    [[".selections.filter", { defaultExpression: "/", inverse: true, $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.clear.secondary",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.filter", { input: "i === count" , $exclude: [] }]],
+    [[".selections.filter", { expression: "i === count" , $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.clear.main",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.filter", { input: "i !== count" , $exclude: [] }]],
+    [[".selections.filter", { expression: "i !== count" , $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,

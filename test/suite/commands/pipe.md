@@ -8,7 +8,7 @@ a b c d
 ## 1 pipe-replace-with-regexp
 [up](#1)
 
-- .selections.pipe.replace { input: String.raw`/\s/-/g` }
+- .selections.pipe.replace { expression: String.raw`/\s/-/g` }
 
 ```
 a-b-c d
@@ -18,7 +18,7 @@ a-b-c d
 ## 1 pipe-replace-with-regexp-newline
 [up](#1)
 
-- .selections.pipe.replace { input: String.raw`/\s/\n/g` }
+- .selections.pipe.replace { expression: String.raw`/\s/\n/g` }
 
 ```
 a
@@ -32,7 +32,7 @@ c d
 ## 1 pipe-replace-with-regexp-backslash-n
 [up](#1)
 
-- .selections.pipe.replace { input: String.raw`/\s/\\n/g` }
+- .selections.pipe.replace { expression: String.raw`/\s/\\n/g` }
 
 ```
 a\nb\nc d
@@ -42,7 +42,7 @@ a\nb\nc d
 ## 1 pipe-replace-with-regexp-backslash-newline
 [up](#1)
 
-- .selections.pipe.replace { input: String.raw`/\s/\\\n/g` }
+- .selections.pipe.replace { expression: String.raw`/\s/\\\n/g` }
 
 ```
 a\
@@ -56,7 +56,7 @@ c d
 ## 1 pipe-replace-with-js
 [up](#1)
 
-- .selections.pipe.replace { input: String.raw`$.replace(/\s/g, "-")` }
+- .selections.pipe.replace { expression: String.raw`$.replace(/\s/g, "-")` }
 
 ```
 a-b-c d
@@ -66,7 +66,7 @@ a-b-c d
 ## 1 pipe-replace-with-js-newline
 [up](#1)
 
-- .selections.pipe.replace { input: String.raw`$.replace(/\s/g, "\n")` }
+- .selections.pipe.replace { expression: String.raw`$.replace(/\s/g, "\n")` }
 
 ```
 a

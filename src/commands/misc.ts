@@ -40,8 +40,8 @@ const runHistory: string[] = [];
  * Run code.
  *
  * There are two ways to invoke this command. The first one is to provide an
- * `input` string argument. This input must be a valid JavaScript string, and
- * will be executed with full access to the [Dance API](../api/README.md). For
+ * `code` string argument. This code must be a valid JavaScript string, and will
+ * be executed with full access to the [Dance API](../api/README.md). For
  * instance,
  *
  * ```json
@@ -137,7 +137,7 @@ const runHistory: string[] = [];
  */
 export async function run(
   _: Context,
-  argument: Record<"code" | "input", string | readonly string[]>,
+  argument: { code?: string | readonly string[] },
   codeOr: InputOr<"code", string | readonly string[]>,
 
   count: number,
@@ -146,11 +146,9 @@ export async function run(
 
   commands?: Argument<command.Any[]>,
 ) {
-  argument["code"] ??= argument["input"];
-
   if (Array.isArray(commands)) {
     if (typeof argument["code"] === "string" && runIsEnabled()) {
-      // Prefer "input" to the "commands" array.
+      // Prefer "code" to the "commands" array.
     } else {
       return apiCommands(...commands);
     }
@@ -198,16 +196,16 @@ export async function selectRegister(
   _: Context,
   registerOr: InputOr<"register", string | Register>,
 ) {
-  const input = await registerOr(() => keypressForRegister(_));
+  const register = await registerOr(() => keypressForRegister(_));
 
-  if (typeof input === "string") {
-    if (input.length === 0) {
+  if (typeof register === "string") {
+    if (register.length === 0) {
       return;
     }
 
-    _.extension.currentRegister = _.extension.registers.getPossiblyScoped(input, _.document);
+    _.extension.currentRegister = _.extension.registers.getPossiblyScoped(register, _.document);
   } else {
-    _.extension.currentRegister = input;
+    _.extension.currentRegister = register;
   }
 }
 
@@ -310,7 +308,7 @@ const menuHistory: string[] = [];
 /**
  * Open menu.
  *
- * If no input is specified, a prompt will ask for the name of the menu to open.
+ * If no menu is specified, a prompt will ask for the name of the menu to open.
  *
  * Alternatively, a `menu` can be inlined in the arguments.
  *

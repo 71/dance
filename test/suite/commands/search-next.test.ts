@@ -30,7 +30,7 @@ suite("./test/suite/commands/search-next.md", function () {
     `);
 
     // Perform all operations.
-    await executeCommand("dance.search", { input: "apple" });
+    await executeCommand("dance.search", { re: "apple" });
 
     // Ensure document is as expected.
     ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:10:1", 6, String.raw`

@@ -173,19 +173,19 @@
     <tr><td><a href="#selections.select"><code>selections.select</code></a></td><td>Select within selections</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L301"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L300"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L793"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L645"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L644"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L795"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L647"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L646"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L298"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L299"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L872"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L684"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L683"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L874"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L686"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L685"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
     <tr><td><a href="./selections.ts#L254"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L255"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.ts#L253"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L563"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L871"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L565"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L873"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
     <tr><td><a href="#selections.sort"><code>selections.sort</code></a></td><td>Sort selections</td><td></td></tr>
     <tr><td><a href="#selections.split"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.splitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -388,6 +388,7 @@ Replace characters.
 
 This command:
 - may be repeated with a given number of repetitions.
+- takes an input `input` of type `string`.
 
 Default keybinding: `r` (normal)
 
@@ -641,8 +642,8 @@ This command:
 Run code.
 
 There are two ways to invoke this command. The first one is to provide an
-`input` string argument. This input must be a valid JavaScript string, and
-will be executed with full access to the [Dance API](../api/README.md). For
+`code` string argument. This code must be a valid JavaScript string, and will
+be executed with full access to the [Dance API](../api/README.md). For
 instance,
 
 ```json
@@ -738,14 +739,15 @@ code execution is enabled, or `commands` otherwise.
 
 This command:
 - accepts a register (by default, it uses `null`).
-- accepts an argument of type `Record<"code" | "input", string | readonly string[]>`.
+- accepts an argument of type `{ code?: string | readonly string[] }`.
 - may be repeated with a given number of repetitions.
 - may be repeated with a given number of repetitions.
 - takes an argument `commands` of type `command.Any[]`.
+- takes an input `code` of type `string | readonly string[]`.
 
 <a name=".selectRegister" />
 
-### [`selectRegister`](./misc.ts#L186-L200)
+### [`selectRegister`](./misc.ts#L184-L198)
 
 Select register for next command.
 
@@ -755,22 +757,25 @@ press is awaited again and the returned register will be specific to the
 current document.
 
 
+This command:
+- takes an input `register` of type `string | Register`.
 
 Default keybinding: `"` (normal)
 
 <a name=".updateRegister" />
 
-### [`updateRegister`](./misc.ts#L216-L227)
+### [`updateRegister`](./misc.ts#L214-L225)
 
 Update the contents of a register.
 
 
 This command:
 - accepts a register (by default, it uses `dquote`).
+- takes an input `input` of type `string`.
 
 <a name=".updateCount" />
 
-### [`updateCount`](./misc.ts#L253-L282)
+### [`updateCount`](./misc.ts#L251-L280)
 
 Update Dance count.
 
@@ -795,14 +800,15 @@ Update the current counter used to repeat the next command.
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `addDigits` of type `number`.
+- takes an input `count` of type `number`.
 
 <a name=".openMenu" />
 
-### [`openMenu`](./misc.ts#L310-L332)
+### [`openMenu`](./misc.ts#L308-L330)
 
 Open menu.
 
-If no input is specified, a prompt will ask for the name of the menu to open.
+If no menu is specified, a prompt will ask for the name of the menu to open.
 
 Alternatively, a `menu` can be inlined in the arguments.
 
@@ -818,10 +824,11 @@ This command:
 - takes an argument `pass` of type `any[]`.
 - takes an argument `prefix` of type `string`.
 - takes an argument `title` of type `string`.
+- takes an input `menu` of type `string | Menu`.
 
 <a name=".changeInput" />
 
-### [`changeInput`](./misc.ts#L373-L387)
+### [`changeInput`](./misc.ts#L371-L385)
 
 Change current input.
 
@@ -862,6 +869,10 @@ Other variants are provided to switch to insert mode:
 | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
 | Insert at line end   | `insert.lineEnd`   | `s-a` (normal) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
 
+
+This command:
+- takes an input `mode` of type `string`.
+
 <a name="modes.set.temporarily" />
 
 ### [`modes.set.temporarily`](./modes.ts#L34-L46)
@@ -878,6 +889,7 @@ Set Dance mode temporarily.
 
 This command:
 - may be repeated with a given number of repetitions.
+- takes an input `mode` of type `string`.
 
 ## [`search`](./search.ts)
 
@@ -898,7 +910,7 @@ Search.
 
 This command:
 - accepts a register (by default, it uses `slash`).
-- accepts an argument of type `{ input?: string | RegExp }`.
+- accepts an argument of type `{ re?: string | RegExp }`.
 - may be repeated with a given number of repetitions.
 - takes an argument `add` of type `boolean`.
 - takes an argument `interactive` of type `boolean`.
@@ -968,6 +980,7 @@ Select to character (excluded).
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `include` of type `boolean`.
+- takes an input `input` of type `string`.
 
 Default keybinding: `t` (normal)
 
@@ -1057,6 +1070,7 @@ Select object.
 This command:
 - takes an argument `inner` of type `boolean`.
 - takes an argument `where` of type `"start" | "end"`.
+- takes an input `input` of type `string`.
 
 ## [`select`](./select.ts)
 
@@ -1361,14 +1375,15 @@ See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes
 
 #### Additional commands
 
-| Title               | Identifier     | Keybinding     | Commands                                                                                              |
-| ------------------- | -------------- | -------------- | ----------------------------------------------------------------------------------------------------- |
-| Pipe and replace    | `pipe.replace` | `\|` (normal)   | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "\|"                , ... }]` |
-| Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "\|", where: "end"  , ... }]` |
-| Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe", { +input,register }], [".edit.insert", { register: "\|", where: "start", ... }]` |
+| Title               | Identifier     | Keybinding     | Commands                                                                                                   |
+| ------------------- | -------------- | -------------- | ---------------------------------------------------------------------------------------------------------- |
+| Pipe and replace    | `pipe.replace` | `\|` (normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|"                , ... }]` |
+| Pipe and append     | `pipe.append`  | `!` (normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|", where: "end"  , ... }]` |
+| Pipe and prepend    | `pipe.prepend` | `a-!` (normal) | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|", where: "start", ... }]` |
 
 This command:
 - accepts a register (by default, it uses `pipe`).
+- takes an input `expression` of type `string`.
 
 Default keybinding: `a-|` (normal)
 
@@ -1381,17 +1396,17 @@ Filter selections.
 
 #### Variants
 
-| Title                      | Identifier              | Keybinding         | Commands                                                            |
-| -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------- |
-| Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultInput: "/"               , ... }]` |
-| Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultInput: "/", inverse: true, ... }]` |
-| Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { input: "i === count"            , ... }]` |
-| Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { input: "i !== count"            , ... }]` |
+| Title                      | Identifier              | Keybinding         | Commands                                                                 |
+| -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------------ |
+| Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
+| Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
+| Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { expression: "i === count"            , ... }]` |
+| Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { expression: "i !== count"            , ... }]` |
 
 This command:
-- accepts an argument of type `{ input?: string }`.
+- accepts an argument of type `{ expression?: string }`.
 - may be repeated with a given number of repetitions.
-- takes an argument `defaultInput` of type `string`.
+- takes an argument `defaultExpression` of type `string`.
 - takes an argument `interactive` of type `boolean`.
 - takes an argument `inverse` of type `boolean`.
 
@@ -1399,26 +1414,26 @@ Default keybinding: `$` (normal)
 
 <a name="selections.select" />
 
-### [`selections.select`](./selections.ts#L340-L350)
+### [`selections.select`](./selections.ts#L342-L352)
 
 Select within selections.
 
 
 This command:
-- accepts an argument of type `{ input?: string | RegExp }`.
+- accepts an argument of type `{ re?: string | RegExp }`.
 - takes an argument `interactive` of type `boolean`.
 
 Default keybinding: `s` (normal)
 
 <a name="selections.split" />
 
-### [`selections.split`](./selections.ts#L369-L380)
+### [`selections.split`](./selections.ts#L371-L382)
 
 Split selections.
 
 
 This command:
-- accepts an argument of type `{ input?: string | RegExp }`.
+- accepts an argument of type `{ re?: string | RegExp }`.
 - takes an argument `excludeEmpty` of type `boolean`.
 - takes an argument `interactive` of type `boolean`.
 
@@ -1426,7 +1441,7 @@ Default keybinding: `s-s` (normal)
 
 <a name="selections.splitLines" />
 
-### [`selections.splitLines`](./selections.ts#L405-L416)
+### [`selections.splitLines`](./selections.ts#L407-L418)
 
 Split selections at line boundaries.
 
@@ -1439,7 +1454,7 @@ Default keybinding: `a-s` (normal)
 
 <a name="selections.expandToLines" />
 
-### [`selections.expandToLines`](./selections.ts#L459-L466)
+### [`selections.expandToLines`](./selections.ts#L461-L468)
 
 Expand to lines.
 
@@ -1451,7 +1466,7 @@ Default keybinding: `a-x` (normal)
 
 <a name="selections.trimLines" />
 
-### [`selections.trimLines`](./selections.ts#L493-L500)
+### [`selections.trimLines`](./selections.ts#L495-L502)
 
 Trim lines.
 
@@ -1463,7 +1478,7 @@ Default keybinding: `s-a-x` (normal)
 
 <a name="selections.trimWhitespace" />
 
-### [`selections.trimWhitespace`](./selections.ts#L525-L532)
+### [`selections.trimWhitespace`](./selections.ts#L527-L534)
 
 Trim whitespace.
 
@@ -1475,7 +1490,7 @@ Default keybinding: `_` (normal)
 
 <a name="selections.reduce" />
 
-### [`selections.reduce`](./selections.ts#L551-L570)
+### [`selections.reduce`](./selections.ts#L553-L572)
 
 Reduce selections to their cursor.
 
@@ -1495,7 +1510,7 @@ Default keybinding: `;` (normal)
 
 <a name="selections.changeDirection" />
 
-### [`selections.changeDirection`](./selections.ts#L632-L647)
+### [`selections.changeDirection`](./selections.ts#L634-L649)
 
 Change direction of selections.
 
@@ -1513,7 +1528,7 @@ Default keybinding: `a-;` (normal)
 
 <a name="selections.changeOrder" />
 
-### [`selections.changeOrder`](./selections.ts#L672-L686)
+### [`selections.changeOrder`](./selections.ts#L674-L688)
 
 Reverse selections.
 
@@ -1527,13 +1542,18 @@ Reverse selections.
 
 <a name="selections.sort" />
 
-### [`selections.sort`](./selections.ts#L699-L711)
+### [`selections.sort`](./selections.ts#L701-L713)
 
 Sort selections.
 
+
+
+This command:
+- takes an input `expression` of type `string`.
+
 <a name="selections.copy" />
 
-### [`selections.copy`](./selections.ts#L784-L802)
+### [`selections.copy`](./selections.ts#L786-L804)
 
 Copy selections below.
 
@@ -1551,7 +1571,7 @@ Default keybinding: `s-c` (normal)
 
 <a name="selections.merge" />
 
-### [`selections.merge`](./selections.ts#L836-L841)
+### [`selections.merge`](./selections.ts#L838-L843)
 
 Merge contiguous selections.
 
@@ -1561,13 +1581,13 @@ Default keybinding: `a-_` (normal)
 
 <a name="selections.open" />
 
-### [`selections.open`](./selections.ts#L845-L848)
+### [`selections.open`](./selections.ts#L847-L850)
 
 Open selected file.
 
 <a name="selections.toggleIndices" />
 
-### [`selections.toggleIndices`](./selections.ts#L862-L879)
+### [`selections.toggleIndices`](./selections.ts#L864-L881)
 
 Toggle selection indices.
 

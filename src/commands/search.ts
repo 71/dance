@@ -32,17 +32,17 @@ export async function search(
   interactive: Argument<boolean> = true,
   shift: Shift = Shift.Jump,
 
-  argument: { input?: string | RegExp },
+  argument: { re?: string | RegExp },
 ) {
-  return manipulateSelectionsInteractively(_, "input", argument, interactive, {
+  return manipulateSelectionsInteractively(_, "re", argument, interactive, {
     ...promptRegexpOpts("mu"),
     value: (await register.get())?.[0],
-  }, (input, selections) => {
-    if (typeof input === "string") {
-      input = new RegExp(input, "mu");
+  }, (re, selections) => {
+    if (typeof re === "string") {
+      re = new RegExp(re, "mu");
     }
 
-    register.set([input.source]);
+    register.set([re.source]);
 
     const newSelections = add ? selections.slice() : [],
           regexpMatches = [] as RegExpMatchArray[];
@@ -52,7 +52,7 @@ export async function search(
 
       for (let j = 0; j < repetitions; j++) {
         const searchResult = nextImpl(
-          input as RegExp, direction, newSelection, undefined, undefined, document,
+          re as RegExp, direction, newSelection, undefined, undefined, document,
           /* allowWrapping= */ shift !== Shift.Extend, regexpMatches, regexpMatches.length);
 
         if (searchResult === undefined) {
@@ -74,7 +74,7 @@ export async function search(
     Selections.set(newSelections);
     _.extension.registers.updateRegExpMatches(regexpMatches);
 
-    return register.set([input.source]).then(() => input as RegExp);
+    return register.set([re.source]).then(() => re as RegExp);
   });
 }
 

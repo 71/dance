@@ -100,12 +100,10 @@ function determineSupportedInputs(f: Builder.ParsedFunction) {
       supported.push("may be repeated with a given number of repetitions");
     } else if (match = /^RegisterOr<"(\w+)"(?:, .+)?>$/.exec(type)) {
       supported.push(`accepts a register (by default, it uses \`${match[1]}\`)`);
-    } else if (match = /^InputOr<(\w+)>$/.exec(type)) {
-      supported.push(`takes an input of type \`${match[1]}\``);
     } else if (match = /^Argument<(.+)>( \| undefined)$/.exec(type)) {
       supported.push(`takes an argument \`${name}\` of type \`${match[1]}\``);
-    } else if (name === "input") {
-      supported.push(`takes an input of type \`${type}\``);
+    } else if (match = /^InputOr<"(\w+?)", (.+)>/.exec(type)) {
+      supported.push(`takes an input \`${match[1]}\` of type \`${match[2]}\``);
     } else if (name === "argument") {
       supported.push(`accepts an argument of type \`${type}\``);
     } else if (/^(Context|vscode.Text(Editor|Document))$/.test(type) || name === "selections") {

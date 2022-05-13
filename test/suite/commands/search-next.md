@@ -10,7 +10,7 @@ kiwi orange kiwi
 ## 1 search-apple
 [up](#1)
 
-- .search { input: "apple" }
+- .search { re: "apple" }
 
 ```
 apple pineapple pear
