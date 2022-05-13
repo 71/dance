@@ -6,7 +6,6 @@ import * as Positions from "./positions";
 import { Direction, SelectionBehavior, Shift } from "./types";
 import { execRange, splitRange } from "../utils/regexp";
 import * as TrackedSelection from "../utils/tracked-selection";
-import { Selections } from ".";
 
 export { fromCharacterMode, toCharacterMode };
 
@@ -1696,7 +1695,7 @@ export function length(
  *   ^ 1
  * ```
  */
-export function toString(selection: vscode.Selection = Selections.nth(0)!) {
+export function toString(selection: vscode.Selection = nth(0)!) {
   return `${Positions.toString(selection.anchor)} → ${Positions.toString(selection.active)}` as
     const;
 }
