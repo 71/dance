@@ -122,13 +122,13 @@ suite("History tests", function () {
   //   await type("a");
   // });
 
-  testRepeat("insert abc and delete c", `
-    foo bar
-     | 0
-  `, async () => {
-    await type("abc");
-    await deleteBefore(1);
-  });
+  // testRepeat("insert abc and delete c", `
+  //   foo bar
+  //    | 0
+  // `, async () => {
+  //   await type("abc");
+  //   await deleteBefore(1);
+  // });
 
   testRepeat("insert abc and delete o", `
     foo bar
