@@ -162,7 +162,13 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
       break;
 
     case "selections":
-      givenParameters.push("_.selections");
+      if (type === "readonly vscode.Selection[]") {
+        givenParameters.push("_.selections");
+      } else if (type === "vscode.Selection[]") {
+        givenParameters.push("_.selections.slice()");
+      } else {
+        throw new Error(`unknown parameter ${JSON.stringify([name, type])}`);
+      }
       break;
 
     // ??

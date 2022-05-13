@@ -154,3 +154,25 @@ export function lineBreak(line: number, document = Context.current.document) {
 export function edge(direction: Direction, document?: vscode.TextDocument) {
   return direction === Direction.Backward ? zero : last(document);
 }
+
+/**
+ * Returns a string representation of the position.
+ *
+ * ### Example
+ *
+ * ```js
+ * expect(Positions.toString(Selections.nth(0)!.active), "to be", "1:1");
+ * expect(Positions.toString(Selections.nth(1)!.active), "to be", "2:3");
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ * | 0
+ * def
+ *   | 1
+ * ```
+ */
+export function toString(position: vscode.Position) {
+  return `${position.line + 1}:${position.character + 1}` as const;
+}

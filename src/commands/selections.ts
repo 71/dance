@@ -279,25 +279,7 @@ export async function pipe(
     switchRun(input!, { $: string, $$: strings, i, n: strings.length }),
   )));
 
-  const strings = results.map((result) => {
-    if (result === null) {
-      return "null";
-    }
-    if (result === undefined) {
-      return "";
-    }
-    if (typeof result === "string") {
-      return result;
-    }
-    if (typeof result === "number" || typeof result === "boolean") {
-      return result.toString();
-    }
-    if (typeof result === "object") {
-      return JSON.stringify(result);
-    }
-
-    throw new Error("invalid returned value by expression");
-  });
+  const strings = results.map(resultToString);
 
   await register.set(strings);
 }
@@ -688,6 +670,118 @@ export function changeDirection(_: Context, direction?: Direction) {
 }
 
 /**
+ * Reverse selections.
+ *
+ * @param direction If unspecified, reverses the order of the current
+ *   selections. Otherwise, ensures directions are sorted top-to-bottom
+ *   (`direction === 1`) or bottom-to-top (`direction === -1`).
+ *
+ * #### Variants
+ *
+ * | Title                       | Identifier        | Command                                          |
+ * | --------------------------- | ----------------- | ------------------------------------------------ |
+ * | Order selections descending | `orderDescending` | `[".selections.changeOrder", { direction:  1 }]` |
+ * | Order selections ascending  | `orderAscending`  | `[".selections.changeOrder", { direction: -1 }]` |
+ */
+export function changeOrder(_: Context, selections: vscode.Selection[], direction?: Direction) {
+  switch (direction) {
+  case Direction.Backward:
+  case Direction.Forward:
+    Selections.set(Selections.sort(direction, selections), _);
+    break;
+
+  default:
+    Selections.set(selections.reverse(), _);
+    break;
+  }
+}
+
+/**
+ * Sort selections.
+ *
+ * @param expressionOr An expression which returns either a string or a number
+ *   used to sort selections.
+ *
+ * @param direction If `Backward`, selections will be sorted descendingly.
+ */
+export async function sort(
+  _: Context,
+  expressionOr: InputOr<"expression", string>,
+  direction = Direction.Forward,
+) {
+  const expression = await expressionOr(() => prompt({
+    prompt: "Expression",
+    validateInput(value) {
+      try {
+        return void validateForSwitchRun(value);
+      } catch (e) {
+        return (e as Error)?.message ?? `${e}`;
+      }
+    },
+    history: pipeHistory,
+  }, _));
+
+  const document = _.document,
+        selectionsStrings = _.selections.map((selection) => document.getText(selection));
+
+  const results = await Promise.all(_.run((_) => selectionsStrings.map((string, i, strings) =>
+    switchRun(expression, { $: string, $$: strings, i, n: strings.length }),
+  )));
+
+  const numbers: number[] = [],
+        strings: string[] = [];
+
+  for (let i = 0; i < results.length; i++) {
+    const result = results[i];
+
+    if (numbers.length === i) {
+      // Try to convert `result` to a number.
+      if (typeof result === "number") {
+        numbers.push(result);
+
+        continue;
+      }
+
+      if (typeof result === "string" || typeof result === "boolean") {
+        const asNumber = +result;
+
+        if (!isNaN(asNumber)) {
+          numbers.push(asNumber);
+
+          continue;
+        }
+      }
+
+      // `result` is not a number, if we have seen numbers before, add their
+      // string representation to `strings`, and only compare strings from now
+      // on.
+      for (const number of numbers) {
+        strings.push(`${number}`);
+      }
+    }
+
+    strings.push(resultToString(result));
+  }
+
+  const selections = _.selections.slice(),
+        selectionToIndex = new Map(selections.map((s, i) => [s, i]));
+
+  if (numbers.length === results.length) {
+    selections.sort((a, b) => numbers[selectionToIndex.get(a)!] - numbers[selectionToIndex.get(b)!]);
+  } else {
+    selections.sort((a, b) =>
+      strings[selectionToIndex.get(a)!].localeCompare(strings[selectionToIndex.get(b)!]),
+    );
+  }
+
+  if (direction === Direction.Backward) {
+    selections.reverse();
+  }
+
+  Selections.set(selections, _);
+}
+
+/**
  * Copy selections below.
  *
  * @keys `s-c` (normal)
@@ -938,4 +1032,27 @@ function tryCopySelection(
   }
 
   return newSelection;
+}
+
+/**
+ * Converts any value to a string appropriate for insertion and sorting.
+ */
+function resultToString(result: unknown) {
+  if (result === null) {
+    return "null";
+  }
+  if (result === undefined) {
+    return "";
+  }
+  if (typeof result === "string") {
+    return result;
+  }
+  if (typeof result === "number" || typeof result === "boolean") {
+    return result.toString();
+  }
+  if (typeof result === "object") {
+    return JSON.stringify(result);
+  }
+
+  throw new Error("invalid returned value by expression");
 }

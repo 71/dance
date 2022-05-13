@@ -6,14 +6,12 @@ import * as Positions from "./positions";
 import { Direction, SelectionBehavior, Shift } from "./types";
 import { execRange, splitRange } from "../utils/regexp";
 import * as TrackedSelection from "../utils/tracked-selection";
+import { Selections } from ".";
 
 export { fromCharacterMode, toCharacterMode };
 
 /**
- * Sets the selections of the given editor.
- *
- * @param editor A `vscode.TextEditor` whose selections will be updated, or
- *   `undefined` to update the selections of the active text editor.
+ * Sets the current selections.
  *
  * ### Example
  *
@@ -1679,6 +1677,31 @@ export function length(
 }
 
 /**
+ * Returns a string representation of the positions of the selection.
+ *
+ * ### Example
+ *
+ * ```js
+ * expect(Selections.toString(Selections.nth(0)!), "to be", "1:1 → 1:3");
+ * expect(Selections.toString(Selections.nth(1)!), "to be", "3:4 → 2:2");
+ * ```
+ *
+ * With:
+ * ```
+ * abc
+ * ^^ 0
+ * def
+ *  | 1
+ * ghi
+ *   ^ 1
+ * ```
+ */
+export function toString(selection: vscode.Selection = Selections.nth(0)!) {
+  return `${Positions.toString(selection.anchor)} → ${Positions.toString(selection.active)}` as
+    const;
+}
+
+/**
  * Returns a selection starting at the given position or offset and with the
  * specified length.
  */
@@ -1853,23 +1876,23 @@ export function fromAnchorActive(
 export const from = fromAnchorActive;
 
 /**
- * Sorts selections in the given direction. If `Forward`, selections will be
- * sorted from top to bottom. Otherwise, they will be sorted from bottom to
- * top.
+ * Sorts selections in the given direction in place. If `Forward`, selections
+ * will be sorted from top to bottom. Otherwise, they will be sorted from bottom
+ * to top.
  */
 export function sort(direction: Direction, selections: vscode.Selection[] = current().slice()) {
   return selections.sort(direction === Direction.Forward ? sortTopToBottom : sortBottomToTop);
 }
 
 /**
- * Sorts selections from top to bottom.
+ * Sorts selections from top to bottom in place.
  */
 export function topToBottom(selections: vscode.Selection[] = current().slice()) {
   return selections.sort(sortTopToBottom);
 }
 
 /**
- * Sorts selections from bottom to top.
+ * Sorts selections from bottom to top in place.
  */
 export function bottomToTop(selections: vscode.Selection[] = current().slice()) {
   return selections.sort(sortBottomToTop);

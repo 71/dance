@@ -236,6 +236,7 @@ import {
 
 import {
   changeDirection as selections_changeDirection,
+  changeOrder as selections_changeOrder,
   copy as selections_copy,
   expandToLines as selections_expandToLines,
   filter as selections_filter,
@@ -248,6 +249,7 @@ import {
   save as selections_save,
   saveText as selections_saveText,
   select as selections_select,
+  sort as selections_sort,
   split as selections_split,
   splitLines as selections_splitLines,
   toggleIndices as selections_toggleIndices,
@@ -556,6 +558,11 @@ export const commands: Commands = function () {
       (_, argument) => _.runAsync((_) => selections_changeDirection(_, getDirection(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
+    "dance.selections.changeOrder": new CommandDescriptor(
+      "dance.selections.changeOrder",
+      (_, argument) => _.runAsync((_) => selections_changeOrder(_, _.selections.slice(), getDirection(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
     "dance.selections.copy": new CommandDescriptor(
       "dance.selections.copy",
       (_, argument) => _.runAsync((_) => selections_copy(_, _.document, _.selections, getRepetitions(_, argument), getDirection(argument))),
@@ -629,6 +636,11 @@ export const commands: Commands = function () {
     "dance.selections.select": new CommandDescriptor(
       "dance.selections.select",
       (_, argument) => _.runAsync((_) => selections_select(_, argument["interactive"], argument)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    "dance.selections.sort": new CommandDescriptor(
+      "dance.selections.sort",
+      (_, argument) => _.runAsync((_) => selections_sort(_, getInputOr("expression", argument), getDirection(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.selections.split": new CommandDescriptor(
@@ -1231,6 +1243,18 @@ export const commands: Commands = function () {
     "dance.selections.faceBackward",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".selections.changeDirection", { direction: -1 }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.selections.orderDescending",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".selections.changeOrder", { direction: 1 }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.selections.orderAscending",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".selections.changeOrder", { direction: -1 }]],
   );
   describeAdditionalCommand(
     commands,

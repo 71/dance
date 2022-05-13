@@ -1616,6 +1616,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.selections.changeOrder",
+        "title": "Reverse selections",
+        "category": "Dance"
+      },
+      {
         "command": "dance.selections.clear.main",
         "title": "Clear main selections",
         "category": "Dance"
@@ -1681,6 +1686,16 @@
         "category": "Dance"
       },
       {
+        "command": "dance.selections.orderAscending",
+        "title": "Order selections ascending",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.orderDescending",
+        "title": "Order selections descending",
+        "category": "Dance"
+      },
+      {
         "command": "dance.selections.pipe",
         "title": "Pipe selections",
         "category": "Dance"
@@ -1738,6 +1753,11 @@
       {
         "command": "dance.selections.showIndices",
         "title": "Show selection indices",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.sort",
+        "title": "Sort selections",
         "category": "Dance"
       },
       {
@@ -2388,6 +2408,10 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.selections.changeOrder",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.selections.clear.main",
           "when": "dance.mode == 'normal'"
         },
@@ -2440,6 +2464,14 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.selections.orderAscending",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.orderDescending",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.selections.pipe",
           "when": "dance.mode == 'normal'"
         },
@@ -2485,6 +2517,10 @@
         },
         {
           "command": "dance.selections.showIndices",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.sort",
           "when": "dance.mode == 'normal'"
         },
         {

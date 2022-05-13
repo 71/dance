@@ -1119,6 +1119,30 @@ suite("API tests", function () {
 
   });
 
+  suite("./src/api/positions.ts", function () {
+
+    test("function toString", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              abc
+              | 0
+              def
+                | 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Positions.toString(Selections.nth(0)!.active), "to be", "1:1");
+        expect(Positions.toString(Selections.nth(1)!.active), "to be", "2:3");
+      });
+
+      // No expected end document.
+    });
+
+  });
+
   suite("./src/api/selections.ts", function () {
 
     test("function set", async function () {
@@ -1723,6 +1747,28 @@ suite("API tests", function () {
         expect(Selections.length(Selections.nth(0)!), "to be", 7);
         expect(Selections.length(Selections.nth(1)!), "to be", 1);
         expect(Selections.length(Selections.nth(2)!), "to be", 0);
+      });
+
+      // No expected end document.
+    });
+
+    test("function toString", async function () {
+      const editorState = extension.editors.getState(editor)!,
+            context = new Context(editorState, cancellationToken),
+            before = ExpectedDocument.parseIndented(14, String.raw`
+              abc
+              ^^ 0
+              def
+               | 1
+              ghi
+                ^ 1
+            `);
+
+      await before.apply(editor);
+
+      await context.runAsync(async () => {
+        expect(Selections.toString(Selections.nth(0)!), "to be", "1:1 → 1:3");
+        expect(Selections.toString(Selections.nth(1)!), "to be", "3:4 → 2:2");
       });
 
       // No expected end document.
