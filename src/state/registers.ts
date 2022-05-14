@@ -393,8 +393,8 @@ function activeEditor() {
  * A set of registers.
  */
 export abstract class RegisterSet implements vscode.Disposable {
-  private readonly _onRegisterChange
-    = new vscode.EventEmitter<{ register: Register; kind: "added" | "removed"; }>();
+  private readonly _onRegisterChange =
+    new vscode.EventEmitter<{ register: Register; kind: "added" | "removed"; }>();
   private readonly _onLastMatchesChange = new vscode.EventEmitter<void>();
 
   private readonly _named = new Map<string, Register>();

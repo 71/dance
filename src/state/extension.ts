@@ -247,8 +247,8 @@ export class Extension implements vscode.Disposable {
   // =============================================================================================
 
   private _cancellationTokenSource = new vscode.CancellationTokenSource();
-  private readonly _cancellationReasons
-    = new WeakMap<vscode.CancellationToken, CancellationError.Reason>();
+  private readonly _cancellationReasons =
+    new WeakMap<vscode.CancellationToken, CancellationError.Reason>();
 
   /**
    * The token for the next command.
