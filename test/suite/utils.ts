@@ -29,7 +29,8 @@ interface Expect<T = any> {
     identify: (value: unknown) => boolean;
 
     base?: string;
-    inspect?: (value: T, depth: number, output: Expect.Output, inspect: Expect.Inspect) => any;
+    inspect?(value: T, depth: number, output: Expect.Output, inspect: Expect.Inspect): any;
+    equal?(a: T, b: T, equal: (a: any, b: any) => boolean): boolean;
   }): void;
 }
 
@@ -134,11 +135,14 @@ expect.addType<vscode.Position>({
   identify: (v) => v instanceof vscode.Position,
   base: "object",
 
-  inspect: (value, _, output) => {
+  inspect(value, _, output) {
     output
       .text("Position(")
       .text(shortPos(value))
       .text(")");
+  },
+  equal(a, b) {
+    return a.isEqual(b);
   },
 });
 
@@ -147,13 +151,16 @@ expect.addType<vscode.Range>({
   identify: (v) => v instanceof vscode.Range,
   base: "object",
 
-  inspect: (value, _, output) => {
+  inspect(value, _, output) {
     output
       .text("Range(")
       .text(shortPos(value.start))
       .text(" -> ")
       .text(shortPos(value.end))
       .text(")");
+  },
+  equal(a, b) {
+    return a.isEqual(b);
   },
 });
 
@@ -162,13 +169,16 @@ expect.addType<vscode.Selection>({
   identify: (v) => v instanceof vscode.Selection,
   base: "range",
 
-  inspect: (value, _, output) => {
+  inspect(value, _, output) {
     output
       .text("Selection(")
       .text(shortPos(value.anchor))
       .text(" -> ")
       .text(shortPos(value.active))
       .text(")");
+  },
+  equal(a, b) {
+    return a.isEqual(b);
   },
 });
 
@@ -197,14 +207,14 @@ expect.addAssertion<vscode.Range>(
 expect.addAssertion<vscode.Range>(
   "<range> [not] to start at <position>",
   (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { start: position });
+    expect(subject, "[not] to satisfy", { start: expect.it("to equal", position) });
   },
 );
 
 expect.addAssertion<vscode.Range>(
   "<range> [not] to end at <position>",
   (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { end: position });
+    expect(subject, "[not] to satisfy", { end: expect.it("to equal", position) });
   },
 );
 
@@ -232,14 +242,14 @@ expect.addAssertion<vscode.Selection>(
 expect.addAssertion<vscode.Selection>(
   "<selection> [not] to (have anchor|be anchored) at <position>",
   (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { anchor: position });
+    expect(subject, "[not] to satisfy", { anchor: expect.it("to equal", position) });
   },
 );
 
 expect.addAssertion<vscode.Selection>(
   "<selection> [not] to (have cursor|be active) at <position>",
   (expect, subject, position: vscode.Position) => {
-    expect(subject, "[not] to satisfy", { active: position });
+    expect(subject, "[not] to satisfy", { active: expect.it("to equal", position) });
   },
 );
 
