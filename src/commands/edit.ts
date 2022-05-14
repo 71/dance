@@ -130,8 +130,8 @@ export function join(_: Context, separator?: Argument<string>) {
  *
  * @keys `s-a-j` (normal)
  */
-export function join_select(_: Context, separator?: Argument<string>) {
-  return joinLines(Selections.lines(), separator).then(Selections.set);
+export async function join_select(_: Context, separator?: Argument<string>) {
+  Selections.set(await joinLines(Selections.lines(), separator));
 }
 
 /**
@@ -447,7 +447,7 @@ function extendArrayToLength<T>(array: readonly T[], length: number) {
  * indentation for the new selections, and copies the inserted selections down
  * if more than one repetition is requested.
  */
-function insertLinesNativelyAndCopySelections(
+async function insertLinesNativelyAndCopySelections(
   _: Context,
   repetitions: number,
   command: "editor.action.insertLineAfter" | "editor.action.insertLineBefore",
@@ -460,48 +460,48 @@ function insertLinesNativelyAndCopySelections(
 
   const isLastCharacterAt = [] as boolean[];
 
-  return vscode.commands.executeCommand(command).then(() =>
-    _.edit((builder, selections, document) => {
-      for (const selection of selections) {
-        const active = selection.active,
-              lineStart = Positions.lineStart(active.line),
-              indentationRange = new vscode.Range(lineStart, active),
-              indentation = (document.getText(indentationRange) + "\n").repeat(repetitions - 1);
+  await vscode.commands.executeCommand(command);
 
-        if (active.line === document.lineCount - 1) {
-          isLastCharacterAt.push(true);
-          builder.insert(Positions.lineEnd(active.line), "\n" + indentation.slice(0, -1));
-        } else {
-          isLastCharacterAt.push(false);
-          builder.insert(lineStart.translate(1), indentation);
-        }
-      }
-    }),
-  ).then(() => {
-    const selections = [] as vscode.Selection[];
-    let selectionIndex = 0;
-
-    for (let selection of _.selections) {
-      if (isLastCharacterAt[selectionIndex++]) {
-        // Selection corresponds to the last character in the document. We
-        // couldn't simply insert a line above, so we must correct the current
-        // selection.
-        selection = Selections.fromAnchorActive(
-          selection.anchor.translate(-repetitions + 1),
-          selection.active.translate(-repetitions + 1),
-        );
-      }
-
+  await _.edit((builder, selections, document) => {
+    for (const selection of selections) {
       const active = selection.active,
-            anchor = selection.anchor;
+            lineStart = Positions.lineStart(active.line),
+            indentationRange = new vscode.Range(lineStart, active),
+            indentation = (document.getText(indentationRange) + "\n").repeat(repetitions - 1);
 
-      for (let i = repetitions - 1; i > 0; i--) {
-        selections.push(Selections.fromAnchorActive(anchor.translate(i), active.translate(i)));
+      if (active.line === document.lineCount - 1) {
+        isLastCharacterAt.push(true);
+        builder.insert(Positions.lineEnd(active.line), "\n" + indentation.slice(0, -1));
+      } else {
+        isLastCharacterAt.push(false);
+        builder.insert(lineStart.translate(1), indentation);
       }
+    }
+  });
 
-      selections.push(selection);
+  const selections = [] as vscode.Selection[];
+  let selectionIndex = 0;
+
+  for (let selection of _.selections) {
+    if (isLastCharacterAt[selectionIndex++]) {
+      // Selection corresponds to the last character in the document. We
+      // couldn't simply insert a line above, so we must correct the current
+      // selection.
+      selection = Selections.fromAnchorActive(
+        selection.anchor.translate(-repetitions + 1),
+        selection.active.translate(-repetitions + 1),
+      );
     }
 
-    _.selections = selections;
-  });
+    const active = selection.active,
+          anchor = selection.anchor;
+
+    for (let i = repetitions - 1; i > 0; i--) {
+      selections.push(Selections.fromAnchorActive(anchor.translate(i), active.translate(i)));
+    }
+
+    selections.push(selection);
+  }
+
+  _.selections = selections;
 }

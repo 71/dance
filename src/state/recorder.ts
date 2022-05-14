@@ -1061,18 +1061,18 @@ export class TranslateSelectionEntry extends BaseEntry.define<
  * An insertion before each selection (cursor moves forward).
  */
 export class InsertBeforeEntry extends BaseEntry.define<[insertedText: string]>(1) {
-  public replay(context: Context.WithoutActiveEditor) {
+  public async replay(context: Context.WithoutActiveEditor) {
     Context.assert(context);
 
     const editor = context.editor as vscode.TextEditor;
 
-    return editor.edit((editBuilder) => {
+    await editor.edit((editBuilder) => {
       const insertedText = this.insertedText();
 
       for (const selection of editor.selections) {
         editBuilder.insert(selection.start, insertedText);
       }
-    }, noUndoStops).then(() => {});
+    }, noUndoStops);
   }
 
   public insertedText() {
@@ -1088,18 +1088,18 @@ export class InsertBeforeEntry extends BaseEntry.define<[insertedText: string]>(
  * An insertion after each selection (cursor does not move).
  */
 export class InsertAfterEntry extends BaseEntry.define<[insertedText: string]>(1) {
-  public replay(context: Context.WithoutActiveEditor) {
+  public async replay(context: Context.WithoutActiveEditor) {
     Context.assert(context);
 
     const editor = context.editor as vscode.TextEditor;
 
-    return editor.edit((editBuilder) => {
+    await editor.edit((editBuilder) => {
       const insertedText = this.insertedText();
 
       for (const selection of editor.selections) {
         editBuilder.replace(selection.end, insertedText);
       }
-    }, noUndoStops).then(() => {});
+    }, noUndoStops);
   }
 
   public insertedText() {
@@ -1115,12 +1115,12 @@ export class InsertAfterEntry extends BaseEntry.define<[insertedText: string]>(1
  * A deletion before each selection (cursor moves backward).
  */
 export class DeleteBeforeEntry extends BaseEntry.define<[deletionLength: number]>(1) {
-  public replay(context: Context.WithoutActiveEditor) {
+  public async replay(context: Context.WithoutActiveEditor) {
     Context.assert(context);
 
     const editor = context.editor as vscode.TextEditor;
 
-    return editor.edit((editBuilder) => {
+    await editor.edit((editBuilder) => {
       const deletionLength = this.deletionLength(),
             document = editor.document;
 
@@ -1130,7 +1130,7 @@ export class DeleteBeforeEntry extends BaseEntry.define<[deletionLength: number]
 
         editBuilder.delete(new vscode.Range(startPosition, endPosition));
       }
-    }).then(() => {});
+    });
   }
 
   public deletionLength() {
@@ -1146,12 +1146,12 @@ export class DeleteBeforeEntry extends BaseEntry.define<[deletionLength: number]
  * A deletion after each selection (cursor does not move).
  */
 export class DeleteAfterEntry extends BaseEntry.define<[deletionLength: number]>(1) {
-  public replay(context: Context.WithoutActiveEditor) {
+  public async replay(context: Context.WithoutActiveEditor) {
     Context.assert(context);
 
     const editor = context.editor as vscode.TextEditor;
 
-    return editor.edit((editBuilder) => {
+    await editor.edit((editBuilder) => {
       const deletionLength = this.deletionLength(),
             document = editor.document;
 
@@ -1161,7 +1161,7 @@ export class DeleteAfterEntry extends BaseEntry.define<[deletionLength: number]>
 
         editBuilder.delete(new vscode.Range(startPosition, endPosition));
       }
-    }).then(() => {});
+    });
   }
 
   public deletionLength() {
@@ -1177,18 +1177,18 @@ export class DeleteAfterEntry extends BaseEntry.define<[deletionLength: number]>
  * A text replacement.
  */
 export class ReplaceWithEntry extends BaseEntry.define<[text: string]>(1) {
-  public replay(context: Context.WithoutActiveEditor) {
+  public async replay(context: Context.WithoutActiveEditor) {
     Context.assert(context);
 
     const editor = context.editor as vscode.TextEditor;
 
-    return editor.edit((editBuilder) => {
+    await editor.edit((editBuilder) => {
       const text = this.text();
 
       for (const selection of editor.selections) {
         editBuilder.replace(selection, text);
       }
-    }).then(() => {});
+    });
   }
 
   public text() {
@@ -1204,8 +1204,8 @@ export class ReplaceWithEntry extends BaseEntry.define<[text: string]>(1) {
  * An active text editor change.
  */
 export class ChangeTextEditorEntry extends BaseEntry.define<[uri: vscode.Uri]>(1) {
-  public replay() {
-    return vscode.window.showTextDocument(this.uri()).then(() => {});
+  public async replay() {
+    await vscode.window.showTextDocument(this.uri());
   }
 
   public uri() {
@@ -1270,8 +1270,8 @@ export class ExecuteCommandEntry extends BaseEntry.define<
 export class ExecuteExternalCommandEntry extends BaseEntry.define<
   [identifier: string, argument: object]
 >(2) {
-  public replay() {
-    return vscode.commands.executeCommand(this.identifier(), this.argument()).then(() => {});
+  public async replay() {
+    await vscode.commands.executeCommand(this.identifier(), this.argument());
   }
 
   public identifier() {

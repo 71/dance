@@ -96,7 +96,7 @@ export function save(
  *
  * @keys `z` (normal)
  */
-export function restore(
+export async function restore(
   _: Context,
   register: RegisterOr<"caret", Register.Flags.CanReadSelections>,
 ) {
@@ -106,8 +106,9 @@ export function restore(
     throw new EmptySelectionsError(`no selections are saved in register "${register.name}"`);
   }
 
-  return _.switchToDocument(selectionSet.document, /* alsoFocusEditor= */ true)
-    .then(() => _.selections = selectionSet.restore());
+  await _.switchToDocument(selectionSet.document, /* alsoFocusEditor= */ true);
+
+  _.selections = selectionSet.restore();
 }
 
 /**
@@ -326,8 +327,8 @@ export function filter(
       ? [defaultExpression.length, defaultExpression.length]
       : undefined,
     history: filterHistory,
-  }, (expression, selections) => {
-    return Selections.filterByIndex(async (i) => {
+  }, async (expression, selections) => {
+    Selections.set(await Selections.filterByIndex(async (i) => {
       const context = { $: strings[i], $$: strings, i, n: strings.length, count };
 
       try {
@@ -335,7 +336,9 @@ export function filter(
       } catch {
         return inverse;
       }
-    }, selections).then(Selections.set).then(() => expression);
+    }, selections));
+
+    return expression;
   });
 }
 
@@ -851,10 +854,9 @@ export async function open(_: Context) {
   const basePath = vscode.Uri.joinPath(_.document.uri, "..");
 
   await Promise.all(
-    Selections.map((text) =>
-      vscode.workspace
-        .openTextDocument(vscode.Uri.joinPath(basePath, text))
-        .then(vscode.window.showTextDocument),
+    Selections.map(async (text) =>
+      await vscode.window.showTextDocument(
+        await vscode.workspace.openTextDocument(vscode.Uri.joinPath(basePath, text))),
     ),
   );
 }

@@ -331,8 +331,8 @@ export class Builder {
 
     const apiFiles = await glob(`${__dirname}/src/api/**/*.ts`, /* ignore= */ "**/*.build.ts"),
           apiModules = await Promise.all(
-            apiFiles.map((filepath) =>
-              fs.readFile(filepath, "utf-8").then((code) => parseDocComments(code, filepath))));
+            apiFiles.map(async (filepath) =>
+              parseDocComments(await fs.readFile(filepath, "utf-8"), filepath)));
 
     return this._apiModules = apiModules.sort((a, b) => a.name.localeCompare(b.name));
   }
@@ -348,8 +348,8 @@ export class Builder {
     const commandsGlob = `${__dirname}/src/commands/**/*.ts`,
           commandFiles = await glob(commandsGlob, /* ignore= */ "**/*.build.ts"),
           allCommandModules = await Promise.all(
-            commandFiles.map((filepath) =>
-              fs.readFile(filepath, "utf-8").then((code) => parseDocComments(code, filepath)))),
+            commandFiles.map(async (filepath) =>
+              parseDocComments(await fs.readFile(filepath, "utf-8"), filepath))),
           commandModules = allCommandModules.filter((m) => m.doc.length > 0);
 
     return this._commandModules = commandModules.sort((a, b) => a.name.localeCompare(b.name));
@@ -678,37 +678,36 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().then((success) => {
+  main().then(async (success) => {
     if (!process.argv.includes("--watch")) {
       process.exit(success ? 0 : 1);
     }
 
-    import("chokidar").then((chokidar) => {
-      const watcher = chokidar.watch([
-        "**/*.build.ts",
-        "src/api/*.ts",
-        "src/commands/*.ts",
-        "test/suite/commands/*.md",
-      ], {
-        ignored: "src/commands/load-all.ts",
-      });
+    const chokidar = await import("chokidar");
+    const watcher = chokidar.watch([
+      "**/*.build.ts",
+      "src/api/*.ts",
+      "src/commands/*.ts",
+      "test/suite/commands/*.md",
+    ], {
+      ignored: "src/commands/load-all.ts",
+    });
 
-      let isGenerating = false;
+    let isGenerating = false;
 
-      watcher.on("change", async (path) => {
-        if (isGenerating) {
-          return;
-        }
+    watcher.on("change", async (path) => {
+      if (isGenerating) {
+        return;
+      }
 
-        console.log("Change detected at " + path + ", updating generated files...");
-        isGenerating = true;
+      console.log("Change detected at " + path + ", updating generated files...");
+      isGenerating = true;
 
-        try {
-          await main();
-        } finally {
-          isGenerating = false;
-        }
-      });
+      try {
+        await main();
+      } finally {
+        isGenerating = false;
+      }
     });
   });
 }

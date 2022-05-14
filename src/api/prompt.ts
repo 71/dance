@@ -467,41 +467,43 @@ export function notifyPromptActionRequested(action: "next" | "previous" | "clear
 /**
  * Awaits a keypress from the user and returns the entered key.
  */
-export function keypress(context = Context.current): Promise<string> {
+export async function keypress(context = Context.current): Promise<string> {
   if (context.cancellationToken.isCancellationRequested) {
     return Promise.reject(new CancellationError(CancellationError.Reason.CancellationToken));
   }
 
   const previousMode = context.mode;
 
-  return context.switchToMode(context.extension.modes.inputMode).then(() =>
-    new Promise<string>((resolve, reject) => {
-      try {
-        const subscriptions = [
-          vscode.commands.registerCommand("type", ({ text }: { text: string }) => {
-            if (subscriptions.length > 0) {
-              subscriptions.splice(0).forEach((s) => s.dispose());
-              context.switchToMode(previousMode).then(() => resolve(text));
-            }
-          }),
+  await context.switchToMode(context.extension.modes.inputMode);
 
-          context.cancellationToken.onCancellationRequested(() => {
-            if (subscriptions.length > 0) {
-              subscriptions.splice(0).forEach((s) => s.dispose());
-              context.switchToMode(previousMode)
-                .then(() => reject(
-                  new CancellationError(
-                    context.extension.cancellationReasonFor(context.cancellationToken)
-                    ?? CancellationError.Reason.CancellationToken)));
-            }
-          }),
-        ];
-      } catch {
-        reject(new Error("unable to listen to keyboard events; is an extension "
-                        + 'overriding the "type" command (e.g VSCodeVim)?'));
-      }
-    }),
-  );
+  return await new Promise<string>((resolve, reject) => {
+    try {
+      const subscriptions = [
+        vscode.commands.registerCommand("type", ({ text }: { text: string; }) => {
+          if (subscriptions.length > 0) {
+            subscriptions.splice(0).forEach((s) => s.dispose());
+
+            context.switchToMode(previousMode).then(() => resolve(text));
+          }
+        }),
+
+        context.cancellationToken.onCancellationRequested(() => {
+          if (subscriptions.length > 0) {
+            subscriptions.splice(0).forEach((s) => s.dispose());
+
+            context.switchToMode(previousMode)
+              .then(() => reject(
+                new CancellationError(
+                  context.extension.cancellationReasonFor(context.cancellationToken)
+                  ?? CancellationError.Reason.CancellationToken)));
+          }
+        }),
+      ];
+    } catch {
+      reject(new Error("unable to listen to keyboard events; is an extension "
+        + 'overriding the "type" command (e.g VSCodeVim)?'));
+    }
+  });
 }
 
 /**

@@ -360,10 +360,10 @@ class ClipboardRegister extends Register implements Register.Readable,
   public readonly iconName = "clippy";
   public readonly flags = Register.Flags.CanRead | Register.Flags.CanWrite;
 
-  public get() {
-    return vscode.env.clipboard.readText().then((text) =>
-      text === this._lastRawText ? this._lastStrings : [text],
-    );
+  public async get() {
+    const text = await vscode.env.clipboard.readText();
+
+    return text === this._lastRawText ? this._lastStrings : [text];
   }
 
   public set(values: readonly string[]) {
@@ -463,12 +463,12 @@ export abstract class RegisterSet implements vscode.Disposable {
     "%",
     "file",
     () => Promise.resolve([activeEditor().document.fileName]),
-    (values) => {
+    async (values) => {
       if (values.length !== 1) {
-        return Promise.reject(new ArgumentError("a single file name must be selected"));
+        throw new ArgumentError("a single file name must be selected");
       }
 
-      return vscode.workspace.openTextDocument(values[0]).then(() => {});
+      await vscode.workspace.openTextDocument(values[0]);
     },
     (fire) => vscode.window.onDidChangeActiveTextEditor(fire),
   );
@@ -489,14 +489,14 @@ export abstract class RegisterSet implements vscode.Disposable {
 
       return Promise.resolve(selections.map(document.getText.bind(document)));
     },
-    (values) => {
+    async (values) => {
       const editor = activeEditor();
 
       if (values.length !== editor.selections.length) {
-        return Promise.reject(new ArgumentError("as many selections as values must be given"));
+        throw new ArgumentError("as many selections as values must be given");
       }
 
-      return editor.edit((editBuilder) => {
+      const succeeded = await editor.edit((editBuilder) => {
         const document = editor.document,
               selectionBehavior = Context.currentOrUndefined?.mode?.selectionBehavior,
               selections = selectionBehavior === SelectionBehavior.Character
@@ -506,7 +506,9 @@ export abstract class RegisterSet implements vscode.Disposable {
         for (let i = 0; i < selections.length; i++) {
           editBuilder.replace(selections[i], values[i]);
         }
-      }, noUndoStops).then((succeeded) => EditNotAppliedError.throwIfNotApplied(succeeded));
+      }, noUndoStops);
+
+      EditNotAppliedError.throwIfNotApplied(succeeded);
     },
     (fire) => vscode.window.onDidChangeTextEditorSelection(fire),
   );
@@ -536,8 +538,8 @@ export abstract class RegisterSet implements vscode.Disposable {
    * In Kakoune it is mapped to the last entered command, but since we don't
    * have access to that information in Dance, we map it to a prompt.
    */
-  public readonly colon = new SpecialRegister(":", undefined, () =>
-    prompt({ prompt: ":" }).then((result) => [result]),
+  public readonly colon = new SpecialRegister(":", undefined, async () =>
+    [await prompt({ prompt: ":" })],
   );
 
   /**

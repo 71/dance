@@ -269,12 +269,12 @@ export function deindentLines(lines: Iterable<number>, times = 1, deindentIncomp
  * g h
  * ```
  */
-export function joinLines(lines: Iterable<number>, separator: string = " ") {
+export async function joinLines(lines: Iterable<number>, separator: string = " ") {
   // Sort lines (no need to dedup).
   const sortedLines = [...lines].sort((a, b) => a - b);
 
   if (sortedLines.length === 0) {
-    return Context.current.wrap(Promise.resolve([]));
+    return [];
   }
 
   // Determine all ranges; (range[i], range[i + 1]) <=> (startLine, length).
@@ -293,7 +293,7 @@ export function joinLines(lines: Iterable<number>, separator: string = " ") {
     }
   }
 
-  return edit((editBuilder, _, document) => {
+  return await edit((editBuilder, _, document) => {
     let diff = 0;
     const selections = [] as vscode.Selection[];
 

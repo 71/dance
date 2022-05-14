@@ -37,7 +37,7 @@ export async function search(
   return manipulateSelectionsInteractively(_, "re", argument, interactive, {
     ...promptRegexpOpts("mu"),
     value: (await register.get())?.[0],
-  }, (re, selections) => {
+  }, async (re, selections) => {
     if (typeof re === "string") {
       re = new RegExp(re, "mu");
     }
@@ -74,7 +74,9 @@ export async function search(
     Selections.set(newSelections);
     _.extension.registers.updateRegExpMatches(regexpMatches);
 
-    return register.set([re.source]).then(() => re as RegExp);
+    await register.set([re.source]);
+
+    return re;
   });
 }
 

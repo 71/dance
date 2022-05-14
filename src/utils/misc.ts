@@ -15,12 +15,10 @@ const dummyPosition = new vscode.Position(0, 0),
 /**
  * Performs a dummy edit on a text document, inserting an undo stop.
  */
-export function performDummyEdit(editor: vscode.TextEditor) {
+export async function performDummyEdit(editor: vscode.TextEditor) {
   // VS Code ignores edits where no interaction is performed with the editor, so
   // we delete an empty range at the start of the document.
-  return editor
-    .edit((editBuilder) => editBuilder.delete(dummyRange), dummyUndoStops)
-    .then(() => {});
+  await editor.edit((editBuilder) => editBuilder.delete(dummyRange), dummyUndoStops);
 }
 
 /**

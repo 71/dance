@@ -76,10 +76,10 @@
     <tr><td><a href="./search.ts#L22"><code>search.backward</code></a></td><td>Search backward</td><td><code>Alt+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L23"><code>search.backward.extend</code></a></td><td>Search backward (extend)</td><td><code>Shift+Alt+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./search.ts#L21"><code>search.extend</code></a></td><td>Search (extend)</td><td><code>Shift+/</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L156"><code>search.next.add</code></a></td><td>Add next match</td><td><code>Shift+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L157"><code>search.previous</code></a></td><td>Select previous match</td><td><code>Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L158"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./search.ts#L88"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L158"><code>search.next.add</code></a></td><td>Add next match</td><td><code>Shift+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L159"><code>search.previous</code></a></td><td>Select previous match</td><td><code>Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L160"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./search.ts#L90"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#search.selection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Shift+Alt+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=35><a href="#seek"><code>seek</code></a></td><td><a href="#seek.enclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#seek.object"><code>seek.object</code></a></td><td>Select object</td><td></td></tr>
@@ -171,21 +171,21 @@
     <tr><td><a href="#selections.save"><code>selections.save</code></a></td><td>Save selections</td><td><code>Shift+Z</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.saveText"><code>selections.saveText</code></a></td><td>Copy selections text</td><td><code>Y</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.select"><code>selections.select</code></a></td><td>Select within selections</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L301"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L300"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L795"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L647"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L646"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L298"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L299"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L874"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L686"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L685"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
-    <tr><td><a href="./selections.ts#L254"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L255"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L253"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L565"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.ts#L873"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L302"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L301"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L798"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L650"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L649"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L299"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L300"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L876"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L689"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L688"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
+    <tr><td><a href="./selections.ts#L255"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L256"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L254"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L568"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.ts#L875"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
     <tr><td><a href="#selections.sort"><code>selections.sort</code></a></td><td>Sort selections</td><td></td></tr>
     <tr><td><a href="#selections.split"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.splitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -919,7 +919,7 @@ Default keybinding: `/` (normal), `NumPad_Divide` (normal)
 
 <a name="search.selection" />
 
-### [`search.selection`](./search.ts#L81-L96)
+### [`search.selection`](./search.ts#L83-L98)
 
 Search current selection.
 
@@ -936,7 +936,7 @@ Default keybinding: `a-*` (normal)
 
 <a name="search.next" />
 
-### [`search.next`](./search.ts#L149-L168)
+### [`search.next`](./search.ts#L151-L170)
 
 Select next match.
 
@@ -1341,7 +1341,7 @@ Default keybinding: `z` (normal)
 
 <a name="selections.restore.withCurrent" />
 
-### [`selections.restore.withCurrent`](./selections.ts#L113-L133)
+### [`selections.restore.withCurrent`](./selections.ts#L114-L134)
 
 Combine register selections with current ones.
 
@@ -1363,7 +1363,7 @@ Default keybinding: `a-z` (normal)
 
 <a name="selections.pipe" />
 
-### [`selections.pipe`](./selections.ts#L239-L261)
+### [`selections.pipe`](./selections.ts#L240-L262)
 
 Pipe selections.
 
@@ -1389,7 +1389,7 @@ Default keybinding: `a-|` (normal)
 
 <a name="selections.filter" />
 
-### [`selections.filter`](./selections.ts#L289-L311)
+### [`selections.filter`](./selections.ts#L290-L312)
 
 Filter selections.
 
@@ -1414,7 +1414,7 @@ Default keybinding: `$` (normal)
 
 <a name="selections.select" />
 
-### [`selections.select`](./selections.ts#L342-L352)
+### [`selections.select`](./selections.ts#L345-L355)
 
 Select within selections.
 
@@ -1427,7 +1427,7 @@ Default keybinding: `s` (normal)
 
 <a name="selections.split" />
 
-### [`selections.split`](./selections.ts#L371-L382)
+### [`selections.split`](./selections.ts#L374-L385)
 
 Split selections.
 
@@ -1441,7 +1441,7 @@ Default keybinding: `s-s` (normal)
 
 <a name="selections.splitLines" />
 
-### [`selections.splitLines`](./selections.ts#L407-L418)
+### [`selections.splitLines`](./selections.ts#L410-L421)
 
 Split selections at line boundaries.
 
@@ -1454,7 +1454,7 @@ Default keybinding: `a-s` (normal)
 
 <a name="selections.expandToLines" />
 
-### [`selections.expandToLines`](./selections.ts#L461-L468)
+### [`selections.expandToLines`](./selections.ts#L464-L471)
 
 Expand to lines.
 
@@ -1466,7 +1466,7 @@ Default keybinding: `a-x` (normal)
 
 <a name="selections.trimLines" />
 
-### [`selections.trimLines`](./selections.ts#L495-L502)
+### [`selections.trimLines`](./selections.ts#L498-L505)
 
 Trim lines.
 
@@ -1478,7 +1478,7 @@ Default keybinding: `s-a-x` (normal)
 
 <a name="selections.trimWhitespace" />
 
-### [`selections.trimWhitespace`](./selections.ts#L527-L534)
+### [`selections.trimWhitespace`](./selections.ts#L530-L537)
 
 Trim whitespace.
 
@@ -1490,7 +1490,7 @@ Default keybinding: `_` (normal)
 
 <a name="selections.reduce" />
 
-### [`selections.reduce`](./selections.ts#L553-L572)
+### [`selections.reduce`](./selections.ts#L556-L575)
 
 Reduce selections to their cursor.
 
@@ -1510,7 +1510,7 @@ Default keybinding: `;` (normal)
 
 <a name="selections.changeDirection" />
 
-### [`selections.changeDirection`](./selections.ts#L634-L649)
+### [`selections.changeDirection`](./selections.ts#L637-L652)
 
 Change direction of selections.
 
@@ -1528,7 +1528,7 @@ Default keybinding: `a-;` (normal)
 
 <a name="selections.changeOrder" />
 
-### [`selections.changeOrder`](./selections.ts#L674-L688)
+### [`selections.changeOrder`](./selections.ts#L677-L691)
 
 Reverse selections.
 
@@ -1542,7 +1542,7 @@ Reverse selections.
 
 <a name="selections.sort" />
 
-### [`selections.sort`](./selections.ts#L701-L713)
+### [`selections.sort`](./selections.ts#L704-L716)
 
 Sort selections.
 
@@ -1553,7 +1553,7 @@ This command:
 
 <a name="selections.copy" />
 
-### [`selections.copy`](./selections.ts#L786-L804)
+### [`selections.copy`](./selections.ts#L789-L807)
 
 Copy selections below.
 
@@ -1571,7 +1571,7 @@ Default keybinding: `s-c` (normal)
 
 <a name="selections.merge" />
 
-### [`selections.merge`](./selections.ts#L838-L843)
+### [`selections.merge`](./selections.ts#L841-L846)
 
 Merge contiguous selections.
 
@@ -1581,13 +1581,13 @@ Default keybinding: `a-_` (normal)
 
 <a name="selections.open" />
 
-### [`selections.open`](./selections.ts#L847-L850)
+### [`selections.open`](./selections.ts#L850-L853)
 
 Open selected file.
 
 <a name="selections.toggleIndices" />
 
-### [`selections.toggleIndices`](./selections.ts#L864-L881)
+### [`selections.toggleIndices`](./selections.ts#L866-L883)
 
 Toggle selection indices.
 

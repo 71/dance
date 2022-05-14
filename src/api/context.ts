@@ -479,12 +479,12 @@ export class Context extends ContextWithoutActiveEditor {
   /**
    * Switches the mode of the current editor to the given mode.
    */
-  public switchToMode(mode: Mode) {
+  public async switchToMode(mode: Mode) {
     const state = this.extension.editors.getState(this._editor);
 
-    return state.setMode(mode).then(() => {
-      this._mode = state.mode;
-    });
+    await state.setMode(mode);
+
+    this._mode = state.mode;
   }
 }
 
@@ -573,22 +573,22 @@ export function text(ranges: vscode.Range | readonly vscode.Range[]) {
  * ^^^ 0
  * ```
  */
-export function edit<T>(
+export async function edit<T>(
   f: (editBuilder: vscode.TextEditorEdit, selections: readonly vscode.Selection[],
       document: vscode.TextDocument) => T,
   editor?: vscode.TextEditor,
 ) {
   if (editor !== undefined) {
-    let value: T;
+    let value!: T;
 
-    return editor.edit(
+    const succeeded = await editor.edit(
       (editBuilder) => value = f(editBuilder, editor!.selections, editor!.document),
       noUndoStops,
-    ).then((succeeded) => {
-      EditNotAppliedError.throwIfNotApplied(succeeded);
+    );
 
-      return value;
-    });
+    EditNotAppliedError.throwIfNotApplied(succeeded);
+
+    return value;
   }
 
   return Context.current.edit(f);

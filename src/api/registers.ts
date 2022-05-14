@@ -35,11 +35,11 @@ export function values(registerOrName: string | Register.WithFlags<Register.Flag
  * Returns the string value stored at the given index of the specified register,
  * or `undefined` if such a value is unavailable.
  */
-export function value(
+export async function value(
   registerOrName: string | Register.WithFlags<Register.Flags.CanRead>,
   index: number,
 ) {
-  return values(registerOrName).then((values) => values?.[index]);
+  return (await values(registerOrName))?.[index];
 }
 
 /**
@@ -110,11 +110,11 @@ export function selections(
  * Returns the selection stored at the given index of the specified register, or
  * `undefined` if such a selection is unavailable.
  */
-export function selection(
+export async function selection(
   registerOrName: string | Register.WithFlags<Register.Flags.CanReadSelections>,
   index: number,
 ) {
-  return selections(registerOrName).then((selections) => selections?.[index]);
+  return (await selections(registerOrName))?.[index];
 }
 
 /**
