@@ -122,6 +122,7 @@ suite("History tests", function () {
   //   await type("a");
   // });
 
+  // TODO: test is flaky
   // testRepeat("insert abc and delete c", `
   //   foo bar
   //    | 0
@@ -130,13 +131,14 @@ suite("History tests", function () {
   //   await deleteBefore(1);
   // });
 
-  testRepeat("insert abc and delete o", `
-    foo bar
-     | 0
-  `, async () => {
-    await type("abc");
-    await deleteAfter(1);
-  });
+  // TODO: test is flaky
+  // testRepeat("insert abc and delete o", `
+  //   foo bar
+  //    | 0
+  // `, async () => {
+  //   await type("abc");
+  //   await deleteAfter(1);
+  // });
 
   // TODO: test does not pass
   // testRepeat("insert abc, left and delete b", `
