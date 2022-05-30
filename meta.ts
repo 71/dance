@@ -308,9 +308,9 @@ export const specialCharacterRegExp = /[~!@#$%^&*()+{}|:"<>?]|(?<!NumPad)_/g;
 /**
  * Async wrapper around the `glob` package.
  */
-export function glob(pattern: string, ignore?: string) {
+export function glob(pattern: string, options: { ignore?: string, cwd: string }) {
   return new Promise<string[]>((resolve, reject) => {
-    G(pattern, { ignore }, (err, matches) => err ? reject(err) : resolve(matches));
+    G(pattern, options, (err, matches) => err ? reject(err) : resolve(matches));
   });
 }
 
@@ -329,7 +329,7 @@ export class Builder {
       return this._apiModules;
     }
 
-    const apiFiles = await glob(`${__dirname}/src/api/**/*.ts`, /* ignore= */ "**/*.build.ts"),
+    const apiFiles = await glob("src/api/**/*.ts", { cwd: __dirname, ignore: "**/*.build.ts" }),
           apiModules = await Promise.all(
             apiFiles.map(async (filepath) =>
               parseDocComments(await fs.readFile(filepath, "utf-8"), filepath)));
@@ -345,8 +345,8 @@ export class Builder {
       return this._commandModules;
     }
 
-    const commandsGlob = `${__dirname}/src/commands/**/*.ts`,
-          commandFiles = await glob(commandsGlob, /* ignore= */ "**/*.build.ts"),
+    const commandsGlob = `src/commands/**/*.ts`,
+          commandFiles = await glob(commandsGlob, { cwd: __dirname, ignore: "**/*.build.ts" }),
           allCommandModules = await Promise.all(
             commandFiles.map(async (filepath) =>
               parseDocComments(await fs.readFile(filepath, "utf-8"), filepath))),
@@ -629,7 +629,7 @@ async function main() {
   }
 
   const builder = new Builder(),
-        filesToBuild = await glob(__dirname + "/" + build),
+        filesToBuild = await glob(build, { cwd: __dirname }),
         buildErrors: unknown[] = [];
 
   await Promise.all(
@@ -654,8 +654,8 @@ async function main() {
   }
 
   if (check) {
-    const filesToCheck = await glob(
-            `${__dirname}/src/commands/**/*.ts`, /* ignore= */ "**/*.build.ts"),
+    const filesToCheck = await glob("src/commands/**/*.ts",
+                                    { cwd: __dirname, ignore: "**/*.build.ts" }),
           contentsToCheck = await Promise.all(filesToCheck.map((f) => fs.readFile(f, "utf-8")));
 
     for (let i = 0; i < filesToCheck.length; i++) {

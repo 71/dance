@@ -715,6 +715,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               ...alphanum.map((x) => `Shift+${x}`),
               ...",'-",
               "Shift+=",
+              "Shift+Space",
               "NumPad_Add",
               "NumPad_Subtract",
             ]);
