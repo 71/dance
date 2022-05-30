@@ -228,12 +228,12 @@ function assignArgument(
   return ownedArgument;
 }
 
-function buildAssignment(argument: Record<string, any>): ArgumentAssignment {
-  if (argument == null) {
+function buildAssignment(argument: unknown): ArgumentAssignment {
+  if (typeof argument !== "object" || argument === null) {
     return { baseValue: {} };
   }
 
-  const { $include, $exclude, ...baseValue } = argument,
+  const { $include, $exclude, ...baseValue } = argument as Record<string, any>,
         assignment: ArgumentAssignment = { baseValue };
 
   if (Array.isArray($include)) {
@@ -252,7 +252,15 @@ function assignArguments(
   return assignment.map((assignment) => assignArgument(assignment, argument));
 }
 
-function buildAssignments(args: readonly Record<string, any>[]): ArgumentAssignments {
+function buildAssignments(args: unknown): ArgumentAssignments {
+  if (!Array.isArray(args)) {
+    if (typeof args === "object") {
+      return [buildAssignment(args)];
+    }
+
+    return [];
+  }
+
   return args.map(buildAssignment);
 }
 
@@ -271,7 +279,7 @@ export function buildCommands(
   // Build and validate commands.
   for (let i = 0, len = commands.length; i < len; i++) {
     let commandName: string,
-        commandArguments: any;
+        commandArguments: unknown;
 
     const command = commands[i];
 
