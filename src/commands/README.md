@@ -192,12 +192,12 @@
     <tr><td><a href="#selections.toggleIndices"><code>selections.toggleIndices</code></a></td><td>Toggle selection indices</td><td><code>Enter</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.trimLines"><code>selections.trimLines</code></a></td><td>Trim lines</td><td><code>Shift+Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.trimWhitespace"><code>selections.trimWhitespace</code></a></td><td>Trim whitespace</td><td><code>Shift+-</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td rowspan=6><a href="#selections.rotate"><code>selections.rotate</code></a></td><td><a href="#selections.rotate.both"><code>selections.rotate.both</code></a></td><td>Rotate selections clockwise</td><td><code>Shift+9</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td rowspan=6><a href="#selections.rotate"><code>selections.rotate</code></a></td><td><a href="#selections.rotate.both"><code>selections.rotate.both</code></a></td><td>Rotate selections clockwise</td><td><code>Shift+Alt+9</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="#selections.rotate.contents"><code>selections.rotate.contents</code></a></td><td>Rotate selections clockwise (contents only)</td><td></td></tr>
-    <tr><td><a href="#selections.rotate.selections"><code>selections.rotate.selections</code></a></td><td>Rotate selections clockwise (selections only)</td><td><code>Shift+Alt+9</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-    <tr><td><a href="./selections.rotate.ts#L18"><code>selections.rotate.both.reverse</code></a></td><td>Rotate selections counter-clockwise</td><td><code>Shift+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="#selections.rotate.selections"><code>selections.rotate.selections</code></a></td><td>Rotate selections clockwise (selections only)</td><td><code>Shift+9</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.rotate.ts#L18"><code>selections.rotate.both.reverse</code></a></td><td>Rotate selections counter-clockwise</td><td><code>Shift+Alt+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td><a href="./selections.rotate.ts#L35"><code>selections.rotate.contents.reverse</code></a></td><td>Rotate selections counter-clockwise (contents only)</td><td></td></tr>
-    <tr><td><a href="./selections.rotate.ts#L54"><code>selections.rotate.selections.reverse</code></a></td><td>Rotate selections counter-clockwise (selections only)</td><td><code>Shift+Alt+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+    <tr><td><a href="./selections.rotate.ts#L54"><code>selections.rotate.selections.reverse</code></a></td><td>Rotate selections counter-clockwise (selections only)</td><td><code>Shift+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
     <tr><td rowspan=1><a href="#view"><code>view</code></a></td><td><a href="#view.line"><code>view.line</code></a></td><td>Reveals a position based on the main cursor</td><td></td></tr>
   </tbody>
 </table>
@@ -1618,15 +1618,15 @@ Rotate selections clockwise.
 
 The following keybinding is also available:
 
-| Title                               | Identifier     | Keybinding   | Command                                          |
-| ----------------------------------- | -------------- | ------------ | ------------------------------------------------ |
-| Rotate selections counter-clockwise | `both.reverse` | `)` (normal) | `[".selections.rotate.both", { reverse: true }]` |
+| Title                               | Identifier     | Keybinding     | Command                                          |
+| ----------------------------------- | -------------- | -------------- | ------------------------------------------------ |
+| Rotate selections counter-clockwise | `both.reverse` | `a-)` (normal) | `[".selections.rotate.both", { reverse: true }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `reverse` of type `boolean`.
 
-Default keybinding: `(` (normal)
+Default keybinding: `a-(` (normal)
 
 <a name="selections.rotate.contents" />
 
@@ -1653,15 +1653,15 @@ Rotate selections clockwise (selections only).
 
 The following keybinding is also available:
 
-| Title                                                 | Identifier           | Keybinding     | Command                                                |
-| ----------------------------------------------------- | -------------------- | -------------- | ------------------------------------------------------ |
-| Rotate selections counter-clockwise (selections only) | `selections.reverse` | `a-)` (normal) | `[".selections.rotate.selections", { reverse: true }]` |
+| Title                                                 | Identifier           | Keybinding   | Command                                                |
+| ----------------------------------------------------- | -------------------- | ------------ | ------------------------------------------------------ |
+| Rotate selections counter-clockwise (selections only) | `selections.reverse` | `)` (normal) | `[".selections.rotate.selections", { reverse: true }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `reverse` of type `boolean`.
 
-Default keybinding: `a-(` (normal)
+Default keybinding: `(` (normal)
 
 ## [`view`](./view.ts)
 
