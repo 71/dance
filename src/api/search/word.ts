@@ -32,7 +32,7 @@ export function wordBoundary(
   wordCharset: CharSet,
   context = Context.current,
 ) {
-  let anchor = undefined,
+  let anchor: vscode.Position | undefined = undefined,
       active = origin;
 
   const document = context.document,

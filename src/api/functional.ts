@@ -385,7 +385,7 @@ export function pipe<A, B, C, D, E, F, G, H, I, J, K>(a: (_: A) => B | undefined
 
 export function pipe(...functions: ((_: unknown) => unknown)[]) {
   return (values: readonly unknown[]) => {
-    const results = [],
+    const results: unknown[] = [],
           vlen = values.length,
           flen = functions.length;
 
@@ -410,7 +410,7 @@ export function pipe(...functions: ((_: unknown) => unknown)[]) {
  */
 export function pipeAsync(...functions: ((_: unknown) => unknown)[]) {
   return async (values: readonly unknown[]) => {
-    const results = [],
+    const results: unknown[] = [],
           vlen = values.length,
           flen = functions.length;
 

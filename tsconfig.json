@@ -10,6 +10,8 @@
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "preserveConstEnums": true,
+    "strictNullChecks": true,
+    "noImplicitAny": true,
   },
-  "exclude": ["node_modules", ".vscode-test", "src/commands/old-*.ts"],
+  "exclude": ["node_modules", ".vscode-test"],
 }

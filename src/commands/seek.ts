@@ -103,7 +103,7 @@ export function enclosing(
           bracketsConfig = languageConfig.get<readonly [string, string][]>("brackets");
 
     if (Array.isArray(bracketsConfig)) {
-      const flattenedPairs = [];
+      const flattenedPairs: string[] = [];
 
       for (const bracketPair of bracketsConfig) {
         if (!Array.isArray(bracketPair) || bracketPair.length !== 2

@@ -196,7 +196,7 @@ export function filterByIndex(
     //                                              selections are mutated.
 
     return context.then(Promise.all(promises), (results) => {
-      const resultingSelections = [];
+      const resultingSelections: vscode.Selection[] = [];
 
       for (let i = 0; i < results.length; i++) {
         if (results[i]) {
@@ -363,7 +363,7 @@ export function mapByIndex<T>(
     }
 
     return context.then(Promise.all(promises), (results) => {
-      const filteredResults = [];
+      const filteredResults: T[] = [];
 
       for (let i = 0; i < results.length; i++) {
         const result = results[i];

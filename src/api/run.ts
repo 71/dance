@@ -336,7 +336,7 @@ export function buildCommands(
 
   return async (argument: Record<string, any>, context = Context.WithoutActiveEditor.current) => {
     // Execute all commands.
-    const results = [],
+    const results: unknown[] = [],
           ownedArguments: any[] = [];
 
     for (const batch of batches) {
