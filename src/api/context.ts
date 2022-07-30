@@ -446,6 +446,10 @@ export class Context extends ContextWithoutActiveEditor {
    * Switches the context to the given document.
    */
   public async switchToDocument(document: vscode.TextDocument, alsoFocusEditor = false) {
+    if (this.document === document) {
+      return;
+    }
+
     const notebook = (document as { notebook?: vscode.NotebookDocument }).notebook;
     let notebookEditor: vscode.TextEditor | undefined;
 
