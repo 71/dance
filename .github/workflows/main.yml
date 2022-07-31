@@ -26,16 +26,26 @@ jobs:
         env:
           MOCHA_REPORTER: dot
 
+  publish:
+    needs: check
+    if: ${{ github.event_name == 'push' }}
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
       - name: Create tag based on package.json
         uses: butlerlogic/action-autotag@ade8d2e19bfcd1e6a91272e2849b4bf4c37a67f1
         id: autotag
         with:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
           tag_prefix: v
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to Open VSX Registry
         uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
-        if: ${{ success() && steps.autotag.outputs.tagcreated == 'yes' }}
+        if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
         id: publishToOpenVSX
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
@@ -43,7 +53,7 @@ jobs:
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
-        if: ${{ success() && steps.autotag.outputs.tagcreated == 'yes' }}
+        if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
