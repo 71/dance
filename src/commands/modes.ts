@@ -15,11 +15,14 @@ declare module "./modes";
  * | ------------------ | ------------ | ----------------- | ----------------------------------------------------------- |
  * | Set mode to Normal | `set.normal` | `escape` (insert) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
  * | Set mode to Insert | `set.insert` |                   | `[".modes.set", { mode: "insert" }]`                        |
+ * | Set mode to Normal | `set.normal` | `escape` (visual) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
+ * | Set mode to Visual | `set.visual` |                   | `[".modes.set", { mode: "visual" }]`                        |
  *
  * Other variants are provided to switch to insert mode:
  *
  * | Title                | Identifier         | Keybinding     | Commands                                                                                                                                                                            |
  * | -------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+ * | Visual               | `visual`           | `v` (normal)   | `[".selections.faceBackward", { record: false }],           [".modes.set", { mode: "visual", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
  * | Insert before        | `insert.before`    | `i` (normal)   | `[".selections.faceBackward", { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
  * | Insert after         | `insert.after`     | `a` (normal)   | `[".selections.faceForward" , { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
  * | Insert at line start | `insert.lineStart` | `s-i` (normal) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |

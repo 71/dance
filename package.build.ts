@@ -305,6 +305,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 }],
               ],
             },
+            visual: {
+            },
             normal: {
               lineNumbers: "relative",
               decorations: {
@@ -720,15 +722,29 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               "NumPad_Subtract",
             ]);
 
+      const normalKeys = keysToAssign;
+      const visualKeys = keysToAssign;
       for (const keybinding of keybindings) {
-        keysToAssign.delete(keybinding.key);
+        if (keybinding.when.includes("normal")) {
+          normalKeys.delete(keybinding.key);
+        }
+        if (keybinding.when.includes("visual")) {
+          visualKeys.delete(keybinding.key);
+        }
       }
 
-      for (const keyToAssign of keysToAssign) {
+      for (const keyToAssign of normalKeys) {
         keybindings.push({
           command: "dance.ignore",
           key: keyToAssign,
           when: "editorTextFocus && dance.mode == 'normal'",
+        });
+      }
+      for (const keyToAssign of visualKeys) {
+        keybindings.push({
+          command: "dance.ignore",
+          key: keyToAssign,
+          when: "editorTextFocus && dance.mode == 'visual'",
         });
       }
 
