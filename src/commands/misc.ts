@@ -1,5 +1,5 @@
 import type { Argument, InputOr, RegisterOr } from ".";
-import { commands as apiCommands, run as apiRun, command, compileFunction, Context, findMenu, keypressForRegister, Menu, notifyPromptActionRequested, prompt, promptNumber, runIsEnabled, showLockedMenu, showMenu, showMenuAfterDelay, validateMenu } from "../api";
+import { run as apiRun, buildCommands, command, compileFunction, Context, findMenu, keypressForRegister, Menu, notifyPromptActionRequested, prompt, promptNumber, runIsEnabled, showLockedMenu, showMenu, showMenuAfterDelay, validateMenu } from "../api";
 import type { Extension } from "../state/extension";
 import type { Register } from "../state/registers";
 import { ArgumentError, CancellationError, InputError } from "../utils/errors";
@@ -150,7 +150,7 @@ export async function run(
     if (typeof argument["code"] === "string" && runIsEnabled()) {
       // Prefer "code" to the "commands" array.
     } else {
-      return apiCommands(...commands);
+      return buildCommands(commands, _.extension)(argument, _);
     }
   }
 
