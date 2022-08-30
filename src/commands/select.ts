@@ -13,7 +13,7 @@ declare module "./select";
 /**
  * Select whole buffer.
  *
- * @keys `%` (normal)
+ * @keys `%` (normal), `%` (visual)
  */
 export function buffer(_: Context) {
   Selections.set([Selections.wholeBuffer()]);
@@ -36,21 +36,25 @@ const preferredColumnsToken =
  *
  * #### Variants
  *
- * | Title       | Identifier    | Keybinding                        | Command                                                           |
- * | ----------- | ------------- | --------------------------------- | ----------------------------------------------------------------- |
- * | Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)   | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
- * | Extend down | `down.extend` | `s-j` (normal), `s-down` (normal) | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
- * | Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)     | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
- * | Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)   | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
+ * | Title       | Identifier    | Keybinding                                                       | Command                                                           |
+ * | ----------- | ------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
+ * | Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)                                  | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
+ * | Extend down | `down.extend` | `s-j` (normal), `s-down` (normal), `j` (visual), `down` (visual) | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
+ * | Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)                                    | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
+ * | Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)  , `k` (visual), `up` (visual)   | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
  *
  * The following keybindings are also defined:
  *
- * | Keybinding                     | Command                                                                    |
- * | ------------------------------ | -------------------------------------------------------------------------- |
- * | `c-f` (normal), `c-f` (insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]` |
- * | `c-d` (normal), `c-d` (insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]` |
- * | `c-b` (normal), `c-b` (insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]` |
- * | `c-u` (normal), `c-u` (insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]` |
+ * | Keybinding                     | Command                                                                      |
+ * | ------------------------------ | ---------------------------------------------------------------------------- |
+ * | `c-f` (normal), `c-f` (insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]`   |
+ * | `c-d` (normal), `c-d` (insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]`   |
+ * | `c-b` (normal), `c-b` (insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]`   |
+ * | `c-u` (normal), `c-u` (insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]`   |
+ * | `c-f` (visual)                 | `[".select.vertically", { direction:  1, by: "page"    , shift: "extend" }]` |
+ * | `c-d` (visual)                 | `[".select.vertically", { direction:  1, by: "halfPage", shift: "extend" }]` |
+ * | `c-b` (visual)                 | `[".select.vertically", { direction: -1, by: "page"    , shift: "extend" }]` |
+ * | `c-u` (visual)                 | `[".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]` |
  */
 export function vertically(
   _: Context,
@@ -222,12 +226,12 @@ export function vertically(
  *
  * #### Variants
  *
- * | Title        | Identifier     | Keybinding                         | Command                                                             |
- * | ------------ | -------------- | ---------------------------------- | ------------------------------------------------------------------- |
- * | Jump right   | `right.jump`   | `l` (normal)  , `right` (normal)   | `[".select.horizontally", { direction:  1, shift: "jump"  , ... }]` |
- * | Extend right | `right.extend` | `s-l` (normal), `s-right` (normal) | `[".select.horizontally", { direction:  1, shift: "extend", ... }]` |
- * | Jump left    | `left.jump`    | `h` (normal)  , `left` (normal)    | `[".select.horizontally", { direction: -1, shift: "jump"  , ... }]` |
- * | Extend left  | `left.extend`  | `s-h` (normal), `s-left` (normal)  | `[".select.horizontally", { direction: -1, shift: "extend", ... }]` |
+ * | Title        | Identifier     | Keybinding                                                         | Command                                                             |
+ * | ------------ | -------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------- |
+ * | Jump right   | `right.jump`   | `l` (normal)  , `right` (normal)                                   | `[".select.horizontally", { direction:  1, shift: "jump"  , ... }]` |
+ * | Extend right | `right.extend` | `s-l` (normal), `s-right` (normal), `l` (visual), `right` (visual) | `[".select.horizontally", { direction:  1, shift: "extend", ... }]` |
+ * | Jump left    | `left.jump`    | `h` (normal)  , `left` (normal)                                    | `[".select.horizontally", { direction: -1, shift: "jump"  , ... }]` |
+ * | Extend left  | `left.extend`  | `s-h` (normal), `s-left` (normal) , `h` (visual), `left` (visual)  | `[".select.horizontally", { direction: -1, shift: "extend", ... }]` |
  */
 export function horizontally(
   _: Context,
@@ -291,10 +295,10 @@ export function horizontally(
  *
  * #### Variants
  *
- * | Title     | Identifier  | Keybinding     | Command                                    |
- * | --------- | ----------- | -------------- | ------------------------------------------ |
- * | Go to     | `to.jump`   | `g` (normal)   | `[".select.to", { shift: "jump"  , ... }]` |
- * | Extend to | `to.extend` | `s-g` (normal) | `[".select.to", { shift: "extend", ... }]` |
+ * | Title     | Identifier  | Keybinding                   | Command                                    |
+ * | --------- | ----------- | ---------------------------- | ------------------------------------------ |
+ * | Go to     | `to.jump`   | `g` (normal)                 | `[".select.to", { shift: "jump"  , ... }]` |
+ * | Extend to | `to.extend` | `s-g` (normal), `g` (visual) | `[".select.to", { shift: "extend", ... }]` |
  */
 export function to(
   _: Context,
@@ -344,7 +348,7 @@ export function line_below(_: Context, count: number) {
 /**
  * Extend to line below.
  *
- * @keys `s-x` (normal)
+ * @keys `s-x` (normal), `x` (visual)
  */
 export function line_below_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {
@@ -497,7 +501,7 @@ export function lineStart(
 }
 
 /**
- * Select to line end.
+ * Select to line end. TODO: helix
  *
  * @param lineBreak If `true`, selects the line break in character selection
  *   mode.
