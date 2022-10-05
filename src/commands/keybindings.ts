@@ -31,4 +31,6 @@ export async function setup(_: Context, register: RegisterOr<"dquote", Register.
   ]);
 
   todo();
+
+  // TODO: ask whether remaining keybindings should be ignored.
 }

@@ -139,6 +139,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "vsce": "^2.7.0",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
+    "yaml": "^2.1.1",
   },
 
   // VS Code-specific properties.
@@ -707,6 +708,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     // Keybindings.
     // ========================================================================
 
+    // TODO: unassign default keybindings, and force the user to explicitly set
+    // them up.
     keybindings: (() => {
       const keybindings = modules.flatMap((module) => module.keybindings),
             alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],

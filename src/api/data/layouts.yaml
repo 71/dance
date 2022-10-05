@@ -1,0 +1,8 @@
+qwerty: {}
+
+azerty:
+  # TODO(commands): port more commands to Azerty.
+  # See https://github.com/71/dance/blob/ad61336bff165d29c5e674f3fd3916f7d6ba8bd7/src/api/keybindings/layout-azerty.ts
+  # for some inspiration. This may not be trivial, since I couldn't get VS Code
+  # to properly recognize AltGr-based keybindings, e.g. `|` on Azerty.
+  fallback: qwerty

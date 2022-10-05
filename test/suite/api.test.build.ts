@@ -31,7 +31,7 @@ export async function build(builder: Builder) {
 
     // Note: we use the name starting with ./ below to make sure the filename is
     // clickable.
-    return unindent(4, `
+    return unindent(4)`
       suite(${JSON.stringify(module.path.replace(/^dance/, "."))}, function () {
         ${examples.map((example) => {
           let testName = `function ${example.functionName}`;
@@ -54,30 +54,30 @@ export async function build(builder: Builder) {
 
             if (code !== undefined) {
               decls.push(`${name} = ExpectedDocument.parseIndented(${
-                stringifyExpectedDocument(code, 22, 14)})`);
+                stringifyExpectedDocument(code, 12)})`);
             }
           }
 
-          return unindent(4, `
+          return unindent(8)`
             test("${testName}", async function () {
-              const ${decls.join(",\n                    ")};
+              const ${decls.join(",\n" + " ".repeat(12))};
 
               ${example.before !== undefined
                 ? "await before.apply(editor);"
                 : "// No setup needed."}
 
               await context.runAsync(async () => {${"\n"
-                + example.code.replace(/^/gm, " ".repeat(16)).trimEnd()}
+                + example.code.replace(/^/gm, " ".repeat(8)).trimEnd()}
               });
 
               ${example.after !== undefined
                 ? "after.assertEquals(editor);"
                 : "// No expected end document."}
             });
-          `);
+          `;
         }).join("")}
       });
-    `);
+    `;
   }).join("") + "});\n";
 }
 

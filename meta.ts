@@ -410,18 +410,19 @@ export declare namespace Builder {
 }
 
 /**
- * Parses the short "`s-a-b` (mode)"-like syntax for defining keybindings into
- * a format compatible with VS Code keybindings.
+ * Parses the short "`s-a-b` (category: mode)"-like syntax for defining
+ * keybindings into a format compatible with VS Code keybindings.
  */
 export function parseKeys(keys: string) {
   if (keys.length === 0) {
     return [];
   }
 
-  return keys.split(/ *, (?=`)/g).map((keyString) => {
-    const match = /^(`+)(.+?)\1 \((.+?)\)$/.exec(keyString)!,
-          keybinding = match[2].trim().replace(
-            specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m]);
+  return keys.replace("\n", ", ").split(/ *, (?=`)/g).map((keyString) => {
+    const [,, rawKeybinding, rawMetadata] = /^(`+)(.+?)\1 \((.+?)\)$/.exec(keyString)!,
+          keybinding = rawKeybinding.trim().replace(
+            specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m]),
+          [, category, tags] = /(\w+): (.+)/.exec(rawMetadata)!;
 
     // Reorder to match Ctrl+Shift+Alt+_
     let key = "";
@@ -441,7 +442,7 @@ export function parseKeys(keys: string) {
     const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
           whenClauses = ["editorTextFocus"];
 
-    for (let tag of match[3].split(", ")) {
+    for (let tag of tags.split(", ")) {
       const negate = tag.startsWith("!");
       if (negate) {
         tag = tag.slice(1);
@@ -479,6 +480,7 @@ export function parseKeys(keys: string) {
     key += remainingKeybinding[0].toUpperCase() + remainingKeybinding.slice(1);
 
     return {
+      category,
       key,
       when: whenClauses.join(" && "),
     };
@@ -513,7 +515,8 @@ function getCommands(module: Omit<Builder.ParsedModule, "commands">) {
 function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
   return [
     ...module.functions.flatMap((f) => parseKeys(f.properties["keys"] ?? "").map((key) => ({
-      ...key,
+      key: key.key,
+      when: key.when,
       title: f.summary,
       command: `dance.${f.qualifiedName}`,
     }))),
@@ -525,7 +528,8 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
 
         if (qualifiedIdentifier !== undefined) {
           return parsedKeys.map((key) => ({
-            ...key,
+            key: key.key,
+            when: key.when,
             title,
             command: `dance.${qualifiedIdentifier}`,
           }));
@@ -542,7 +546,8 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
           }
 
           return parsedKeys.map((key) => ({
-            ...key,
+            key: key.key,
+            when: key.when,
             title,
             command,
             args: parsedCommands[0][1],
@@ -550,7 +555,8 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
         }
 
         return parsedKeys.map((key) => ({
-          ...key,
+          key: key.key,
+          when: key.when,
           title,
           command: "dance.run",
           args: {
@@ -565,16 +571,15 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
  * Given a multiline string, returns the same string with all lines starting
  * with an indentation `>= by` reduced by `by` spaces.
  */
-export function unindent(by: number, string: string) {
-  return string.replace(new RegExp(`^ {${by}}`, "gm"), "").replace(/^ +$/gm, "");
-}
+export function unindent(by: number): { (strings: TemplateStringsArray, ...args: any[]): string } {
+  const re = new RegExp(`^ {${by}}`, "gm");
 
-/**
- * Given a multiline string, returns the same string with all lines further
- * indented by `by` spaces.
- */
-export function indent(by: number, string: string) {
-  return string.replace(/^/gm, " ".repeat(by)).replace(/^ +$/gm, "");
+  return (strings: TemplateStringsArray, ...args: any[]) => {
+    const unindented = strings.map((s) => s.replace(re, ""));
+
+    return String.raw(Object.assign(unindented, { raw: unindented }), ...args)
+      .replace(/^ +$/gm, "");
+  };
 }
 
 /**
@@ -600,7 +605,7 @@ async function buildFile(fileName: string, builder: Builder) {
           outputPath = path.join(path.dirname(fileName), outputName),
           outputContent = await fs.readFile(outputPath, "utf-8"),
           outputContentHeader =
-            /^[\s\S]+?\n.+Content below this line was auto-generated.+\n/m.exec(outputContent)![0];
+            /^(?:[\s\S]+?\n)?.+Content below this line was auto-generated.+\n/m.exec(outputContent)![0];
 
     await fs.writeFile(outputPath, outputContentHeader + generatedContent, "utf-8");
   }

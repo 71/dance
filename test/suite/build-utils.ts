@@ -1,10 +1,10 @@
 import * as assert from "assert";
 
-export function stringifyExpectedDocument(code: string, codeIndent: number, indent: number) {
-  code = code.replace(/`/g, "\\`").replace(/^/gm, " ".repeat(codeIndent));
+export function stringifyExpectedDocument(code: string, codeIndent: number) {
+  code = code.replace(/`/g, "\\`").replace(/^/gm, " ".repeat(codeIndent + 2));
   code = code.slice(0, code.length - 2);  // De-indent end line.
 
-  return `${indent}, String.raw\`\n${code}\``;
+  return `${codeIndent + 2}, String.raw\`\n${code}\``;
 }
 
 export function longestStringLength<T>(f: (v: T) => string, values: readonly T[]) {

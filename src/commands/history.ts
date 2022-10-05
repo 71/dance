@@ -14,7 +14,7 @@ declare module "./history";
 /**
  * Undo.
  *
- * @keys `u` (normal)
+ * @keys `u` (kakoune: normal)
  */
 export function undo() {
   return vscode.commands.executeCommand("undo");
@@ -23,7 +23,7 @@ export function undo() {
 /**
  * Redo.
  *
- * @keys `s-u` (normal)
+ * @keys `s-u` (kakoune: normal)
  */
 export function redo() {
   return vscode.commands.executeCommand("redo");
@@ -32,7 +32,7 @@ export function redo() {
 /**
  * Undo a change of selections.
  *
- * @keys `a-u` (normal)
+ * @keys `a-u` (kakoune: normal)
  */
 export function undo_selections() {
   return vscode.commands.executeCommand("cursorUndo");
@@ -41,7 +41,7 @@ export function undo_selections() {
 /**
  * Redo a change of selections.
  *
- * @keys `s-a-u` (normal)
+ * @keys `s-a-u` (kakoune: normal)
  */
 export function redo_selections() {
   return vscode.commands.executeCommand("cursorRedo");
@@ -52,10 +52,10 @@ export function redo_selections() {
  *
  * @noreplay
  *
- * | Title                        | Identifier         | Keybinding     | Commands                                                                      |
- * | ---------------------------- | ------------------ | -------------- | ----------------------------------------------------------------------------- |
- * | Repeat last selection change | `repeat.selection` |                | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
- * | Repeat last seek             | `repeat.seek`      | `a-.` (normal) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
+ * | Title                        | Identifier         | Keybinding              | Commands                                                                      |
+ * | ---------------------------- | ------------------ | ----------------------- | ----------------------------------------------------------------------------- |
+ * | Repeat last selection change | `repeat.selection` |                         | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
+ * | Repeat last seek             | `repeat.seek`      | `a-.` (kakoune: normal) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
  */
 export async function repeat(
   _: Context,
@@ -97,7 +97,7 @@ export async function repeat(
 /**
  * Repeat last edit without a command.
  *
- * @keys `.` (normal), `NumPad_Decimal` (normal)
+ * @keys `.` (kakoune: normal), `NumPad_Decimal` (kakoune: normal)
  * @noreplay
  */
 export async function repeat_edit(_: Context, repetitions: number) {
@@ -139,7 +139,7 @@ export async function repeat_edit(_: Context, repetitions: number) {
 /**
  * Replay recording.
  *
- * @keys `q` (normal)
+ * @keys `q` (kakoune: normal)
  * @noreplay
  */
 export async function recording_play(
@@ -166,7 +166,7 @@ const recordingPerRegister = new WeakMap<Register, ActiveRecording>();
 /**
  * Start recording.
  *
- * @keys `s-q` (normal, !recording)
+ * @keys `s-q` (kakoune: normal, !recording)
  * @noreplay
  */
 export function recording_start(
@@ -187,7 +187,7 @@ export function recording_start(
 /**
  * Stop recording.
  *
- * @keys `escape` (normal, recording), `s-q` (normal, recording)
+ * @keys `escape` (kakoune: normal, recording), `s-q` (kakoune: normal, recording)
  * @noreplay
  */
 export function recording_stop(

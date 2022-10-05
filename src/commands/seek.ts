@@ -14,19 +14,19 @@ declare module "./seek";
 /**
  * Select to character (excluded).
  *
- * @keys `t` (normal)
+ * @keys `t` (kakoune: normal)
  *
  * #### Variants
  *
- * | Title                                    | Identifier                 | Keybinding       | Command                                                             |
- * | ---------------------------------------- | -------------------------- | ---------------- | ------------------------------------------------------------------- |
- * | Extend to character (excluded)           | `extend`                   | `s-t` (normal)   | `[".seek", {                shift: "extend"               , ... }]` |
- * | Select to character (excluded, backward) | `backward`                 | `a-t` (normal)   | `[".seek", {                                 direction: -1, ... }]` |
- * | Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (normal) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
- * | Select to character (included)           | `included`                 | `f` (normal)     | `[".seek", { include: true                                , ... }]` |
- * | Extend to character (included)           | `included.extend`          | `s-f` (normal)   | `[".seek", { include: true, shift: "extend"               , ... }]` |
- * | Select to character (included, backward) | `included.backward`        | `a-f` (normal)   | `[".seek", { include: true,                  direction: -1, ... }]` |
- * | Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (normal) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
+ * | Title                                    | Identifier                 | Keybinding                | Command                                                             |
+ * | ---------------------------------------- | -------------------------- | ------------------------- | ------------------------------------------------------------------- |
+ * | Extend to character (excluded)           | `extend`                   | `s-t` (kakoune: normal)   | `[".seek", {                shift: "extend"               , ... }]` |
+ * | Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal)   | `[".seek", {                                 direction: -1, ... }]` |
+ * | Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (kakoune: normal) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
+ * | Select to character (included)           | `included`                 | `f` (kakoune: normal)     | `[".seek", { include: true                                , ... }]` |
+ * | Extend to character (included)           | `included.extend`          | `s-f` (kakoune: normal)   | `[".seek", { include: true, shift: "extend"               , ... }]` |
+ * | Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal)   | `[".seek", { include: true,                  direction: -1, ... }]` |
+ * | Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (kakoune: normal) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
  */
 export async function seek(
   _: Context,
@@ -79,15 +79,15 @@ const defaultEnclosingPatterns = [
 /**
  * Select to next enclosing character.
  *
- * @keys `m` (normal)
+ * @keys `m` (kakoune: normal)
  *
  * #### Variants
  *
- * | Title                                  | Identifier                  | Keybinding       | Command                                                        |
- * | -------------------------------------- | --------------------------- | ---------------- | -------------------------------------------------------------- |
- * | Extend to next enclosing character     | `enclosing.extend`          | `s-m` (normal)   | `[".seek.enclosing", { shift: "extend"               , ... }]` |
- * | Select to previous enclosing character | `enclosing.backward`        | `a-m` (normal)   | `[".seek.enclosing", {                  direction: -1, ... }]` |
- * | Extend to previous enclosing character | `enclosing.extend.backward` | `s-a-m` (normal) | `[".seek.enclosing", { shift: "extend", direction: -1, ... }]` |
+ * | Title                                  | Identifier                  | Keybinding                | Command                                                        |
+ * | -------------------------------------- | --------------------------- | ------------------------- | -------------------------------------------------------------- |
+ * | Extend to next enclosing character     | `enclosing.extend`          | `s-m` (kakoune: normal)   | `[".seek.enclosing", { shift: "extend"               , ... }]` |
+ * | Select to previous enclosing character | `enclosing.backward`        | `a-m` (kakoune: normal)   | `[".seek.enclosing", {                  direction: -1, ... }]` |
+ * | Extend to previous enclosing character | `enclosing.extend.backward` | `s-a-m` (kakoune: normal) | `[".seek.enclosing", { shift: "extend", direction: -1, ... }]` |
  */
 export function enclosing(
   _: Context,
@@ -174,23 +174,23 @@ export function enclosing(
  *
  * Select the word and following whitespaces on the right of the end of each selection.
  *
- * @keys `w` (normal)
+ * @keys `w` (kakoune: normal)
  *
  * #### Variants
  *
- * | Title                                        | Identifier                | Keybinding       | Command                                                                               |
- * | -------------------------------------------- | ------------------------- | ---------------- | ------------------------------------------------------------------------------------- |
- * | Extend to next word start                    | `word.extend`             | `s-w` (normal)   | `[".seek.word", {                             shift: "extend"               , ... }]` |
- * | Select to previous word start                | `word.backward`           | `b` (normal)     | `[".seek.word", {                                              direction: -1, ... }]` |
- * | Extend to previous word start                | `word.extend.backward`    | `s-b` (normal)   | `[".seek.word", {                             shift: "extend", direction: -1, ... }]` |
- * | Select to next non-whitespace word start     | `word.ws`                 | `a-w` (normal)   | `[".seek.word", {                   ws: true                                , ... }]` |
- * | Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (normal) | `[".seek.word", {                   ws: true, shift: "extend"               , ... }]` |
- * | Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (normal)   | `[".seek.word", {                   ws: true,                  direction: -1, ... }]` |
- * | Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (normal) | `[".seek.word", {                   ws: true, shift: "extend", direction: -1, ... }]` |
- * | Select to next word end                      | `wordEnd`                 | `e` (normal)     | `[".seek.word", { stopAtEnd: true                                           , ... }]` |
- * | Extend to next word end                      | `wordEnd.extend`          | `s-e` (normal)   | `[".seek.word", { stopAtEnd: true ,           shift: "extend"               , ... }]` |
- * | Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (normal)   | `[".seek.word", { stopAtEnd: true , ws: true                                , ... }]` |
- * | Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (normal) | `[".seek.word", { stopAtEnd: true , ws: true, shift: "extend"               , ... }]` |
+ * | Title                                        | Identifier                | Keybinding                | Command                                                                               |
+ * | -------------------------------------------- | ------------------------- | ------------------------- | ------------------------------------------------------------------------------------- |
+ * | Extend to next word start                    | `word.extend`             | `s-w` (kakoune: normal)   | `[".seek.word", {                             shift: "extend"               , ... }]` |
+ * | Select to previous word start                | `word.backward`           | `b` (kakoune: normal)     | `[".seek.word", {                                              direction: -1, ... }]` |
+ * | Extend to previous word start                | `word.extend.backward`    | `s-b` (kakoune: normal)   | `[".seek.word", {                             shift: "extend", direction: -1, ... }]` |
+ * | Select to next non-whitespace word start     | `word.ws`                 | `a-w` (kakoune: normal)   | `[".seek.word", {                   ws: true                                , ... }]` |
+ * | Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (kakoune: normal) | `[".seek.word", {                   ws: true, shift: "extend"               , ... }]` |
+ * | Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (kakoune: normal)   | `[".seek.word", {                   ws: true,                  direction: -1, ... }]` |
+ * | Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (kakoune: normal) | `[".seek.word", {                   ws: true, shift: "extend", direction: -1, ... }]` |
+ * | Select to next word end                      | `wordEnd`                 | `e` (kakoune: normal)     | `[".seek.word", { stopAtEnd: true                                           , ... }]` |
+ * | Extend to next word end                      | `wordEnd.extend`          | `s-e` (kakoune: normal)   | `[".seek.word", { stopAtEnd: true ,           shift: "extend"               , ... }]` |
+ * | Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (kakoune: normal)   | `[".seek.word", { stopAtEnd: true , ws: true                                , ... }]` |
+ * | Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (kakoune: normal) | `[".seek.word", { stopAtEnd: true , ws: true, shift: "extend"               , ... }]` |
  */
 export function word(
   _: Context,
@@ -264,18 +264,18 @@ let lastObjectInput: string | undefined;
  *
  * #### Variants
  *
- * | Title                        | Identifier                     | Keybinding                     | Command                                                                                       |
- * | ---------------------------- | ------------------------------ | ------------------------------ | --------------------------------------------------------------------------------------------- |
- * | Select whole object          | `askObject`                    | `a-a` (normal), `a-a` (insert) | `[".openMenu", { menu: "object",                          title: "Select whole object..." }]` |
- * | Select inner object          | `askObject.inner`              | `a-i` (normal), `a-i` (insert) | `[".openMenu", { menu: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
- * | Select to whole object start | `askObject.start`              | `[` (normal)                   | `[".openMenu", { menu: "object", pass: [{              where: "start"                  }] }]` |
- * | Extend to whole object start | `askObject.start.extend`       | `{` (normal)                   | `[".openMenu", { menu: "object", pass: [{              where: "start", shift: "extend" }] }]` |
- * | Select to inner object start | `askObject.inner.start`        | `a-[` (normal)                 | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start"                  }] }]` |
- * | Extend to inner object start | `askObject.inner.start.extend` | `a-{` (normal)                 | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start", shift: "extend" }] }]` |
- * | Select to whole object end   | `askObject.end`                | `]` (normal)                   | `[".openMenu", { menu: "object", pass: [{              where: "end"                    }] }]` |
- * | Extend to whole object end   | `askObject.end.extend`         | `}` (normal)                   | `[".openMenu", { menu: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
- * | Select to inner object end   | `askObject.inner.end`          | `a-]` (normal)                 | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"                    }] }]` |
- * | Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (normal)                 | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
+ * | Title                        | Identifier                     | Keybinding                                       | Command                                                                                       |
+ * | ---------------------------- | ------------------------------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------- |
+ * | Select whole object          | `askObject`                    | `a-a` (kakoune: normal), `a-a` (kakoune: insert) | `[".openMenu", { menu: "object",                          title: "Select whole object..." }]` |
+ * | Select inner object          | `askObject.inner`              | `a-i` (kakoune: normal), `a-i` (kakoune: insert) | `[".openMenu", { menu: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
+ * | Select to whole object start | `askObject.start`              | `[` (kakoune: normal)                            | `[".openMenu", { menu: "object", pass: [{              where: "start"                  }] }]` |
+ * | Extend to whole object start | `askObject.start.extend`       | `{` (kakoune: normal)                            | `[".openMenu", { menu: "object", pass: [{              where: "start", shift: "extend" }] }]` |
+ * | Select to inner object start | `askObject.inner.start`        | `a-[` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start"                  }] }]` |
+ * | Extend to inner object start | `askObject.inner.start.extend` | `a-{` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start", shift: "extend" }] }]` |
+ * | Select to whole object end   | `askObject.end`                | `]` (kakoune: normal)                            | `[".openMenu", { menu: "object", pass: [{              where: "end"                    }] }]` |
+ * | Extend to whole object end   | `askObject.end.extend`         | `}` (kakoune: normal)                            | `[".openMenu", { menu: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
+ * | Select to inner object end   | `askObject.inner.end`          | `a-]` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"                    }] }]` |
+ * | Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
  */
 export async function object(
   _: Context,

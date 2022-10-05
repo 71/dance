@@ -1,0 +1,7 @@
+en:
+  title: English
+  layouts: [ qwerty ]
+
+fr:
+  title: Français
+  layouts: [ azerty ]

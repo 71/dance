@@ -41,47 +41,49 @@ export async function build(builder: Builder) {
     unorderedAdditionalCommands = commandsWithMissingDependencies;
   }
 
-  return unindent(4, `
-    ${modules.map((module) => unindent(8, `
+  return unindent(4)`
+    ${modules.map((module) => unindent(8)`
         import {${
           module.functions
-            .map((f) => `\n${" ".repeat(14)}${f.name} as ${f.qualifiedName.replace(/\./g, "_")},`)
+            .map((f) => `\n  ${f.name} as ${f.qualifiedName.replace(/\./g, "_")},`)
             .sort()
             .join("")}
         } from "./${module.name}";
-    `).trim()).join("\n\n")}
+    `.trim()).join("\n\n")}
 
     /**
      * All defined Dance commands.
      */
     export const commands: Commands = function () {
       // Normal commands.
-      const commands = {
-        ${modules
+      const commands = {${
+        modules
           .flatMap((m) => m.functions)
-          .map((f) => unindent(4, `"dance.${f.qualifiedName}": new CommandDescriptor(
+          .map((f) => unindent(8)`
+            "dance.${f.qualifiedName}": new CommandDescriptor(
               "dance.${f.qualifiedName}",
               ${determineFunctionExpression(f)},
               ${determineFunctionFlags(f)},
-            ),`))
+            ),`)
           .sort()
-          .join("\n" + " ".repeat(8))}
+          .join("")}
       };
 
-      // Additional commands.
-      ${additionalCommands
-          .map((x) => unindent(6, `describeAdditionalCommand(
+      // Additional commands.${
+        additionalCommands
+          .map((x) => unindent(10)`
+            describeAdditionalCommand(
               commands,
               "dance.${x.qualifiedIdentifier}",
               CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
               [${x.commands}],
-            );`))
-          .join("\n" + " ".repeat(6))}
+            );`)
+          .join("")}
 
       // Finalize \`commands\`.
       return Object.freeze(commands);
     }();
-  `);
+  `;
 }
 
 function determineFunctionExpression(f: Builder.ParsedFunction) {

@@ -10,16 +10,16 @@ import { ArgumentError, CancellationError, InputError } from "../utils/errors";
  * By default, Dance also exports the following keybindings for existing
  * commands:
  *
- * | Keybinding     | Command                                      |
- * | -------------- | -------------------------------------------- |
- * | `s-;` (normal) | `["workbench.action.showCommands", { ... }]` |
+ * | Keybinding           | Command                                      |
+ * | -------------------- | -------------------------------------------- |
+ * | `s-;` (core: normal) | `["workbench.action.showCommands", { ... }]` |
  */
 declare module "./misc";
 
 /**
  * Cancel Dance operation.
  *
- * @keys `escape` (normal, !recording, "!markersNavigationVisible"), `escape` (input)
+ * @keys `escape` (core: normal, !recording, "!markersNavigationVisible"), `escape` (core: input)
  */
 export function cancel(extension: Extension) {
   // Calling a new command resets pending operations, so we don't need to do
@@ -189,7 +189,7 @@ export async function run(
  * press is awaited again and the returned register will be specific to the
  * current document.
  *
- * @keys `"` (normal)
+ * @keys `"` (kakoune: normal)
  * @noreplay
  */
 export async function selectRegister(
@@ -255,18 +255,18 @@ export async function updateRegister(
  *
  * #### Additional keybindings
  *
- * | Title                          | Keybinding                       | Command                              |
- * | ------------------------------ | -------------------------------- | ------------------------------------ |
- * | Add the digit 0 to the counter | `0` (normal), `NumPad0` (normal) | `[".updateCount", { addDigits: 0 }]` |
- * | Add the digit 1 to the counter | `1` (normal), `NumPad1` (normal) | `[".updateCount", { addDigits: 1 }]` |
- * | Add the digit 2 to the counter | `2` (normal), `NumPad2` (normal) | `[".updateCount", { addDigits: 2 }]` |
- * | Add the digit 3 to the counter | `3` (normal), `NumPad3` (normal) | `[".updateCount", { addDigits: 3 }]` |
- * | Add the digit 4 to the counter | `4` (normal), `NumPad4` (normal) | `[".updateCount", { addDigits: 4 }]` |
- * | Add the digit 5 to the counter | `5` (normal), `NumPad5` (normal) | `[".updateCount", { addDigits: 5 }]` |
- * | Add the digit 6 to the counter | `6` (normal), `NumPad6` (normal) | `[".updateCount", { addDigits: 6 }]` |
- * | Add the digit 7 to the counter | `7` (normal), `NumPad7` (normal) | `[".updateCount", { addDigits: 7 }]` |
- * | Add the digit 8 to the counter | `8` (normal), `NumPad8` (normal) | `[".updateCount", { addDigits: 8 }]` |
- * | Add the digit 9 to the counter | `9` (normal), `NumPad9` (normal) | `[".updateCount", { addDigits: 9 }]` |
+ * | Title                          | Keybinding                                   | Command                              |
+ * | ------------------------------ | -------------------------------------------- | ------------------------------------ |
+ * | Add the digit 0 to the counter | `0` (core: normal), `NumPad0` (core: normal) | `[".updateCount", { addDigits: 0 }]` |
+ * | Add the digit 1 to the counter | `1` (core: normal), `NumPad1` (core: normal) | `[".updateCount", { addDigits: 1 }]` |
+ * | Add the digit 2 to the counter | `2` (core: normal), `NumPad2` (core: normal) | `[".updateCount", { addDigits: 2 }]` |
+ * | Add the digit 3 to the counter | `3` (core: normal), `NumPad3` (core: normal) | `[".updateCount", { addDigits: 3 }]` |
+ * | Add the digit 4 to the counter | `4` (core: normal), `NumPad4` (core: normal) | `[".updateCount", { addDigits: 4 }]` |
+ * | Add the digit 5 to the counter | `5` (core: normal), `NumPad5` (core: normal) | `[".updateCount", { addDigits: 5 }]` |
+ * | Add the digit 6 to the counter | `6` (core: normal), `NumPad6` (core: normal) | `[".updateCount", { addDigits: 6 }]` |
+ * | Add the digit 7 to the counter | `7` (core: normal), `NumPad7` (core: normal) | `[".updateCount", { addDigits: 7 }]` |
+ * | Add the digit 8 to the counter | `8` (core: normal), `NumPad8` (core: normal) | `[".updateCount", { addDigits: 8 }]` |
+ * | Add the digit 9 to the counter | `9` (core: normal), `NumPad9` (core: normal) | `[".updateCount", { addDigits: 9 }]` |
  *
  * @noreplay
  */
@@ -373,10 +373,10 @@ export async function openMenu(
  *
  * When showing some menus, Dance can navigate their history:
  *
- * | Keybinding      | Command                                    |
- * | --------------- | ------------------------------------------ |
- * | `up` (prompt)   | `[".changeInput", { action: "previous" }]` |
- * | `down` (prompt) | `[".changeInput", { action: "next"     }]` |
+ * | Keybinding            | Command                                    |
+ * | --------------------- | ------------------------------------------ |
+ * | `up` (core: prompt)   | `[".changeInput", { action: "previous" }]` |
+ * | `down` (core: prompt) | `[".changeInput", { action: "next"     }]` |
  *
  * @noreplay
  */

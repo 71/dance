@@ -9,13 +9,13 @@ declare module "./selections.rotate";
 /**
  * Rotate selections clockwise.
  *
- * @keys `a-(` (normal)
+ * @keys `a-(` (kakoune: normal)
  *
  * The following keybinding is also available:
  *
- * | Title                               | Identifier     | Keybinding     | Command                                          |
- * | ----------------------------------- | -------------- | -------------- | ------------------------------------------------ |
- * | Rotate selections counter-clockwise | `both.reverse` | `a-)` (normal) | `[".selections.rotate.both", { reverse: true }]` |
+ * | Title                               | Identifier     | Keybinding              | Command                                          |
+ * | ----------------------------------- | -------------- | ----------------------- | ------------------------------------------------ |
+ * | Rotate selections counter-clockwise | `both.reverse` | `a-)` (kakoune: normal) | `[".selections.rotate.both", { reverse: true }]` |
  */
 export function both(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
   if (reverse) {
@@ -45,13 +45,13 @@ export function contents(_: Context, repetitions: number, reverse: Argument<bool
 /**
  * Rotate selections clockwise (selections only).
  *
- * @keys `(` (normal)
+ * @keys `(` (kakoune: normal)
  *
  * The following keybinding is also available:
  *
- * | Title                                                 | Identifier           | Keybinding   | Command                                                |
- * | ----------------------------------------------------- | -------------------- | ------------ | ------------------------------------------------------ |
- * | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `)` (normal) | `[".selections.rotate.selections", { reverse: true }]` |
+ * | Title                                                 | Identifier           | Keybinding            | Command                                                |
+ * | ----------------------------------------------------- | -------------------- | --------------------- | ------------------------------------------------------ |
+ * | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `)` (kakoune: normal) | `[".selections.rotate.selections", { reverse: true }]` |
  */
 export function selections(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
   if (reverse) {

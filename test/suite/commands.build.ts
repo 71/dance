@@ -14,7 +14,7 @@ export async function build() {
           contents = await fs.readFile(filePath, "utf-8"),
           { tests } = parseMarkdownTests(contents);
 
-    await fs.writeFile(filePath.replace(/\.md$/, ".test.ts"), unindent(6, `\
+    await fs.writeFile(filePath.replace(/\.md$/, ".test.ts"), unindent(6)`\
       import * as vscode from "vscode";
 
       import { executeCommand, ExpectedDocument, groupTestsByParentName } from "../utils";
@@ -37,24 +37,24 @@ export async function build() {
           await executeCommand("workbench.action.closeActiveEditor");
         });
         ${tests.map((test) => {
-          return unindent(4, `
+          return unindent(10)`
             test("${test.titleParts.join(" > ")}", async function () {
               // Set-up document to be in expected initial state.
               await ExpectedDocument.apply(editor, ${replaceInTest(
-                test.comesAfter, stringifyExpectedDocument(test.comesAfter.code, 16, 6))});
+                test.comesAfter, stringifyExpectedDocument(test.comesAfter.code, 4))});
 
               // Perform all operations.${"\n"
-                + stringifyOperations(test).replace(/^/gm, " ".repeat(14))}
+                + stringifyOperations(test).replace(/^/gm, " ".repeat(4))}
               // Ensure document is as expected.
               ExpectedDocument.assertEquals(editor, "./test/suite/commands/${
                 path.basename(file)}:${test.line + 1}:1", ${replaceInTest(
-                test, stringifyExpectedDocument(test.code, 16, 6))});
-            });`);
+                test, stringifyExpectedDocument(test.code, 4))});
+            });`;
         }).join("\n")}
 
         groupTestsByParentName(this);
       });
-    `));
+    `);
   }
 }
 
