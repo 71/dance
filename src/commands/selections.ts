@@ -9,6 +9,7 @@ import { CharSet, getCharacters } from "../utils/charset";
 import { AutoDisposable } from "../utils/disposables";
 import { ArgumentError, EmptySelectionsError } from "../utils/errors";
 import { unsafeSelections } from "../utils/misc";
+import { newRegExp } from "../utils/regexp";
 import { SettingsValidator } from "../utils/settings-validator";
 import * as TrackedSelection from "../utils/tracked-selection";
 
@@ -361,7 +362,7 @@ export function select(
     promptRegexpOpts("mu"),
     (re, selections) => {
       if (typeof re === "string") {
-        re = new RegExp(re, "mu");
+        re = newRegExp(re, "mu");
       }
 
       Selections.set(Selections.bottomToTop(Selections.selectWithin(re, selections)));
@@ -391,7 +392,7 @@ export function split(
     promptRegexpOpts("mu"),
     (re, selections) => {
       if (typeof re === "string") {
-        re = new RegExp(re, "mu");
+        re = newRegExp(re, "mu");
       }
 
       let split = Selections.split(re, selections);

@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { Context } from "./context";
 import { set as setSelections } from "./selections";
 import { ArgumentError, CancellationError } from "../utils/errors";
+import { newRegExp } from "../utils/regexp";
 
 const actionEvent = new vscode.EventEmitter<Parameters<typeof notifyPromptActionRequested>[0]>();
 
@@ -232,7 +233,7 @@ export function promptRegexpOpts(flags: promptRegexp.Flags): prompt.Options {
       }
 
       try {
-        new RegExp(input, flags);
+        newRegExp(input, flags);
 
         return undefined;
       } catch {
@@ -251,7 +252,7 @@ export function promptRegexp(
   flags: promptRegexp.Flags,
   context = Context.WithoutActiveEditor.current,
 ) {
-  return prompt(promptRegexpOpts(flags), context).then((x) => new RegExp(x, flags));
+  return prompt(promptRegexpOpts(flags), context).then((x) => newRegExp(x, flags));
 }
 
 export declare namespace promptRegexp {

@@ -4,7 +4,7 @@ import type { Argument, RegisterOr } from ".";
 import { search as apiSearch, Context, Direction, EmptySelectionsError, manipulateSelectionsInteractively, Positions, promptRegexpOpts, Selections, Shift } from "../api";
 import type { Register } from "../state/registers";
 import { CharSet, getCharSetFunction } from "../utils/charset";
-import { escapeForRegExp } from "../utils/regexp";
+import { escapeForRegExp, newRegExp } from "../utils/regexp";
 
 /**
  * Search for patterns and replace or add selections.
@@ -32,17 +32,17 @@ export async function search(
   interactive: Argument<boolean> = true,
   shift: Shift = Shift.Jump,
 
-  argument: { re?: string | RegExp },
+  argument: { re?: string | (RegExp & { originalSource?: string }) },
 ) {
   return manipulateSelectionsInteractively(_, "re", argument, interactive, {
     ...promptRegexpOpts("mu"),
     value: (await register.get())?.[0],
   }, async (re, selections) => {
     if (typeof re === "string") {
-      re = new RegExp(re, "mu");
+      re = newRegExp(re, "mu");
     }
 
-    register.set([re.source]);
+    register.set([re.originalSource ?? re.source]);
 
     const newSelections = add ? selections.slice() : [],
           regexpMatches = [] as RegExpMatchArray[];
@@ -74,7 +74,7 @@ export async function search(
     Selections.set(newSelections);
     _.extension.registers.updateRegExpMatches(regexpMatches);
 
-    await register.set([re.source]);
+    await register.set([re.originalSource ?? re.source]);
 
     return re;
   });
@@ -174,7 +174,7 @@ export async function next(
     return;
   }
 
-  const re = new RegExp(reStrs[0], "mu"),
+  const re = newRegExp(reStrs[0], "mu"),
         allRegexpMatches = [] as RegExpMatchArray[],
         selections = _.selections.slice();
   let mainSelection = selections[0];

@@ -53,8 +53,8 @@ depending on the keyboard layout. The following layouts _will be_\* supported:
 <tr><td><a href="#edit.newLine.above"><code>edit.newLine.above</code></a></td><td>Insert new line above each selection</td><td><code>Shift+Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#edit.newLine.below"><code>edit.newLine.below</code></a></td><td>Insert new line below each selection</td><td><code>Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#edit.replaceCharacters"><code>edit.replaceCharacters</code></a></td><td>Replace characters</td><td><code>R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td rowspan=11><a href="#history"><code>history</code></a></td><td><a href="./history.ts#L58"><code>history.repeat.seek</code></a></td><td>Repeat last seek</td><td><code>Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./history.ts#L57"><code>history.repeat.selection</code></a></td><td>Repeat last selection change</td><td></td></tr>
+<tr><td rowspan=11><a href="#history"><code>history</code></a></td><td><a href="./history.ts#L59"><code>history.repeat.seek</code></a></td><td>Repeat last seek</td><td><code>Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./history.ts#L58"><code>history.repeat.selection</code></a></td><td>Repeat last selection change</td><td></td></tr>
 <tr><td><a href="#history.recording.play"><code>history.recording.play</code></a></td><td>Replay recording</td><td><code>Q</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#history.recording.start"><code>history.recording.start</code></a></td><td>Start recording</td><td><code>Shift+Q</code> (<code>editorTextFocus && dance.mode == 'normal' && !dance.isRecording</code>)</td></tr>
 <tr><td><a href="#history.recording.stop"><code>history.recording.stop</code></a></td><td>Stop recording</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'normal' && dance.isRecording</code>)<code>Shift+Q</code> (<code>editorTextFocus && dance.mode == 'normal' && dance.isRecording</code>)</td></tr>
@@ -183,21 +183,21 @@ depending on the keyboard layout. The following layouts _will be_\* supported:
 <tr><td><a href="#selections.save"><code>selections.save</code></a></td><td>Save selections</td><td><code>Shift+Z</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.saveText"><code>selections.saveText</code></a></td><td>Copy selections text</td><td><code>Y</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.select"><code>selections.select</code></a></td><td>Select within selections</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L302"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L301"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L798"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L650"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
-<tr><td><a href="./selections.ts#L649"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L299"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L300"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L876"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
-<tr><td><a href="./selections.ts#L689"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
-<tr><td><a href="./selections.ts#L688"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
-<tr><td><a href="./selections.ts#L255"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L256"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L254"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L568"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L875"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
+<tr><td><a href="./selections.ts#L303"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L302"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L799"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L651"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
+<tr><td><a href="./selections.ts#L650"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L300"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L301"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L877"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
+<tr><td><a href="./selections.ts#L690"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
+<tr><td><a href="./selections.ts#L689"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
+<tr><td><a href="./selections.ts#L256"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L257"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L255"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L569"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L876"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
 <tr><td><a href="#selections.sort"><code>selections.sort</code></a></td><td>Sort selections</td><td></td></tr>
 <tr><td><a href="#selections.split"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.splitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -490,7 +490,7 @@ Interact with history.
 
 <a name="history.undo" />
 
-### [`history.undo`](./history.ts#L14-L19)
+### [`history.undo`](./history.ts#L15-L20)
 
 Undo.
 
@@ -502,7 +502,7 @@ Default keybinding: `u` (kakoune: normal)
 
 <a name="history.redo" />
 
-### [`history.redo`](./history.ts#L23-L28)
+### [`history.redo`](./history.ts#L24-L29)
 
 Redo.
 
@@ -514,7 +514,7 @@ Default keybinding: `s-u` (kakoune: normal)
 
 <a name="history.undo.selections" />
 
-### [`history.undo.selections`](./history.ts#L32-L37)
+### [`history.undo.selections`](./history.ts#L33-L38)
 
 Undo a change of selections.
 
@@ -526,7 +526,7 @@ Default keybinding: `a-u` (kakoune: normal)
 
 <a name="history.redo.selections" />
 
-### [`history.redo.selections`](./history.ts#L41-L46)
+### [`history.redo.selections`](./history.ts#L42-L47)
 
 Redo a change of selections.
 
@@ -538,7 +538,7 @@ Default keybinding: `s-a-u` (kakoune: normal)
 
 <a name="history.repeat" />
 
-### [`history.repeat`](./history.ts#L50-L65)
+### [`history.repeat`](./history.ts#L51-L66)
 
 Repeat last change.
 
@@ -554,7 +554,7 @@ This command:
 
 <a name="history.repeat.edit" />
 
-### [`history.repeat.edit`](./history.ts#L97-L103)
+### [`history.repeat.edit`](./history.ts#L98-L104)
 
 Repeat last edit without a command.
 
@@ -567,7 +567,7 @@ Default keybinding: `.` (kakoune: normal)
 
 <a name="history.recording.play" />
 
-### [`history.recording.play`](./history.ts#L139-L150)
+### [`history.recording.play`](./history.ts#L140-L151)
 
 Replay recording.
 
@@ -581,7 +581,7 @@ Default keybinding: `q` (kakoune: normal)
 
 <a name="history.recording.start" />
 
-### [`history.recording.start`](./history.ts#L166-L175)
+### [`history.recording.start`](./history.ts#L167-L176)
 
 Start recording.
 
@@ -593,7 +593,7 @@ Default keybinding: `s-q` (kakoune: normal, !recording)
 
 <a name="history.recording.stop" />
 
-### [`history.recording.stop`](./history.ts#L187-L196)
+### [`history.recording.stop`](./history.ts#L188-L197)
 
 Stop recording.
 
@@ -925,7 +925,7 @@ Search.
 
 This command:
 - accepts a register (by default, it uses `slash`).
-- accepts an argument of type `{ re?: string | RegExp }`.
+- accepts an argument of type `{ re?: string | (RegExp & { originalSource?: string }) }`.
 - may be repeated with a given number of repetitions.
 - takes an argument `add` of type `boolean`.
 - takes an argument `interactive` of type `boolean`.
@@ -1326,7 +1326,7 @@ Interacting with selections.
 
 <a name="selections.saveText" />
 
-### [`selections.saveText`](./selections.ts#L20-L29)
+### [`selections.saveText`](./selections.ts#L21-L30)
 
 Copy selections text.
 
@@ -1338,7 +1338,7 @@ Default keybinding: `y` (kakoune: normal)
 
 <a name="selections.save" />
 
-### [`selections.save`](./selections.ts#L33-L47)
+### [`selections.save`](./selections.ts#L34-L48)
 
 Save selections.
 
@@ -1353,7 +1353,7 @@ Default keybinding: `s-z` (kakoune: normal)
 
 <a name="selections.restore" />
 
-### [`selections.restore`](./selections.ts#L94-L102)
+### [`selections.restore`](./selections.ts#L95-L103)
 
 Restore selections.
 
@@ -1365,7 +1365,7 @@ Default keybinding: `z` (kakoune: normal)
 
 <a name="selections.restore.withCurrent" />
 
-### [`selections.restore.withCurrent`](./selections.ts#L114-L134)
+### [`selections.restore.withCurrent`](./selections.ts#L115-L135)
 
 Combine register selections with current ones.
 
@@ -1387,7 +1387,7 @@ Default keybinding: `a-z` (kakoune: normal)
 
 <a name="selections.pipe" />
 
-### [`selections.pipe`](./selections.ts#L240-L262)
+### [`selections.pipe`](./selections.ts#L241-L263)
 
 Pipe selections.
 
@@ -1413,7 +1413,7 @@ Default keybinding: `a-|` (kakoune: normal)
 
 <a name="selections.filter" />
 
-### [`selections.filter`](./selections.ts#L290-L312)
+### [`selections.filter`](./selections.ts#L291-L313)
 
 Filter selections.
 
@@ -1438,7 +1438,7 @@ Default keybinding: `$` (kakoune: normal)
 
 <a name="selections.select" />
 
-### [`selections.select`](./selections.ts#L345-L355)
+### [`selections.select`](./selections.ts#L346-L356)
 
 Select within selections.
 
@@ -1451,7 +1451,7 @@ Default keybinding: `s` (kakoune: normal)
 
 <a name="selections.split" />
 
-### [`selections.split`](./selections.ts#L374-L385)
+### [`selections.split`](./selections.ts#L375-L386)
 
 Split selections.
 
@@ -1465,7 +1465,7 @@ Default keybinding: `s-s` (kakoune: normal)
 
 <a name="selections.splitLines" />
 
-### [`selections.splitLines`](./selections.ts#L410-L421)
+### [`selections.splitLines`](./selections.ts#L411-L422)
 
 Split selections at line boundaries.
 
@@ -1478,7 +1478,7 @@ Default keybinding: `a-s` (kakoune: normal)
 
 <a name="selections.expandToLines" />
 
-### [`selections.expandToLines`](./selections.ts#L464-L471)
+### [`selections.expandToLines`](./selections.ts#L465-L472)
 
 Expand to lines.
 
@@ -1490,7 +1490,7 @@ Default keybinding: `a-x` (kakoune: normal)
 
 <a name="selections.trimLines" />
 
-### [`selections.trimLines`](./selections.ts#L498-L505)
+### [`selections.trimLines`](./selections.ts#L499-L506)
 
 Trim lines.
 
@@ -1502,7 +1502,7 @@ Default keybinding: `s-a-x` (kakoune: normal)
 
 <a name="selections.trimWhitespace" />
 
-### [`selections.trimWhitespace`](./selections.ts#L530-L537)
+### [`selections.trimWhitespace`](./selections.ts#L531-L538)
 
 Trim whitespace.
 
@@ -1514,7 +1514,7 @@ Default keybinding: `_` (kakoune: normal)
 
 <a name="selections.reduce" />
 
-### [`selections.reduce`](./selections.ts#L556-L575)
+### [`selections.reduce`](./selections.ts#L557-L576)
 
 Reduce selections to their cursor.
 
@@ -1534,7 +1534,7 @@ Default keybinding: `;` (kakoune: normal)
 
 <a name="selections.changeDirection" />
 
-### [`selections.changeDirection`](./selections.ts#L637-L652)
+### [`selections.changeDirection`](./selections.ts#L638-L653)
 
 Change direction of selections.
 
@@ -1552,7 +1552,7 @@ Default keybinding: `a-;` (kakoune: normal)
 
 <a name="selections.changeOrder" />
 
-### [`selections.changeOrder`](./selections.ts#L677-L691)
+### [`selections.changeOrder`](./selections.ts#L678-L692)
 
 Reverse selections.
 
@@ -1566,7 +1566,7 @@ Reverse selections.
 
 <a name="selections.sort" />
 
-### [`selections.sort`](./selections.ts#L704-L716)
+### [`selections.sort`](./selections.ts#L705-L717)
 
 Sort selections.
 
@@ -1577,7 +1577,7 @@ This command:
 
 <a name="selections.copy" />
 
-### [`selections.copy`](./selections.ts#L789-L807)
+### [`selections.copy`](./selections.ts#L790-L808)
 
 Copy selections below.
 
@@ -1595,7 +1595,7 @@ Default keybinding: `s-c` (kakoune: normal)
 
 <a name="selections.merge" />
 
-### [`selections.merge`](./selections.ts#L841-L846)
+### [`selections.merge`](./selections.ts#L842-L847)
 
 Merge contiguous selections.
 
@@ -1605,13 +1605,13 @@ Default keybinding: `a-_` (kakoune: normal)
 
 <a name="selections.open" />
 
-### [`selections.open`](./selections.ts#L850-L853)
+### [`selections.open`](./selections.ts#L851-L854)
 
 Open selected file.
 
 <a name="selections.toggleIndices" />
 
-### [`selections.toggleIndices`](./selections.ts#L866-L883)
+### [`selections.toggleIndices`](./selections.ts#L867-L884)
 
 Toggle selection indices.
 

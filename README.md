@@ -158,6 +158,9 @@ A few changes were made from Kakoune, mostly out of personal preference, and to
 make the extension integrate better with VS Code.
 
 - The default yank register `"` maps to the system clipboard.
+- [`RegExp`](https://developer.mozilla.org/docs/Web/JavaScript/Guide/Regular_Expressions)s
+  given to Dance commands support being given additional flags with the `(?i)`
+  syntax (but **only** at the start of the pattern).
 - Registers can have arbitrary names. If the name of a register starts with a
   single space character, it will be local to the current document.
 - When using the default configuration (that is to say, these settings can be

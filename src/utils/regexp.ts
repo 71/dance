@@ -1738,3 +1738,28 @@ export function execRange(text: string, re: RegExp) {
 
   return sections;
 }
+
+/**
+ * Internal version of `new RegExp` with support for flags specified with e.g.
+ * `(?i)`.
+ */
+export function newRegExp(pattern: string | RegExp, flags: string = "") {
+  if (pattern instanceof RegExp) {
+    pattern = pattern.source;
+  }
+
+  const originalSource = pattern;
+  let m;
+
+  while (m = /^\(\?([gimsuy]+)\)/.exec(pattern)) {
+    for (const ch of m[1]) {
+      if (!flags.includes(ch)) {
+        flags += ch;
+      }
+    }
+
+    pattern = pattern.slice(m[0].length);
+  }
+
+  return Object.assign(new RegExp(pattern, flags), { originalSource });
+}

@@ -5,6 +5,7 @@ import type { Context } from "../api";
 import { ActiveRecording, Cursor, Entry } from "../state/recorder";
 import type { Register } from "../state/registers";
 import { ArgumentError } from "../utils/errors";
+import { newRegExp } from "../utils/regexp";
 
 /**
  * Interact with history.
@@ -64,7 +65,7 @@ export async function repeat(
   filter: Argument<string | RegExp> = /.+/,
 ) {
   if (typeof filter === "string") {
-    filter = new RegExp(filter, "u");
+    filter = newRegExp(filter, "u");
   }
 
   let commandDescriptor: CommandDescriptor,
