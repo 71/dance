@@ -191,6 +191,7 @@ import {
 import {
   cancel as cancel,
   changeInput as changeInput,
+  ifEmpty as ifEmpty,
   ignore as ignore,
   openMenu as openMenu,
   run as run,
@@ -212,6 +213,7 @@ import {
 
 import {
   enclosing as seek_enclosing,
+  leap as seek_leap,
   object as seek_object,
   seek as seek,
   word as seek_word,
@@ -413,6 +415,11 @@ export const commands: Commands = function () {
       (_) => _.runAsync((_) => history_undo_selections()),
       CommandDescriptor.Flags.None,
     ),
+    "dance.ifEmpty": new CommandDescriptor(
+      "dance.ifEmpty",
+      (_, argument) => _.runAsync((_) => ifEmpty(_, argument, _.selections, argument["then"], argument["otherwise"])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
     "dance.ignore": new CommandDescriptor(
       "dance.ignore",
       (_) => _.runAsync((_) => ignore()),
@@ -466,6 +473,11 @@ export const commands: Commands = function () {
     "dance.seek.enclosing": new CommandDescriptor(
       "dance.seek.enclosing",
       (_, argument) => _.runAsync((_) => seek_enclosing(_, getDirection(argument), getShift(argument), argument["open"], argument["pairs"])),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    "dance.seek.leap": new CommandDescriptor(
+      "dance.seek.leap",
+      (_, argument) => _.runAsync((_) => seek_leap(_, getDirection(argument), argument["labels"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.seek.object": new CommandDescriptor(
@@ -1024,6 +1036,12 @@ export const commands: Commands = function () {
   );
   describeAdditionalCommand(
     commands,
+    "dance.seek.leap.backward",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".seek.leap", { direction: -1, $exclude: [] }]],
+  );
+  describeAdditionalCommand(
+    commands,
     "dance.select.down.jump",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".select.vertically", { direction: 1, shift: "jump" , $exclude: [] }]],
@@ -1225,6 +1243,18 @@ export const commands: Commands = function () {
     "dance.selections.clear.main",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".selections.filter", { expression: "i !== count" , $exclude: [] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.selections.select.orLeap",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".ifEmpty", { then: [[".seek.leap", { $exclude: [] }]], otherwise: [[".selections.select", { $exclude: [] }]] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.selections.splitLines.orLeap.backward",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".ifEmpty", { then: [[".seek.leap", { direction: -1, $exclude: [] }]], otherwise: [[".selections.splitLines", { $exclude: [] }]] }]],
   );
   describeAdditionalCommand(
     commands,

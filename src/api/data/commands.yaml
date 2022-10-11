@@ -544,6 +544,17 @@ history.undo.selections:
     en: |+
       Undo a change of selections.
 
+ifEmpty:
+  title:
+    en: |-
+      Executes one of the specified commands depending on whether the current
+      selections are empty
+
+  doc:
+    en: |
+      Executes one of the specified commands depending on whether the current
+      selections are empty.
+
 ignore:
   title:
     en: Ignore key
@@ -1208,6 +1219,29 @@ seek.included.extend.backward:
   keys:
     qwerty: |-
       `s-a-f` (kakoune: normal)
+
+seek.leap:
+  title:
+    en: Leap forward
+
+  doc:
+    en: |
+      Leap forward.
+
+      Inspired by [`leap.nvim`](https://github.com/ggandor/leap.nvim).
+
+      #### Variants
+
+      | Title         | Identifier      | Command                                  |
+      | ------------- | --------------- | ---------------------------------------- |
+      | Leap backward | `leap.backward` | `[".seek.leap", { direction: -1, ... }]` |
+
+seek.leap.backward:
+  title:
+    en: Leap backward
+
+  commands: |-
+    [".seek.leap", { direction: -1, $exclude: [] }]
 
 seek.object:
   title:
@@ -2326,13 +2360,26 @@ selections.select:
   title:
     en: Select within selections
 
+  doc:
+    en: |
+      Select within selections.
+
+      #### Variants
+
+      | Title          | Identifier      | Keybinding            | Command                                                                                           |
+      | -------------- | --------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
+      | Leap or select | `select.orLeap` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
+
+selections.select.orLeap:
+  title:
+    en: Leap or select
+
+  commands: |-
+    [".ifEmpty", { then: [[".seek.leap", { $exclude: [] }]], otherwise: [[".selections.select", { $exclude: [] }]] }]
+
   keys:
     qwerty: |-
       `s` (kakoune: normal)
-
-  doc:
-    en: |+
-      Select within selections.
 
 selections.showIndices:
   title:
@@ -2366,13 +2413,26 @@ selections.splitLines:
   title:
     en: Split selections at line boundaries
 
+  doc:
+    en: |
+      Split selections at line boundaries.
+
+      #### Variants
+
+      | Title                   | Identifier                   | Keybinding              | Command                                                                                                              |
+      | ----------------------- | ---------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+      | Leap or select backward | `splitLines.orLeap.backward` | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
+
+selections.splitLines.orLeap.backward:
+  title:
+    en: Leap or select backward
+
+  commands: |-
+    [".ifEmpty", { then: [[".seek.leap", { direction: -1, $exclude: [] }]], otherwise: [[".selections.splitLines", { $exclude: [] }]] }]
+
   keys:
     qwerty: |-
       `a-s` (kakoune: normal)
-
-  doc:
-    en: |+
-      Split selections at line boundaries.
 
 selections.toggleIndices:
   title:

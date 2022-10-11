@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
 
 import type { Argument, InputOr } from ".";
-import { closestSurroundedBy, Context, Direction, keypress, Lines, moveToExcluded, moveWhileBackward, moveWhileForward, Objects, Pair, pair, Positions, prompt, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
+import { closestSurroundedBy, command, Context, Direction, keypress, Lines, moveToExcluded, moveWhileBackward, moveWhileForward, Objects, Pair, pair, Positions, prompt, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
 import { CharSet } from "../utils/charset";
 import { ArgumentError, assert } from "../utils/errors";
 import { escapeForRegExp, execRange } from "../utils/regexp";
+import * as TrackedSelection from "../utils/tracked-selection";
 
 /**
  * Update selections based on the text surrounding them.
@@ -491,6 +492,237 @@ export async function object(
   }
 
   throw new Error("unknown object " + JSON.stringify(input));
+}
+
+/**
+ * Leap forward.
+ *
+ * Inspired by [`leap.nvim`](https://github.com/ggandor/leap.nvim).
+ *
+ * #### Variants
+ *
+ * | Title         | Identifier      | Command                                  |
+ * | ------------- | --------------- | ---------------------------------------- |
+ * | Leap backward | `leap.backward` | `[".seek.leap", { direction: -1, ... }]` |
+ */
+export async function leap(
+  _: Context,
+
+  direction: Direction = Direction.Forward,
+  labels: Argument<string> = "sft",
+) {
+  ArgumentError.validate("labels", !labels.includes(" "), "must not contain a space ' '");
+
+  labels = labels.toLowerCase();
+
+  ArgumentError.validate(
+    "labels", new Set(labels).size === [...labels].length, "must not reuse characters");
+
+  const editor = _.editor,
+        doc = _.document,
+        highlightColor = new vscode.ThemeColor("inputValidation.errorBackground"),
+        dimHighlightColor = new vscode.ThemeColor("inputValidation.warningBackground"),
+        foregroundColor = new vscode.ThemeColor("input.foreground"),
+        dimForegroundColor = new vscode.ThemeColor("input.foreground"),
+        renderOptions: vscode.DecorationRenderOptions = {
+          borderColor: highlightColor,
+          borderStyle: "solid",
+          borderWidth: "1px",
+        },
+        activeLabeledSets: TrackedSelection.StyledSet[] = [],
+        inactiveLabeledSets: TrackedSelection.StyledSet[] = [],
+        activeLabelRenderOptions: vscode.ThemableDecorationAttachmentRenderOptions = {
+          ...renderOptions,
+          backgroundColor: highlightColor,
+          color: foregroundColor,
+        },
+        inactiveLabelRenderOptions: vscode.ThemableDecorationAttachmentRenderOptions = {
+          ...renderOptions,
+          borderColor: dimHighlightColor,
+          backgroundColor: dimHighlightColor,
+          color: dimForegroundColor,
+        },
+        addSelection = (
+          labeledSets: TrackedSelection.StyledSet[],
+          labeledRenderOptions: vscode.ThemableDecorationAttachmentRenderOptions,
+          selection: vscode.Selection,
+          i: number) => {
+          if (i < labeledSets.length) {
+            labeledSets[i].addSelection(selection);
+          } else {
+            labeledSets[i] = new TrackedSelection.StyledSet(
+              TrackedSelection.fromArray([selection], doc),
+              _.getState(),
+              {
+                ...renderOptions,
+                after: {
+                  ...labeledRenderOptions,
+                  contentText: labels[i],
+                },
+              },
+            );
+          }
+
+          return labeledSets[i];
+        };
+
+  // Highlight character pairs starting with the first specified characters.
+  const cutoffPosition = _.mainSelection.active,
+        endPosition = direction === Direction.Forward ? Positions.last(doc) : Positions.zero,
+        allowedRange = new vscode.Range(cutoffPosition, endPosition),
+        firstChar = await keypress(_),
+        pairSelections = Selections.selectWithin(
+          new RegExp(escapeForRegExp(firstChar) + ".?", "is"),
+          editor.visibleRanges.flatMap((range) => {
+            const intersection = range.intersection(allowedRange);
+
+            return intersection === undefined ? [] : [Selections.fromRange(intersection)];
+          })),
+        secondCharToUnlabeledSelection: Record<string, vscode.Selection> = {},
+        secondCharToLabeledSelections: Record<string, [vscode.Selection, TrackedSelection.StyledSet][]> = {};
+
+  Selections.sort(direction, pairSelections);
+
+  for (const pairSelection of pairSelections) {
+    const text = Selections.text(pairSelection, doc),
+          secondChar = text.length === 1 ? "\n" : text[1];
+
+    if (secondChar in secondCharToUnlabeledSelection) {
+      const labeledSelectionsForSecondChar = (secondCharToLabeledSelections[secondChar] ??= []),
+            length = labeledSelectionsForSecondChar.length,
+            labeledSet = length < labels.length
+              ? addSelection(activeLabeledSets, activeLabelRenderOptions, pairSelection, length)
+              : addSelection(
+                inactiveLabeledSets, inactiveLabelRenderOptions, pairSelection,
+                length % labels.length);
+
+      labeledSelectionsForSecondChar.push([pairSelection, labeledSet]);
+    } else {
+      secondCharToUnlabeledSelection[secondChar] = pairSelection;
+    }
+  }
+
+  const unlabeledSelections = Object.values(secondCharToUnlabeledSelection),
+        unlabeledSelectionsSet = new TrackedSelection.StyledSet(
+          TrackedSelection.fromArray(unlabeledSelections, doc), _.getState(), renderOptions);
+
+  try {
+    // Get second character and jump to it.
+    const secondChar = await keypress(_),
+          unlabeledSelection = secondCharToUnlabeledSelection[secondChar];
+
+    if (unlabeledSelection === undefined) {
+      return;
+    }
+
+    Selections.set([Selections.empty(unlabeledSelection.start)], _);
+
+    // Save relevant labeled selections to ensure we don't hide them below.
+    const labeledSelections = secondCharToLabeledSelections[secondChar]?.map((x) => x[0]);
+
+    if (labeledSelections === undefined || labeledSelections.length === 0) {
+      // There are no labels yet, we can just stop.
+      return;
+    }
+
+    delete secondCharToLabeledSelections[secondChar];
+
+    // Hide irrelevant selections.
+    const selectionsToDeletePerSet = new Map<TrackedSelection.StyledSet, vscode.Selection[]>();
+
+    for (const [selection, styledSet] of Object.values(secondCharToLabeledSelections).flat(1)) {
+      let arr = selectionsToDeletePerSet.get(styledSet);
+
+      if (arr === undefined) {
+        selectionsToDeletePerSet.set(styledSet, arr = []);
+      }
+
+      arr.push(selection);
+    }
+
+    for (const [styledSet, selections] of selectionsToDeletePerSet) {
+      if (selections.length === styledSet.length) {
+        styledSet.dispose();
+      } else {
+        styledSet.deleteSelections(selections);
+      }
+    }
+
+    // Listen to jumps to labels.
+    let offset = 0;
+
+    for (;;) {
+      const labelChar = await keypress(_);
+
+      if (labelChar === " ") {
+        // Rotate active labeled selections.
+        if (labels.length >= labeledSelections.length) {
+          continue;
+        }
+
+        // Add new inactive selections.
+        for (let i = 0; i < labels.length; i++) {
+          if (offset + i < labeledSelections.length) {
+            const labeledSelection = labeledSelections[offset + i];
+
+            // Use `addSelection` in case the inactive set does not exist yet.
+            addSelection(inactiveLabeledSets, inactiveLabelRenderOptions, labeledSelection, i);
+            activeLabeledSets[i].deleteSelections([labeledSelection]);
+          } else {
+            inactiveLabeledSets[i].clearSelections();
+          }
+        }
+
+        // Rotate offset.
+        if (offset + labels.length >= labeledSelections.length) {
+          offset = 0;
+        } else {
+          offset += labels.length;
+        }
+
+        // Add new active selections.
+        for (let i = 0; i < labels.length; i++) {
+          if (offset + i < labeledSelections.length) {
+            const labeledSelection = labeledSelections[offset + i];
+
+            activeLabeledSets[i].addSelection(labeledSelection);
+            inactiveLabeledSets[i].deleteSelections([labeledSelection]);
+          } else {
+            activeLabeledSets[i].clearSelections();
+          }
+        }
+
+        continue;
+      }
+
+      const index = labels.indexOf(labelChar.toLowerCase());
+
+      if (index === -1) {
+        // User did not select a label, resume normally.
+
+        // TODO: this does not properly execute the command bound to
+        // `labelChar`, probably because VS Code did not have the time to switch
+        // to the previous mode.
+        // A way to fix this would be to bind `dance.cancel` (renamed
+        // `dance.intercept`) to _all_ keybindings, gated by a VS Code `context`
+        // that only intercepts keys in a given array.
+        // Then `dance.intercept` would also specify which keybinding was hit.
+        return;
+      }
+
+      // Jump to label.
+      const selection = labeledSelections[offset + index];
+
+      Selections.set([Selections.empty(selection.start)], _);
+
+      return;
+    }
+  } finally {
+    unlabeledSelectionsSet.dispose();
+
+    activeLabeledSets.forEach((set) => set.dispose());
+    inactiveLabeledSets.forEach((set) => set.dispose());
+  }
 }
 
 function preprocessRegExp(re: string) {

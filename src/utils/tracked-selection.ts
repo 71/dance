@@ -216,6 +216,10 @@ export class Set implements vscode.Disposable {
     return this._onDisposed.event;
   }
 
+  public get length() {
+    return this._selections.length / 2;
+  }
+
   public constructor(
     selections: Array,
     public readonly document: vscode.TextDocument,
@@ -240,6 +244,32 @@ export class Set implements vscode.Disposable {
 
   public addSelection(selection: vscode.Selection) {
     return this.addArray(fromArray([selection], this.document));
+  }
+
+  public deleteSelections(selections: readonly vscode.Selection[]) {
+    const array = fromArray(selections, this.document),
+          thisArray = this._selections as number[];
+
+    for (let i = 0; i < array.length; i += 2) {
+      const anchorOffset = array[i],
+            activeOffset = array[i + 1];
+
+      for (let j = thisArray.indexOf(anchorOffset);
+        j !== -1;
+        j = thisArray.indexOf(anchorOffset, j + 1)) {
+        if (j + 1 < thisArray.length && thisArray[j + 1] === activeOffset) {
+          thisArray.splice(j, 2);
+          j -= 2;
+        }
+      }
+    }
+
+    return this;
+  }
+
+  public clearSelections() {
+    (this._selections as number[]) = [];
+    return this;
   }
 
   /**
@@ -302,6 +332,28 @@ export class StyledSet extends Set {
         break;
       }
     }
+
+    return this;
+  }
+
+  public override deleteSelections(selections: readonly vscode.Selection[]) {
+    const lenBefore = this.length;
+
+    if (super.deleteSelections(selections).length !== lenBefore) {
+      this._updateDecorations();
+    }
+
+    return this;
+  }
+
+  public override clearSelections() {
+    if (this.length === 0) {
+      return this;
+    }
+
+    super.clearSelections();
+
+    this._updateDecorations();
 
     return this;
   }

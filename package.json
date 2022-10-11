@@ -1102,6 +1102,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.ifEmpty",
+        "title": "Executes one of the specified commands depending on whether the current\nselections are empty",
+        "category": "Dance"
+      },
+      {
         "command": "dance.ignore",
         "title": "Ignore key",
         "category": "Dance"
@@ -1339,6 +1344,16 @@
       {
         "command": "dance.seek.included.extend.backward",
         "title": "Extend to character (included, backward)",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.leap",
+        "title": "Leap forward",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.leap.backward",
+        "title": "Leap backward",
         "category": "Dance"
       },
       {
@@ -1752,6 +1767,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.selections.select.orLeap",
+        "title": "Leap or select",
+        "category": "Dance"
+      },
+      {
         "command": "dance.selections.showIndices",
         "title": "Show selection indices",
         "category": "Dance"
@@ -1769,6 +1789,11 @@
       {
         "command": "dance.selections.splitLines",
         "title": "Split selections at line boundaries",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.selections.splitLines.orLeap.backward",
+        "title": "Leap or select backward",
         "category": "Dance"
       },
       {
@@ -1997,6 +2022,10 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.ifEmpty",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.ignore",
           "when": "dance.mode == 'normal'"
         },
@@ -2186,6 +2215,14 @@
         },
         {
           "command": "dance.seek.included.extend.backward",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.leap",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.leap.backward",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -2517,6 +2554,10 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.selections.select.orLeap",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.selections.showIndices",
           "when": "dance.mode == 'normal'"
         },
@@ -2530,6 +2571,10 @@
         },
         {
           "command": "dance.selections.splitLines",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.selections.splitLines.orLeap.backward",
           "when": "dance.mode == 'normal'"
         },
         {
@@ -3759,8 +3804,8 @@
       {
         "key": "S",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select within selections",
-        "command": "dance.selections.select"
+        "title": "Leap or select",
+        "command": "dance.selections.select.orLeap"
       },
       {
         "key": "Shift+S",
@@ -3771,8 +3816,8 @@
       {
         "key": "Alt+S",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Split selections at line boundaries",
-        "command": "dance.selections.splitLines"
+        "title": "Leap or select backward",
+        "command": "dance.selections.splitLines.orLeap.backward"
       },
       {
         "key": "Enter",

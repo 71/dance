@@ -1,5 +1,6 @@
+import * as vscode from "vscode";
 import type { Argument, InputOr, RegisterOr } from ".";
-import { run as apiRun, buildCommands, command, compileFunction, Context, findMenu, keypressForRegister, Menu, notifyPromptActionRequested, prompt, promptNumber, runIsEnabled, showLockedMenu, showMenu, showMenuAfterDelay, validateMenu } from "../api";
+import { run as apiRun, buildCommands, command, compileFunction, Context, findMenu, keypressForRegister, Menu, notifyPromptActionRequested, prompt, promptNumber, runIsEnabled, Selections, showLockedMenu, showMenu, showMenuAfterDelay, validateMenu } from "../api";
 import type { Extension } from "../state/extension";
 import type { Register } from "../state/registers";
 import { ArgumentError, CancellationError, InputError } from "../utils/errors";
@@ -390,4 +391,26 @@ export function changeInput(
   );
 
   notifyPromptActionRequested(action);
+}
+
+/**
+ * Executes one of the specified commands depending on whether the current
+ * selections are empty.
+ */
+export async function ifEmpty(
+  _: Context,
+  argument: {},
+  selections: readonly vscode.Selection[],
+
+  then?: Argument<command.Any[]>,
+  otherwise?: Argument<command.Any[]>,
+) {
+  const selectionsAreEmpty =
+    selections.every((selection) => selection.isEmpty || Selections.isSingleCharacter(selection));
+
+  if (selectionsAreEmpty) {
+    return then !== undefined && await buildCommands(then, _.extension)(argument, _);
+  }
+
+  return otherwise !== undefined && await buildCommands(otherwise, _.extension)(argument, _);
 }

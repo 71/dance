@@ -1793,6 +1793,14 @@ export function fromStartEnd(
 }
 
 /**
+ * Returns a selection whose anchor is `range.start`, and active position
+ * `range.end`.
+ */
+export function fromRange(range: vscode.Range) {
+  return new vscode.Selection(range.start, range.end);
+}
+
+/**
  * Returns the selection with the given anchor and active positions.
  */
 export function fromAnchorActive(

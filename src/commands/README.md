@@ -65,8 +65,10 @@ depending on the keyboard layout. The following layouts _will be_\* supported:
 <tr><td><a href="#history.undo"><code>history.undo</code></a></td><td>Undo</td><td><code>U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#history.undo.selections"><code>history.undo.selections</code></a></td><td>Undo a change of selections</td><td><code>Alt+U</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td rowspan=1><a href="#keybindings"><code>keybindings</code></a></td><td><a href="#keybindings.setup"><code>keybindings.setup</code></a></td><td>Set up Dance keybindings</td><td></td></tr>
-<tr><td rowspan=8><a href="#misc"><code>misc</code></a></td><td><a href="#cancel"><code>cancel</code></a></td><td>Cancel Dance operation</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'normal' && !dance.isRecording && !markersNavigationVisible</code>)<code>Escape</code> (<code>editorTextFocus && dance.mode == 'input'</code>)</td></tr>
+<tr><td rowspan=9><a href="#misc"><code>misc</code></a></td><td><a href="#cancel"><code>cancel</code></a></td><td>Cancel Dance operation</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'normal' && !dance.isRecording && !markersNavigationVisible</code>)<code>Escape</code> (<code>editorTextFocus && dance.mode == 'input'</code>)</td></tr>
 <tr><td><a href="#changeInput"><code>changeInput</code></a></td><td>Change current input</td><td></td></tr>
+<tr><td><a href="#ifEmpty"><code>ifEmpty</code></a></td><td>Executes one of the specified commands depending on whether the current
+selections are empty</td><td></td></tr>
 <tr><td><a href="#ignore"><code>ignore</code></a></td><td>Ignore key</td><td></td></tr>
 <tr><td><a href="#openMenu"><code>openMenu</code></a></td><td>Open menu</td><td></td></tr>
 <tr><td><a href="#run"><code>run</code></a></td><td>Run code</td><td></td></tr>
@@ -93,40 +95,42 @@ depending on the keyboard layout. The following layouts _will be_\* supported:
 <tr><td><a href="./search.ts#L160"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./search.ts#L90"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#search.selection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Shift+Alt+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td rowspan=35><a href="#seek"><code>seek</code></a></td><td><a href="#seek.enclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td rowspan=37><a href="#seek"><code>seek</code></a></td><td><a href="#seek.enclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="#seek.leap"><code>seek.leap</code></a></td><td>Leap forward</td><td></td></tr>
 <tr><td><a href="#seek.object"><code>seek.object</code></a></td><td>Select object</td><td></td></tr>
 <tr><td><a href="#seek.seek"><code>seek.seek</code></a></td><td>Select to character (excluded)</td><td><code>T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L269"><code>seek.askObject</code></a></td><td>Select whole object</td><td><code>Alt+A</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+A</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L275"><code>seek.askObject.end</code></a></td><td>Select to whole object end</td><td><code>]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L276"><code>seek.askObject.end.extend</code></a></td><td>Extend to whole object end</td><td><code>Shift+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L270"><code>seek.askObject.inner</code></a></td><td>Select inner object</td><td><code>Alt+I</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+I</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L277"><code>seek.askObject.inner.end</code></a></td><td>Select to inner object end</td><td><code>Alt+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L278"><code>seek.askObject.inner.end.extend</code></a></td><td>Extend to inner object end</td><td><code>Shift+Alt+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L273"><code>seek.askObject.inner.start</code></a></td><td>Select to inner object start</td><td><code>Alt+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L274"><code>seek.askObject.inner.start.extend</code></a></td><td>Extend to inner object start</td><td><code>Shift+Alt+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L271"><code>seek.askObject.start</code></a></td><td>Select to whole object start</td><td><code>[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L272"><code>seek.askObject.start.extend</code></a></td><td>Extend to whole object start</td><td><code>Shift+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L24"><code>seek.backward</code></a></td><td>Select to character (excluded, backward)</td><td><code>Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L89"><code>seek.enclosing.backward</code></a></td><td>Select to previous enclosing character</td><td><code>Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L88"><code>seek.enclosing.extend</code></a></td><td>Extend to next enclosing character</td><td><code>Shift+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L90"><code>seek.enclosing.extend.backward</code></a></td><td>Extend to previous enclosing character</td><td><code>Shift+Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L23"><code>seek.extend</code></a></td><td>Extend to character (excluded)</td><td><code>Shift+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L25"><code>seek.extend.backward</code></a></td><td>Extend to character (excluded, backward)</td><td><code>Shift+Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L26"><code>seek.included</code></a></td><td>Select to character (included)</td><td><code>F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L28"><code>seek.included.backward</code></a></td><td>Select to character (included, backward)</td><td><code>Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L27"><code>seek.included.extend</code></a></td><td>Extend to character (included)</td><td><code>Shift+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L29"><code>seek.included.extend.backward</code></a></td><td>Extend to character (included, backward)</td><td><code>Shift+Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L184"><code>seek.word.backward</code></a></td><td>Select to previous word start</td><td><code>B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L183"><code>seek.word.extend</code></a></td><td>Extend to next word start</td><td><code>Shift+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L185"><code>seek.word.extend.backward</code></a></td><td>Extend to previous word start</td><td><code>Shift+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L186"><code>seek.word.ws</code></a></td><td>Select to next non-whitespace word start</td><td><code>Alt+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L188"><code>seek.word.ws.backward</code></a></td><td>Select to previous non-whitespace word start</td><td><code>Alt+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L187"><code>seek.word.ws.extend</code></a></td><td>Extend to next non-whitespace word start</td><td><code>Shift+Alt+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L189"><code>seek.word.ws.extend.backward</code></a></td><td>Extend to previous non-whitespace word start</td><td><code>Shift+Alt+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L190"><code>seek.wordEnd</code></a></td><td>Select to next word end</td><td><code>E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L191"><code>seek.wordEnd.extend</code></a></td><td>Extend to next word end</td><td><code>Shift+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L192"><code>seek.wordEnd.ws</code></a></td><td>Select to next non-whitespace word end</td><td><code>Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./seek.ts#L193"><code>seek.wordEnd.ws.extend</code></a></td><td>Extend to next non-whitespace word end</td><td><code>Shift+Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L270"><code>seek.askObject</code></a></td><td>Select whole object</td><td><code>Alt+A</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+A</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L276"><code>seek.askObject.end</code></a></td><td>Select to whole object end</td><td><code>]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L277"><code>seek.askObject.end.extend</code></a></td><td>Extend to whole object end</td><td><code>Shift+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L271"><code>seek.askObject.inner</code></a></td><td>Select inner object</td><td><code>Alt+I</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+I</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L278"><code>seek.askObject.inner.end</code></a></td><td>Select to inner object end</td><td><code>Alt+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L279"><code>seek.askObject.inner.end.extend</code></a></td><td>Extend to inner object end</td><td><code>Shift+Alt+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L274"><code>seek.askObject.inner.start</code></a></td><td>Select to inner object start</td><td><code>Alt+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L275"><code>seek.askObject.inner.start.extend</code></a></td><td>Extend to inner object start</td><td><code>Shift+Alt+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L272"><code>seek.askObject.start</code></a></td><td>Select to whole object start</td><td><code>[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L273"><code>seek.askObject.start.extend</code></a></td><td>Extend to whole object start</td><td><code>Shift+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L25"><code>seek.backward</code></a></td><td>Select to character (excluded, backward)</td><td><code>Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L90"><code>seek.enclosing.backward</code></a></td><td>Select to previous enclosing character</td><td><code>Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L89"><code>seek.enclosing.extend</code></a></td><td>Extend to next enclosing character</td><td><code>Shift+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L91"><code>seek.enclosing.extend.backward</code></a></td><td>Extend to previous enclosing character</td><td><code>Shift+Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L24"><code>seek.extend</code></a></td><td>Extend to character (excluded)</td><td><code>Shift+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L26"><code>seek.extend.backward</code></a></td><td>Extend to character (excluded, backward)</td><td><code>Shift+Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L27"><code>seek.included</code></a></td><td>Select to character (included)</td><td><code>F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L29"><code>seek.included.backward</code></a></td><td>Select to character (included, backward)</td><td><code>Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L28"><code>seek.included.extend</code></a></td><td>Extend to character (included)</td><td><code>Shift+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L30"><code>seek.included.extend.backward</code></a></td><td>Extend to character (included, backward)</td><td><code>Shift+Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L506"><code>seek.leap.backward</code></a></td><td>Leap backward</td><td></td></tr>
+<tr><td><a href="./seek.ts#L185"><code>seek.word.backward</code></a></td><td>Select to previous word start</td><td><code>B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L184"><code>seek.word.extend</code></a></td><td>Extend to next word start</td><td><code>Shift+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L186"><code>seek.word.extend.backward</code></a></td><td>Extend to previous word start</td><td><code>Shift+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L187"><code>seek.word.ws</code></a></td><td>Select to next non-whitespace word start</td><td><code>Alt+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L189"><code>seek.word.ws.backward</code></a></td><td>Select to previous non-whitespace word start</td><td><code>Alt+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L188"><code>seek.word.ws.extend</code></a></td><td>Extend to next non-whitespace word start</td><td><code>Shift+Alt+W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L190"><code>seek.word.ws.extend.backward</code></a></td><td>Extend to previous non-whitespace word start</td><td><code>Shift+Alt+B</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L191"><code>seek.wordEnd</code></a></td><td>Select to next word end</td><td><code>E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L192"><code>seek.wordEnd.extend</code></a></td><td>Extend to next word end</td><td><code>Shift+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L193"><code>seek.wordEnd.ws</code></a></td><td>Select to next non-whitespace word end</td><td><code>Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./seek.ts#L194"><code>seek.wordEnd.ws.extend</code></a></td><td>Extend to next non-whitespace word end</td><td><code>Shift+Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#seek.word"><code>seek.word</code></a></td><td>Select to next word start</td><td><code>W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td rowspan=41><a href="#select"><code>select</code></a></td><td><a href="#select.buffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#select.firstVisibleLine"><code>select.firstVisibleLine</code></a></td><td>Select to first visible line</td><td></td></tr>
@@ -169,7 +173,7 @@ depending on the keyboard layout. The following layouts _will be_\* supported:
 <tr><td><a href="./select.ts#L43"><code>select.up.jump</code></a></td><td>Jump up</td><td><code>K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Up</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#select.to"><code>select.to</code></a></td><td>Select to</td><td></td></tr>
 <tr><td><a href="#select.vertically"><code>select.vertically</code></a></td><td>Select vertically</td><td></td></tr>
-<tr><td rowspan=35><a href="#selections"><code>selections</code></a></td><td><a href="#selections.changeDirection"><code>selections.changeDirection</code></a></td><td>Change direction of selections</td><td><code>Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td rowspan=37><a href="#selections"><code>selections</code></a></td><td><a href="#selections.changeDirection"><code>selections.changeDirection</code></a></td><td>Change direction of selections</td><td><code>Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.changeOrder"><code>selections.changeOrder</code></a></td><td>Reverse selections</td><td></td></tr>
 <tr><td><a href="#selections.copy"><code>selections.copy</code></a></td><td>Copy selections below</td><td><code>Shift+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.expandToLines"><code>selections.expandToLines</code></a></td><td>Expand to lines</td><td><code>Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -182,25 +186,27 @@ depending on the keyboard layout. The following layouts _will be_\* supported:
 <tr><td><a href="#selections.restore.withCurrent"><code>selections.restore.withCurrent</code></a></td><td>Combine register selections with current ones</td><td><code>Alt+Z</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.save"><code>selections.save</code></a></td><td>Save selections</td><td><code>Shift+Z</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.saveText"><code>selections.saveText</code></a></td><td>Copy selections text</td><td><code>Y</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="#selections.select"><code>selections.select</code></a></td><td>Select within selections</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="#selections.select"><code>selections.select</code></a></td><td>Select within selections</td><td></td></tr>
 <tr><td><a href="./selections.ts#L303"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./selections.ts#L302"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>Space</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L799"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L651"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
-<tr><td><a href="./selections.ts#L650"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L808"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L660"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
+<tr><td><a href="./selections.ts#L659"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./selections.ts#L300"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./selections.ts#L301"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L877"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
-<tr><td><a href="./selections.ts#L690"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
-<tr><td><a href="./selections.ts#L689"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
+<tr><td><a href="./selections.ts#L886"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
+<tr><td><a href="./selections.ts#L699"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
+<tr><td><a href="./selections.ts#L698"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
 <tr><td><a href="./selections.ts#L256"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./selections.ts#L257"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./selections.ts#L255"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L569"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L876"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
+<tr><td><a href="./selections.ts#L578"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L353"><code>selections.select.orLeap</code></a></td><td>Leap or select</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L885"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
+<tr><td><a href="./selections.ts#L422"><code>selections.splitLines.orLeap.backward</code></a></td><td>Leap or select backward</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.sort"><code>selections.sort</code></a></td><td>Sort selections</td><td></td></tr>
 <tr><td><a href="#selections.split"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="#selections.splitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="#selections.splitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td></td></tr>
 <tr><td><a href="#selections.toggleIndices"><code>selections.toggleIndices</code></a></td><td>Toggle selection indices</td><td><code>Enter</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.trimLines"><code>selections.trimLines</code></a></td><td>Trim lines</td><td><code>Shift+Alt+X</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.trimWhitespace"><code>selections.trimWhitespace</code></a></td><td>Trim whitespace</td><td><code>Shift+-</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -630,7 +636,7 @@ commands:
 
 <a name="cancel" />
 
-### [`cancel`](./misc.ts#L19-L24)
+### [`cancel`](./misc.ts#L20-L25)
 
 Cancel Dance operation.
 
@@ -643,7 +649,7 @@ Default keybinding: `escape` (core: normal, !recording, "!markersNavigationVisib
 
 <a name="ignore" />
 
-### [`ignore`](./misc.ts#L30-L33)
+### [`ignore`](./misc.ts#L31-L34)
 
 Ignore key.
 
@@ -652,7 +658,7 @@ This command:
 
 <a name="run" />
 
-### [`run`](./misc.ts#L39-L148)
+### [`run`](./misc.ts#L40-L149)
 
 Run code.
 
@@ -762,7 +768,7 @@ This command:
 
 <a name="selectRegister" />
 
-### [`selectRegister`](./misc.ts#L184-L198)
+### [`selectRegister`](./misc.ts#L185-L199)
 
 Select register for next command.
 
@@ -779,7 +785,7 @@ Default keybinding: `"` (kakoune: normal)
 
 <a name="updateRegister" />
 
-### [`updateRegister`](./misc.ts#L214-L225)
+### [`updateRegister`](./misc.ts#L215-L226)
 
 Update the contents of a register.
 
@@ -790,7 +796,7 @@ This command:
 
 <a name="updateCount" />
 
-### [`updateCount`](./misc.ts#L251-L280)
+### [`updateCount`](./misc.ts#L252-L281)
 
 Update Dance count.
 
@@ -819,7 +825,7 @@ This command:
 
 <a name="openMenu" />
 
-### [`openMenu`](./misc.ts#L308-L330)
+### [`openMenu`](./misc.ts#L309-L331)
 
 Open menu.
 
@@ -843,7 +849,7 @@ This command:
 
 <a name="changeInput" />
 
-### [`changeInput`](./misc.ts#L371-L385)
+### [`changeInput`](./misc.ts#L372-L386)
 
 Change current input.
 
@@ -857,6 +863,18 @@ When showing some menus, Dance can navigate their history:
 
 This command:
 - does not require an active text editor.
+
+<a name="ifEmpty" />
+
+### [`ifEmpty`](./misc.ts#L396-L407)
+
+Executes one of the specified commands depending on whether the current
+selections are empty.
+
+This command:
+- accepts an argument of type `{}`.
+- takes an argument `otherwise` of type `command.Any[]`.
+- takes an argument `then` of type `command.Any[]`.
 
 ## [`modes`](./modes.ts)
 
@@ -977,7 +995,7 @@ Update selections based on the text surrounding them.
 
 <a name="seek.seek" />
 
-### [`seek.seek`](./seek.ts#L14-L39)
+### [`seek.seek`](./seek.ts#L15-L40)
 
 Select to character (excluded).
 
@@ -1003,7 +1021,7 @@ Default keybinding: `t` (kakoune: normal)
 
 <a name="seek.enclosing" />
 
-### [`seek.enclosing`](./seek.ts#L79-L99)
+### [`seek.enclosing`](./seek.ts#L80-L100)
 
 Select to next enclosing character.
 
@@ -1024,7 +1042,7 @@ Default keybinding: `m` (kakoune: normal)
 
 <a name="seek.word" />
 
-### [`seek.word`](./seek.ts#L172-L203)
+### [`seek.word`](./seek.ts#L173-L204)
 
 Select to next word start.
 
@@ -1056,7 +1074,7 @@ Default keybinding: `w` (kakoune: normal)
 
 <a name="seek.object" />
 
-### [`seek.object`](./seek.ts#L247-L287)
+### [`seek.object`](./seek.ts#L248-L288)
 
 Select object.
 
@@ -1093,6 +1111,23 @@ This command:
 - takes an argument `inner` of type `boolean`.
 - takes an argument `where` of type `"start" | "end"`.
 - takes an input `input` of type `string`.
+
+<a name="seek.leap" />
+
+### [`seek.leap`](./seek.ts#L497-L513)
+
+Leap forward.
+
+Inspired by [`leap.nvim`](https://github.com/ggandor/leap.nvim).
+
+#### Variants
+
+| Title         | Identifier      | Command                                  |
+| ------------- | --------------- | ---------------------------------------- |
+| Leap backward | `leap.backward` | `[".seek.leap", { direction: -1, ... }]` |
+
+This command:
+- takes an argument `labels` of type `string`.
 
 ## [`select`](./select.ts)
 
@@ -1438,20 +1473,23 @@ Default keybinding: `$` (kakoune: normal)
 
 <a name="selections.select" />
 
-### [`selections.select`](./selections.ts#L346-L356)
+### [`selections.select`](./selections.ts#L346-L360)
 
 Select within selections.
 
+#### Variants
+
+| Title          | Identifier      | Keybinding            | Command                                                                                           |
+| -------------- | --------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
+| Leap or select | `select.orLeap` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
 
 This command:
 - accepts an argument of type `{ re?: string | RegExp }`.
 - takes an argument `interactive` of type `boolean`.
 
-Default keybinding: `s` (kakoune: normal)
-
 <a name="selections.split" />
 
-### [`selections.split`](./selections.ts#L375-L386)
+### [`selections.split`](./selections.ts#L379-L390)
 
 Split selections.
 
@@ -1465,20 +1503,23 @@ Default keybinding: `s-s` (kakoune: normal)
 
 <a name="selections.splitLines" />
 
-### [`selections.splitLines`](./selections.ts#L411-L422)
+### [`selections.splitLines`](./selections.ts#L415-L431)
 
 Split selections at line boundaries.
 
+#### Variants
+
+| Title                   | Identifier                   | Keybinding              | Command                                                                                                              |
+| ----------------------- | ---------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Leap or select backward | `splitLines.orLeap.backward` | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `excludeEol` of type `boolean`.
 
-Default keybinding: `a-s` (kakoune: normal)
-
 <a name="selections.expandToLines" />
 
-### [`selections.expandToLines`](./selections.ts#L465-L472)
+### [`selections.expandToLines`](./selections.ts#L474-L481)
 
 Expand to lines.
 
@@ -1490,7 +1531,7 @@ Default keybinding: `a-x` (kakoune: normal)
 
 <a name="selections.trimLines" />
 
-### [`selections.trimLines`](./selections.ts#L499-L506)
+### [`selections.trimLines`](./selections.ts#L508-L515)
 
 Trim lines.
 
@@ -1502,7 +1543,7 @@ Default keybinding: `s-a-x` (kakoune: normal)
 
 <a name="selections.trimWhitespace" />
 
-### [`selections.trimWhitespace`](./selections.ts#L531-L538)
+### [`selections.trimWhitespace`](./selections.ts#L540-L547)
 
 Trim whitespace.
 
@@ -1514,7 +1555,7 @@ Default keybinding: `_` (kakoune: normal)
 
 <a name="selections.reduce" />
 
-### [`selections.reduce`](./selections.ts#L557-L576)
+### [`selections.reduce`](./selections.ts#L566-L585)
 
 Reduce selections to their cursor.
 
@@ -1534,7 +1575,7 @@ Default keybinding: `;` (kakoune: normal)
 
 <a name="selections.changeDirection" />
 
-### [`selections.changeDirection`](./selections.ts#L638-L653)
+### [`selections.changeDirection`](./selections.ts#L647-L662)
 
 Change direction of selections.
 
@@ -1552,7 +1593,7 @@ Default keybinding: `a-;` (kakoune: normal)
 
 <a name="selections.changeOrder" />
 
-### [`selections.changeOrder`](./selections.ts#L678-L692)
+### [`selections.changeOrder`](./selections.ts#L687-L701)
 
 Reverse selections.
 
@@ -1566,7 +1607,7 @@ Reverse selections.
 
 <a name="selections.sort" />
 
-### [`selections.sort`](./selections.ts#L705-L717)
+### [`selections.sort`](./selections.ts#L714-L726)
 
 Sort selections.
 
@@ -1577,7 +1618,7 @@ This command:
 
 <a name="selections.copy" />
 
-### [`selections.copy`](./selections.ts#L790-L808)
+### [`selections.copy`](./selections.ts#L799-L817)
 
 Copy selections below.
 
@@ -1595,7 +1636,7 @@ Default keybinding: `s-c` (kakoune: normal)
 
 <a name="selections.merge" />
 
-### [`selections.merge`](./selections.ts#L842-L847)
+### [`selections.merge`](./selections.ts#L851-L856)
 
 Merge contiguous selections.
 
@@ -1605,13 +1646,13 @@ Default keybinding: `a-_` (kakoune: normal)
 
 <a name="selections.open" />
 
-### [`selections.open`](./selections.ts#L851-L854)
+### [`selections.open`](./selections.ts#L860-L863)
 
 Open selected file.
 
 <a name="selections.toggleIndices" />
 
-### [`selections.toggleIndices`](./selections.ts#L867-L884)
+### [`selections.toggleIndices`](./selections.ts#L876-L893)
 
 Toggle selection indices.
 

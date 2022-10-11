@@ -346,7 +346,11 @@ export function filter(
 /**
  * Select within selections.
  *
- * @keys `s` (kakoune: normal)
+ * #### Variants
+ *
+ * | Title          | Identifier      | Keybinding            | Command                                                                                           |
+ * | -------------- | --------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
+ * | Leap or select | `select.orLeap` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
  */
 export function select(
   _: Context,
@@ -411,13 +415,18 @@ export function split(
 /**
  * Split selections at line boundaries.
  *
- * @keys `a-s` (kakoune: normal)
+ * #### Variants
+ *
+ * | Title                   | Identifier                   | Keybinding              | Command                                                                                                              |
+ * | ----------------------- | ---------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
+ * | Leap or select backward | `splitLines.orLeap.backward` | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
  */
 export function splitLines(
   _: Context,
   document: vscode.TextDocument,
   selections: readonly vscode.Selection[],
   repetitions: number,
+
   excludeEol: Argument<boolean> = false,
 ) {
   const newSelections = [] as vscode.Selection[],
