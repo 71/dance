@@ -83,7 +83,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   name: "dance",
   description: "Kakoune-inspired key bindings, modes, menus and scripting.",
-  version: "0.5.11",
+  version: "0.5.12",
   license: "ISC",
 
   author: {
@@ -116,6 +116,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
+    "publish:pre": "vsce publish --allow-star-activation --pre-release",
   },
 
   devDependencies: {

@@ -1,7 +1,7 @@
 {
   "name": "dance",
   "description": "Kakoune-inspired key bindings, modes, menus and scripting.",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "license": "ISC",
   "author": {
     "name": "Grégoire Geis",
@@ -28,7 +28,8 @@
     "compile-web:watch": "webpack --watch --config ./webpack.web.config.js",
     "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package --allow-star-activation",
-    "publish": "vsce publish --allow-star-activation"
+    "publish": "vsce publish --allow-star-activation",
+    "publish:pre": "vsce publish --allow-star-activation --pre-release"
   },
   "devDependencies": {
     "@types/glob": "^7.2.0",
