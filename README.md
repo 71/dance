@@ -1,3 +1,17 @@
+## Dance with Helix bindings
+This is a modification to the [Dance](https://github.com/71/dance) VsCode
+extension, that aims to replace the [Kakoune][kakoune]-inspired 
+Keybindings with [Helix](https://helix-editor.com) inspired keybindings 
+
+*** This is a WIP ***
+
+A lot of stuff is working, but there are key things that are missing, broken or untestet!
+
+For example match-mode is pretty broken at the current time
+
+
+Original README:
+
 # Dance
 
 [Kakoune]-inspired key bindings, modes, menus and scripting for
