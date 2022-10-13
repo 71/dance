@@ -45,13 +45,15 @@ export function contents(_: Context, repetitions: number, reverse: Argument<bool
 /**
  * Rotate selections clockwise (selections only).
  *
- * @keys `(` (normal)
+ * TODO: ( seems to be broken. Fix it...
+ *
+ * @keys `(` (normal), `(` (visual)
  *
  * The following keybinding is also available:
  *
- * | Title                                                 | Identifier           | Keybinding   | Command                                                |
- * | ----------------------------------------------------- | -------------------- | ------------ | ------------------------------------------------------ |
- * | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `)` (normal) | `[".selections.rotate.selections", { reverse: true }]` |
+ * | Title                                                 | Identifier           | Keybinding                 | Command                                                |
+ * | ----------------------------------------------------- | -------------------- | -------------------------- | ------------------------------------------------------ |
+ * | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `)` (normal), `)` (visual) | `[".selections.rotate.selections", { reverse: true }]` |
  */
 export function selections(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
   if (reverse) {

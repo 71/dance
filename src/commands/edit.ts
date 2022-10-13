@@ -29,18 +29,18 @@ declare module "./edit";
  *
  * #### Additional commands
  *
- * | Title                              | Identifier              | Keybinding                     | Commands                                                                                                                       |
- * | ---------------------------------- | ----------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
- * | Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                                |
- * | Paste before                       | `paste.before`          | `s-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
- * | Paste after                        | `paste.after`           | `p` (normal)                   | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                               |
- * | Paste before and select            | `paste.before.select`   | `s-a-p` (normal)               | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                              |
- * | Paste after and select             | `paste.after.select`    | `a-p` (normal)                 | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                              |
- * | Delete                             | `delete`                | `a-d` (normal)                 | `[".edit.insert", { register: "_", ... }]`                                                                                     |
- * | Delete and switch to Insert        | `delete-insert`         | `a-c` (normal)                 | `[".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]`                                          |
- * | Copy and delete                    | `yank-delete`           | `d` (normal)                   | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
- * | Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal)                   | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
- * | Copy and replace                   | `yank-replace`          | `s-r` (normal)                 | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]`               |
+ * | Title                              | Identifier              | Keybinding                                     | Commands                                                                                                                       |
+ * | ---------------------------------- | ----------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+ * | Pick register and replace          | `selectRegister-insert` | `c-r` (normal), `c-r` (insert), `c-r` (insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                                |
+ * | Paste before                       | `paste.before`          | `s-p` (normal), `s-p` (visual)                 | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
+ * | Paste after                        | `paste.after`           | `p` (normal), `p` (visual)                     | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                               |
+ * | Paste before and select            | `paste.before.select`   | `s-a-p` (normal), `s-a-p` (visual)             | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                              |
+ * | Paste after and select             | `paste.after.select`    | `a-p` (normal), `a-p` (visual)                 | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                              |
+ * | Delete                             | `delete`                | `a-d` (normal), `a-d` (visual)                 | `[".edit.insert", { register: "_", ... }]`                                                                                     |
+ * | Delete and switch to Insert        | `delete-insert`         | `a-c` (normal), `a-c` (visual)                 | `[".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]`                                          |
+ * | Copy and delete                    | `yank-delete`           | `d` (normal), `d` (visual)                     | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
+ * | Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (normal), `c` (visual)                     | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
+ * | Copy and replace                   | `yank-replace`          | `s-r` (normal), `s-r` (visual)                 | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]`               |
  */
 export async function insert(
   _: Context,
@@ -119,7 +119,7 @@ export async function insert(
 /**
  * Join lines.
  *
- * @keys `a-j` (normal)
+ * @keys `s-j` (normal), `s-j` (visual)
  */
 export function join(_: Context, separator?: Argument<string>) {
   return joinLines(Selections.lines(), separator);
@@ -137,7 +137,7 @@ export async function join_select(_: Context, separator?: Argument<string>) {
 /**
  * Indent selected lines.
  *
- * @keys `>` (normal)
+ * @keys `>` (normal), `>` (visual)
  */
 export function indent(_: Context, repetitions: number) {
   return indentLines(Selections.lines(), repetitions, /* indentEmpty= */ false);
@@ -146,7 +146,7 @@ export function indent(_: Context, repetitions: number) {
 /**
  * Indent selected lines (including empty lines).
  *
- * @keys `a->` (normal)
+ * @keys `a->` (normal), `a->` (visual)
  */
 export function indent_withEmpty(_: Context, repetitions: number) {
   return indentLines(Selections.lines(), repetitions, /* indentEmpty= */ true);
@@ -155,7 +155,7 @@ export function indent_withEmpty(_: Context, repetitions: number) {
 /**
  * Deindent selected lines.
  *
- * @keys `a-<` (normal)
+ * @keys `a-<` (normal), `a-<` (visual)
  */
 export function deindent(_: Context, repetitions: number) {
   return deindentLines(Selections.lines(), repetitions, /* deindentIncomplete= */ false);
@@ -164,7 +164,7 @@ export function deindent(_: Context, repetitions: number) {
 /**
  * Deindent selected lines (including incomplete indent).
  *
- * @keys `<` (normal)
+ * @keys `<` (normal), `<` (visual)
  */
 export function deindent_withIncomplete(_: Context, repetitions: number) {
   return deindentLines(Selections.lines(), repetitions, /* deindentIncomplete= */ true);
@@ -173,7 +173,7 @@ export function deindent_withIncomplete(_: Context, repetitions: number) {
 /**
  * Transform to lower case.
  *
- * @keys `` ` `` (normal)
+ * @keys `` ` `` (normal), `` ` `` (visual)
  */
 export function case_toLower(_: Context) {
   return replace((text) => text.toLocaleLowerCase());
@@ -182,7 +182,7 @@ export function case_toLower(_: Context) {
 /**
  * Transform to upper case.
  *
- * @keys `` s-` `` (normal)
+ * @keys `` a-` `` (normal), `` a-` `` (visual)
  */
 export function case_toUpper(_: Context) {
   return replace((text) => text.toLocaleUpperCase());
@@ -191,7 +191,7 @@ export function case_toUpper(_: Context) {
 /**
  * Swap case.
  *
- * @keys `` a-` `` (normal)
+ * @keys `~` (normal), `~` (visual)
  */
 export function case_swap(_: Context) {
   return replace((text) => {
@@ -211,7 +211,7 @@ export function case_swap(_: Context) {
 /**
  * Replace characters.
  *
- * @keys `r` (normal)
+ * @keys `r` (normal), `r` (visual)
  */
 export async function replaceCharacters(
   _: Context,
@@ -266,7 +266,7 @@ export async function replaceCharacters(
  * Align selections, aligning the cursor of each selection by inserting spaces
  * before the first character of each selection.
  *
- * @keys `&` (normal)
+ * @keys `&` (normal), `&` (visual)
  */
 export function align(
   _: Context,
@@ -294,7 +294,7 @@ export function align(
  * Copy the indentation of the main selection (or the count one if a count is
  * given) to all other ones.
  *
- * @keys `a-&` (normal)
+ * @keys `a-&` (normal), `a-&` (visual)
  */
 export function copyIndentation(
   _: Context,
@@ -338,13 +338,13 @@ export function copyIndentation(
  *
  * `select` is deprecated; use `shift` with `"select"` instead.
  *
- * @keys `s-a-o` (normal)
+ * @keys `s-a-o` (normal), `s-a-o` (visual)
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding     | Commands                                                                          |
- * | ------------------------------------------ | ---------------------- | -------------- | --------------------------------------------------------------------------------- |
- * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before", { ... }]` |
+ * | Title                                      | Identifier             | Keybinding                     | Commands                                                                          |
+ * | ------------------------------------------ | ---------------------- | ------------------------------ | --------------------------------------------------------------------------------- |
+ * | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (normal), `s-o` (visual) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before", { ... }]` |
  */
 export function newLine_above(
   _: Context,
@@ -379,13 +379,13 @@ export function newLine_above(
  *
  * `select` is deprecated; use `shift` with `"select"` instead.
  *
- * @keys `a-o` (normal)
+ * @keys `a-o` (normal), `a-o` (visual)
  *
  * #### Additional keybindings
  *
- * | Title                                      | Identifier             | Keybinding   | Commands                                                                          |
- * | ------------------------------------------ | ---------------------- | ------------ | --------------------------------------------------------------------------------- |
- * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before", { ... }]` |
+ * | Title                                      | Identifier             | Keybinding                 | Commands                                                                          |
+ * | ------------------------------------------ | ---------------------- | -------------------------- | --------------------------------------------------------------------------------- |
+ * | Insert new line below and switch to insert | `newLine.below.insert` | `o` (normal), `o` (visual) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before", { ... }]` |
  */
 export function newLine_below(
   _: Context,

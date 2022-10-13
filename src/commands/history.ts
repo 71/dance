@@ -14,7 +14,7 @@ declare module "./history";
 /**
  * Undo.
  *
- * @keys `u` (normal)
+ * @keys `u` (normal), `u` (visual)
  */
 export function undo() {
   return vscode.commands.executeCommand("undo");
@@ -23,7 +23,7 @@ export function undo() {
 /**
  * Redo.
  *
- * @keys `s-u` (normal)
+ * @keys `s-u` (normal), `s-u` (visual)
  */
 export function redo() {
   return vscode.commands.executeCommand("redo");
@@ -97,7 +97,7 @@ export async function repeat(
 /**
  * Repeat last edit without a command.
  *
- * @keys `.` (normal), `NumPad_Decimal` (normal)
+ * @keys `.` (normal), `NumPad_Decimal` (normal), `.` (visual), `NumPad_Decimal` (visual)
  * @noreplay
  */
 export async function repeat_edit(_: Context, repetitions: number) {
@@ -139,7 +139,7 @@ export async function repeat_edit(_: Context, repetitions: number) {
 /**
  * Replay recording.
  *
- * @keys `q` (normal)
+ * @keys `q` (normal), `q` (visual)
  * @noreplay
  */
 export async function recording_play(
@@ -166,7 +166,7 @@ const recordingPerRegister = new WeakMap<Register, ActiveRecording>();
 /**
  * Start recording.
  *
- * @keys `s-q` (normal, !recording)
+ * @keys `s-q` (normal, !recording), `s-q` (visual, !recording)
  * @noreplay
  */
 export function recording_start(
@@ -187,7 +187,7 @@ export function recording_start(
 /**
  * Stop recording.
  *
- * @keys `escape` (normal, recording), `s-q` (normal, recording)
+ * @keys `escape` (normal, recording), `s-q` (normal, recording), `escape` (visual, recording), `s-q` (visual, recording)
  * @noreplay
  */
 export function recording_stop(

@@ -306,9 +306,36 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               ],
             },
             visual: {
+              cursorStyle: "block",
+              selectionBehavior: "character",
+              decorations: {
+                applyTo: "main",
+                backgroundColor: "$merge.incomingContentBackground",
+                isWholeLine: true,
+              },
+              onEnterMode: [
+                [".selections.restore", { register: " ^", try: true }],
+              ],
+              onLeaveMode: [
+                [".selections.save", {
+                  register: " ^",
+                  style: {
+                    borderColor: "$editor.selectionBackground",
+                    borderStyle: "solid",
+                    borderWidth: "2px",
+                    borderRadius: "1px",
+                  },
+                  until: [
+                    ["mode-did-change", { include: "normal" }],
+                    ["selections-did-change"],
+                  ],
+                }],
+              ],
             },
             normal: {
               lineNumbers: "relative",
+              cursorStyle: "block",
+              selectionBehavior: "character",
               decorations: {
                 applyTo: "main",
                 backgroundColor: "$editor.hoverHighlightBackground",
@@ -456,10 +483,144 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 },
               }))(),
             },
+            "match": {
+              title: "Match...",
+              items: {
+                "m": {
+                  text: "Goto matching bracket",
+                  command: "dance.seek.enclosing",
+                },
+                "s": {
+                  text: "Sorround add",
+                  command: "dance.match.sorround",
+                },
+                "r": {
+                  text: "Sorround replace",
+                  command: "dance.match.sorroundreplace",
+                  // args: [{ input: "\\((?#inner)\\)" }],
+                },
+                "d": {
+                  text: "Sorround delete",
+                  command: "dance.seek.enclosing",
+                  // args: [{ input: "\\((?#inner)\\)" }],
+                },
+                "a": {
+                  text: "Select around object",
+                  command: "dance.match.openObjectMenu",
+                  // args: [{ input: "\\((?#inner)\\)" }],
+                },
+                "i": {
+                  text: "Select inside object",
+                  command: "dance.misc.openMenu",
+                  // args: [{ input: "\\((?#inner)\\)" }],
+                },
+              },
+            },
 
+            "space": {
+              title: "Space",
+              items: {
+                "f": {
+                  text: "Open file picker",
+                  command: "workbench.action.quickOpen",
+                },
+                // "F": {
+                //   text: "Open file picker at current working directory?",
+                //   command: "",
+                // },
+                "b": {
+                  text: "Open buffer picker",
+                  command: "workbench.action.showAllEditors",
+                },
+                "s": {
+                  text: "Open symbol picker",
+                  command: "workbench.action.gotoSymbol",
+                },
+                // "S": {
+                //   text: "Global symbol picker",
+                //   command: "Currently not possible?",
+                // },
+                "a": {
+                  text: "Perform code action",
+                  command: "editor.action.quickFix",
+                },
+                // "'": {
+                //   text: "Open last picker",
+                //   command: "Currently not possible/necessary?",
+                // },
+                "d": {
+                  text: "Start debug",
+                  command: "workbench.action.debug.start",
+                },
+                // "w": {
+                //   text: "Window",
+                //   command: "",
+                // },
+                "y": {
+                  text: "Join and yank selections to clipboard",
+                  command: "dance.selections.saveText",
+                  args: [{
+                    register: "",
+                  }],
+                },
+                // "Y": {
+                //   text: "Yank main selection to clipboard",
+                //   command: "dance.selections.saveText",
+                // },
+                "p": {
+                  text: "Paste clipboard after selections",
+                  command: "dance.edit.insert",
+                  args: [{
+                    handleNewLine: true,
+                    where: "end",
+                  }],
+                },
+                // There is a zero width space (U+200B) behind the P.
+                // This is a dirty hack. Otherwise vscode will think its the same as lowecase p
+                // Any other symbol would also work, but this one is invisible
+                "P​": {
+                  text: "Paste clipboard after selections",
+                  command: "dance.edit.insert",
+                  args: [{
+                    handleNewLine: true,
+                    where: "start",
+                  }],
+                },
+                "/": {
+                  text: "Global Search in workspace folder",
+                  command: "workbench.action.findInFiles",
+                },
+                "k": {
+                  text: "Show docs for item under cursor (hover)",
+                  command: "editor.action.showHover",
+                },
+                "r": {
+                  text: "Rename symbol",
+                  command: "editor.action.rename",
+                },
+                "?": {
+                  text: "Open command palette",
+                  command: "workbench.action.showCommands",
+                },
+              },
+            },
             "goto": {
               title: "Go...",
               items: {
+                "g": {
+                  text: "to first line",
+                  command: "dance.select.lineStart",
+                  args: [{ count: 1 }],
+                },
+                "e": {
+                  text: "to last char of last line",
+                  command: "dance.select.lineEnd",
+                  args: [{ count: 2 ** 31 - 1 }],
+                },
+                "f": {
+                  text: "to file whose name is selected",
+                  command: "dance.selections.open",
+                },
                 "h": {
                   text: "to line start",
                   command: "dance.select.lineStart",
@@ -468,24 +629,10 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                   text: "to line end",
                   command: "dance.select.lineEnd",
                 },
-                "i": {
+                "s": {
                   text: "to non-blank line start",
                   command: "dance.select.lineStart",
                   args: [{ skipBlank: true }],
-                },
-                "gk": {
-                  text: "to first line",
-                  command: "dance.select.lineStart",
-                  args: [{ count: 1 }],
-                },
-                "j": {
-                  text: "to last line",
-                  command: "dance.select.lastLine",
-                },
-                "e": {
-                  text: "to last char of last line",
-                  command: "dance.select.lineEnd",
-                  args: [{ count: 2 ** 31 - 1 }],
                 },
                 "t": {
                   text: "to first displayed line",
@@ -499,19 +646,121 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                   text: "to last displayed line",
                   command: "dance.select.lastVisibleLine",
                 },
+                "d": {
+                  text: "to definition",
+                  command: "editor.action.revealDefinitiong",
+                },
+                "y": {
+                  text: "to type definition",
+                  command: "editor.action.goToTypeDefinition",
+                },
+                "r": {
+                  text: "to references",
+                  command: "editor.action.goToReferences",
+                },
+                "i": {
+                  text: "to implementation",
+                  command: "editor.action.goToImplementation",
+                },
                 "a": {
-                  text: "to last buffer",
+                  text: "to last accessed buffer",
                   command: "workbench.action.openPreviousRecentlyUsedEditorInGroup",
                 },
-                "f": {
-                  text: "to file whose name is selected",
-                  command: "dance.selections.open",
+                // Currently not possible
+                // "m": {
+                //   text: "to last modified buffer",
+                //   command: "",
+                // },
+                "n": {
+                  text: "to next buffer",
+                  command: "workbench.action.nextEditor",
+                },
+                "p": {
+                  text: "to previous buffer",
+                  command: "workbench.action.previousEditor",
                 },
                 ".": {
                   text: "to last buffer modification position",
                   command: "dance.selections.restore",
                   args: [{ register: " insert" }],
                 },
+                // "j": {
+                //   text: "to last line",
+                //   command: "dance.select.lastLine",
+                // },
+              },
+            },
+            "window": {
+              title: "Window",
+              items: {
+                "w": {
+                  text: "Goto next window",
+                  command: "workbench.action.nextEditor",
+                },
+                "s": {
+                  text: "Horizontal bottom split",
+                  command: "workbench.action.splitEditorDown",
+                },
+                "v": {
+                  text: "Vertical right split",
+                  command: "workbench.action.splitEditor",
+                },
+                "t": {
+                  text: "Transpose splits",
+                  command: "workbench.action.toggleEditorGroupLayout",
+                },
+                // "f": {
+                //   text: "Open files in selection (hsplit)",
+                //   command: "dance.selections.open", function needs to be modified
+                // },
+                // "F": {
+                //   text: "Open files in selection (vsplit)",
+                //   command: "dance.selections.open", function needs to be modified
+                // },
+                "q": {
+                  text: "Close window",
+                  command: "workbench.action.closeActiveEditor",
+                },
+                "o": {
+                  text: "Close all other windows (Current window only)",
+                  command: "workbench.action.closeOtherEditors",
+                },
+                "h": {
+                  text: "Jump to the split on the left",
+                  command: "workbench.action.focusLeftGroup",
+                },
+                "j": {
+                  text: "Jump to the split below",
+                  command: "workbench.action.focusBelowGroup",
+                },
+                "k": {
+                  text: "Jump to the split above",
+                  command: "workbench.action.focusAboveGroup",
+                },
+                "l": {
+                  text: "Jump to the split to the right",
+                  command: "workbench.action.focusRightGroup",
+                },
+                "H": {
+                  text: "Swap with the split to the left",
+                  command: "workbench.action.moveActiveEditorGroupLeft",
+                },
+                "J": {
+                  text: "Swap with the split below",
+                  command: "workbench.action.moveActiveEditorGroupDown",
+                },
+                "K": {
+                  text: "Swap with the split above",
+                  command: "workbench.action.moveActiveEditorGroupUp",
+                },
+                "L": {
+                  text: "Swap with the split to the right",
+                  command: "workbench.action.moveActiveEditorGroupRight",
+                },
+                // "n": { Not easily possible. Neccessary?
+                //   text: "New split scratch buffer",
+                //   command: "",
+                // },
               },
             },
 
@@ -523,7 +772,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 // - m, center cursor horizontally
                 // - h, scroll left
                 // - l, scroll right
-                "vc": {
+                "zc": {
                   text: "center cursor vertically",
                   command: "dance.view.line",
                   args: [{ at: "center" }],

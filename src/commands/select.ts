@@ -34,14 +34,16 @@ const preferredColumnsToken =
  * @param avoidEol If `true`, selections will not select the line break
  *   character but will instead move to the last character.
  *
+ *  TODO: Keep s-down and s-up?
+ *
  * #### Variants
  *
  * | Title       | Identifier    | Keybinding                                                       | Command                                                           |
  * | ----------- | ------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------- |
- * | Jump down   | `down.jump`   | `j` (normal)  , `down` (normal)                                  | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
- * | Extend down | `down.extend` | `s-j` (normal), `s-down` (normal), `j` (visual), `down` (visual) | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
- * | Jump up     | `up.jump`     | `k` (normal)  , `up` (normal)                                    | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
- * | Extend up   | `up.extend`   | `s-k` (normal), `s-up` (normal)  , `k` (visual), `up` (visual)   | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
+ * | Jump down   | `down.jump`   | `j` (normal)     , `down` (normal)                               | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
+ * | Extend down | `down.extend` | `s-down` (normal), `j` (visual), `down` (visual)                 | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
+ * | Jump up     | `up.jump`     | `k` (normal)     , `up` (normal)                                 | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
+ * | Extend up   | `up.extend`   | `s-up` (normal)  , `k` (visual), `up` (visual)                   | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
  *
  * The following keybindings are also defined:
  *
@@ -224,14 +226,16 @@ export function vertically(
  * @param avoidEol If `true`, selections will automatically skip to the next
  *   line instead of going after the last character. Does not skip empty lines.
  *
+ * TODO: keep s-left and s-right?
+ *
  * #### Variants
  *
- * | Title        | Identifier     | Keybinding                                                         | Command                                                             |
- * | ------------ | -------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------- |
- * | Jump right   | `right.jump`   | `l` (normal)  , `right` (normal)                                   | `[".select.horizontally", { direction:  1, shift: "jump"  , ... }]` |
- * | Extend right | `right.extend` | `s-l` (normal), `s-right` (normal), `l` (visual), `right` (visual) | `[".select.horizontally", { direction:  1, shift: "extend", ... }]` |
- * | Jump left    | `left.jump`    | `h` (normal)  , `left` (normal)                                    | `[".select.horizontally", { direction: -1, shift: "jump"  , ... }]` |
- * | Extend left  | `left.extend`  | `s-h` (normal), `s-left` (normal) , `h` (visual), `left` (visual)  | `[".select.horizontally", { direction: -1, shift: "extend", ... }]` |
+ * | Title        | Identifier     | Keybinding                                         | Command                                                             |
+ * | ------------ | -------------- | -------------------------------------------------- | ------------------------------------------------------------------- |
+ * | Jump right   | `right.jump`   | `l` (normal), `right` (normal)                     | `[".select.horizontally", { direction:  1, shift: "jump"  , ... }]` |
+ * | Extend right | `right.extend` | `s-right` (normal), `l` (visual), `right` (visual) | `[".select.horizontally", { direction:  1, shift: "extend", ... }]` |
+ * | Jump left    | `left.jump`    | `h` (normal), `left` (normal)                      | `[".select.horizontally", { direction: -1, shift: "jump"  , ... }]` |
+ * | Extend left  | `left.extend`  | `s-left` (normal), `h` (visual), `left` (visual)   | `[".select.horizontally", { direction: -1, shift: "extend", ... }]` |
  */
 export function horizontally(
   _: Context,

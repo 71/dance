@@ -20,7 +20,7 @@ declare module "./selections";
 /**
  * Copy selections text.
  *
- * @keys `y` (normal)
+ * @keys `y` (normal), `y` (visual)
  */
 export function saveText(
   document: vscode.TextDocument,
@@ -33,7 +33,7 @@ export function saveText(
 /**
  * Save selections.
  *
- * @keys `s-z` (normal)
+ * @keys `s-a-z` (normal)
  */
 export function save(
   _: Context,
@@ -92,9 +92,9 @@ export function save(
 }
 
 /**
- * Restore selections.
+ * Restore selections. TODO: Needed?
  *
- * @keys `z` (normal)
+ * @keys `a-z` (normal)
  */
 export async function restore(
   _: Context,
@@ -290,16 +290,16 @@ const filterHistory: string[] = [];
 /**
  * Filter selections.
  *
- * @keys `$` (normal)
+ * @keys `$` (normal), `$` (visual)
  *
  * #### Variants
  *
- * | Title                      | Identifier              | Keybinding         | Commands                                                                 |
- * | -------------------------- | ----------------------- | ------------------ | ------------------------------------------------------------------------ |
- * | Keep matching selections   | `filter.regexp`         | `a-k` (normal)     | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
- * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal)   | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
- * | Clear secondary selections | `clear.secondary`       | `space` (normal)   | `[".selections.filter", { expression: "i === count"            , ... }]` |
- * | Clear main selections      | `clear.main`            | `a-space` (normal) | `[".selections.filter", { expression: "i !== count"            , ... }]` |
+ * | Title                      | Identifier              | Keybinding                         | Commands                                                                 |
+ * | -------------------------- | ----------------------- | ---------------------------------- | ------------------------------------------------------------------------ |
+ * | Keep matching selections   | `filter.regexp`         | `s-k` (normal), `s-k` (visual)     | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
+ * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (normal), `s-a-k` (visual) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
+ * | Clear secondary selections | `clear.secondary`       | `;` (normal), `;` (visual)         | `[".selections.filter", { expression: "i === count"            , ... }]` |
+ * | Clear main selections      | `clear.main`            | `a-;` (normal), `a-;` (visual)     | `[".selections.filter", { expression: "i !== count"            , ... }]` |
  */
 export function filter(
   _: Context,
@@ -345,7 +345,7 @@ export function filter(
 /**
  * Select within selections.
  *
- * @keys `s` (normal)
+ * @keys `s` (normal), `s` (visual)
  */
 export function select(
   _: Context,
@@ -374,7 +374,7 @@ export function select(
 /**
  * Split selections.
  *
- * @keys `s-s` (normal)
+ * @keys `s-s` (normal), `s-s` (visual)
  */
 export function split(
   _: Context,
@@ -410,7 +410,7 @@ export function split(
 /**
  * Split selections at line boundaries.
  *
- * @keys `a-s` (normal)
+ * @keys `a-s` (normal), `a-s` (visual)
  */
 export function splitLines(
   _: Context,
@@ -466,7 +466,7 @@ export function splitLines(
  *
  * Expand selections to contain full lines (including end-of-line characters).
  *
- * @keys `a-x` (normal)
+ * @keys `s-x` (normal), `s-x` (visual)
  */
 export function expandToLines(_: Context) {
   return Selections.updateByIndex((_, selection, document) => {
@@ -532,7 +532,7 @@ export function trimLines(_: Context) {
  *
  * Trim whitespace at beginning and end of selections.
  *
- * @keys `_` (normal)
+ * @keys `_` (normal), `_` (visual)
  */
 export function trimWhitespace(_: Context) {
   const blank = getCharacters(CharSet.Blank, _.document),
@@ -559,7 +559,7 @@ export function trimWhitespace(_: Context) {
  * @param where Which edge each selection should be reduced to; defaults to
  *   "active".
  *
- * @keys `;` (normal)
+ * @keys `,` (normal), `,` (visual)
  *
  * #### Variant
  *
@@ -789,13 +789,13 @@ export async function sort(
 /**
  * Copy selections below.
  *
- * @keys `s-c` (normal)
+ * @keys `s-c` (normal), `s-c` (visual)
  *
  * #### Variant
  *
- * | Title                 | Identifier   | Keybinding       | Command                                   |
- * | --------------------- | ------------ | ---------------- | ----------------------------------------- |
- * | Copy selections above | `copy.above` | `s-a-c` (normal) | `[".selections.copy", { direction: -1 }]` |
+ * | Title                 | Identifier   | Keybinding                         | Command                                   |
+ * | --------------------- | ------------ | ---------------------------------- | ----------------------------------------- |
+ * | Copy selections above | `copy.above` | `s-a-c` (normal), `s-a-c` (normal) | `[".selections.copy", { direction: -1 }]` |
  */
 export function copy(
   _: Context,
@@ -866,7 +866,7 @@ const indicesToken = PerEditorState.registerState<AutoDisposable>(/* isDisposabl
 /**
  * Toggle selection indices.
  *
- * @keys `enter` (normal)
+ * @keys `enter` (normal), `enter` (visual)
  *
  * #### Variants
  *
