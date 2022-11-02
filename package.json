@@ -3674,13 +3674,13 @@
         "command": "dance.selections.changeDirection"
       },
       {
-        "key": "Alt+Space",
+        "key": "Alt+,",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Clear main selections",
         "command": "dance.selections.clear.main"
       },
       {
-        "key": "Space",
+        "key": ",",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Clear secondary selections",
         "command": "dance.selections.clear.secondary"
@@ -3910,17 +3910,32 @@
       },
       {
         "command": "dance.ignore",
-        "key": ",",
-        "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.ignore",
         "key": "'",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "command": "dance.ignore",
         "key": "-",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.ignore",
+        "key": "=",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.ignore",
+        "key": "Space",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.ignore",
+        "key": "NumPad_Add",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.ignore",
+        "key": "NumPad_Subtract",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
@@ -3935,12 +3950,12 @@
       },
       {
         "command": "dance.ignore",
-        "key": "NumPad_Add",
+        "key": "Shift+NumPad_Add",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "command": "dance.ignore",
-        "key": "NumPad_Subtract",
+        "key": "Shift+NumPad_Subtract",
         "when": "editorTextFocus && dance.mode == 'normal'"
       }
     ]

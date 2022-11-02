@@ -295,12 +295,12 @@ const filterHistory: string[] = [];
  *
  * #### Variants
  *
- * | Title                      | Identifier              | Keybinding                  | Commands                                                                 |
- * | -------------------------- | ----------------------- | --------------------------- | ------------------------------------------------------------------------ |
- * | Keep matching selections   | `filter.regexp`         | `a-k` (kakoune: normal)     | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
- * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (kakoune: normal)   | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
- * | Clear secondary selections | `clear.secondary`       | `space` (kakoune: normal)   | `[".selections.filter", { expression: "i === count"            , ... }]` |
- * | Clear main selections      | `clear.main`            | `a-space` (kakoune: normal) | `[".selections.filter", { expression: "i !== count"            , ... }]` |
+ * | Title                      | Identifier              | Keybinding                | Commands                                                                 |
+ * | -------------------------- | ----------------------- | --------------------------| ------------------------------------------------------------------------ |
+ * | Keep matching selections   | `filter.regexp`         | `a-k` (kakoune: normal)   | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
+ * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (kakoune: normal) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
+ * | Clear secondary selections | `clear.secondary`       | `,` (kakoune: normal)     | `[".selections.filter", { expression: "i === count"            , ... }]` |
+ * | Clear main selections      | `clear.main`            | `a-,` (kakoune: normal)   | `[".selections.filter", { expression: "i !== count"            , ... }]` |
  */
 export function filter(
   _: Context,
