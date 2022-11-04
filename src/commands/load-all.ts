@@ -1206,19 +1206,19 @@ export const commands: Commands = function () {
     commands,
     "dance.selections.pipe.replace",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|" , $exclude: ["expression","register"] }]],
+    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|", $exclude: ["expression","register"] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.pipe.append",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|", where: "end" , $exclude: ["expression","register"] }]],
+    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|", where: "end" , shift: "select", $exclude: ["expression","register"] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.pipe.prepend",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|", where: "start", $exclude: ["expression","register"] }]],
+    [[".selections.pipe", { $include: ["expression","register"] }], [".edit.insert", { register: "|", where: "start", shift: "select", $exclude: ["expression","register"] }]],
   );
   describeAdditionalCommand(
     commands,

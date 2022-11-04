@@ -250,11 +250,11 @@ const pipeHistory: string[] = [];
  *
  * #### Additional commands
  *
- * | Title               | Identifier     | Keybinding              | Commands                                                                                                   |
- * | ------------------- | -------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------- |
- * | Pipe and replace    | `pipe.replace` | `|` (kakoune: normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|"                , ... }]` |
- * | Pipe and append     | `pipe.append`  | `!` (kakoune: normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "end"  , ... }]` |
- * | Pipe and prepend    | `pipe.prepend` | `a-!` (kakoune: normal) | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "start", ... }]` |
+ * | Title               | Identifier     | Keybinding              | Commands                                                                                                                    |
+ * | ------------------- | -------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+ * | Pipe and replace    | `pipe.replace` | `|` (kakoune: normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|",                                  ... }]` |
+ * | Pipe and append     | `pipe.append`  | `!` (kakoune: normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "end"  , shift: "select", ... }]` |
+ * | Pipe and prepend    | `pipe.prepend` | `a-!` (kakoune: normal) | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "start", shift: "select", ... }]` |
  */
 export async function pipe(
   _: Context,
