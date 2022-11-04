@@ -320,6 +320,7 @@ export function glob(pattern: string, options: { ignore?: string, cwd: string })
 export class Builder {
   private _apiModules?: Builder.ParsedModule[];
   private _commandModules?: Builder.ParsedModule[];
+  private _beingBuilt = new Map<string, Promise<void>>();
 
   /**
    * Returns all modules for API files.
@@ -353,6 +354,62 @@ export class Builder {
           commandModules = allCommandModules.filter((m) => m.doc.length > 0);
 
     return this._commandModules = commandModules.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  /**
+   * Waits until the given files have been processed.
+   */
+  public async waitFor(...files: readonly `${string}.build.ts`[]) {
+    await Promise.all(
+      files.map(async (file) => {
+        await this._beingBuilt.get(path.resolve(file));
+      }),
+    );
+  }
+
+  /**
+   * Updates all the given .build.ts files in parallel.
+   */
+  public async buildFiles(filesToBuild: readonly string[], onError: (e: unknown) => void) {
+    await Promise.all(
+      filesToBuild.map(async (fileToBuild) => {
+        const absolutePath = path.resolve(fileToBuild),
+              promise = this._buildFile(fileToBuild)
+                .finally(() => this._beingBuilt.delete(absolutePath));
+        this._beingBuilt.set(absolutePath, promise);
+
+        await promise.catch(onError);
+      }),
+    );
+  }
+
+  /**
+   * Updates a .build.ts file.
+   */
+  private async _buildFile(fileName: string) {
+    const relativeName = path.relative(__dirname, fileName),
+          relativeNameWithoutBuild = relativeName.replace(/build\.ts$/, ""),
+          modulePath = `./${relativeNameWithoutBuild}build`;
+
+    // Clear module cache if any.
+    delete require.cache[require.resolve(modulePath)];
+
+    const module: { build(builder: Builder): Promise<string> } = require(modulePath),
+          generatedContent = await module.build(this);
+
+    if (typeof generatedContent === "string") {
+      // Write result of `build` to the first file we find that has the same name
+      // as the build.ts file, but with any extension.
+      const prefix = path.basename(relativeNameWithoutBuild),
+            outputName = (await fs.readdir(path.dirname(fileName)))
+              .find((path) => path.startsWith(prefix) && !path.endsWith(".build.ts"))!,
+            outputPath = path.join(path.dirname(fileName), outputName),
+            outputContent = await fs.readFile(outputPath, "utf-8"),
+            outputContentHeader =
+              /^(?:[\s\S]+?\n)?.+Content below this line was auto-generated.+\n/m.exec(outputContent)![0];
+
+      await fs.writeFile(outputPath, outputContentHeader + generatedContent, "utf-8");
+    }
   }
 }
 
@@ -583,35 +640,6 @@ export function unindent(by: number): { (strings: TemplateStringsArray, ...args:
 }
 
 /**
- * Updates a .build.ts file.
- */
-async function buildFile(fileName: string, builder: Builder) {
-  const relativeName = path.relative(__dirname, fileName),
-        relativeNameWithoutBuild = relativeName.replace(/build\.ts$/, ""),
-        modulePath = `./${relativeNameWithoutBuild}build`;
-
-  // Clear module cache if any.
-  delete require.cache[require.resolve(modulePath)];
-
-  const module: { build(builder: Builder): Promise<string> } = require(modulePath),
-        generatedContent = await module.build(builder);
-
-  if (typeof generatedContent === "string") {
-    // Write result of `build` to the first file we find that has the same name
-    // as the build.ts file, but with any extension.
-    const prefix = path.basename(relativeNameWithoutBuild),
-          outputName = (await fs.readdir(path.dirname(fileName)))
-            .find((path) => path.startsWith(prefix) && !path.endsWith(".build.ts"))!,
-          outputPath = path.join(path.dirname(fileName), outputName),
-          outputContent = await fs.readFile(outputPath, "utf-8"),
-          outputContentHeader =
-            /^(?:[\s\S]+?\n)?.+Content below this line was auto-generated.+\n/m.exec(outputContent)![0];
-
-    await fs.writeFile(outputPath, outputContentHeader + generatedContent, "utf-8");
-  }
-}
-
-/**
  * The main entry point of the script.
  */
 async function main() {
@@ -633,12 +661,11 @@ async function main() {
     contentsBefore.push(...await Promise.all(fileNames.map((name) => fs.readFile(name, "utf-8"))));
   }
 
-  const builder = new Builder(),
-        filesToBuild = await glob(build, { cwd: __dirname }),
+  const filesToBuild = await glob(build, { cwd: __dirname }),
+        builder = new Builder(),
         buildErrors: unknown[] = [];
 
-  await Promise.all(
-    filesToBuild.map((path) => buildFile(path, builder).catch((e) => buildErrors.push(e))));
+  await builder.buildFiles(filesToBuild, (e) => buildErrors.push(e));
 
   if (buildErrors.length > 0) {
     console.error(buildErrors);

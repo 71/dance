@@ -37,11 +37,16 @@ type Layouts = {
 }
 
 export async function build(builder: Builder) {
+  const resolveData = <F extends string>(filename: F) => {
+    return resolve(__dirname, "..", "api", "data", filename) as `${string}${F}`;
+  };
+
+  await builder.waitFor(resolveData("commands.build.ts"));
+
   const [commands, languages, layouts, commandModules] = await Promise.all(
     [
       ...["commands.yaml", "languages.yaml", "layouts.yaml"].map(async (filename) => {
-        const contents = await readFile(
-          resolve(__dirname, "..", "api", "data", filename), { encoding: "utf-8" });
+        const contents = await readFile(resolveData(filename), { encoding: "utf-8" });
 
         return parseYaml(contents, { schema: "core" }) as Record<string, object>;
       }),
