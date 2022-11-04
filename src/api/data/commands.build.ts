@@ -104,7 +104,7 @@ export async function build(builder: Builder) {
       }
     }
 
-    if (command.commands !== existingCommandDoc.get("command", false) as string) {
+    if (command.commands !== existingCommandDoc.get("commands", false) as string) {
       if (command.commands === undefined) {
         existingCommandDoc.delete("commands");
       } else {

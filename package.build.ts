@@ -135,7 +135,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "source-map-support": "^0.5.21",
     "ts-loader": "^9.3.1",
     "ts-node": "^10.8.1",
-    "typescript": "^4.7.4",
+    "typescript": "^4.8.4",
     "unexpected": "^13.0.0",
     "vsce": "^2.7.0",
     "webpack": "^5.72.1",

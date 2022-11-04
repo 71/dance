@@ -476,10 +476,10 @@ export function splitLines(
  *
  * Expand selections to contain full lines (including end-of-line characters).
  *
- * @keys `a-x` (kakoune: normal)
+ * @keys `x` (kakoune: normal)
  */
 export function expandToLines(_: Context) {
-  return Selections.updateByIndex((_, selection, document) => {
+  return Selections.updateByIndex((_i, selection, document) => {
     const start = selection.start,
           end = selection.end;
 
@@ -487,7 +487,7 @@ export function expandToLines(_: Context) {
     const newStart = start.with(undefined, 0);
     let newEnd: vscode.Position;
 
-    if (end.character === 0) {
+    if (end.character === 0 && end.line !== start.line) {
       // End is next line start, which means the selection already includes the
       // line break of last line.
       newEnd = end;
@@ -501,7 +501,7 @@ export function expandToLines(_: Context) {
     }
 
     // After expanding, the selection should be in the same direction as before.
-    return Selections.fromStartEnd(newStart, newEnd, selection.isReversed);
+    return Selections.fromStartEnd(newStart, newEnd, Selections.isStrictlyReversed(selection, _));
   });
 }
 
@@ -510,7 +510,7 @@ export function expandToLines(_: Context) {
  *
  * Trim selections to only contain full lines (from start to line break).
  *
- * @keys `s-a-x` (kakoune: normal)
+ * @keys `a-x` (kakoune: normal)
  */
 export function trimLines(_: Context) {
   return Selections.updateByIndex((_, selection) => {

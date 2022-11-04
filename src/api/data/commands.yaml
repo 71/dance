@@ -1655,24 +1655,16 @@ select.line.below:
   title:
     en: Select line below
 
-  keys:
-    qwerty: |-
-      `x` (kakoune: normal)
-
   doc:
-    en: |+
+    en: |
       Select line below.
 
 select.line.below.extend:
   title:
     en: Extend to line below
 
-  keys:
-    qwerty: |-
-      `s-x` (kakoune: normal)
-
   doc:
-    en: |+
+    en: |
       Extend to line below.
 
 select.lineEnd:
@@ -2014,7 +2006,7 @@ selections.expandToLines:
 
   keys:
     qwerty: |-
-      `a-x` (kakoune: normal)
+      `x` (kakoune: normal)
 
   doc:
     en: |+
@@ -2460,7 +2452,7 @@ selections.trimLines:
 
   keys:
     qwerty: |-
-      `s-a-x` (kakoune: normal)
+      `a-x` (kakoune: normal)
 
   doc:
     en: |+

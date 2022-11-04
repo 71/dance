@@ -1261,6 +1261,26 @@ export function isNonDirectional(selection: vscode.Selection, context = Context.
 }
 
 /**
+ * Returns whether the current selection is _strictly reversed_, i.e. it is both
+ * **directional** (non-empty, and more than one characters in `character`
+ * selection mode) and reversed.
+ *
+ * {@link vscode.Selection.isReversed} returns `true` even for empty selections,
+ * which is not suitable in many cases.
+ */
+export function isStrictlyReversed(selection: vscode.Selection, context = Context.current) {
+  if (selection.isEmpty || !selection.isReversed) {
+    // Empty or forward: not reversed.
+    return false;
+  }
+
+  // In `caret` selection mode, we can stop checking here. In `character`
+  // selection mode, 1-character selections are considered "empty", and
+  // therefore not reversed.
+  return !isNonDirectional(selection, context);
+}
+
+/**
  * The position from which a seek operation should start. This is equivalent
  * to `selection.active` except when the selection is non-directional, in
  * which case this is whatever position is **furthest** from the given

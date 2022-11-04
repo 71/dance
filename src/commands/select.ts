@@ -313,8 +313,6 @@ export function to(
 
 /**
  * Select line below.
- *
- * @keys `x` (kakoune: normal)
  */
 export function line_below(_: Context, count: number) {
   if (count === 0 || count === 1) {
@@ -343,8 +341,6 @@ export function line_below(_: Context, count: number) {
 
 /**
  * Extend to line below.
- *
- * @keys `s-x` (kakoune: normal)
  */
 export function line_below_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {

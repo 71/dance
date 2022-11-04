@@ -47,7 +47,7 @@
     "source-map-support": "^0.5.21",
     "ts-loader": "^9.3.1",
     "ts-node": "^10.8.1",
-    "typescript": "^4.7.4",
+    "typescript": "^4.8.4",
     "unexpected": "^13.0.0",
     "vsce": "^2.7.0",
     "webpack": "^5.72.1",
@@ -3468,18 +3468,6 @@
         "command": "dance.select.left.jump"
       },
       {
-        "key": "X",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Select line below",
-        "command": "dance.select.line.below"
-      },
-      {
-        "key": "Shift+X",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to line below",
-        "command": "dance.select.line.below.extend"
-      },
-      {
         "key": "Alt+L",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Select to line end",
@@ -3698,7 +3686,7 @@
         "command": "dance.selections.copy.above"
       },
       {
-        "key": "Alt+X",
+        "key": "X",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Expand to lines",
         "command": "dance.selections.expandToLines"
@@ -3827,7 +3815,7 @@
         "command": "dance.selections.toggleIndices"
       },
       {
-        "key": "Shift+Alt+X",
+        "key": "Alt+X",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Trim lines",
         "command": "dance.selections.trimLines"
@@ -3886,6 +3874,11 @@
       {
         "command": "dance.ignore",
         "key": "Shift+D",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "command": "dance.ignore",
+        "key": "Shift+X",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
