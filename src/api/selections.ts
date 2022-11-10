@@ -44,6 +44,7 @@ export function set(selections: readonly vscode.Selection[], context = Context.c
 
   context.selections = selections;
   reveal(selections[0], context);
+  vscode.commands.executeCommand("editor.action.wordHighlight.trigger");
 
   return selections;
 }
