@@ -488,7 +488,7 @@ export async function object(
       Selections.shiftEmptyLeft(newSelections, _.document);
     }
 
-    return _.selections = newSelections;
+    return Selections.set(newSelections);
   }
 
   throw new Error("unknown object " + JSON.stringify(input));
