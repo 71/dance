@@ -209,6 +209,12 @@ naming.
 Your PR will be rebased on top of `master` in order to keep a clean commit
 history. Please avoid unnecessary commits (`git commit --amend` is your friend).
 
+### Misc.
+
+[Pre-release versions](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions)
+follow the pattern `<major>.<minor>.<prev-patch><pre-release>`, so for instance
+pre-release `1` of version `0.5.13` is `0.5.12001`.
+
 [api]: ./src/api
 [commands]: ./src/commands
 [issues]: https://github.com/71/dance/issues

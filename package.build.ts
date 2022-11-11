@@ -76,6 +76,9 @@ const selectionDecorationType = {
 // Package information
 // ============================================================================
 
+const version = "0.5.12",
+      preRelease = 1;
+
 export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   // Common package.json properties.
@@ -83,7 +86,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   name: "dance",
   description: "Kakoune-inspired key bindings, modes, menus and scripting.",
-  version: "0.5.12",
+  version,
   license: "ISC",
 
   author: {
@@ -116,7 +119,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
-    "publish:pre": "vsce publish --allow-star-activation --pre-release",
+    "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json --version ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
   },
 
   devDependencies: {
