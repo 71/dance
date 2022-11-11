@@ -198,23 +198,27 @@ edit.insert:
       `"shift": "extend"` to extend to the inserted text, and nothing to keep the
       current selections.
 
-      `select` is deprecated; use `shift` with `"select"` instead.
+      Specify `all` to paste all contents next to each selection.
 
 
       #### Additional commands
 
-      | Title                              | Identifier              | Keybinding                                       | Commands                                                                                                                       |
-      | ---------------------------------- | ----------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-      | Pick register and replace          | `selectRegister-insert` | `c-r` (kakoune: normal), `c-r` (kakoune: insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                                |
-      | Paste before                       | `paste.before`          | `s-p` (kakoune: normal)                          | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
-      | Paste after                        | `paste.after`           | `p` (kakoune: normal)                            | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                               |
-      | Paste before and select            | `paste.before.select`   | `s-a-p` (kakoune: normal)                        | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                              |
-      | Paste after and select             | `paste.after.select`    | `a-p` (kakoune: normal)                          | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                              |
-      | Delete                             | `delete`                | `a-d` (kakoune: normal)                          | `[".edit.insert", { register: "_", ... }]`                                                                                     |
-      | Delete and switch to Insert        | `delete-insert`         | `a-c` (kakoune: normal)                          | `[".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]`                                          |
-      | Copy and delete                    | `yank-delete`           | `d` (kakoune: normal)                            | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
-      | Copy, delete and switch to Insert  | `yank-delete-insert`    | `c` (kakoune: normal)                            | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
-      | Copy and replace                   | `yank-replace`          | `s-r` (kakoune: normal)                          | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]`               |
+      | Title                              | Identifier               | Keybinding                                       | Commands                                                                                                                       |
+      | ---------------------------------- | ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+      | Pick register and replace          | `selectRegister-insert`  | `c-r` (kakoune: normal), `c-r` (kakoune: insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                                |
+      | Paste before                       | `paste.before`           |                                                  | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
+      | Paste after                        | `paste.after`            |                                                  | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                               |
+      | Paste before and select            | `paste.before.select`    | `s-p` (kakoune: normal)                          | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                              |
+      | Paste after and select             | `paste.after.select`     | `p` (kakoune: normal)                            | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                              |
+      | Paste all before                   | `pasteAll.before`        |                                                  | `[".edit.insert", { handleNewLine: true, where: "start", all: true, ... }]`                                                    |
+      | Paste all after                    | `pasteAll.after`         |                                                  | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, ... }]`                                                    |
+      | Paste all before and select        | `pasteAll.before.select` | `s-a-p` (kakoune: normal)                        | `[".edit.insert", { handleNewLine: true, where: "start", all: true, shift: "select", ... }]`                                   |
+      | Paste all after and select         | `pasteAll.after.select`  | `a-p` (kakoune: normal)                          | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, shift: "select", ... }]`                                   |
+      | Delete                             | `delete`                 | `a-d` (kakoune: normal)                          | `[".edit.insert", { register: "_", ... }]`                                                                                     |
+      | Delete and switch to Insert        | `delete-insert`          | `a-c` (kakoune: normal)                          | `[".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]`                                          |
+      | Copy and delete                    | `yank-delete`            | `d` (kakoune: normal)                            | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
+      | Copy, delete and switch to Insert  | `yank-delete-insert`     | `c` (kakoune: normal)                            | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
+      | Copy and replace                   | `yank-replace`           | `s-r` (kakoune: normal)                          | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]`               |
 
 edit.join:
   title:
@@ -255,8 +259,6 @@ edit.newLine.above:
       Specify `"shift": "select"` to select the inserted selections, and nothing to
       keep the current selections.
 
-      `select` is deprecated; use `shift` with `"select"` instead.
-
 
       #### Additional keybindings
 
@@ -290,8 +292,6 @@ edit.newLine.below:
       Specify `"shift": "select"` to select the inserted selections, and nothing to
       keep the current selections.
 
-      `select` is deprecated; use `shift` with `"select"` instead.
-
 
       #### Additional keybindings
 
@@ -318,8 +318,7 @@ edit.paste.after:
     [".edit.insert", { handleNewLine: true, where: "end" , $exclude: [] }]
 
   keys:
-    qwerty: |-
-      `p` (kakoune: normal)
+    qwerty: ""
 
 edit.paste.after.select:
   title:
@@ -330,7 +329,7 @@ edit.paste.after.select:
 
   keys:
     qwerty: |-
-      `a-p` (kakoune: normal)
+      `p` (kakoune: normal)
 
 edit.paste.before:
   title:
@@ -340,8 +339,7 @@ edit.paste.before:
     [".edit.insert", { handleNewLine: true, where: "start", $exclude: [] }]
 
   keys:
-    qwerty: |-
-      `s-p` (kakoune: normal)
+    qwerty: ""
 
 edit.paste.before.select:
   title:
@@ -349,6 +347,48 @@ edit.paste.before.select:
 
   commands: |-
     [".edit.insert", { handleNewLine: true, where: "start", shift: "select", $exclude: [] }]
+
+  keys:
+    qwerty: |-
+      `s-p` (kakoune: normal)
+
+edit.pasteAll.after:
+  title:
+    en: Paste all after
+
+  commands: |-
+    [".edit.insert", { handleNewLine: true, where: "end" , all: true, $exclude: [] }]
+
+  keys:
+    qwerty: ""
+
+edit.pasteAll.after.select:
+  title:
+    en: Paste all after and select
+
+  commands: |-
+    [".edit.insert", { handleNewLine: true, where: "end" , all: true, shift: "select", $exclude: [] }]
+
+  keys:
+    qwerty: |-
+      `a-p` (kakoune: normal)
+
+edit.pasteAll.before:
+  title:
+    en: Paste all before
+
+  commands: |-
+    [".edit.insert", { handleNewLine: true, where: "start", all: true, $exclude: [] }]
+
+  keys:
+    qwerty: ""
+
+edit.pasteAll.before.select:
+  title:
+    en: Paste all before and select
+
+  commands: |-
+    [".edit.insert", { handleNewLine: true, where: "start", all: true, shift: "select", $exclude: [] }]
 
   keys:
     qwerty: |-

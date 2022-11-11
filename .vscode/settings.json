@@ -3,6 +3,9 @@
     "out": true
   },
 
+  // Run tasks (`compile` and `generate`) automatically.
+  "task.allowAutomaticTasks": "on",
+
   // 80 characters for comments and text, and 100 characters for code.
   "editor.rulers": [80, 100],
 

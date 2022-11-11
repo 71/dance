@@ -1008,6 +1008,26 @@
         "category": "Dance"
       },
       {
+        "command": "dance.edit.pasteAll.after",
+        "title": "Paste all after",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.pasteAll.after.select",
+        "title": "Paste all after and select",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.pasteAll.before",
+        "title": "Paste all before",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.edit.pasteAll.before.select",
+        "title": "Paste all before and select",
+        "category": "Dance"
+      },
+      {
         "command": "dance.edit.replaceCharacters",
         "title": "Replace characters",
         "category": "Dance"
@@ -1947,6 +1967,22 @@
           "when": "dance.mode == 'normal'"
         },
         {
+          "command": "dance.edit.pasteAll.after",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.pasteAll.after.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.pasteAll.before",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.edit.pasteAll.before.select",
+          "when": "dance.mode == 'normal'"
+        },
+        {
           "command": "dance.edit.replaceCharacters",
           "when": "dance.mode == 'normal'"
         },
@@ -2732,26 +2768,26 @@
       {
         "key": "P",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Paste after",
-        "command": "dance.edit.paste.after"
-      },
-      {
-        "key": "Alt+P",
-        "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Paste after and select",
         "command": "dance.edit.paste.after.select"
       },
       {
         "key": "Shift+P",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Paste before",
-        "command": "dance.edit.paste.before"
+        "title": "Paste before and select",
+        "command": "dance.edit.paste.before.select"
+      },
+      {
+        "key": "Alt+P",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Paste all after and select",
+        "command": "dance.edit.pasteAll.after.select"
       },
       {
         "key": "Shift+Alt+P",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Paste before and select",
-        "command": "dance.edit.paste.before.select"
+        "title": "Paste all before and select",
+        "command": "dance.edit.pasteAll.before.select"
       },
       {
         "key": "R",

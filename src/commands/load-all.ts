@@ -342,7 +342,7 @@ export const commands: Commands = function () {
     ),
     "dance.edit.insert": new CommandDescriptor(
       "dance.edit.insert",
-      (_, argument) => _.runAsync((_) => edit_insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument["adjust"], argument["handleNewLine"], getRepetitions(_, argument), argument["select"], getShift(argument), argument["text"], argument["where"])),
+      (_, argument) => _.runAsync((_) => edit_insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument["adjust"], argument["all"], argument["handleNewLine"], getRepetitions(_, argument), getShift(argument), argument["text"], argument["where"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.edit.join": new CommandDescriptor(
@@ -357,12 +357,12 @@ export const commands: Commands = function () {
     ),
     "dance.edit.newLine.above": new CommandDescriptor(
       "dance.edit.newLine.above",
-      (_, argument) => _.runAsync((_) => edit_newLine_above(_, getRepetitions(_, argument), argument["select"], getShift(argument))),
+      (_, argument) => _.runAsync((_) => edit_newLine_above(_, getRepetitions(_, argument), getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.edit.newLine.below": new CommandDescriptor(
       "dance.edit.newLine.below",
-      (_, argument) => _.runAsync((_) => edit_newLine_below(_, getRepetitions(_, argument), argument["select"], getShift(argument))),
+      (_, argument) => _.runAsync((_) => edit_newLine_below(_, getRepetitions(_, argument), getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.edit.replaceCharacters": new CommandDescriptor(
@@ -727,6 +727,30 @@ export const commands: Commands = function () {
     "dance.edit.paste.after.select",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".edit.insert", { handleNewLine: true, where: "end" , shift: "select", $exclude: [] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.edit.pasteAll.before",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".edit.insert", { handleNewLine: true, where: "start", all: true, $exclude: [] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.edit.pasteAll.after",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".edit.insert", { handleNewLine: true, where: "end" , all: true, $exclude: [] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.edit.pasteAll.before.select",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".edit.insert", { handleNewLine: true, where: "start", all: true, shift: "select", $exclude: [] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.edit.pasteAll.after.select",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".edit.insert", { handleNewLine: true, where: "end" , all: true, shift: "select", $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,

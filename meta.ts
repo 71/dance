@@ -213,8 +213,9 @@ function parseDocComments(code: string, modulePath: string) {
     const splitDocComment = docComment.split(/\n### Example\n/gm),
           properties: Record<string, string> = {},
           doc = splitDocComment[0].replace(/^@(param \w+|\w+)(?:\n| ((?:.+\n)(?: {2}.+\n)*))/gm,
-                                           (_, k: string, v: string) => {
-                                             properties[k] = v?.replace(/\n {2}/g, " ").trim();
+                                           (_, k: string, v?: string) => {
+                                             properties[k] = v?.replace(/\n {2}/g, " ").trim() ?? "";
+
                                              return "";
                                            }),
           summary = /((?:.+(?:\n|$))+)/.exec(doc)![0].trim().replace(/\.$/, ""),
