@@ -29,7 +29,7 @@
     "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
-    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json --version 0.5.12001"
+    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.12001"
   },
   "devDependencies": {
     "@types/glob": "^7.2.0",

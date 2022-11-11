@@ -119,7 +119,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
-    "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json --version ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
+    "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
   },
 
   devDependencies: {
