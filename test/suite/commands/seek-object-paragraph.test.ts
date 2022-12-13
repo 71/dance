@@ -8,7 +8,7 @@ suite("./test/suite/commands/seek-object-paragraph.md", function () {
       editor: vscode.TextEditor;
 
   this.beforeAll(async () => {
-    document = await vscode.workspace.openTextDocument();
+    document = await vscode.workspace.openTextDocument({ language: "plaintext" });
     editor = await vscode.window.showTextDocument(document);
     editor.options.insertSpaces = true;
     editor.options.tabSize = 2;
