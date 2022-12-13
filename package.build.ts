@@ -77,7 +77,7 @@ const selectionDecorationType = {
 // ============================================================================
 
 const version = "0.5.12",
-      preRelease = 1;
+      preRelease = 2;
 
 export const pkg = (modules: Builder.ParsedModule[]) => ({
 
@@ -717,7 +717,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     keybindings: (() => {
       const keybindings = modules.flatMap((module) => module.keybindings),
             alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
-            symbols = [...",'-=", "Space", "NumPad_Add", "NumPad_Subtract"],
+            symbols = [...",'-=", "Tab", "Space", "NumPad_Add", "NumPad_Subtract"],
             keysToAssign = new Set([
               ...alphanum,
               ...alphanum.map((x) => `Shift+${x}`),
