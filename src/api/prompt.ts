@@ -158,7 +158,7 @@ export function prompt(
     // Hack to set the `valueSelection`, since it isn't supported when using
     // `createInputBox`.
     if (options.valueSelection !== undefined) {
-      (inputBox as any).update({ valueSelection: options.valueSelection });
+      (inputBox as vscode.InputBoxOptions).valueSelection = options.valueSelection;
     }
 
     inputBox.show();
