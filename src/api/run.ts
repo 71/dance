@@ -448,8 +448,20 @@ const commonSpawnOptions = { stdio: "pipe", windowsHide: true } as const;
 export function execute(
   command: string,
   input?: string,
+  options: { cwd?: string; env?: Record<string, string> } = {},
   cancellationToken = Context.WithoutActiveEditor.current.cancellationToken,
 ) {
+  const {
+    cwd = function () {
+      const currentFileUri = Context.currentOrUndefined?.document.uri;
+
+      return currentFileUri?.scheme === "file"
+        ? vscode.Uri.joinPath(currentFileUri, "..").fsPath
+        : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    }(),
+    env: givenEnv = process.env,
+  } = options;
+
   if (process.platform as string === "web") {
     return Context.WithoutActiveEditor.wrap(
       Promise.reject(new Error("execution of arbitrary commands is not supported on the web")),
@@ -467,10 +479,16 @@ export function execute(
       const automationProfile = getAutomationProfile(),
             shell = typeof automationProfile?.path === "string" ? automationProfile.path : "",
             args = Array.isArray(automationProfile?.args) ? automationProfile!.args : [],
-            env = typeof automationProfile?.env === "object" ? automationProfile.env : {},
+            env = {
+              ...(cwd == null ? {} : { PWD: cwd }),
+              ...(typeof automationProfile?.env === "object" ? automationProfile.env : {}),
+              ...givenEnv,
+            },
             child = shell.length === 0
-              ? cp.spawn(command, { ...commonSpawnOptions,shell: true, env })
-              : cp.spawn(shell, [...args, command], { ...commonSpawnOptions,shell: false, env });
+              ? cp.spawn(command, { ...commonSpawnOptions, shell: true, env, cwd })
+              : cp.spawn(shell,
+                         [...args, command],
+                         { ...commonSpawnOptions, shell: false, env, cwd });
 
       let stdout = "",
           stderr = "";
