@@ -297,7 +297,7 @@ export const commands: Commands = function () {
     ),
     "dance.edit.align": new CommandDescriptor(
       "dance.edit.align",
-      (_, argument) => _.runAsync((_) => edit_align(_, _.selections, argument["fill"])),
+      (_, argument) => _.runAsync((_) => edit_align(_, argument["fill"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.edit.case.swap": new CommandDescriptor(

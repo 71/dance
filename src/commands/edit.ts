@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 
 import type { Argument, InputOr, RegisterOr } from ".";
-import { insert as apiInsert, Context, deindentLines, edit, indentLines, insertByIndex, insertByIndexWithFullLines, insertFlagsAtEdge, joinLines, keypress, Positions, replace, replaceByIndex, Selections, Shift } from "../api";
+import { insert as apiInsert, Context, deindentLines, edit, indentLines, insertByIndex, insertByIndexWithFullLines, insertFlagsAtEdge, joinLines, keypress, Positions, replace, replaceByIndex, Selections, Shift, Direction } from "../api";
+import { sort } from "../api/selections";
 import type { Register } from "../state/registers";
 import { ArgumentError, LengthMismatchError } from "../utils/errors";
 
@@ -282,22 +283,45 @@ export async function replaceCharacters(
  *
  * @keys `&` (kakoune: normal)
  */
-export function align(
-  _: Context,
-  selections: readonly vscode.Selection[],
-
-  fill: Argument<string> = " ",
-) {
-  const startChar = selections.reduce(
-    (max, sel) => (sel.start.character > max ? sel.start.character : max),
-    0,
-  );
-
+export function align(_: Context, fill: Argument<string> = " ") {
   return edit((builder, selections) => {
-    for (let i = 0, len = selections.length; i < len; i++) {
-      const selection = selections[i];
+    const sortedSelections = sort(Direction.Forward, [...selections]);
 
-      builder.insert(selection.start, fill.repeat(startChar - selection.start.character));
+    // Group selections by 'column', nth column being nth selections of each line
+    let selectionByColumn: vscode.Selection[][] = [];
+    let currentLine: number | undefined = undefined;
+    let currentColumn: number = 0;
+    for (let selection of sortedSelections) {
+      if (selection.start.line != currentLine) {
+        currentLine = selection.start.line;
+        currentColumn = 0;
+      }
+
+      if (!(currentColumn in selectionByColumn)) {
+        selectionByColumn[currentColumn] = [];
+      }
+
+      selectionByColumn[currentColumn].push(selection);
+      currentColumn += 1;
+    }
+
+    // Selections aren't updated as we fill each line, so we keep track of how
+    // many characters we added to each line as we go
+    let lineFillCounters = new Map();
+    const getStartChar = (sel: vscode.Selection) =>
+      sel.start.character + (lineFillCounters.get(sel.start.line) ?? 0);
+
+    for (const selections of selectionByColumn) {
+      const furthestChar = Math.max(...selections.map(getStartChar));
+      for (const selection of selections) {
+        const addCount = furthestChar - getStartChar(selection);
+        builder.insert(selection.start, fill.repeat(addCount));
+        const line = selection.start.line;
+        lineFillCounters.set(
+          line,
+          (lineFillCounters.get(line) ?? 0) + addCount
+        );
+      }
     }
   });
 }
