@@ -506,6 +506,18 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                   text: "to last buffer",
                   command: "workbench.action.openPreviousRecentlyUsedEditorInGroup",
                 },
+                "A": {
+                  text: "to last buffer...",
+                  command: "workbench.action.quickOpenPreviousRecentlyUsedEditorInGroup",
+                },
+                "p": {
+                  text: "to previous buffer",
+                  command: "workbench.action.previousEditor",
+                },
+                "n": {
+                  text: "to next buffer",
+                  command: "workbench.action.nextEditor",
+                },
                 "f": {
                   text: "to file whose name is selected",
                   command: "dance.selections.open",
