@@ -5,6 +5,7 @@ import { Context, prompt, SelectionBehavior, Selections } from "../api";
 import { ArgumentError, assert, EditNotAppliedError, EditorRequiredError } from "../utils/errors";
 import { noUndoStops } from "../utils/misc";
 import type * as TrackedSelection from "../utils/tracked-selection";
+import { extensionName } from "../utils/constants";
 
 /**
  * The base class for all registers.
@@ -361,6 +362,10 @@ class ClipboardRegister extends Register implements Register.Readable,
   public readonly flags = Register.Flags.CanRead | Register.Flags.CanWrite;
 
   public async get() {
+    if (!vscode.workspace.getConfiguration(extensionName).get<boolean>("useSystemClipboard")) {
+      return this._lastStrings;
+    }
+
     const text = await vscode.env.clipboard.readText();
 
     return text === this._lastRawText ? this._lastStrings : [text];
@@ -376,6 +381,10 @@ class ClipboardRegister extends Register implements Register.Readable,
     this._lastStrings = values;
     this._lastRawText = values.join(newline);
     this.notifyChange(Register.ChangeKind.Contents);
+
+    if (!vscode.workspace.getConfiguration(extensionName).get<boolean>("useSystemClipboard")) {
+      return Promise.resolve();
+    }
 
     return vscode.env.clipboard.writeText(this._lastRawText);
   }

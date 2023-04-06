@@ -752,6 +752,11 @@
             }
           }
         },
+        "dance.useSystemClipboard": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow default yank register (\") to map to system clipboard"
+        },
         "dance.enabled": {
           "type": "boolean",
           "default": true,

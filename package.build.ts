@@ -569,6 +569,12 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                       { items: Record<string, { text: string; command: string; args?: any[] }>}>,
         },
 
+        "dance.useSystemClipboard": {
+          type: "boolean",
+          default: true,
+          description: "Allow default yank register (\") to map to system clipboard",
+        },
+
         // Deprecated configuration:
         "dance.enabled": {
           type: "boolean",
