@@ -17,6 +17,11 @@ const commandType = {
   },
 };
 
+const letterRegisters = Array.from(
+  { length: 26 },
+  (_, i) => String.fromCharCode(97 + i),
+);
+
 const builtinModesAreDeprecatedMessage =
   "Built-in modes are deprecated. Use `#dance.modes#` instead.";
 
@@ -569,10 +574,11 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                       { items: Record<string, { text: string; command: string; args?: any[] }>}>,
         },
 
-        "dance.useSystemClipboard": {
-          type: "boolean",
-          default: true,
-          description: "Allow default yank register (\") to map to system clipboard",
+        "dance.systemClipboardRegister": {
+          enum: ["dquote", null, ...letterRegisters],
+          enumItemLabels: ['"', "None"],
+          default: "dquote",
+          description: "Controls which register maps to the system clipboard.",
         },
 
         // Deprecated configuration:

@@ -752,10 +752,43 @@
             }
           }
         },
-        "dance.useSystemClipboard": {
-          "type": "boolean",
-          "default": true,
-          "description": "Allow default yank register (\") to map to system clipboard"
+        "dance.systemClipboardRegister": {
+          "enum": [
+            "dquote",
+            null,
+            "a",
+            "b",
+            "c",
+            "d",
+            "e",
+            "f",
+            "g",
+            "h",
+            "i",
+            "j",
+            "k",
+            "l",
+            "m",
+            "n",
+            "o",
+            "p",
+            "q",
+            "r",
+            "s",
+            "t",
+            "u",
+            "v",
+            "w",
+            "x",
+            "y",
+            "z"
+          ],
+          "enumItemLabels": [
+            "\"",
+            "None"
+          ],
+          "default": "dquote",
+          "description": "Controls which register maps to the system clipboard."
         },
         "dance.enabled": {
           "type": "boolean",
