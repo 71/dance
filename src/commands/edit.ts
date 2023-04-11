@@ -2,7 +2,6 @@ import * as vscode from "vscode";
 
 import type { Argument, InputOr, RegisterOr } from ".";
 import { insert as apiInsert, Context, deindentLines, Direction, edit, indentLines, insertByIndex, insertByIndexWithFullLines, insertFlagsAtEdge, joinLines, keypress, Positions, replace, replaceByIndex, Selections, Shift } from "../api";
-import { sort } from "../api/selections";
 import type { Register } from "../state/registers";
 import { ArgumentError, LengthMismatchError } from "../utils/errors";
 
@@ -285,9 +284,9 @@ export async function replaceCharacters(
  */
 export function align(_: Context, fill: Argument<string> = " ") {
   return edit((builder, selections) => {
-    const sortedSelections = sort(Direction.Forward, [...selections]);
+    const sortedSelections = Selections.sort(Direction.Forward, [...selections]);
 
-    // Group selections by 'column', nth column being nth selections of each line
+    // Group selections by 'column', nth column being nth selections of each line.
     const selectionByColumn: vscode.Selection[][] = [];
     let currentLine: number | undefined = undefined;
     let currentColumn: number = 0;
@@ -311,7 +310,7 @@ export function align(_: Context, fill: Argument<string> = " ") {
       currentColumn += 1;
     }
     // Selections aren't updated as we fill each line, so we keep track of how
-    // many characters we added to each line as we go
+    // many characters we added to each line as we go.
     const lineFillCounters = new Map();
     const getAlignChar = (sel: vscode.Selection) =>
       sel.active.character + (lineFillCounters.get(sel.start.line) ?? 0);
