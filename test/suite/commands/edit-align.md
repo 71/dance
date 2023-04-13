@@ -64,15 +64,11 @@ selections are aligned by their selection active point
 
 ```
 Lorem ipsum dolor
-^^^^^ 0
+^^^^^ 0     ^^^^^ 2
       ^^^^^ 1
-            ^^^^^ 2
 consectetur adipiscing elit Morbi eget
-^^^^^^^^^^^ 3
-            ^^^^^^^^^^ 4
-                       ^^^^ 5
-                            ^^^^^ 6
-                                  ^^^^ 7
+^^^^^^^^^^^ 3          ^^^^ 5     ^^^^ 7
+            ^^^^^^^^^^ 4    ^^^^^ 6
 Aliquam erat
 ^^^^^^^ 8
         ^^^^ 9
@@ -85,18 +81,13 @@ Aliquam erat
 
 ```
       Lorem      ipsum dolor
-      ^^^^^ 0
+      ^^^^^ 0          ^^^^^ 2
                  ^^^^^ 1
-                       ^^^^^ 2
 consectetur adipiscing  elit Morbi eget
-^^^^^^^^^^^ 3
-            ^^^^^^^^^^ 4
-                        ^^^^ 5
-                             ^^^^^ 6
-                                   ^^^^ 7
+^^^^^^^^^^^ 3           ^^^^ 5     ^^^^ 7
+            ^^^^^^^^^^ 4     ^^^^^ 6
     Aliquam       erat
-    ^^^^^^^ 8
-                  ^^^^ 9
+    ^^^^^^^ 8     ^^^^ 9
 ```
 
 ## 3 align-inverted
@@ -107,16 +98,10 @@ consectetur adipiscing  elit Morbi eget
 
 ```
 Lorem       ipsum      dolor
-^^^^^ 0
-            ^^^^^ 1
-                       ^^^^^ 2
+^^^^^ 0     ^^^^^ 1    ^^^^^ 2
 consectetur adipiscing elit Morbi eget
-^^^^^^^^^^^ 3
-            ^^^^^^^^^^ 4
-                       ^^^^ 5
-                            ^^^^^ 6
-                                  ^^^^ 7
+^^^^^^^^^^^ 3          ^^^^ 5     ^^^^ 7
+            ^^^^^^^^^^ 4    ^^^^^ 6
 Aliquam     erat
-^^^^^^^ 8
-            ^^^^ 9
+^^^^^^^ 8   ^^^^ 9
 ```

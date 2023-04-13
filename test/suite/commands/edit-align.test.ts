@@ -84,15 +84,11 @@ suite("./test/suite/commands/edit-align.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       Lorem ipsum dolor
-      ^^^^^ 0
+      ^^^^^ 0     ^^^^^ 2
             ^^^^^ 1
-                  ^^^^^ 2
       consectetur adipiscing elit Morbi eget
-      ^^^^^^^^^^^ 3
-                  ^^^^^^^^^^ 4
-                             ^^^^ 5
-                                  ^^^^^ 6
-                                        ^^^^ 7
+      ^^^^^^^^^^^ 3          ^^^^ 5     ^^^^ 7
+                  ^^^^^^^^^^ 4    ^^^^^ 6
       Aliquam erat
       ^^^^^^^ 8
               ^^^^ 9
@@ -102,20 +98,15 @@ suite("./test/suite/commands/edit-align.md", function () {
     await executeCommand("dance.edit.align");
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-align.md:81:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-align.md:77:1", 6, String.raw`
             Lorem      ipsum dolor
-            ^^^^^ 0
+            ^^^^^ 0          ^^^^^ 2
                        ^^^^^ 1
-                             ^^^^^ 2
       consectetur adipiscing  elit Morbi eget
-      ^^^^^^^^^^^ 3
-                  ^^^^^^^^^^ 4
-                              ^^^^ 5
-                                   ^^^^^ 6
-                                         ^^^^ 7
+      ^^^^^^^^^^^ 3           ^^^^ 5     ^^^^ 7
+                  ^^^^^^^^^^ 4     ^^^^^ 6
           Aliquam       erat
-          ^^^^^^^ 8
-                        ^^^^ 9
+          ^^^^^^^ 8     ^^^^ 9
     `);
   });
 
@@ -123,15 +114,11 @@ suite("./test/suite/commands/edit-align.md", function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
       Lorem ipsum dolor
-      ^^^^^ 0
+      ^^^^^ 0     ^^^^^ 2
             ^^^^^ 1
-                  ^^^^^ 2
       consectetur adipiscing elit Morbi eget
-      ^^^^^^^^^^^ 3
-                  ^^^^^^^^^^ 4
-                             ^^^^ 5
-                                  ^^^^^ 6
-                                        ^^^^ 7
+      ^^^^^^^^^^^ 3          ^^^^ 5     ^^^^ 7
+                  ^^^^^^^^^^ 4    ^^^^^ 6
       Aliquam erat
       ^^^^^^^ 8
               ^^^^ 9
@@ -142,20 +129,14 @@ suite("./test/suite/commands/edit-align.md", function () {
     await executeCommand("dance.edit.align");
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-align.md:102:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-align.md:93:1", 6, String.raw`
       Lorem       ipsum      dolor
-      ^^^^^ 0
-                  ^^^^^ 1
-                             ^^^^^ 2
+      ^^^^^ 0     ^^^^^ 1    ^^^^^ 2
       consectetur adipiscing elit Morbi eget
-      ^^^^^^^^^^^ 3
-                  ^^^^^^^^^^ 4
-                             ^^^^ 5
-                                  ^^^^^ 6
-                                        ^^^^ 7
+      ^^^^^^^^^^^ 3          ^^^^ 5     ^^^^ 7
+                  ^^^^^^^^^^ 4    ^^^^^ 6
       Aliquam     erat
-      ^^^^^^^ 8
-                  ^^^^ 9
+      ^^^^^^^ 8   ^^^^ 9
     `);
   });
 
