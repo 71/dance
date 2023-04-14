@@ -20,8 +20,8 @@
 <tr><td><a href="#edit.deindent.withIncomplete"><code>edit.deindent.withIncomplete</code></a></td><td>Deindent selected lines (including incomplete indent)</td><td><code>Shift+,</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../edit.ts#L43"><code>edit.delete</code></a></td><td>Delete</td><td><code>Alt+D</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../edit.ts#L44"><code>edit.delete-insert</code></a></td><td>Delete and switch to Insert</td><td><code>Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="../edit.ts#L359"><code>edit.newLine.above.insert</code></a></td><td>Insert new line above and switch to insert</td><td><code>Shift+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="../edit.ts#L397"><code>edit.newLine.below.insert</code></a></td><td>Insert new line below and switch to insert</td><td><code>O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="../edit.ts#L389"><code>edit.newLine.above.insert</code></a></td><td>Insert new line above and switch to insert</td><td><code>Shift+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="../edit.ts#L427"><code>edit.newLine.below.insert</code></a></td><td>Insert new line below and switch to insert</td><td><code>O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../edit.ts#L36"><code>edit.paste.after</code></a></td><td>Paste after</td><td></td></tr>
 <tr><td><a href="../edit.ts#L38"><code>edit.paste.after.select</code></a></td><td>Paste after and select</td><td><code>P</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../edit.ts#L35"><code>edit.paste.before</code></a></td><td>Paste before</td><td></td></tr>
@@ -405,7 +405,7 @@ Default keybinding: `r` (kakoune: normal)
 
 <a name="edit.align" />
 
-### [`edit.align`](../edit.ts#L277-L290)
+### [`edit.align`](../edit.ts#L277-L285)
 
 Align selections.
 
@@ -420,7 +420,7 @@ Default keybinding: `&` (kakoune: normal)
 
 <a name="edit.copyIndentation" />
 
-### [`edit.copyIndentation`](../edit.ts#L305-L318)
+### [`edit.copyIndentation`](../edit.ts#L335-L348)
 
 Copy indentation.
 
@@ -435,7 +435,7 @@ Default keybinding: `a-&` (kakoune: normal)
 
 <a name="edit.newLine.above" />
 
-### [`edit.newLine.above`](../edit.ts#L347-L365)
+### [`edit.newLine.above`](../edit.ts#L377-L395)
 
 Insert new line above each selection.
 
@@ -457,7 +457,7 @@ Default keybinding: `s-a-o` (kakoune: normal)
 
 <a name="edit.newLine.below" />
 
-### [`edit.newLine.below`](../edit.ts#L385-L403)
+### [`edit.newLine.below`](../edit.ts#L415-L433)
 
 Insert new line below each selection.
 
