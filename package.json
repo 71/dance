@@ -781,11 +781,17 @@
             "w",
             "x",
             "y",
-            "z"
+            "z",
+            "*",
+            "+"
           ],
           "enumItemLabels": [
             "\"",
             "None"
+          ],
+          "enumDescriptions": [
+            "The default yank register",
+            "Disables using the system clipboard"
           ],
           "default": "dquote",
           "description": "Controls which register maps to the system clipboard."

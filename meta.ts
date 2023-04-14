@@ -275,6 +275,12 @@ function parseDocComments(code: string, modulePath: string) {
 }
 
 /**
+ * Keys available for binding as the system clipboard register.
+ * These are available in addition to the default `"` and `null`
+ */
+export const availableClipboardRegisters = [..."abcdefghijklmnopqrstuvwxyz".split(""), "*", "+"];
+
+/**
  * Mapping from character to corresponding VS Code keybinding.
  */
 export const specialCharacterMapping = {
