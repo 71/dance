@@ -441,8 +441,9 @@ export abstract class RegisterSet implements vscode.Disposable {
    * The '"' (`dquote`) register, default register for edit operations and
    * mapped to the system clipboard by default.
    */
-  public dquote: Register = new GeneralPurposeRegister('"', "copy");
-
+  public get dquote(): Register {
+    return this._named.get("dquote") || new GeneralPurposeRegister('"', "copy");
+  }
   /**
    * The "/" (`slash`) register, default register for search / regex operations.
    */
@@ -594,30 +595,26 @@ export abstract class RegisterSet implements vscode.Disposable {
 
     // Watch systemClipboardRegister setting and update binding
     if (extension !== undefined) {
-      extension.observePreference<keyof Registers>(
+      extension.observePreference<string | null>(
         ".systemClipboardRegister",
-        (value) => {
-          if (!['"', null, ...availableClipboardRegisters].includes(value)) {
-            return;
+        (value, validator) => {
+          if (!["dquote", null, ...availableClipboardRegisters].includes(value)) {
+            value = null;
+            validator.reportInvalidSetting(`Invalid systemClipboardRegister value: ${value}`);
           }
 
           // Reset old value to be a GeneralRegister
-          if (this._systemClipboardRegister === "dquote") {
-            this.dquote = new GeneralPurposeRegister('"', "copy");
-            this._named.set("dquote", this.dquote);
-          } else if (this._systemClipboardRegister != null) {
-            this._named.set(this._systemClipboardRegister, new GeneralPurposeRegister(this._systemClipboardRegister, "clippy"));
+          if (this._systemClipboardRegister !== undefined) {
+            const icon = this._systemClipboardRegister === "dquote" ? "copy" : "clippy";
+            this._named.set(this._systemClipboardRegister, new GeneralPurposeRegister(this._systemClipboardRegister, icon));
           }
 
           // Set new value to be a ClipboardRegister
-          if (value === "dquote") {
-            this.dquote = new ClipboardRegister();
-            this._named.set("dquote", this.dquote);
-          } else if (value != null) {
+          if (value != null) {
             this._named.set(value, new ClipboardRegister());
           }
 
-          this._systemClipboardRegister = value;
+          this._systemClipboardRegister = value || undefined;
         },
         true,
       );
