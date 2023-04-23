@@ -8,7 +8,11 @@ module.exports = {
     ecmaVersion: 2019,
     sourceType: "module",
   },
-  ignorePatterns: ["out/", "*.js"],
+  ignorePatterns: [
+    "out/",
+    "*.js",
+    "tree-sitter-api.d.ts",
+  ],
   overrides: [
     {
       files: ["commands/index.ts"],

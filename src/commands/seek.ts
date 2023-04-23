@@ -6,6 +6,8 @@ import { CharSet } from "../utils/charset";
 import { ArgumentError, assert } from "../utils/errors";
 import { escapeForRegExp, execRange } from "../utils/regexp";
 import * as TrackedSelection from "../utils/tracked-selection";
+import { TreeSitter } from "../utils/tree-sitter";
+import { SyntaxNode, Tree } from "../utils/tree-sitter-api";
 
 /**
  * Update selections based on the text surrounding them.
@@ -492,6 +494,59 @@ export async function object(
   }
 
   throw new Error("unknown object " + JSON.stringify(input));
+}
+
+/**
+ * Select syntax object.
+ *
+ * #### Variants
+ *
+ * | Title                         | Identifier                     | Command                                                |
+ * | ----------------------------- | ------------------------------ | ------------------------------------------------------ |
+ * | Select next syntax object     | `syntax.next.experimental`     | `[".seek.syntax.experimental", { where: "next"     }]` |
+ * | Select previous syntax object | `syntax.previous.experimental` | `[".seek.syntax.experimental", { where: "previous" }]` |
+ * | Select parent syntax object   | `syntax.parent.experimental`   | `[".seek.syntax.experimental", { where: "parent"   }]` |
+ * | Select child syntax object    | `syntax.child.experimental`    | `[".seek.syntax.experimental", { where: "child"    }]` |
+ */
+export function syntax_experimental(
+  _: Context,
+
+  treeSitter: TreeSitter,
+  documentTree: Tree,
+
+  where: Argument<"next" | "previous" | "parent" | "child"> = "next",
+): void {
+  const rootNode = documentTree.rootNode;
+
+  Selections.updateByIndex((_, selection) => {
+    const activeNode =
+      rootNode.namedDescendantForPosition(treeSitter.fromPosition(selection.active));
+    let newNode: SyntaxNode | null;
+
+    switch (where) {
+    case "next":
+      newNode = activeNode.nextNamedSibling;
+      break;
+
+    case "previous":
+      newNode = activeNode.previousNamedSibling;
+      break;
+
+    case "child":
+      newNode = activeNode.firstNamedChild;
+      break;
+
+    case "parent":
+      newNode = activeNode.parent;
+      break;
+    }
+
+    if (newNode == null) {
+      return selection;
+    }
+
+    return Selections.fromRange(treeSitter.toRange(newNode));
+  }, _);
 }
 
 /**

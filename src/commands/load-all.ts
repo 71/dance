@@ -216,6 +216,7 @@ import {
   leap as seek_leap,
   object as seek_object,
   seek as seek,
+  syntax_experimental as seek_syntax_experimental,
   word as seek_word,
 } from "./seek";
 
@@ -483,6 +484,11 @@ export const commands: Commands = function () {
     "dance.seek.object": new CommandDescriptor(
       "dance.seek.object",
       (_, argument) => _.runAsync((_) => seek_object(_, getInputOr("input", argument), argument["inner"], argument["where"], getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    "dance.seek.syntax.experimental": new CommandDescriptor(
+      "dance.seek.syntax.experimental",
+      (_, argument) => _.runAsync((_) => _.extension.treeSitterOrThrow().withDocumentTree(_.document, (documentTree) => seek_syntax_experimental(_, _.extension.treeSitterOrThrow(), documentTree, argument["where"]))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.seek.word": new CommandDescriptor(
@@ -1057,6 +1063,30 @@ export const commands: Commands = function () {
     "dance.seek.askObject.inner.end.extend",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".openMenu", { menu: "object", pass: [{ inner: true, where: "end" , shift: "extend" }] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.seek.syntax.next.experimental",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".seek.syntax.experimental", { where: "next" }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.seek.syntax.previous.experimental",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".seek.syntax.experimental", { where: "previous" }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.seek.syntax.parent.experimental",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".seek.syntax.experimental", { where: "parent" }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.seek.syntax.child.experimental",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".seek.syntax.experimental", { where: "child" }]],
   );
   describeAdditionalCommand(
     commands,

@@ -141,6 +141,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "typescript": "^4.8.4",
     "unexpected": "^13.0.0",
     "vsce": "^2.7.0",
+    "web-tree-sitter": "^0.20.8",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
     "yaml": "^2.1.1",
@@ -521,6 +522,14 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 "f": {
                   text: "to file whose name is selected",
                   command: "dance.selections.open",
+                },
+                "d": {
+                  text: "to definition",
+                  command: "editor.action.revealDefinition",
+                },
+                "r": {
+                  text: "to references",
+                  command: "editor.action.goToReferences",
                 },
                 ".": {
                   text: "to last buffer modification position",

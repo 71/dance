@@ -1320,6 +1320,51 @@ seek.object:
       | Select to inner object end   | `askObject.inner.end`          | `a-]` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"                    }] }]` |
       | Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
 
+seek.syntax.child.experimental:
+  title:
+    en: Select child syntax object
+
+  commands: |-
+    [".seek.syntax.experimental", { where: "child" }]
+
+seek.syntax.experimental:
+  title:
+    en: Select syntax object
+
+  doc:
+    en: |
+      Select syntax object.
+
+      #### Variants
+
+      | Title                         | Identifier                     | Command                                                |
+      | ----------------------------- | ------------------------------ | ------------------------------------------------------ |
+      | Select next syntax object     | `syntax.next.experimental`     | `[".seek.syntax.experimental", { where: "next"     }]` |
+      | Select previous syntax object | `syntax.previous.experimental` | `[".seek.syntax.experimental", { where: "previous" }]` |
+      | Select parent syntax object   | `syntax.parent.experimental`   | `[".seek.syntax.experimental", { where: "parent"   }]` |
+      | Select child syntax object    | `syntax.child.experimental`    | `[".seek.syntax.experimental", { where: "child"    }]` |
+
+seek.syntax.next.experimental:
+  title:
+    en: Select next syntax object
+
+  commands: |-
+    [".seek.syntax.experimental", { where: "next" }]
+
+seek.syntax.parent.experimental:
+  title:
+    en: Select parent syntax object
+
+  commands: |-
+    [".seek.syntax.experimental", { where: "parent" }]
+
+seek.syntax.previous.experimental:
+  title:
+    en: Select previous syntax object
+
+  commands: |-
+    [".seek.syntax.experimental", { where: "previous" }]
+
 seek.word:
   title:
     en: Select to next word start

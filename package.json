@@ -50,6 +50,7 @@
     "typescript": "^4.8.4",
     "unexpected": "^13.0.0",
     "vsce": "^2.7.0",
+    "web-tree-sitter": "^0.20.8",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
     "yaml": "^2.1.1"
@@ -684,6 +685,14 @@
                 "f": {
                   "text": "to file whose name is selected",
                   "command": "dance.selections.open"
+                },
+                "d": {
+                  "text": "to definition",
+                  "command": "editor.action.revealDefinition"
+                },
+                "r": {
+                  "text": "to references",
+                  "command": "editor.action.goToReferences"
                 },
                 ".": {
                   "text": "to last buffer modification position",
@@ -1392,6 +1401,31 @@
       {
         "command": "dance.seek.object",
         "title": "Select object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.syntax.child.experimental",
+        "title": "Select child syntax object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.syntax.experimental",
+        "title": "Select syntax object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.syntax.next.experimental",
+        "title": "Select next syntax object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.syntax.parent.experimental",
+        "title": "Select parent syntax object",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.syntax.previous.experimental",
+        "title": "Select previous syntax object",
         "category": "Dance"
       },
       {
@@ -2276,6 +2310,26 @@
         },
         {
           "command": "dance.seek.object",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.syntax.child.experimental",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.syntax.experimental",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.syntax.next.experimental",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.syntax.parent.experimental",
+          "when": "dance.mode == 'normal'"
+        },
+        {
+          "command": "dance.seek.syntax.previous.experimental",
           "when": "dance.mode == 'normal'"
         },
         {
