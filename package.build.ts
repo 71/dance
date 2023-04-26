@@ -721,6 +721,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
       command: x.id,
       title: x.title,
       category: "Dance",
+      enablement: x.enablement,
     }))),
 
     menus: {

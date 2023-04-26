@@ -2314,23 +2314,23 @@
         },
         {
           "command": "dance.seek.syntax.child.experimental",
-          "when": "dance.mode == 'normal'"
+          "when": "dance.mode == 'normal' && tree-sitter.activeEditorIsSupported"
         },
         {
           "command": "dance.seek.syntax.experimental",
-          "when": "dance.mode == 'normal'"
+          "when": "dance.mode == 'normal' && tree-sitter.activeEditorIsSupported"
         },
         {
           "command": "dance.seek.syntax.next.experimental",
-          "when": "dance.mode == 'normal'"
+          "when": "dance.mode == 'normal' && tree-sitter.activeEditorIsSupported"
         },
         {
           "command": "dance.seek.syntax.parent.experimental",
-          "when": "dance.mode == 'normal'"
+          "when": "dance.mode == 'normal' && tree-sitter.activeEditorIsSupported"
         },
         {
           "command": "dance.seek.syntax.previous.experimental",
-          "when": "dance.mode == 'normal'"
+          "when": "dance.mode == 'normal' && tree-sitter.activeEditorIsSupported"
         },
         {
           "command": "dance.seek.word",
