@@ -442,7 +442,7 @@ export abstract class RegisterSet implements vscode.Disposable {
    * mapped to the system clipboard by default.
    */
   public get dquote(): Register {
-    return this._named.get("dquote") || new GeneralPurposeRegister('"', "copy");
+    return this._named.get("dquote")!;
   }
   /**
    * The "/" (`slash`) register, default register for search / regex operations.
@@ -610,11 +610,11 @@ export abstract class RegisterSet implements vscode.Disposable {
           }
 
           // Set new value to be a ClipboardRegister
-          if (value != null) {
+          if (value !== null) {
             this._named.set(value, new ClipboardRegister());
           }
 
-          this._systemClipboardRegister = value || undefined;
+          this._systemClipboardRegister = value ?? undefined;
         },
         true,
       );
