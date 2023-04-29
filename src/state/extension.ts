@@ -48,7 +48,7 @@ export class Extension implements vscode.Disposable {
   /**
    * `Registers` for this instance of the extension.
    */
-  public readonly registers = new Registers();
+  public readonly registers = new Registers(this);
 
   /**
    * `Modes` for this instance of the extension.

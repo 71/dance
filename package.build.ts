@@ -1,4 +1,5 @@
 import type { Builder } from "./meta";
+import { availableClipboardRegisters } from "./meta";
 
 // Shared values
 // ============================================================================
@@ -16,6 +17,8 @@ const commandType = {
     required: ["command"],
   },
 };
+
+
 
 const builtinModesAreDeprecatedMessage =
   "Built-in modes are deprecated. Use `#dance.modes#` instead.";
@@ -576,6 +579,14 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             },
           } as Record<string,
                       { items: Record<string, { text: string; command: string; args?: any[] }>}>,
+        },
+
+        "dance.systemClipboardRegister": {
+          enum: ["dquote", null, ...availableClipboardRegisters],
+          enumItemLabels: ['"', "None"],
+          enumDescriptions:["The default yank register", "Disables using the system clipboard"],
+          default: "dquote",
+          description: "Controls which register maps to the system clipboard.",
         },
 
         // Deprecated configuration:
