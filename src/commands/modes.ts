@@ -11,10 +11,11 @@ declare module "./modes";
  *
  * #### Variants
  *
- * | Title              | Identifier   | Keybinding                 | Command                                                     |
- * | ------------------ | ------------ | -------------------------- | ----------------------------------------------------------- |
- * | Set mode to Normal | `set.normal` | `escape` (kakoune: insert) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
- * | Set mode to Insert | `set.insert` |                            | `[".modes.set", { mode: "insert" }]`                        |
+ * | Title              | Identifier   | Keybinding                                           | Command                                                     |
+ * | ------------------ | ------------ | ---------------------------------------------------- | ----------------------------------------------------------- |
+ * | Set mode to Normal | `set.normal` | `escape` (kakoune: insert), `escape` (helix: select) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
+ * | Set mode to Insert | `set.insert` |                                                      | `[".modes.set", { mode: "insert" }]`                        |
+ * | Set mode to Select | `set.select` |                                                      | `[".modes.set", { mode: "select" }]`                        |
  *
  * Other variants are provided to switch to insert mode:
  *

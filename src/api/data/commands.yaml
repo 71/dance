@@ -665,10 +665,11 @@ modes.set:
 
       #### Variants
 
-      | Title              | Identifier   | Keybinding                 | Command                                                     |
-      | ------------------ | ------------ | -------------------------- | ----------------------------------------------------------- |
-      | Set mode to Normal | `set.normal` | `escape` (kakoune: insert) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
-      | Set mode to Insert | `set.insert` |                            | `[".modes.set", { mode: "insert" }]`                        |
+      | Title              | Identifier   | Keybinding                                           | Command                                                     |
+      | ------------------ | ------------ | ---------------------------------------------------- | ----------------------------------------------------------- |
+      | Set mode to Normal | `set.normal` | `escape` (kakoune: insert), `escape` (helix: select) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
+      | Set mode to Insert | `set.insert` |                                                      | `[".modes.set", { mode: "insert" }]`                        |
+      | Set mode to Select | `set.select` |                                                      | `[".modes.set", { mode: "select" }]`                        |
 
       Other variants are provided to switch to insert mode:
 
@@ -699,6 +700,17 @@ modes.set.normal:
   keys:
     qwerty: |-
       `escape` (kakoune: insert)
+      `escape` (helix: select)
+
+modes.set.select:
+  title:
+    en: Set mode to Select
+
+  commands: |-
+    [".modes.set", { mode: "select" }]
+
+  keys:
+    qwerty: ""
 
 modes.set.temporarily:
   title:
@@ -1382,19 +1394,19 @@ seek.word:
 
       #### Variants
 
-      | Title                                        | Identifier                | Keybinding                | Command                                                                               |
-      | -------------------------------------------- | ------------------------- | ------------------------- | ------------------------------------------------------------------------------------- |
-      | Extend to next word start                    | `word.extend`             | `s-w` (kakoune: normal)   | `[".seek.word", {                             shift: "extend"               , ... }]` |
-      | Select to previous word start                | `word.backward`           | `b` (kakoune: normal)     | `[".seek.word", {                                              direction: -1, ... }]` |
-      | Extend to previous word start                | `word.extend.backward`    | `s-b` (kakoune: normal)   | `[".seek.word", {                             shift: "extend", direction: -1, ... }]` |
-      | Select to next non-whitespace word start     | `word.ws`                 | `a-w` (kakoune: normal)   | `[".seek.word", {                   ws: true                                , ... }]` |
-      | Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (kakoune: normal) | `[".seek.word", {                   ws: true, shift: "extend"               , ... }]` |
-      | Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (kakoune: normal)   | `[".seek.word", {                   ws: true,                  direction: -1, ... }]` |
-      | Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (kakoune: normal) | `[".seek.word", {                   ws: true, shift: "extend", direction: -1, ... }]` |
-      | Select to next word end                      | `wordEnd`                 | `e` (kakoune: normal)     | `[".seek.word", { stopAtEnd: true                                           , ... }]` |
-      | Extend to next word end                      | `wordEnd.extend`          | `s-e` (kakoune: normal)   | `[".seek.word", { stopAtEnd: true ,           shift: "extend"               , ... }]` |
-      | Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (kakoune: normal)   | `[".seek.word", { stopAtEnd: true , ws: true                                , ... }]` |
-      | Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (kakoune: normal) | `[".seek.word", { stopAtEnd: true , ws: true, shift: "extend"               , ... }]` |
+      | Title                                        | Identifier                | Keybinding                                     | Command                                                                               |
+      | -------------------------------------------- | ------------------------- | -----------------------------------------------| ------------------------------------------------------------------------------------- |
+      | Extend to next word start                    | `word.extend`             | `s-w` (kakoune: normal), `w` (helix: select)   | `[".seek.word", {                             shift: "extend"               , ... }]` |
+      | Select to previous word start                | `word.backward`           | `b` (kakoune: normal)                          | `[".seek.word", {                                              direction: -1, ... }]` |
+      | Extend to previous word start                | `word.extend.backward`    | `s-b` (kakoune: normal), `b` (helix: select)   | `[".seek.word", {                             shift: "extend", direction: -1, ... }]` |
+      | Select to next non-whitespace word start     | `word.ws`                 | `a-w` (kakoune: normal)                        | `[".seek.word", {                   ws: true                                , ... }]` |
+      | Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (kakoune: normal)                      | `[".seek.word", {                   ws: true, shift: "extend"               , ... }]` |
+      | Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (kakoune: normal)                        | `[".seek.word", {                   ws: true,                  direction: -1, ... }]` |
+      | Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (kakoune: normal)                      | `[".seek.word", {                   ws: true, shift: "extend", direction: -1, ... }]` |
+      | Select to next word end                      | `wordEnd`                 | `e` (kakoune: normal)                          | `[".seek.word", { stopAtEnd: true                                           , ... }]` |
+      | Extend to next word end                      | `wordEnd.extend`          | `s-e` (kakoune: normal), `e` (helix: select)   | `[".seek.word", { stopAtEnd: true ,           shift: "extend"               , ... }]` |
+      | Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (kakoune: normal)                        | `[".seek.word", { stopAtEnd: true , ws: true                                , ... }]` |
+      | Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (kakoune: normal)                      | `[".seek.word", { stopAtEnd: true , ws: true, shift: "extend"               , ... }]` |
 
 seek.word.backward:
   title:
@@ -1417,6 +1429,7 @@ seek.word.extend:
   keys:
     qwerty: |-
       `s-w` (kakoune: normal)
+      `w` (helix: select)
 
 seek.word.extend.backward:
   title:
@@ -1428,6 +1441,7 @@ seek.word.extend.backward:
   keys:
     qwerty: |-
       `s-b` (kakoune: normal)
+      `b` (helix: select)
 
 seek.word.ws:
   title:
@@ -1494,6 +1508,7 @@ seek.wordEnd.extend:
   keys:
     qwerty: |-
       `s-e` (kakoune: normal)
+      `e` (helix: select)
 
 seek.wordEnd.ws:
   title:
@@ -1560,6 +1575,7 @@ select.down.extend:
     qwerty: |-
       `s-j` (kakoune: normal)
       `s-down` (kakoune: normal)
+      `j` (helix: select)
 
 select.down.jump:
   title:
@@ -1956,7 +1972,7 @@ select.up.extend:
   keys:
     qwerty: |-
       `s-k` (kakoune: normal)
-      `s-up` (kakoune: normal)
+      `s-up` (kakoune: normal)  , `k` (helix: select)
 
 select.up.jump:
   title:
@@ -1980,12 +1996,12 @@ select.vertically:
 
       #### Variants
 
-      | Title       | Identifier    | Keybinding                                          | Command                                                           |
-      | ----------- | ------------- | --------------------------------------------------- | ----------------------------------------------------------------- |
-      | Jump down   | `down.jump`   | `j` (kakoune: normal)  , `down` (kakoune: normal)   | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
-      | Extend down | `down.extend` | `s-j` (kakoune: normal), `s-down` (kakoune: normal) | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
-      | Jump up     | `up.jump`     | `k` (kakoune: normal)  , `up` (kakoune: normal)     | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
-      | Extend up   | `up.extend`   | `s-k` (kakoune: normal), `s-up` (kakoune: normal)   | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
+      | Title       | Identifier    | Keybinding                                                                | Command                                                           |
+      | ----------- | ------------- | ------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+      | Jump down   | `down.jump`   | `j` (kakoune: normal)  , `down` (kakoune: normal)                         | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
+      | Extend down | `down.extend` | `s-j` (kakoune: normal), `s-down` (kakoune: normal), `j` (helix: select)  | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
+      | Jump up     | `up.jump`     | `k` (kakoune: normal)  , `up` (kakoune: normal)                           | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
+      | Extend up   | `up.extend`   | `s-k` (kakoune: normal), `s-up` (kakoune: normal)  , `k` (helix: select)  | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
 
       The following keybindings are also defined:
 

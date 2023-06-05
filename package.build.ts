@@ -314,6 +314,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 }],
               ],
             },
+            select: {},
             normal: {
               lineNumbers: "relative",
               decorations: {
@@ -758,15 +759,31 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               ...symbols.map((x) => `Shift+${x}`),
             ]);
 
+      const keysToAssignForNormal = new Set(keysToAssign)
+      const keysToAssignForVisual = new Set(keysToAssign)
+      
       for (const keybinding of keybindings) {
-        keysToAssign.delete(keybinding.key);
+        if (keybinding.when.includes("dance.mode == 'normal'")) {
+          keysToAssignForNormal.delete(keybinding.key);
+        }
+        if (keybinding.when.includes("dance.mode == 'select'")) {
+          keysToAssignForVisual.delete(keybinding.key);
+        }
       }
 
-      for (const keyToAssign of keysToAssign) {
+      for (const keyToAssign of keysToAssignForNormal) {
         keybindings.push({
           command: "dance.ignore",
           key: keyToAssign,
           when: "editorTextFocus && dance.mode == 'normal'",
+        });
+      }
+
+      for (const keyToAssign of keysToAssignForVisual) {
+        keybindings.push({
+          command: "dance.ignore",
+          key: keyToAssign,
+          when: "editorTextFocus && dance.mode == 'select'",
         });
       }
 
