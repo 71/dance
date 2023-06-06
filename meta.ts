@@ -501,7 +501,7 @@ export function parseKeys(keys: string) {
     return [];
   }
 
-  return keys.replace("\n", ", ").split(/ *, (?=`)/g).map((keyString) => {
+  return keys.replace(/\n/g, ", ").split(/ *, (?=`)/g).map((keyString) => {
     const [,, rawKeybinding, rawMetadata] = /^(`+)(.+?)\1 \((.+?)\)$/.exec(keyString)!,
           keybinding = rawKeybinding.trim().replace(
             specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m]),
