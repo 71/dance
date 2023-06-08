@@ -21,15 +21,15 @@ declare module "./seek";
  *
  * #### Variants
  *
- * | Title                                    | Identifier                 | Keybinding                | Command                                                             |
- * | ---------------------------------------- | -------------------------- | ------------------------- | ------------------------------------------------------------------- |
- * | Extend to character (excluded)           | `extend`                   | `s-t` (kakoune: normal)   | `[".seek", {                shift: "extend"               , ... }]` |
- * | Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal)   | `[".seek", {                                 direction: -1, ... }]` |
- * | Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (kakoune: normal) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
- * | Select to character (included)           | `included`                 | `f` (kakoune: normal)     | `[".seek", { include: true                                , ... }]` |
- * | Extend to character (included)           | `included.extend`          | `s-f` (kakoune: normal)   | `[".seek", { include: true, shift: "extend"               , ... }]` |
- * | Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal)   | `[".seek", { include: true,                  direction: -1, ... }]` |
- * | Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (kakoune: normal) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
+ * | Title                                    | Identifier                 | Keybinding                                       | Command                                                             |
+ * | ---------------------------------------- | -------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+ * | Extend to character (excluded)           | `extend`                   | `s-t` (kakoune: normal), `t` (helix: select)     | `[".seek", {                shift: "extend"               , ... }]` |
+ * | Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal)                          | `[".seek", {                                 direction: -1, ... }]` |
+ * | Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (kakoune: normal), `s-t` (helix: select) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
+ * | Select to character (included)           | `included`                 | `f` (kakoune: normal)                            | `[".seek", { include: true                                , ... }]` |
+ * | Extend to character (included)           | `included.extend`          | `s-f` (kakoune: normal), `f` (helix: select)     | `[".seek", { include: true, shift: "extend"               , ... }]` |
+ * | Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal)                          | `[".seek", { include: true,                  direction: -1, ... }]` |
+ * | Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (kakoune: normal), `s-f` (helix: select) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
  */
 export async function seek(
   _: Context,

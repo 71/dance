@@ -1019,15 +1019,15 @@ seek:
 
       #### Variants
 
-      | Title                                    | Identifier                 | Keybinding                | Command                                                             |
-      | ---------------------------------------- | -------------------------- | ------------------------- | ------------------------------------------------------------------- |
-      | Extend to character (excluded)           | `extend`                   | `s-t` (kakoune: normal)   | `[".seek", {                shift: "extend"               , ... }]` |
-      | Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal)   | `[".seek", {                                 direction: -1, ... }]` |
-      | Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (kakoune: normal) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
-      | Select to character (included)           | `included`                 | `f` (kakoune: normal)     | `[".seek", { include: true                                , ... }]` |
-      | Extend to character (included)           | `included.extend`          | `s-f` (kakoune: normal)   | `[".seek", { include: true, shift: "extend"               , ... }]` |
-      | Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal)   | `[".seek", { include: true,                  direction: -1, ... }]` |
-      | Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (kakoune: normal) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
+      | Title                                    | Identifier                 | Keybinding                                       | Command                                                             |
+      | ---------------------------------------- | -------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+      | Extend to character (excluded)           | `extend`                   | `s-t` (kakoune: normal), `t` (helix: select)     | `[".seek", {                shift: "extend"               , ... }]` |
+      | Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal)                          | `[".seek", {                                 direction: -1, ... }]` |
+      | Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (kakoune: normal), `s-t` (helix: select) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
+      | Select to character (included)           | `included`                 | `f` (kakoune: normal)                            | `[".seek", { include: true                                , ... }]` |
+      | Extend to character (included)           | `included.extend`          | `s-f` (kakoune: normal), `f` (helix: select)     | `[".seek", { include: true, shift: "extend"               , ... }]` |
+      | Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal)                          | `[".seek", { include: true,                  direction: -1, ... }]` |
+      | Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (kakoune: normal), `s-f` (helix: select) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
 
 seek.askObject:
   title:
@@ -1216,6 +1216,7 @@ seek.extend:
   keys:
     qwerty: |-
       `s-t` (kakoune: normal)
+      `t` (helix: select)
 
 seek.extend.backward:
   title:
@@ -1227,6 +1228,7 @@ seek.extend.backward:
   keys:
     qwerty: |-
       `s-a-t` (kakoune: normal)
+      `s-t` (helix: select)
 
 seek.included:
   title:
@@ -1260,6 +1262,7 @@ seek.included.extend:
   keys:
     qwerty: |-
       `s-f` (kakoune: normal)
+      `f` (helix: select)
 
 seek.included.extend.backward:
   title:
@@ -1271,6 +1274,7 @@ seek.included.extend.backward:
   keys:
     qwerty: |-
       `s-a-f` (kakoune: normal)
+      `s-f` (helix: select)
 
 seek.leap:
   title:
@@ -1940,10 +1944,10 @@ select.to:
 
       #### Variants
 
-      | Title     | Identifier  | Keybinding              | Command                                    |
-      | --------- | ----------- | ----------------------- | ------------------------------------------ |
-      | Go to     | `to.jump`   | `g` (kakoune: normal)   | `[".select.to", { shift: "jump"  , ... }]` |
-      | Extend to | `to.extend` | `s-g` (kakoune: normal) | `[".select.to", { shift: "extend", ... }]` |
+      | Title     | Identifier  | Keybinding                                   | Command                                    |
+      | --------- | ----------- | -------------------------------------------- | ------------------------------------------ |
+      | Go to     | `to.jump`   | `g` (kakoune: normal)                        | `[".select.to", { shift: "jump"  , ... }]` |
+      | Extend to | `to.extend` | `s-g` (kakoune: normal), `g` (helix: select) | `[".select.to", { shift: "extend", ... }]` |
 
 select.to.extend:
   title:
@@ -1955,6 +1959,7 @@ select.to.extend:
   keys:
     qwerty: |-
       `s-g` (kakoune: normal)
+      `g` (helix: select)
 
 select.to.jump:
   title:

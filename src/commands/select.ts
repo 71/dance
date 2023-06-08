@@ -291,10 +291,10 @@ export function horizontally(
  *
  * #### Variants
  *
- * | Title     | Identifier  | Keybinding              | Command                                    |
- * | --------- | ----------- | ----------------------- | ------------------------------------------ |
- * | Go to     | `to.jump`   | `g` (kakoune: normal)   | `[".select.to", { shift: "jump"  , ... }]` |
- * | Extend to | `to.extend` | `s-g` (kakoune: normal) | `[".select.to", { shift: "extend", ... }]` |
+ * | Title     | Identifier  | Keybinding                                   | Command                                    |
+ * | --------- | ----------- | -------------------------------------------- | ------------------------------------------ |
+ * | Go to     | `to.jump`   | `g` (kakoune: normal)                        | `[".select.to", { shift: "jump"  , ... }]` |
+ * | Extend to | `to.extend` | `s-g` (kakoune: normal), `g` (helix: select) | `[".select.to", { shift: "extend", ... }]` |
  */
 export function to(
   _: Context,

@@ -103,12 +103,12 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="../seek.ts#L92"><code>seek.enclosing.backward</code></a></td><td>Select to previous enclosing character</td><td><code>Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L91"><code>seek.enclosing.extend</code></a></td><td>Extend to next enclosing character</td><td><code>Shift+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L93"><code>seek.enclosing.extend.backward</code></a></td><td>Extend to previous enclosing character</td><td><code>Shift+Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="../seek.ts#L26"><code>seek.extend</code></a></td><td>Extend to character (excluded)</td><td><code>Shift+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="../seek.ts#L28"><code>seek.extend.backward</code></a></td><td>Extend to character (excluded, backward)</td><td><code>Shift+Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="../seek.ts#L26"><code>seek.extend</code></a></td><td>Extend to character (excluded)</td><td><code>Shift+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>T</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
+<tr><td><a href="../seek.ts#L28"><code>seek.extend.backward</code></a></td><td>Extend to character (excluded, backward)</td><td><code>Shift+Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+T</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L29"><code>seek.included</code></a></td><td>Select to character (included)</td><td><code>F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L31"><code>seek.included.backward</code></a></td><td>Select to character (included, backward)</td><td><code>Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="../seek.ts#L30"><code>seek.included.extend</code></a></td><td>Extend to character (included)</td><td><code>Shift+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="../seek.ts#L32"><code>seek.included.extend.backward</code></a></td><td>Extend to character (included, backward)</td><td><code>Shift+Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="../seek.ts#L30"><code>seek.included.extend</code></a></td><td>Extend to character (included)</td><td><code>Shift+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>F</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
+<tr><td><a href="../seek.ts#L32"><code>seek.included.extend.backward</code></a></td><td>Extend to character (included, backward)</td><td><code>Shift+Alt+F</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+F</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L561"><code>seek.leap.backward</code></a></td><td>Leap backward</td><td></td></tr>
 <tr><td><a href="../seek.ts#L509"><code>seek.syntax.child.experimental</code></a></td><td>Select child syntax object</td><td></td></tr>
 <tr><td><a href="../seek.ts#L506"><code>seek.syntax.next.experimental</code></a></td><td>Select next syntax object</td><td></td></tr>
@@ -162,7 +162,7 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="../select.ts#L590"><code>select.middleVisibleLine.jump</code></a></td><td>Jump to middle visible line</td><td></td></tr>
 <tr><td><a href="../select.ts#L228"><code>select.right.extend</code></a></td><td>Extend right</td><td><code>Shift+L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Right</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>L</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../select.ts#L227"><code>select.right.jump</code></a></td><td>Jump right</td><td><code>L</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Right</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="../select.ts#L297"><code>select.to.extend</code></a></td><td>Extend to</td><td><code>Shift+G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="../select.ts#L297"><code>select.to.extend</code></a></td><td>Extend to</td><td><code>Shift+G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>G</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../select.ts#L296"><code>select.to.jump</code></a></td><td>Go to</td><td><code>G</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../select.ts#L44"><code>select.up.extend</code></a></td><td>Extend up</td><td><code>Shift+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Up</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>K</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../select.ts#L43"><code>select.up.jump</code></a></td><td>Jump up</td><td><code>K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Up</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -996,15 +996,15 @@ Select to character (excluded).
 
 #### Variants
 
-| Title                                    | Identifier                 | Keybinding                | Command                                                             |
-| ---------------------------------------- | -------------------------- | ------------------------- | ------------------------------------------------------------------- |
-| Extend to character (excluded)           | `extend`                   | `s-t` (kakoune: normal)   | `[".seek", {                shift: "extend"               , ... }]` |
-| Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal)   | `[".seek", {                                 direction: -1, ... }]` |
-| Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (kakoune: normal) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
-| Select to character (included)           | `included`                 | `f` (kakoune: normal)     | `[".seek", { include: true                                , ... }]` |
-| Extend to character (included)           | `included.extend`          | `s-f` (kakoune: normal)   | `[".seek", { include: true, shift: "extend"               , ... }]` |
-| Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal)   | `[".seek", { include: true,                  direction: -1, ... }]` |
-| Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (kakoune: normal) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
+| Title                                    | Identifier                 | Keybinding                                       | Command                                                             |
+| ---------------------------------------- | -------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
+| Extend to character (excluded)           | `extend`                   | `s-t` (kakoune: normal), `t` (helix: select)     | `[".seek", {                shift: "extend"               , ... }]` |
+| Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal)                          | `[".seek", {                                 direction: -1, ... }]` |
+| Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (kakoune: normal), `s-t` (helix: select) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
+| Select to character (included)           | `included`                 | `f` (kakoune: normal)                            | `[".seek", { include: true                                , ... }]` |
+| Extend to character (included)           | `included.extend`          | `s-f` (kakoune: normal), `f` (helix: select)     | `[".seek", { include: true, shift: "extend"               , ... }]` |
+| Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal)                          | `[".seek", { include: true,                  direction: -1, ... }]` |
+| Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (kakoune: normal), `s-f` (helix: select) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -1216,10 +1216,10 @@ line. If no count is specified, this command will shift open the `goto` menu.
 
 #### Variants
 
-| Title     | Identifier  | Keybinding              | Command                                    |
-| --------- | ----------- | ----------------------- | ------------------------------------------ |
-| Go to     | `to.jump`   | `g` (kakoune: normal)   | `[".select.to", { shift: "jump"  , ... }]` |
-| Extend to | `to.extend` | `s-g` (kakoune: normal) | `[".select.to", { shift: "extend", ... }]` |
+| Title     | Identifier  | Keybinding                                   | Command                                    |
+| --------- | ----------- | -------------------------------------------- | ------------------------------------------ |
+| Go to     | `to.jump`   | `g` (kakoune: normal)                        | `[".select.to", { shift: "jump"  , ... }]` |
+| Extend to | `to.extend` | `s-g` (kakoune: normal), `g` (helix: select) | `[".select.to", { shift: "extend", ... }]` |
 
 This command:
 - accepts an argument of type `object`.
