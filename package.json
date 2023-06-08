@@ -3552,8 +3552,20 @@
         "command": "dance.seek.word.ws.extend"
       },
       {
+        "key": "Shift+W",
+        "when": "editorTextFocus && dance.mode == 'select'",
+        "title": "Extend to next non-whitespace word start",
+        "command": "dance.seek.word.ws.extend"
+      },
+      {
         "key": "Shift+Alt+B",
         "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to previous non-whitespace word start",
+        "command": "dance.seek.word.ws.extend.backward"
+      },
+      {
+        "key": "Shift+B",
+        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend to previous non-whitespace word start",
         "command": "dance.seek.word.ws.extend.backward"
       },
@@ -3584,6 +3596,12 @@
       {
         "key": "Shift+Alt+E",
         "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend to next non-whitespace word end",
+        "command": "dance.seek.wordEnd.ws.extend"
+      },
+      {
+        "key": "Shift+E",
+        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend to next non-whitespace word end",
         "command": "dance.seek.wordEnd.ws.extend"
       },
@@ -3632,6 +3650,12 @@
       {
         "key": "Shift+Left",
         "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend left",
+        "command": "dance.select.left.extend"
+      },
+      {
+        "key": "H",
+        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend left",
         "command": "dance.select.left.extend"
       },
@@ -3704,6 +3728,12 @@
       {
         "key": "Shift+Right",
         "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Extend right",
+        "command": "dance.select.right.extend"
+      },
+      {
+        "key": "L",
+        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend right",
         "command": "dance.select.right.extend"
       },
@@ -4174,17 +4204,7 @@
       },
       {
         "command": "dance.ignore",
-        "key": "H",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
         "key": "I",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "L",
         "when": "editorTextFocus && dance.mode == 'select'"
       },
       {
@@ -4309,22 +4329,12 @@
       },
       {
         "command": "dance.ignore",
-        "key": "Shift+B",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
         "key": "Shift+C",
         "when": "editorTextFocus && dance.mode == 'select'"
       },
       {
         "command": "dance.ignore",
         "key": "Shift+D",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+E",
         "when": "editorTextFocus && dance.mode == 'select'"
       },
       {
@@ -4410,11 +4420,6 @@
       {
         "command": "dance.ignore",
         "key": "Shift+V",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+W",
         "when": "editorTextFocus && dance.mode == 'select'"
       },
       {
