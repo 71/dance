@@ -2928,8 +2928,20 @@
         "command": "dance.edit.yank-delete"
       },
       {
+        "key": "D",
+        "when": "editorTextFocus && dance.mode == 'select'",
+        "title": "Copy and delete",
+        "command": "dance.edit.yank-delete"
+      },
+      {
         "key": "C",
         "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Copy, delete and switch to Insert",
+        "command": "dance.edit.yank-delete-insert"
+      },
+      {
+        "key": "C",
+        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Copy, delete and switch to Insert",
         "command": "dance.edit.yank-delete-insert"
       },
@@ -2970,6 +2982,12 @@
         "command": "dance.history.redo"
       },
       {
+        "key": "Shift+U",
+        "when": "editorTextFocus && dance.mode == 'select'",
+        "title": "Redo",
+        "command": "dance.history.redo"
+      },
+      {
         "key": "Shift+Alt+U",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Redo a change of selections",
@@ -2996,6 +3014,12 @@
       {
         "key": "U",
         "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Undo",
+        "command": "dance.history.undo"
+      },
+      {
+        "key": "U",
+        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Undo",
         "command": "dance.history.undo"
       },
@@ -4214,16 +4238,6 @@
       },
       {
         "command": "dance.ignore",
-        "key": "C",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "D",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
         "key": "I",
         "when": "editorTextFocus && dance.mode == 'select'"
       },
@@ -4260,11 +4274,6 @@
       {
         "command": "dance.ignore",
         "key": "S",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "U",
         "when": "editorTextFocus && dance.mode == 'select'"
       },
       {
@@ -4415,11 +4424,6 @@
       {
         "command": "dance.ignore",
         "key": "Shift+S",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+U",
         "when": "editorTextFocus && dance.mode == 'select'"
       },
       {
