@@ -759,9 +759,9 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               ...symbols.map((x) => `Shift+${x}`),
             ]);
 
-      const keysToAssignForNormal = new Set(keysToAssign)
-      const keysToAssignForVisual = new Set(keysToAssign)
-      
+      const keysToAssignForNormal = new Set(keysToAssign);
+      const keysToAssignForVisual = new Set(keysToAssign);
+
       for (const keybinding of keybindings) {
         if (keybinding.when.includes("dance.mode == 'normal'")) {
           keysToAssignForNormal.delete(keybinding.key);
