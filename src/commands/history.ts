@@ -15,7 +15,7 @@ declare module "./history";
 /**
  * Undo.
  *
- * @keys `u` (kakoune: normal)
+ * @keys `u` (kakoune: normal), `u` (helix: select)
  */
 export function undo() {
   return vscode.commands.executeCommand("undo");
@@ -24,7 +24,7 @@ export function undo() {
 /**
  * Redo.
  *
- * @keys `s-u` (kakoune: normal)
+ * @keys `s-u` (kakoune: normal), `s-u` (helix: select)
  */
 export function redo() {
   return vscode.commands.executeCommand("redo");
