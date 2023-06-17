@@ -58,5 +58,24 @@ jobs:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
           extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
-          packagePath: ''
           yarn: true
+
+      - name: Compute pre-release versions
+        id: pre-release-versions
+        run: |
+          echo MARKETPLACE=`node -e "console.log(JSON.parse(require('child_process').execFileSync(process.execPath, ['node_modules/vsce/vsce', 'show', 'gregoire.dance', '--json'], { encoding: 'utf8' })).versions[0].version)"` >> "$GITHUB_OUTPUT"
+          echo LOCAL=`node -e "console.log(/[0-9]+.[0-9]+.[0-9]+/.exec(require('./package.json').scripts['package:pre'])[0])"` >> "$GITHUB_OUTPUT"
+
+      - name: Build pre-release .vsix
+        run: yarn run package:pre
+        if: ${{ steps.pre-release-versions.outputs.MARKETPLACE != steps.pre-release-versions.outputs.LOCAL }}
+
+      - name: Publish pre-release to Visual Studio Marketplace
+        uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
+        if: ${{ steps.pre-release-versions.outputs.MARKETPLACE != steps.pre-release-versions.outputs.LOCAL }}
+        with:
+          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          registryUrl: https://marketplace.visualstudio.com
+          extensionFile: dance-${{ steps.pre-release-versions.outputs.LOCAL }}.vsix
+          yarn: true
+          preRelease: true
