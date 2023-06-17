@@ -155,7 +155,7 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
   }
 }
 
-export declare namespace CommandDescriptor {
+export /* enum */ namespace CommandDescriptor {
   /**
    * Flags describing the behavior of some commands.
    */

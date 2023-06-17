@@ -3,7 +3,7 @@
 import "source-map-support/register";
 
 import * as assert from "assert";
-import * as Mocha  from "mocha";
+import Mocha       from "mocha";
 import * as path   from "path";
 // @ts-expect-error
 import * as unexpected from "unexpected";

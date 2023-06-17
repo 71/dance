@@ -1,7 +1,7 @@
-import * as glob  from "glob";
-import * as Mocha from "mocha";
-import * as path  from "path";
-import { promises as fs } from "fs";
+import glob      from "glob";
+import Mocha     from "mocha";
+import * as path from "path";
+import * as fs   from "fs/promises";
 
 export async function run(testsRoot: string) {
   // Create the mocha test.

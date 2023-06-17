@@ -1,4 +1,4 @@
-import * as assert from "assert";
+import assert from "assert";
 
 export function stringifyExpectedDocument(code: string, codeIndent: number) {
   code = code.replace(/`/g, "\\`").replace(/^/gm, " ".repeat(codeIndent + 2));

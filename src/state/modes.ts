@@ -509,7 +509,7 @@ export declare namespace Mode {
     readonly type: vscode.TextEditorDecorationType;
   }
 
-  export namespace Configuration {
+  export /* enum */ namespace Configuration {
     /**
      * A valid cursor style value in a `Mode.Configuration`.
      */
