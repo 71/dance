@@ -63,6 +63,7 @@ jobs:
       - name: Compute pre-release versions
         id: pre-release-versions
         run: |
+          yarn
           echo MARKETPLACE=`node -e "console.log(JSON.parse(require('child_process').execFileSync(process.execPath, ['node_modules/vsce/vsce', 'show', 'gregoire.dance', '--json'], { encoding: 'utf8' })).versions[0].version)"` >> "$GITHUB_OUTPUT"
           echo LOCAL=`node -e "console.log(/[0-9]+.[0-9]+.[0-9]+/.exec(require('./package.json').scripts['package:pre'])[0])"` >> "$GITHUB_OUTPUT"
 
