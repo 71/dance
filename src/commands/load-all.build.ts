@@ -207,7 +207,7 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
       `_.extension.treeSitterOrThrow().withDocumentTree(_.document, (documentTree) => ${call})`;
   }
 
-  return `(${inputParameters.join(", ")}) => _.runAsync((_) => ${call})`;
+  return `(${inputParameters.join(", ")}) => _.runAsync(async (_) => await ${call})`;
 }
 
 function determineFunctionFlags(f: Builder.ParsedFunction) {
