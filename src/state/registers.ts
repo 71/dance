@@ -175,7 +175,7 @@ export abstract class Register {
   }
 }
 
-export declare namespace Register {
+export /* enum */ namespace Register {
   /**
    * Flags describing the capabilities of a `Register`.
    */
@@ -197,6 +197,14 @@ export declare namespace Register {
     CanReadWriteMacros = 16,
   }
 
+  export const enum ChangeKind {
+    Contents,
+    Selections,
+    Recording,
+  }
+}
+
+export declare namespace Register {
   /**
    * Given an array of `Flags` types, returns what interfaces correspond to
    * these flags.
@@ -236,12 +244,6 @@ export declare namespace Register {
   export interface ReadableWriteableMacros {
     getRecording(): Recording | undefined;
     setRecording(recording: Recording): void;
-  }
-
-  export const enum ChangeKind {
-    Contents,
-    Selections,
-    Recording,
   }
 }
 

@@ -1,6 +1,6 @@
-import * as assert from "assert";
-import * as fs     from "fs/promises";
-import * as path   from "path";
+import assert  from "assert";
+import * as fs from "fs/promises";
+import path    from "path";
 
 import { unindent } from "../../meta";
 import { execAll, stringifyExpectedDocument } from "./build-utils";

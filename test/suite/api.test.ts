@@ -1,5 +1,4 @@
 /* eslint-disable require-await */
-import * as assert from "assert";
 import * as vscode from "vscode";
 
 import { expect, ExpectedDocument } from "./utils";

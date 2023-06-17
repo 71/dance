@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "module": "CommonJS",
-    "target": "ES2018",
-    "outDir": "out",
-    "lib": ["ES2020", "ESNext.WeakRef"],
+    "target": "ES2021",
+    "lib": ["ESNext.WeakRef"],
+    "noEmit": true,
     "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true,
@@ -12,6 +12,7 @@
     "preserveConstEnums": true,
     "strictNullChecks": true,
     "noImplicitAny": true,
+    "esModuleInterop": true,
   },
   "exclude": ["node_modules", ".vscode-test"],
 }

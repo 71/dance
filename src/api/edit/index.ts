@@ -173,7 +173,7 @@ export function insert(
   );
 }
 
-export declare namespace insert {
+export /* enum */ namespace insert {
   /**
    * Insertion flags for {@link insert}.
    */
@@ -218,7 +218,9 @@ export declare namespace insert {
      */
     Extend = 0b10_00_1,
   }
+}
 
+export declare namespace insert {
   /**
    * The result of a callback passed to {@link insert} or
    * {@link insertByIndex}.

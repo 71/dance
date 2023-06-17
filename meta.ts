@@ -1,7 +1,7 @@
-import * as assert from "assert";
-import * as fs     from "fs/promises";
-import * as G      from "glob";
-import * as path   from "path";
+import assert from "assert";
+import G      from "glob";
+import * as fs   from "fs/promises";
+import * as path from "path";
 
 const verbose = process.argv.includes("--verbose");
 
