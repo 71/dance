@@ -3,10 +3,10 @@ import * as vscode from "vscode";
 import type { Extension } from "./extension";
 import type { Recording } from "./recorder";
 import { Context, prompt, SelectionBehavior, Selections } from "../api";
+import { availableClipboardRegisters } from "../utils/constants";
 import { ArgumentError, assert, EditNotAppliedError, EditorRequiredError } from "../utils/errors";
 import { noUndoStops } from "../utils/misc";
 import type * as TrackedSelection from "../utils/tracked-selection";
-import { availableClipboardRegisters } from "../../meta";
 
 /**
  * The base class for all registers.
