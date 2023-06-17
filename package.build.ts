@@ -1,5 +1,5 @@
 import type { Builder } from "./meta";
-import { availableClipboardRegisters } from "./meta";
+import { availableClipboardRegisters } from "./src/utils/constants";
 
 // Shared values
 // ============================================================================
@@ -17,8 +17,6 @@ const commandType = {
     required: ["command"],
   },
 };
-
-
 
 const builtinModesAreDeprecatedMessage =
   "Built-in modes are deprecated. Use `#dance.modes#` instead.";
@@ -80,7 +78,7 @@ const selectionDecorationType = {
 // ============================================================================
 
 const version = "0.5.12",
-      preRelease = 2;
+      preRelease = 3;
 
 export const pkg = (modules: Builder.ParsedModule[]) => ({
 
@@ -122,6 +120,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "test": "yarn run compile && node ./out/test/run.js",
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
+    "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
     "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
   },
 

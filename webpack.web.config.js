@@ -36,9 +36,7 @@ module.exports = {
     new webpack.DefinePlugin({
       "process.platform": '"web"',
       "process.env.SHELL": "undefined",
-    }),
-    new webpack.ProvidePlugin({
-      process: "process/browser",
+      "process.env": "{}",
     }),
   ],
   externals: {
