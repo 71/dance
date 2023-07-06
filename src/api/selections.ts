@@ -467,7 +467,7 @@ export function update(
    | map.Mapper<Thenable<vscode.Selection | undefined>>,
   context?: Context,
 ): any {
-  const selections = map(f as any, context?.selections);
+  const selections = map(f as map.Mapper<vscode.Selection | undefined>, context?.selections);
 
   if (Array.isArray(selections)) {
     return set(selections, context);
@@ -538,7 +538,7 @@ export function updateByIndex(
    | mapByIndex.Mapper<Thenable<vscode.Selection | undefined>>,
   context?: Context,
 ): any {
-  const selections = mapByIndex(f as any, context?.selections);
+  const selections = mapByIndex(f as mapByIndex.Mapper<vscode.Selection>, context?.selections);
 
   if (Array.isArray(selections)) {
     return set(selections, context);
@@ -558,7 +558,7 @@ export function updateWithFallback<T extends updateWithFallback.SelectionOrFallb
 ): T extends Thenable<updateWithFallback.SelectionOrFallback>
     ? Thenable<vscode.Selection[]>
     : vscode.Selection[] {
-  const selections = map(f as any);
+  const selections = map(f as map.Mapper<updateWithFallback.SelectionOrFallback>);
 
   if (Array.isArray(selections)) {
     return set(mapFallbackSelections(selections)) as any;
@@ -589,7 +589,7 @@ export function updateWithFallbackByIndex<
 ): T extends Thenable<updateWithFallback.SelectionOrFallback>
     ? Thenable<vscode.Selection[]>
     : vscode.Selection[] {
-  const selections = mapByIndex(f as any);
+  const selections = mapByIndex(f as mapByIndex.Mapper<updateWithFallback.SelectionOrFallback>);
 
   if (Array.isArray(selections)) {
     return set(mapFallbackSelections(selections)) as any;

@@ -571,7 +571,8 @@ export async function leap(
   labels = labels.toLowerCase();
 
   ArgumentError.validate(
-    "labels", new Set(labels).size === [...labels].length, "must not reuse characters");
+    "labels",
+    new Set(labels as Iterable<string>).size === [...labels].length, "must not reuse characters");
 
   const editor = _.editor,
         doc = _.document,
