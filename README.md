@@ -49,6 +49,11 @@ All modes are custom. By default, the `normal` and `insert` modes are defined,
 and many [Kakoune]-inspired keybindings are available. More modes can be
 created, though. These modes are configured with `dance.modes`.
 
+For an example of this (which both creates a new mode and adds keybindings to
+it), see
+["Extend select mode"](https://github.com/71/dance/wiki/Extend-select-mode) in
+the wiki.
+
 ### Selection behaviors
 
 Dance by default uses caret-based selections just like VS Code. This means a
