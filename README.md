@@ -14,8 +14,8 @@ of it.
 
 #### Why [VS Code][vsc], and not [Kakoune] directly?
 
-- Kakoune is an efficient and lightweight editor with a very small ecosystem.
-  VS Code is an entire IDE with a huge ecosystem and many existing extensions.
+- Kakoune is an efficient and lightweight editor with a very small ecosystem. VS
+  Code is an entire IDE with a huge ecosystem and many existing extensions.
 - Kakoune is Unix-only.
 
 #### Why [Kakoune]'s key bindings, and not [Vim]'s?
@@ -93,20 +93,22 @@ same way on all selections at once, [`dance.run`][run] can be used to
 individually manipulate selections. It can also be used to run several commands
 at once.
 
-Finally, the [Dance API][API] is exported by Dance. Other VS Code extensions
-can specify that they depend on Dance (with the [`extensionDependencies`
-property](https://code.visualstudio.com/api/references/extension-manifest#fields)),
-and then access the API by calling [`activate`](
-https://code.visualstudio.com/api/references/vscode-api#Extension.activate):
+Finally, the [Dance API][API] is exported by Dance. Other VS Code extensions can
+specify that they depend on Dance (with the
+[`extensionDependencies` property](https://code.visualstudio.com/api/references/extension-manifest#fields)),
+and then access the API by calling
+[`activate`](https://code.visualstudio.com/api/references/vscode-api#Extension.activate):
 
 ```js
-const { api } = await vscode.extensions.getExtension("gregoire.dance").activate();
+const { api } = await vscode.extensions.getExtension("gregoire.dance")
+  .activate();
 ```
 
 ### Pipes
 
 Pipes no longer accept shell commands, but instead accept "expressions", those
 being:
+
 - `#<shell command>`: Pipes each selection into a shell command (the shell
   respects the `terminal.integrated.automationProfile.<os>` profile).
 - `/<pattern>[/<replacement>[/<flags>]`: A RegExp literal, as
@@ -138,8 +140,8 @@ being:
 ### Status bar
 
 Dance provides several status bar segments (left-aligned) exposing info similar
-to Kakoune's default mode-line. Most of them are hidden by default and only shown
-contextually:
+to Kakoune's default mode-line. Most of them are hidden by default and only
+shown contextually:
 
 - current mode: click to switch to another mode
 - macro recording status: click to stop recording
@@ -149,9 +151,9 @@ contextually:
 
 ### Dance view
 
-Dance also provides a [custom view](
-https://code.visualstudio.com/docs/getstarted/userinterface#_views) which lists
-all registers and their contents.
+Dance also provides a
+[custom view](https://code.visualstudio.com/docs/getstarted/userinterface#_views)
+which lists all registers and their contents.
 
 ### Miscellaneous changes
 
@@ -181,9 +183,9 @@ make the extension integrate better with VS Code.
   not compatible with extensions that always override the `type` command, such
   as [VSCodeVim]; these extensions must therefore be disabled.
 - If you're on Linux and your keybindings don't work as expected (for instance,
-  `swapescape` is not respected), take a look at the [VS Code guide for
-  troubleshooting Linux keybindings](
-  https://github.com/Microsoft/vscode/wiki/Keybinding-Issues#troubleshoot-linux-keybindings).
+  `swapescape` is not respected), take a look at the
+  [VS Code guide for
+  troubleshooting Linux keybindings](https://github.com/Microsoft/vscode/wiki/Keybinding-Issues#troubleshoot-linux-keybindings).
   TL;DR: adding `"keyboard.dispatch": "keyCode"` to your VS Code settings will
   likely fix it.
 
@@ -200,7 +202,7 @@ that does not pass and can be used to reliably reproduce the bug.
 If you'd like to add or improve a feature, please make sure that no similar
 feature has been requested in the [issues] and file a new issue for it. This
 will ensure that no two people work on the same feature at the same time, and
-will be a good place to ask for help in case you want to tackle this yourself.  
+will be a good place to ask for help in case you want to tackle this yourself.\
 Since some features are not general enough, it may be requested of you to make a
 plugin that uses the Dance API or to simply use scripts in the meantime.
 
