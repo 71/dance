@@ -86,11 +86,12 @@ Commands that take an input, like `dance.modes.set`, will prompt a user for a
 value if no argument is given.
 
 Additionally to having commands with many settings, Dance also exposes the
-`dance.run` command, which runs JavaScript code. That code has access to the
-[Dance API][API], and can perform operations with more control than Dance
+[`dance.run`][run] command, which runs JavaScript code. That code has access to
+the [Dance API][API], and can perform operations with more control than Dance
 commands. Where Dance commands in the `dance.selections` namespace operate the
-same way on all selections at once, `dance.run` can be used to individually
-manipulate selections.
+same way on all selections at once, [`dance.run`][run] can be used to
+individually manipulate selections. It can also be used to run several commands
+at once.
 
 Finally, the [Dance API][API] is exported by Dance. Other VS Code extensions
 can specify that they depend on Dance (with the [`extensionDependencies`
@@ -220,6 +221,7 @@ pre-release `1` of version `0.5.13` is `0.5.12001`.
 [issues]: https://github.com/71/dance/issues
 [vim]: https://www.vim.org
 [kakoune]: https://github.com/mawww/kakoune
+[run]: ./src/commands/README.md#run
 [vsc]: https://github.com/Microsoft/vscode
 [vscodevim]: https://github.com/VSCodeVim/Vim
 [vsccommands]: https://code.visualstudio.com/api/extension-guides/command
