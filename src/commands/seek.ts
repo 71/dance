@@ -6,8 +6,7 @@ import { CharSet } from "../utils/charset";
 import { ArgumentError, assert } from "../utils/errors";
 import { escapeForRegExp, execRange } from "../utils/regexp";
 import * as TrackedSelection from "../utils/tracked-selection";
-import { TreeSitter } from "../utils/tree-sitter";
-import { SyntaxNode, Tree } from "../utils/tree-sitter-api";
+import { SyntaxNode, Tree, TreeSitter } from "../utils/tree-sitter";
 
 /**
  * Update selections based on the text surrounding them.
