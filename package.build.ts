@@ -122,7 +122,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "compile:watch": `${esbuildNode} --watch --sourcemap`,
     "compile-web": esbuildWeb,
     "compile-web:watch": `${esbuildWeb} --watch --sourcemap`,
-    "compile-tests": "glob-exec {src,test}/**/*.ts -- \"esbuild {{files.join(' ')}} --target=es2021 --format=cjs --outdir=out --outbase=. --sourcemap\"",
+    "compile-tests": "globstar -- esbuild \"{src,test}/**/*.ts\" --target=es2021 --format=cjs --outdir=out --outbase=. --sourcemap",
 
     "test": "yarn run compile --sourcemap && yarn run compile-tests && node ./out/test/run.js",
 
@@ -146,7 +146,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "esbuild": "^0.18.4",
     "eslint": "^8.15.0",
     "glob": "^8.0.3",
-    "glob-exec": "^0.1.1",
+    "globstar": "^1.0.0",
     "mocha": "^10.0.0",
     "source-map-support": "^0.5.21",
     "ts-loader": "^9.3.1",
