@@ -37,9 +37,10 @@ export async function seek(
   repetitions: number,
   direction = Direction.Forward,
   shift = Shift.Select,
+  inputLength: Argument<number> = 1,
   include: Argument<boolean> = false,
 ) {
-  const input = await inputOr(() => keypress(_));
+  const input = await inputOr(() => keypress(_, inputLength));
 
   Selections.updateByIndex((_, selection, document) => {
     let position: vscode.Position | undefined = Selections.seekFrom(selection, -direction);

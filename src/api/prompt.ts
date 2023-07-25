@@ -466,9 +466,11 @@ export function notifyPromptActionRequested(action: "next" | "previous" | "clear
 }
 
 /**
- * Awaits a keypress from the user and returns the entered key.
+ * Awaits for one or more keypresses from the user and returns the entered keys.
+ *
+ * `keyCount`: determines the number of keypresses to wait for (defaults to 1)
  */
-export async function keypress(context = Context.current): Promise<string> {
+export async function keypress(context = Context.current, keyCount: number = 1): Promise<string> {
   if (context.cancellationToken.isCancellationRequested) {
     return Promise.reject(new CancellationError(CancellationError.Reason.CancellationToken));
   }
@@ -479,12 +481,15 @@ export async function keypress(context = Context.current): Promise<string> {
 
   return await new Promise<string>((resolve, reject) => {
     try {
+      let keys = "";
       const subscriptions = [
         vscode.commands.registerCommand("type", ({ text }: { text: string; }) => {
-          if (subscriptions.length > 0) {
+          keys += text;
+          if (subscriptions.length > 0 && keys.length >= keyCount) {
             subscriptions.splice(0).forEach((s) => s.dispose());
 
-            context.switchToMode(previousMode).then(() => resolve(text));
+            context.switchToMode(previousMode)
+              .then(() => resolve(keys.slice(0, keyCount)));
           }
         }),
 

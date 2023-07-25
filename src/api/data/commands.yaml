@@ -2480,6 +2480,7 @@ selections.select:
       | Title          | Identifier      | Keybinding            | Command                                                                                           |
       | -------------- | --------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
       | Leap or select | `select.orLeap` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
+      | Leap or select | `select.orSneak` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek", { inputLength: 2, ... }]], otherwise: [[".selections.select", { ... }]] }]` |
 
 selections.select.orLeap:
   title:
@@ -2487,6 +2488,17 @@ selections.select.orLeap:
 
   commands: |-
     [".ifEmpty", { then: [[".seek.leap", { $exclude: [] }]], otherwise: [[".selections.select", { $exclude: [] }]] }]
+
+  keys:
+    qwerty: |-
+      `s` (kakoune: normal)
+
+selections.select.orSneak:
+  title:
+    en: Leap or select
+
+  commands: |-
+    [".ifEmpty", { then: [[".seek", { inputLength: 2, $exclude: [] }]], otherwise: [[".selections.select", { $exclude: [] }]] }]
 
   keys:
     qwerty: |-
@@ -2530,9 +2542,10 @@ selections.splitLines:
 
       #### Variants
 
-      | Title                   | Identifier                   | Keybinding              | Command                                                                                                              |
-      | ----------------------- | ---------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
-      | Leap or select backward | `splitLines.orLeap.backward` | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
+      | Title                    | Identifier                    | Keybinding              | Command                                                                                                                         |
+      | ------------------------ | ----------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+      | Leap or select backward  | `splitLines.orLeap.backward`  | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]`            |
+      | Sneak or select backward | `splitLines.orSneak.backward` | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek", { inputLength: 2, direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
 
 selections.splitLines.orLeap.backward:
   title:
@@ -2540,6 +2553,17 @@ selections.splitLines.orLeap.backward:
 
   commands: |-
     [".ifEmpty", { then: [[".seek.leap", { direction: -1, $exclude: [] }]], otherwise: [[".selections.splitLines", { $exclude: [] }]] }]
+
+  keys:
+    qwerty: |-
+      `a-s` (kakoune: normal)
+
+selections.splitLines.orSneak.backward:
+  title:
+    en: Sneak or select backward
+
+  commands: |-
+    [".ifEmpty", { then: [[".seek", { inputLength: 2, direction: -1, $exclude: [] }]], otherwise: [[".selections.splitLines", { $exclude: [] }]] }]
 
   keys:
     qwerty: |-
