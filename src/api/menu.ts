@@ -153,7 +153,7 @@ export async function showMenuAfterDelay(
         timeout = setTimeout(() => cancellationTokenSource.cancel(), delayMs);
 
   try {
-    const key = await keypress(keypressContext);
+    const key = await keypress({}, keypressContext);
 
     clearTimeout(timeout);
 

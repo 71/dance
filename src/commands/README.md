@@ -212,10 +212,10 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="./selections.ts#L255"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./selections.ts#L580"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./selections.ts#L353"><code>selections.select.orLeap</code></a></td><td>Leap or select</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L354"><code>selections.select.orSneak</code></a></td><td>Leap or select</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L354"><code>selections.select.orSneak</code></a></td><td>Leap or select</td><td></td></tr>
 <tr><td><a href="./selections.ts#L887"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
 <tr><td><a href="./selections.ts#L423"><code>selections.splitLines.orLeap.backward</code></a></td><td>Leap or select backward</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="./selections.ts#L424"><code>selections.splitLines.orSneak.backward</code></a></td><td>Sneak or select backward</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="./selections.ts#L424"><code>selections.splitLines.orSneak.backward</code></a></td><td>Sneak or select backward</td><td></td></tr>
 <tr><td><a href="#selections.sort"><code>selections.sort</code></a></td><td>Sort selections</td><td></td></tr>
 <tr><td><a href="#selections.split"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.splitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td></td></tr>
@@ -1505,10 +1505,10 @@ Select within selections.
 
 #### Variants
 
-| Title          | Identifier      | Keybinding            | Command                                                                                           |
-| -------------- | --------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
-| Leap or select | `select.orLeap` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
-| Leap or select | `select.orSneak` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek", { inputLength: 2, ... }]], otherwise: [[".selections.select", { ... }]] }]` |
+| Title          | Identifier       | Keybinding            | Command                                                                                                      |
+| -------------- | ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Leap or select | `select.orLeap`  | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]`            |
+| Leap or select | `select.orSneak` |                       | `[".ifEmpty", { then: [[".seek", { inputLength: 2, ... }]], otherwise: [[".selections.select", { ... }]] }]` |
 
 This command:
 - accepts an argument of type `{ re?: string | RegExp }`.
@@ -1539,7 +1539,7 @@ Split selections at line boundaries.
 | Title                    | Identifier                    | Keybinding              | Command                                                                                                                         |
 | ------------------------ | ----------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | Leap or select backward  | `splitLines.orLeap.backward`  | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]`            |
-| Sneak or select backward | `splitLines.orSneak.backward` | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek", { inputLength: 2, direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
+| Sneak or select backward | `splitLines.orSneak.backward` |                         | `[".ifEmpty", { then: [[".seek", { inputLength: 2, direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
 
 This command:
 - may be repeated with a given number of repetitions.

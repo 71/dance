@@ -468,9 +468,11 @@ export function notifyPromptActionRequested(action: "next" | "previous" | "clear
 /**
  * Awaits for one or more keypresses from the user and returns the entered keys.
  *
- * `keyCount`: determines the number of keypresses to wait for (defaults to 1)
+ * @param keyCount Determines the number of keypresses to wait for; defaults to 1.
  */
-export async function keypress(context = Context.current, keyCount: number = 1): Promise<string> {
+export async function keypress(params: Readonly<{ keyCount?: number }>,
+                               context = Context.current): Promise<string> {
+  const keyCount = params.keyCount || 1;
   if (context.cancellationToken.isCancellationRequested) {
     return Promise.reject(new CancellationError(CancellationError.Reason.CancellationToken));
   }
@@ -516,13 +518,13 @@ export async function keypress(context = Context.current, keyCount: number = 1):
  * Awaits a keypress describing a register and returns the specified register.
  */
 export async function keypressForRegister(context = Context.current) {
-  const firstKey = await keypress(context);
+  const firstKey = await keypress({}, context);
 
   if (firstKey !== " ") {
     return context.extension.registers.get(firstKey);
   }
 
-  const secondKey = await keypress(context);
+  const secondKey = await keypress({}, context);
 
   return context.extension.registers.forDocument(context.document).get(secondKey);
 }

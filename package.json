@@ -4111,12 +4111,6 @@
         "command": "dance.selections.select.orLeap"
       },
       {
-        "key": "S",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Leap or select",
-        "command": "dance.selections.select.orSneak"
-      },
-      {
         "key": "Shift+S",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Split selections",
@@ -4127,12 +4121,6 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Leap or select backward",
         "command": "dance.selections.splitLines.orLeap.backward"
-      },
-      {
-        "key": "Alt+S",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Sneak or select backward",
-        "command": "dance.selections.splitLines.orSneak.backward"
       },
       {
         "key": "Enter",

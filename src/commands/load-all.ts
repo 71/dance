@@ -31,11 +31,11 @@ function getRegister<F extends Register.Flags | Register.Flags[]>(
 }
 
 function getInputLength(argument: { inputLength?: number }) {
-  const len = argument.inputLength || 1;
+  const len = +(argument.inputLength as any);
   if (len > 0 && Number.isInteger(len)) {
     return len;
   }
-  throw new ArgumentError('"inputLength" must be positive integer');
+  throw new ArgumentError('"inputLength" must be positive integer', "inputLength");
 }
 
 function getCount(_: Context.WithoutActiveEditor, argument: { count?: number }) {

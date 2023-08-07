@@ -348,10 +348,10 @@ export function filter(
  *
  * #### Variants
  *
- * | Title          | Identifier      | Keybinding            | Command                                                                                           |
- * | -------------- | --------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
- * | Leap or select | `select.orLeap` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
- * | Leap or select | `select.orSneak` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek", { inputLength: 2, ... }]], otherwise: [[".selections.select", { ... }]] }]` |
+ * | Title          | Identifier       | Keybinding            | Command                                                                                                      |
+ * | -------------- | ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
+ * | Leap or select | `select.orLeap`  | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]`            |
+ * | Leap or select | `select.orSneak` |                       | `[".ifEmpty", { then: [[".seek", { inputLength: 2, ... }]], otherwise: [[".selections.select", { ... }]] }]` |
  */
 export function select(
   _: Context,
@@ -421,7 +421,7 @@ export function split(
  * | Title                    | Identifier                    | Keybinding              | Command                                                                                                                         |
  * | ------------------------ | ----------------------------- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
  * | Leap or select backward  | `splitLines.orLeap.backward`  | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]`            |
- * | Sneak or select backward | `splitLines.orSneak.backward` | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek", { inputLength: 2, direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
+ * | Sneak or select backward | `splitLines.orSneak.backward` |                         | `[".ifEmpty", { then: [[".seek", { inputLength: 2, direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
  */
 export function splitLines(
   _: Context,

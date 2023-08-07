@@ -232,7 +232,7 @@ export async function replaceCharacters(
   repetitions: number,
   inputOr: InputOr<"input", string>,
 ) {
-  const input = (await inputOr(() => keypress(_))).repeat(repetitions);
+  const input = (await inputOr(() => keypress({}, _))).repeat(repetitions);
 
   return _.run(() => edit((editBuilder, selections, document) => {
     for (const selection of selections) {
