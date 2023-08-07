@@ -250,3 +250,25 @@ ghi
 jkl
 mno
 ```
+
+# 4
+
+```
+abcabcde abcabcde
+```
+
+## 4 select-to-bc-excluded
+
+- .seek { input: "cd" }
+
+```
+abcabcde abcabcde
+^^^^^ 0
+```
+
+- .seek { input: "cd", count: 2 }
+
+```
+abcabcde abcabcde
+^^^^^^^^^^^^^^ 0
+```
