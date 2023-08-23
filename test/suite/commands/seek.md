@@ -267,7 +267,30 @@ abcabcde abcabcde
 abcabcde abcabcde
 ^^^^^ 0
 ```
+### 4 select-to-bc-excluded select-to
+[up](#4-select-to-bc-excluded)
 
+- .seek { input: "cd" }
+
+```
+abcabcde abcabcde
+     ^^^^^^^^^ 0
+```
+
+### 4 select-to-bc-excluded to-character
+[up](#4-select-to-bc-excluded)
+
+> behavior <- character
+
+- .seek { input: "cd" }
+
+```
+abcabcde abcabcde
+    ^^^^^^^^^^ 0
+```
+
+## 4 select-to-bc-excluded-count-2
+[up](#4)
 - .seek { input: "cd", count: 2 }
 
 ```
