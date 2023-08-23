@@ -255,9 +255,11 @@ mno
 
 ```
 abcabcde abcabcde
+| 0
 ```
 
 ## 4 select-to-bc-excluded
+[up](#4)
 
 - .seek { input: "cd" }
 

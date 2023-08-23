@@ -401,5 +401,22 @@ suite("./test/suite/commands/seek.md", function () {
     `);
   });
 
+  test("4 > select-to-bc-excluded", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      abcabcde abcabcde
+      | 0
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.seek", { input: "cd" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek.md:261:1", 6, String.raw`
+      abcabcde abcabcde
+      ^^^^^ 0
+    `);
+  });
+
   groupTestsByParentName(this);
 });
