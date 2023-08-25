@@ -2477,10 +2477,10 @@ selections.select:
 
       #### Variants
 
-      | Title          | Identifier       | Keybinding            | Command                                                                                                      |
-      | -------------- | ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
-      | Leap or select | `select.orLeap`  | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]`            |
-      | Leap or select | `select.orSneak` |                       | `[".ifEmpty", { then: [[".seek", { inputLength: 2, ... }]], otherwise: [[".selections.select", { ... }]] }]` |
+      | Title           | Identifier       | Keybinding            | Command                                                                                                      |
+      | --------------- | ---------------- | --------------------- | ------------------------------------------------------------------------------------------------------------ |
+      | Leap or select  | `select.orLeap`  | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]`            |
+      | Sneak or select | `select.orSneak` |                       | `[".ifEmpty", { then: [[".seek", { inputLength: 2, ... }]], otherwise: [[".selections.select", { ... }]] }]` |
 
 selections.select.orLeap:
   title:
@@ -2495,7 +2495,7 @@ selections.select.orLeap:
 
 selections.select.orSneak:
   title:
-    en: Leap or select
+    en: Sneak or select
 
   commands: |-
     [".ifEmpty", { then: [[".seek", { inputLength: 2, $exclude: [] }]], otherwise: [[".selections.select", { $exclude: [] }]] }]
