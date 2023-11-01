@@ -221,8 +221,15 @@ class RegisterTreeItem extends vscode.TreeItem implements vscode.Disposable {
 
   public async values() {
     if (this._values === undefined) {
-      this._values = this.register.get()
-        .then((values) => values?.map((v) => new ValueTreeItem(v)) ?? []);
+      this._values = (async () => {
+        try {
+          const values = await this.register.get();
+
+          return values?.map((v) => new ValueTreeItem(v)) ?? [];
+        } catch (e) {
+          return [new ValueTreeItem(`${e}`, "warning")];
+        }
+      })();
     }
 
     return await this._values;
@@ -234,10 +241,10 @@ class RegisterTreeItem extends vscode.TreeItem implements vscode.Disposable {
 }
 
 class ValueTreeItem extends vscode.TreeItem {
-  public constructor(label: string) {
+  public constructor(label: string, icon: string = "symbol-string") {
     super(label, vscode.TreeItemCollapsibleState.None);
 
-    this.iconPath = new vscode.ThemeIcon("symbol-string");
+    this.iconPath = new vscode.ThemeIcon(icon);
   }
 }
 

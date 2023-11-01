@@ -707,6 +707,19 @@ export abstract class RegisterSet implements vscode.Disposable {
  * The set of all registers linked to a specific document.
  */
 export class DocumentRegisters extends RegisterSet {
+  public override get registers(): Set<Register> {
+    const registers = super.registers;
+
+    // Remove special registers.
+    for (const register of registers) {
+      if (!(register instanceof GeneralPurposeRegister)) {
+        registers.delete(register);
+      }
+    }
+
+    return registers;
+  }
+
   public constructor(
     /**
      * The document to which the registers are linked.
