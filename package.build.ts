@@ -81,8 +81,8 @@ const selectionDecorationType = {
 // Package information
 // ============================================================================
 
-const version = "0.5.12",
-      preRelease = 4;
+const version = "0.5.13",
+      preRelease = 1;
 
 export const pkg = (modules: Builder.ParsedModule[]) => ({
 
