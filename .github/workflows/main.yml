@@ -53,6 +53,7 @@ jobs:
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
           yarn: true
+          skipDuplicate: true
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
@@ -63,6 +64,7 @@ jobs:
           extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
           packagePath: ''  # Default is `./` and conflicts with `extensionFile`.
           yarn: true
+          skipDuplicate: true
 
       - name: Compute pre-release versions
         id: pre-release-versions
@@ -85,3 +87,4 @@ jobs:
           packagePath: ''  # Default is `./` and conflicts with `extensionFile`.
           yarn: true
           preRelease: true
+          skipDuplicate: true
