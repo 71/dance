@@ -35,6 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install dependencies
+        run: yarn
+
       - name: Create tag based on package.json
         uses: butlerlogic/action-autotag@ade8d2e19bfcd1e6a91272e2849b4bf4c37a67f1
         id: autotag
@@ -58,6 +61,7 @@ jobs:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
           extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
+          packagePath: ''  # Default is `./` and conflicts with `extensionFile`.
           yarn: true
 
       - name: Compute pre-release versions
@@ -78,5 +82,6 @@ jobs:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
           extensionFile: dance-${{ steps.pre-release-versions.outputs.LOCAL }}.vsix
+          packagePath: ''  # Default is `./` and conflicts with `extensionFile`.
           yarn: true
           preRelease: true
