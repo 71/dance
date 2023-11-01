@@ -402,11 +402,11 @@ export abstract class RegisterSet implements vscode.Disposable {
   private readonly _onLastMatchesChange = new vscode.EventEmitter<void>();
 
   private readonly _named = new Map<string, Register>();
-  private readonly _letters = Array.from(
+  private readonly _letters: readonly GeneralPurposeRegister[] = Array.from(
     { length: 26 },
-    (_, i) => new GeneralPurposeRegister(String.fromCharCode(97 + i), "symbol-text") as Register,
+    (_, i) => new GeneralPurposeRegister(String.fromCharCode(97 + i), "symbol-text"),
   );
-  private readonly _digits = Array.from(
+  private readonly _digits: readonly SpecialRegister[] = Array.from(
     { length: 9 },
     (_, i) => new SpecialRegister(
       (i + 1).toString(),
@@ -577,7 +577,6 @@ export abstract class RegisterSet implements vscode.Disposable {
       ["underscore", this.underscore] as const,
       ["colon", this.colon] as const,
     ]) {
-      this._letters[longName.charCodeAt(0) - 97 /* a */] = register;
       this._named.set(longName, register);
     }
 
