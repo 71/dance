@@ -47,7 +47,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to Open VSX Registry
-        uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
+        uses: HaaLeo/publish-vscode-extension@65512ae7dcf96159b51fdd7ed73eb17d5cacad33
         if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
         id: publishToOpenVSX
         with:
@@ -56,7 +56,7 @@ jobs:
           skipDuplicate: true
 
       - name: Publish to Visual Studio Marketplace
-        uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
+        uses: HaaLeo/publish-vscode-extension@65512ae7dcf96159b51fdd7ed73eb17d5cacad33
         if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
         if: ${{ steps.pre-release-versions.outputs.MARKETPLACE != steps.pre-release-versions.outputs.LOCAL }}
 
       - name: Publish pre-release to Visual Studio Marketplace
-        uses: HaaLeo/publish-vscode-extension@8dd35ed51f326dfb0a3e9cfc6baeca81781229fc
+        uses: HaaLeo/publish-vscode-extension@65512ae7dcf96159b51fdd7ed73eb17d5cacad33
         if: ${{ steps.pre-release-versions.outputs.MARKETPLACE != steps.pre-release-versions.outputs.LOCAL }}
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
