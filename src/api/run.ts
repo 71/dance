@@ -455,11 +455,31 @@ export function execute(
     cwd = function () {
       const currentFileUri = Context.currentOrUndefined?.document.uri;
 
-      return currentFileUri?.scheme === "file"
-        ? vscode.Uri.joinPath(currentFileUri, "..").fsPath
-        : vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+      if (currentFileUri?.scheme === "file" || currentFileUri?.scheme === "vscode-userdata") {
+        return vscode.Uri.joinPath(currentFileUri, "..").fsPath;
+      }
+
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri;
+
+      if (workspaceFolder?.scheme === "file") {
+        return workspaceFolder.fsPath;
+      }
+
+      return undefined;
     }(),
-    env: givenEnv = process.env,
+    env: givenEnv = function () {
+      if (vscode.env.remoteName !== undefined) {
+        return {};
+      }
+
+      const env = { ...process.env };
+
+      if (cwd !== undefined) {
+        env["PWD"] = cwd;
+      }
+
+      return env;
+    }(),
   } = options;
 
   if (process.platform as string === "web") {
@@ -480,15 +500,14 @@ export function execute(
             shell = typeof automationProfile?.path === "string" ? automationProfile.path : "",
             args = Array.isArray(automationProfile?.args) ? automationProfile!.args : [],
             env = {
-              ...(cwd == null ? {} : { PWD: cwd }),
               ...(typeof automationProfile?.env === "object" ? automationProfile.env : {}),
               ...givenEnv,
             },
             child = shell.length === 0
-              ? cp.spawn(command, { ...commonSpawnOptions, shell: true, env, cwd })
+              ? cp.spawn(command, { ...commonSpawnOptions, shell: true, env, cwd: env["PWD"] })
               : cp.spawn(shell,
                          [...args, command],
-                         { ...commonSpawnOptions, shell: false, env, cwd });
+                         { ...commonSpawnOptions, shell: false, env, cwd: env["PWD"] });
 
       let stdout = "",
           stderr = "";
