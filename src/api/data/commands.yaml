@@ -2368,7 +2368,7 @@ selections.rotate.both:
 
   keys:
     qwerty: |-
-      `a-(` (kakoune: normal)
+      `a-)` (kakoune: normal)
 
   doc:
     en: |
@@ -2379,7 +2379,7 @@ selections.rotate.both:
 
       | Title                               | Identifier     | Keybinding              | Command                                          |
       | ----------------------------------- | -------------- | ----------------------- | ------------------------------------------------ |
-      | Rotate selections counter-clockwise | `both.reverse` | `a-)` (kakoune: normal) | `[".selections.rotate.both", { reverse: true }]` |
+      | Rotate selections counter-clockwise | `both.reverse` | `a-(` (kakoune: normal) | `[".selections.rotate.both", { reverse: true }]` |
 
 selections.rotate.both.reverse:
   title:
@@ -2390,7 +2390,7 @@ selections.rotate.both.reverse:
 
   keys:
     qwerty: |-
-      `a-)` (kakoune: normal)
+      `a-(` (kakoune: normal)
 
 selections.rotate.contents:
   title:
@@ -2419,7 +2419,7 @@ selections.rotate.selections:
 
   keys:
     qwerty: |-
-      `(` (kakoune: normal)
+      `)` (kakoune: normal)
 
   doc:
     en: |
@@ -2430,7 +2430,7 @@ selections.rotate.selections:
 
       | Title                                                 | Identifier           | Keybinding            | Command                                                |
       | ----------------------------------------------------- | -------------------- | --------------------- | ------------------------------------------------------ |
-      | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `)` (kakoune: normal) | `[".selections.rotate.selections", { reverse: true }]` |
+      | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `(` (kakoune: normal) | `[".selections.rotate.selections", { reverse: true }]` |
 
 selections.rotate.selections.reverse:
   title:
@@ -2441,7 +2441,7 @@ selections.rotate.selections.reverse:
 
   keys:
     qwerty: |-
-      `)` (kakoune: normal)
+      `(` (kakoune: normal)
 
 selections.save:
   title:

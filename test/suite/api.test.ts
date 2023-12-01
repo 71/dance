@@ -661,10 +661,10 @@ suite("API tests", function () {
                   ^ 2
             `),
             after = ExpectedDocument.parseIndented(14, String.raw`
-              b c a
-              ^ 1
-                ^ 2
-                  ^ 0
+              c a b
+              ^ 2
+                ^ 0
+                  ^ 1
             `);
 
       await before.apply(editor);
@@ -686,7 +686,7 @@ suite("API tests", function () {
                   ^ 2
             `),
             after = ExpectedDocument.parseIndented(14, String.raw`
-              b c a
+              c a b
               ^ 0
                 ^ 1
                   ^ 2
@@ -712,9 +712,9 @@ suite("API tests", function () {
             `),
             after = ExpectedDocument.parseIndented(14, String.raw`
               a b c
-              ^ 1
-                ^ 2
-                  ^ 0
+              ^ 2
+                ^ 0
+                  ^ 1
             `);
 
       await before.apply(editor);
@@ -1346,13 +1346,13 @@ suite("API tests", function () {
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
               foo bar baz
-              ^^^ 0   ^^^ 2
-                  ^^^ 1
+              ^^^ 1   ^^^ 0
+                  ^^^ 2
             `),
             after = ExpectedDocument.parseIndented(14, String.raw`
               foo bar baz
-              ^^^ 1   ^^^ 0
-                  ^^^ 2
+              ^^^ 0   ^^^ 2
+                  ^^^ 1
             `);
 
       await before.apply(editor);
@@ -1369,8 +1369,8 @@ suite("API tests", function () {
             context = new Context(editorState, cancellationToken),
             before = ExpectedDocument.parseIndented(14, String.raw`
               foo bar baz
-              ^^^ 0   ^^^ 2
-                  ^^^ 1
+              ^^^ 1   ^^^ 0
+                  ^^^ 2
             `),
             after = ExpectedDocument.parseIndented(14, String.raw`
               foo bar baz

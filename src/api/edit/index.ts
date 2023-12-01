@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { Context, edit } from "../context";
 import * as Positions from "../positions";
 import * as Selections from "../selections";
+import { Direction } from "../types";
 import * as TrackedSelection from "../../utils/tracked-selection";
 
 const enum Constants {
@@ -722,10 +723,10 @@ export declare namespace replaceByIndex {
  *
  * After:
  * ```
- * b c a
- * ^ 1
- *   ^ 2
- *     ^ 0
+ * c a b
+ * ^ 2
+ *   ^ 0
+ *     ^ 1
  * ```
  */
 export function rotate(by: number, selections?: readonly vscode.Selection[]) {
@@ -752,13 +753,13 @@ export function rotate(by: number, selections?: readonly vscode.Selection[]) {
  *
  * After:
  * ```
- * b c a
+ * c a b
  * ^ 0
  *   ^ 1
  *     ^ 2
  * ```
  */
-export function rotateContents(
+export async function rotateContents(
   by: number,
   selections: readonly vscode.Selection[] = Context.current.selections,
 ) {
@@ -768,13 +769,24 @@ export function rotateContents(
   by = (by % len) + len;
 
   if (by === len) {
-    return Context.wrap(Promise.resolve(selections.slice()));
+    return selections.slice();
   }
 
-  return replaceByIndex(
-    (i, _, document) => document.getText(selections[(i + by) % len]),
-    selections,
+  const sortedSelections = Selections.sort(Direction.Forward, selections.slice());
+  const rotatedSortedSelections =
+    Array.from({ length: len }, (_, i) => sortedSelections[(i + by) % len]);
+  const rotatedSortedSelectionsAfterEdit = await replaceByIndex(
+    (i, _, document) => document.getText(sortedSelections[i]),
+    rotatedSortedSelections,
   );
+
+  // We want to return the new selections (which may have changed because sizes
+  // of selections may be different), but we need to revert their indices first.
+  return selections.map((selection) => {
+    const rotatedSortedIndex = rotatedSortedSelections.indexOf(selection);
+
+    return rotatedSortedSelectionsAfterEdit[rotatedSortedIndex];
+  });
 }
 
 /**
@@ -798,11 +810,11 @@ export function rotateContents(
  * After:
  * ```
  * a b c
- * ^ 1
- *   ^ 2
- *     ^ 0
+ * ^ 2
+ *   ^ 0
+ *     ^ 1
  * ```
  */
 export function rotateSelections(by: number, selections?: readonly vscode.Selection[]) {
-  Selections.set(Selections.rotate(by, selections));
+  return Selections.set(Selections.rotate(by, selections));
 }
