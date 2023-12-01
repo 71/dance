@@ -12,7 +12,7 @@ export async function build() {
   for (const file of fileNames.filter((f) => f.endsWith(".md"))) {
     const filePath = path.resolve(commandsDir, file),
           contents = await fs.readFile(filePath, "utf-8"),
-          { tests } = parseMarkdownTests(contents);
+          { tests } = parseMarkdownTests(contents, filePath);
 
     await fs.writeFile(filePath.replace(/\.md$/, ".test.ts"), unindent(6)`\
       import * as vscode from "vscode";
@@ -81,7 +81,7 @@ interface Test extends Section {
 interface InitialDocument extends Section {
 }
 
-function parseMarkdownTests(contents: string) {
+function parseMarkdownTests(contents: string, filename: string) {
   const re = /^#+ (.+)\n(?:\[.+?\]\(#(.+?)\)\n)?([\s\S]+?)^```\n([\s\S]+?)^```\n/gm,
         opre = /^- *([\w.:]+)( +.+)?$|^> *(.+)$/gm,
         initial = [] as InitialDocument[],
@@ -93,13 +93,13 @@ function parseMarkdownTests(contents: string) {
   for (const [text, badTitle, comesAfterTitle, operationsText, after] of execAll(re, contents)) {
     const title = badTitle.replace(/\s/g, "-");
 
-    assert(!all.has(title), `document state "${title}" is defined multiple times`);
+    assert(!all.has(title), `${filename}: document state "${title}" is defined multiple times`);
 
     const titleParts = badTitle.split(" "),
           nesting = /^#+/.exec(text)![0].length;
 
     if (titleParts.length !== nesting && titleParts.length <= 6) {
-      console.warn(`section "${title}" has ${titleParts} parts but a nesting of ${nesting}`);
+      console.warn(`${filename}: section "${title}" has ${titleParts} parts but a nesting of ${nesting}`);
     }
 
     const line = lines.indexOf(text.slice(0, text.indexOf("\n")), currentLine);
@@ -107,7 +107,7 @@ function parseMarkdownTests(contents: string) {
 
     if (comesAfterTitle === undefined) {
       if (nesting !== 1) {
-        console.warn("an initial section should have a top-level header");
+        console.warn(`${filename}:${line}: an initial section should have a top-level header`);
       }
 
       const flags = execAll(/^> *(.+)$/gm, operationsText).map(([_, flag]) => flag),
@@ -125,11 +125,11 @@ function parseMarkdownTests(contents: string) {
           expectedTitle = comesAfterTitle + "-" + lastTitlePart;
 
     if (title !== expectedTitle) {
-      console.warn(`section "${title}" should be called "${expectedTitle}"`);
+      console.warn(`${filename}:${line}: section "${title}" should be called "${expectedTitle}"`);
     }
 
     if (!/^([a-z]+)(-([a-z]+|\d+))*$/.test(lastTitlePart)) {
-      console.warn(`section "${title}" has an invalid name`);
+      console.warn(`${filename}:${line}: section "${title}" has an invalid name`);
     }
 
     const operations = [] as TestOperation[],

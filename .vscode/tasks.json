@@ -21,6 +21,22 @@
     },
     {
       "type": "npm",
+      "script": "compile-tests:watch",
+      "problemMatcher": "$tsc-watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "runOptions": {
+        "runOn": "folderOpen",
+      },
+    },
+    {
+      "type": "npm",
       "script": "generate:watch",
       "problemMatcher": [],
       "isBackground": true,

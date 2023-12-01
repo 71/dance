@@ -4,10 +4,6 @@ import { availableClipboardRegisters } from "./src/utils/constants";
 // Shared values
 // ============================================================================
 
-const esbuildBase = "esbuild src/extension.ts --bundle --external:vscode --external:child_process --target=es2021 --format=cjs --minify --keep-names";
-const esbuildNode = `${esbuildBase} --outfile=out/extension.js`;
-const esbuildWeb = `${esbuildBase} --outfile=out/web-extension.js --define:process.platform=\\"web\\" --define:process.env={}`;
-
 const commandType = {
   type: "array",
   items: {
@@ -118,11 +114,13 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "generate": "ts-node ./meta.ts",
     "generate:watch": "ts-node ./meta.ts --watch",
 
-    "compile": esbuildNode,
-    "compile:watch": `${esbuildNode} --watch --sourcemap`,
-    "compile-web": esbuildWeb,
-    "compile-web:watch": `${esbuildWeb} --watch --sourcemap`,
+    "compile-base": "esbuild src/extension.ts --bundle --external:vscode --external:child_process --target=es2021 --format=cjs --minify --keep-names",
+    "compile": "yarn run compile-base --outfile=out/extension.js",
+    "compile:watch": "yarn run compile --watch --sourcemap",
+    "compile-web": "yarn run compile-base --outfile=out/web-extension.js --define:process.platform=\\\"web\\\" --define:process.env={}",
+    "compile-web:watch": "yarn run compile-web --watch --sourcemap",
     "compile-tests": "globstar -- esbuild \"{src,test}/**/*.ts\" --target=es2021 --format=cjs --outdir=out --outbase=. --sourcemap",
+    "compile-tests:watch": "yarn run compile-tests --watch",
 
     "test": "yarn run compile --sourcemap && yarn run compile-tests && node ./out/test/run.js",
 
