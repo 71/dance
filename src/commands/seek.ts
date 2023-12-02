@@ -509,12 +509,12 @@ export async function object(
 
     // Languages with queries available are a subset of supported languages, so
     // given that we have a `query` `withDocumentTree()` will not fail.
-    const newSelections = await treeSitter.withDocumentTree(_.document, async (documentTree) => {
+    const newSelections = await treeSitter.withDocumentTree(_.document, (documentTree) => {
       const textObjectName = match![1] + (inner ? ".inside" : ".around");
 
       if (!query.captureNames.includes(textObjectName)) {
         const existingValues = query.captureNames.map((name) =>
-          `"${name.replace(".inside", "").replace(".around", "")}"`
+          `"${name.replace(".inside", "").replace(".around", "")}"`,
         ).join(", ");
 
         throw new Error(
@@ -532,7 +532,7 @@ export async function object(
         const active = selection.active;
 
         let smallestNode: SyntaxNode | undefined;
-        let smallestNodeLength: number = Number.MAX_SAFE_INTEGER;
+        const smallestNodeLength = Number.MAX_SAFE_INTEGER;
 
         for (const [node, nodeRange] of captures) {
           if (!nodeRange.contains(active)) {
@@ -549,9 +549,9 @@ export async function object(
         return smallestNode === undefined
           ? selection
           : Selections.fromStartEnd(
-              treeSitter.toPosition(smallestNode.startPosition),
-              treeSitter.toPosition(smallestNode.endPosition),
-              Selections.isStrictlyReversed(selection, _));
+            treeSitter.toPosition(smallestNode.startPosition),
+            treeSitter.toPosition(smallestNode.endPosition),
+            Selections.isStrictlyReversed(selection, _));
       });
     });
 

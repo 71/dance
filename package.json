@@ -32,8 +32,8 @@
     "vscode:prepublish": "yarn run generate && yarn run compile && yarn run compile-web",
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
-    "package:pre": "vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.14001",
-    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.14001"
+    "package:pre": "vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.14002",
+    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.14002"
   },
   "devDependencies": {
     "@types/glob": "^7.2.0",
