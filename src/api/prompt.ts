@@ -466,9 +466,13 @@ export function notifyPromptActionRequested(action: "next" | "previous" | "clear
 }
 
 /**
- * Awaits a keypress from the user and returns the entered key.
+ * Awaits for one or more keypresses from the user and returns the entered keys.
+ *
+ * @param keyCount Determines the number of keypresses to wait for; defaults to 1.
  */
-export async function keypress(context = Context.current): Promise<string> {
+export async function keypress(params: Readonly<{ keyCount?: number }>,
+                               context = Context.current): Promise<string> {
+  const keyCount = params.keyCount || 1;
   if (context.cancellationToken.isCancellationRequested) {
     return Promise.reject(new CancellationError(CancellationError.Reason.CancellationToken));
   }
@@ -479,12 +483,15 @@ export async function keypress(context = Context.current): Promise<string> {
 
   return await new Promise<string>((resolve, reject) => {
     try {
+      let keys = "";
       const subscriptions = [
         vscode.commands.registerCommand("type", ({ text }: { text: string; }) => {
-          if (subscriptions.length > 0) {
+          keys += text;
+          if (subscriptions.length > 0 && keys.length >= keyCount) {
             subscriptions.splice(0).forEach((s) => s.dispose());
 
-            context.switchToMode(previousMode).then(() => resolve(text));
+            context.switchToMode(previousMode)
+              .then(() => resolve(keys.slice(0, keyCount)));
           }
         }),
 
@@ -511,13 +518,13 @@ export async function keypress(context = Context.current): Promise<string> {
  * Awaits a keypress describing a register and returns the specified register.
  */
 export async function keypressForRegister(context = Context.current) {
-  const firstKey = await keypress(context);
+  const firstKey = await keypress({}, context);
 
   if (firstKey !== " ") {
     return context.extension.registers.get(firstKey);
   }
 
-  const secondKey = await keypress(context);
+  const secondKey = await keypress({}, context);
 
   return context.extension.registers.forDocument(context.document).get(secondKey);
 }

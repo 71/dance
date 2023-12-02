@@ -37,9 +37,10 @@ export async function seek(
   repetitions: number,
   direction = Direction.Forward,
   shift = Shift.Select,
+  inputLength: Argument<number> = 1,
   include: Argument<boolean> = false,
 ) {
-  const input = await inputOr(() => keypress(_));
+  const input = await inputOr(() => keypress({ keyCount: inputLength }, _));
 
   Selections.updateByIndex((_, selection, document) => {
     let position: vscode.Position | undefined = Selections.seekFrom(selection, -direction);
@@ -625,7 +626,7 @@ export async function leap(
   const cutoffPosition = _.mainSelection.active,
         endPosition = direction === Direction.Forward ? Positions.last(doc) : Positions.zero,
         allowedRange = new vscode.Range(cutoffPosition, endPosition),
-        firstChar = await keypress(_),
+        firstChar = await keypress({}, _),
         pairSelections = Selections.selectWithin(
           new RegExp(escapeForRegExp(firstChar) + ".?", "is"),
           editor.visibleRanges.flatMap((range) => {
@@ -663,7 +664,7 @@ export async function leap(
 
   try {
     // Get second character and jump to it.
-    const secondChar = await keypress(_),
+    const secondChar = await keypress({}, _),
           unlabeledSelection = secondCharToUnlabeledSelection[secondChar];
 
     if (unlabeledSelection === undefined) {
@@ -707,7 +708,7 @@ export async function leap(
     let offset = 0;
 
     for (;;) {
-      const labelChar = await keypress(_);
+      const labelChar = await keypress({}, _);
 
       if (labelChar === " ") {
         // Rotate active labeled selections.

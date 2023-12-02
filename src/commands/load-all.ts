@@ -30,6 +30,14 @@ function getRegister<F extends Register.Flags | Register.Flags[]>(
   return (argument.register = register as any);
 }
 
+function getInputLength(argument: { inputLength?: number }) {
+  const len = +(argument.inputLength as any);
+  if (len > 0 && Number.isInteger(len)) {
+    return len;
+  }
+  throw new ArgumentError('"inputLength" must be positive integer', "inputLength");
+}
+
 function getCount(_: Context.WithoutActiveEditor, argument: { count?: number }) {
   const count = +(argument.count as any);
 
@@ -468,7 +476,7 @@ export const commands: Commands = function () {
     ),
     "dance.seek": new CommandDescriptor(
       "dance.seek",
-      (_, argument) => _.runAsync(async (_) => await seek(_, getInputOr("input", argument), getRepetitions(_, argument), getDirection(argument), getShift(argument), argument["include"])),
+      (_, argument) => _.runAsync(async (_) => await seek(_, getInputOr("input", argument), getRepetitions(_, argument), getDirection(argument), getShift(argument), argument["inputLength"], argument["include"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.seek.enclosing": new CommandDescriptor(
@@ -1312,9 +1320,21 @@ export const commands: Commands = function () {
   );
   describeAdditionalCommand(
     commands,
+    "dance.selections.select.orSneak",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".ifEmpty", { then: [[".seek", { inputLength: 2, $exclude: [] }]], otherwise: [[".selections.select", { $exclude: [] }]] }]],
+  );
+  describeAdditionalCommand(
+    commands,
     "dance.selections.splitLines.orLeap.backward",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".ifEmpty", { then: [[".seek.leap", { direction: -1, $exclude: [] }]], otherwise: [[".selections.splitLines", { $exclude: [] }]] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.selections.splitLines.orSneak.backward",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".ifEmpty", { then: [[".seek", { inputLength: 2, direction: -1, $exclude: [] }]], otherwise: [[".selections.splitLines", { $exclude: [] }]] }]],
   );
   describeAdditionalCommand(
     commands,
