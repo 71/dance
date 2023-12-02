@@ -135,7 +135,11 @@ function determineFunctionExpression(f: Builder.ParsedFunction) {
       break;
 
     case "treeSitter":
-      givenParameters.push("_.extension.treeSitterOrThrow()");
+      if (type === "TreeSitter | undefined") {
+        givenParameters.push("_.extension.treeSitter");
+      } else {
+        givenParameters.push("_.extension.treeSitterOrThrow()");
+      }
       break;
 
     case "documentTree":

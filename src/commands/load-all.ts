@@ -483,7 +483,7 @@ export const commands: Commands = function () {
     ),
     "dance.seek.object": new CommandDescriptor(
       "dance.seek.object",
-      (_, argument) => _.runAsync(async (_) => await seek_object(_, getInputOr("input", argument), argument["inner"], argument["where"], getShift(argument))),
+      (_, argument) => _.runAsync(async (_) => await seek_object(_, getInputOr("input", argument), argument["inner"], argument["where"], getShift(argument), _.extension.treeSitter)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.seek.syntax.experimental": new CommandDescriptor(

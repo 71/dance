@@ -105,6 +105,10 @@ export class Extension implements vscode.Disposable {
     }
   }
 
+  public get treeSitter(): TreeSitter | undefined {
+    return this._treeSitter;
+  }
+
   public treeSitterOrThrow(): TreeSitter {
     if (this._treeSitter === undefined) {
       throw new Error("TreeSitter is not available");

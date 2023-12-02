@@ -128,6 +128,16 @@ export declare function using<T, Args extends {
     delete(): void;
 }[]>(...args: [...Args, (...args: Args) => T]): T;
 /**
+ * Returns the built-in {@link Query} for textobjects of the given language, or
+ * `undefined` if there is no such built-in query.
+ *
+ * This function automatically memoizes its results; callers should neither
+ * cache nor {@link Query.delete delete} the returned query.
+ *
+ * @see https://docs.helix-editor.com/guides/textobject.html
+ */
+export declare function textObjectQueryFor(input: HasLanguage): Promise<Omit<Query, "delete"> | undefined>;
+/**
  * A Tree Sitter point with UTF-16-based offsets.
  *
  * @see {@link TreeSitter.Point}

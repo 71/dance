@@ -1,5 +1,6 @@
 {
   "search.exclude": {
+    ".direnv": true,
     "out": true
   },
 

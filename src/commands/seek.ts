@@ -286,6 +286,8 @@ export async function object(
   inner: Argument<boolean> = false,
   where?: Argument<"start" | "end">,
   shift = Shift.Select,
+
+  treeSitter?: TreeSitter,
 ) {
   const input = await inputOr(() => prompt({
     prompt: "Object description",
@@ -488,6 +490,70 @@ export async function object(
     if (_.selectionBehavior === SelectionBehavior.Character) {
       Selections.shiftEmptyLeft(newSelections, _.document);
     }
+
+    return Selections.set(newSelections);
+  }
+
+  // Helix text objects:
+  //   https://github.com/helix-editor/helix/blob/master/book/src/guides/textobject.md#L1
+  if (match = /^\(\?#textobject=(\w+)\)$/.exec(input)) {
+    if (treeSitter === undefined) {
+      throw new Error("tree-sitter is not available");
+    }
+
+    const query = await treeSitter.textObjectQueryFor(_.document);
+
+    if (query === undefined) {
+      throw new Error("no textobject query available for current document");
+    }
+
+    // Languages with queries available are a subset of supported languages, so
+    // given that we have a `query` `withDocumentTree()` will not fail.
+    const newSelections = await treeSitter.withDocumentTree(_.document, async (documentTree) => {
+      const textObjectName = match![1] + (inner ? ".inside" : ".around");
+
+      if (!query.captureNames.includes(textObjectName)) {
+        const existingValues = query.captureNames.map((name) =>
+          `"${name.replace(".inside", "").replace(".around", "")}"`
+        ).join(", ");
+
+        throw new Error(
+          `unknown textobject ${JSON.stringify(textObjectName)}, valid values are ${existingValues}`,
+        );
+      }
+
+      // TODO(71): add helpers for checking if a VS Code Position is within a Tree
+      //   Sitter range without creating temporary objects
+      const captures = query.captures(documentTree.rootNode)
+        .filter((capture) => capture.name === textObjectName)
+        .map(({ node }) => [node, treeSitter.toRange(node)] as const);
+
+      return Selections.mapByIndex((_i, selection) => {
+        const active = selection.active;
+
+        let smallestNode: SyntaxNode | undefined;
+        let smallestNodeLength: number = Number.MAX_SAFE_INTEGER;
+
+        for (const [node, nodeRange] of captures) {
+          if (!nodeRange.contains(active)) {
+            continue;
+          }
+
+          const nodeLength = node.endIndex - node.startIndex;
+
+          if (nodeLength < smallestNodeLength && !nodeRange.isEqual(selection)) {
+            smallestNode = node;
+          }
+        }
+
+        return smallestNode === undefined
+          ? selection
+          : Selections.fromStartEnd(
+              treeSitter.toPosition(smallestNode.startPosition),
+              treeSitter.toPosition(smallestNode.endPosition),
+              Selections.isStrictlyReversed(selection, _));
+      });
+    });
 
     return Selections.set(newSelections);
   }
