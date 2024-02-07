@@ -3281,7 +3281,7 @@
       },
       {
         "key": "Escape",
-        "when": "editorTextFocus && dance.mode == 'insert'",
+        "when": "editorTextFocus && dance.mode == 'insert' && !suggestWidgetVisible",
         "title": "Set mode to Normal",
         "command": "dance.modes.set.normal"
       },
