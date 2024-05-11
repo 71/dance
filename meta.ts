@@ -539,7 +539,7 @@ export function parseKeys(keys: string) {
       case "prompt":
         assert(!negate);
         whenClauses.splice(whenClauses.indexOf("editorTextFocus"), 1);
-        whenClauses.push("inputFocus && !textInputFocus");
+        whenClauses.push("inputFocus && dance.inPrompt");
         break;
 
       default: {

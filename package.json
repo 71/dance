@@ -32,8 +32,8 @@
     "vscode:prepublish": "yarn run generate && yarn run compile && yarn run compile-web",
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
-    "package:pre": "vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.14002",
-    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.14002"
+    "package:pre": "vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.14003",
+    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.14003"
   },
   "devDependencies": {
     "@types/glob": "^7.2.0",
@@ -3047,7 +3047,7 @@
       },
       {
         "key": "Up",
-        "when": "inputFocus && !textInputFocus",
+        "when": "inputFocus && dance.inPrompt",
         "command": "dance.changeInput",
         "args": {
           "action": "previous"
@@ -3055,7 +3055,7 @@
       },
       {
         "key": "Down",
-        "when": "inputFocus && !textInputFocus",
+        "when": "inputFocus && dance.inPrompt",
         "command": "dance.changeInput",
         "args": {
           "action": "next"
