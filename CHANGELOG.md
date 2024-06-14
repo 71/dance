@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.15
+
+- Replace `!textInputFocus` by `dance.inPrompt` to limit `prompt` keybindings to
+  Dance prompts in VS Code >=1.90.
+
 ## 0.5.14
 
 - **BREAKING**: Fix rotation behavior to match Kakoune and Helix, i.e. now
