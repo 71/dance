@@ -768,6 +768,8 @@ export async function leap(
         styledSet.deleteSelections(selections);
       }
     }
+    // clear unlabeled highlight
+    unlabeledSelectionsSet.clearSelections();
 
     // Listen to jumps to labels.
     let offset = 0;
