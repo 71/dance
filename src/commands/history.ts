@@ -15,7 +15,7 @@ declare module "./history";
 /**
  * Undo.
  *
- * @keys `u` (kakoune: normal), `u` (helix: select)
+ * @keys `u` (core: normal), `u` (helix: select)
  */
 export function undo() {
   return vscode.commands.executeCommand("undo");
@@ -24,7 +24,7 @@ export function undo() {
 /**
  * Redo.
  *
- * @keys `s-u` (kakoune: normal), `s-u` (helix: select)
+ * @keys `s-u` (core: normal), `s-u` (helix: select)
  */
 export function redo() {
   return vscode.commands.executeCommand("redo");
@@ -53,10 +53,10 @@ export function redo_selections() {
  *
  * @noreplay
  *
- * | Title                        | Identifier         | Keybinding              | Commands                                                                      |
- * | ---------------------------- | ------------------ | ----------------------- | ----------------------------------------------------------------------------- |
- * | Repeat last selection change | `repeat.selection` |                         | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
- * | Repeat last seek             | `repeat.seek`      | `a-.` (kakoune: normal) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
+ * | Title                        | Identifier         | Keybinding                                  | Commands                                                                      |
+ * | ---------------------------- | ------------------ | ------------------------------------------- | ----------------------------------------------------------------------------- |
+ * | Repeat last selection change | `repeat.selection` |                                             | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
+ * | Repeat last seek             | `repeat.seek`      | `a-.` (core: normal), `a-.` (helix: select) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
  */
 export async function repeat(
   _: Context,
@@ -98,7 +98,7 @@ export async function repeat(
 /**
  * Repeat last edit without a command.
  *
- * @keys `.` (kakoune: normal), `NumPad_Decimal` (kakoune: normal)
+ * @keys `.` (core: normal), `NumPad_Decimal` (core: normal)
  * @noreplay
  */
 export async function repeat_edit(_: Context, repetitions: number) {
