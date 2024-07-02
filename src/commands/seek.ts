@@ -16,18 +16,18 @@ declare module "./seek";
 /**
  * Select to character (excluded).
  *
- * @keys `t` (kakoune: normal)
+ * @keys `t` (core: normal)
  *
  * #### Variants
  *
  * | Title                                    | Identifier                 | Keybinding                                       | Command                                                             |
  * | ---------------------------------------- | -------------------------- | ------------------------------------------------ | ------------------------------------------------------------------- |
  * | Extend to character (excluded)           | `extend`                   | `s-t` (kakoune: normal), `t` (helix: select)     | `[".seek", {                shift: "extend"               , ... }]` |
- * | Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal)                          | `[".seek", {                                 direction: -1, ... }]` |
+ * | Select to character (excluded, backward) | `backward`                 | `a-t` (kakoune: normal), `s-t` (helix: normal)   | `[".seek", {                                 direction: -1, ... }]` |
  * | Extend to character (excluded, backward) | `extend.backward`          | `s-a-t` (kakoune: normal), `s-t` (helix: select) | `[".seek", {                shift: "extend", direction: -1, ... }]` |
- * | Select to character (included)           | `included`                 | `f` (kakoune: normal)                            | `[".seek", { include: true                                , ... }]` |
+ * | Select to character (included)           | `included`                 | `f` (core: normal)                               | `[".seek", { include: true                                , ... }]` |
  * | Extend to character (included)           | `included.extend`          | `s-f` (kakoune: normal), `f` (helix: select)     | `[".seek", { include: true, shift: "extend"               , ... }]` |
- * | Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal)                          | `[".seek", { include: true,                  direction: -1, ... }]` |
+ * | Select to character (included, backward) | `included.backward`        | `a-f` (kakoune: normal), `s-f` (helix: normal)   | `[".seek", { include: true,                  direction: -1, ... }]` |
  * | Extend to character (included, backward) | `included.extend.backward` | `s-a-f` (kakoune: normal), `s-f` (helix: select) | `[".seek", { include: true, shift: "extend", direction: -1, ... }]` |
  */
 export async function seek(
@@ -176,22 +176,22 @@ export function enclosing(
  *
  * Select the word and following whitespaces on the right of the end of each selection.
  *
- * @keys `w` (kakoune: normal)
+ * @keys `w` (core: normal)
  *
  * #### Variants
  *
  * | Title                                        | Identifier                | Keybinding                                       | Command                                                                               |
  * | -------------------------------------------- | ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------- |
  * | Extend to next word start                    | `word.extend`             | `s-w` (kakoune: normal), `w` (helix: select)     | `[".seek.word", {                             shift: "extend"               , ... }]` |
- * | Select to previous word start                | `word.backward`           | `b` (kakoune: normal)                            | `[".seek.word", {                                              direction: -1, ... }]` |
+ * | Select to previous word start                | `word.backward`           | `b` (core: normal)                               | `[".seek.word", {                                              direction: -1, ... }]` |
  * | Extend to previous word start                | `word.extend.backward`    | `s-b` (kakoune: normal), `b` (helix: select)     | `[".seek.word", {                             shift: "extend", direction: -1, ... }]` |
- * | Select to next non-whitespace word start     | `word.ws`                 | `a-w` (kakoune: normal)                          | `[".seek.word", {                   ws: true                                , ... }]` |
+ * | Select to next non-whitespace word start     | `word.ws`                 | `a-w` (kakoune: normal), `s-w` (helix: normal)   | `[".seek.word", {                   ws: true                                , ... }]` |
  * | Extend to next non-whitespace word start     | `word.ws.extend`          | `s-a-w` (kakoune: normal), `s-w` (helix: select) | `[".seek.word", {                   ws: true, shift: "extend"               , ... }]` |
- * | Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (kakoune: normal)                          | `[".seek.word", {                   ws: true,                  direction: -1, ... }]` |
+ * | Select to previous non-whitespace word start | `word.ws.backward`        | `a-b` (kakoune: normal), `s-b` (helix: normal)   | `[".seek.word", {                   ws: true,                  direction: -1, ... }]` |
  * | Extend to previous non-whitespace word start | `word.ws.extend.backward` | `s-a-b` (kakoune: normal), `s-b` (helix: select) | `[".seek.word", {                   ws: true, shift: "extend", direction: -1, ... }]` |
- * | Select to next word end                      | `wordEnd`                 | `e` (kakoune: normal)                            | `[".seek.word", { stopAtEnd: true                                           , ... }]` |
+ * | Select to next word end                      | `wordEnd`                 | `e` (core: normal)                               | `[".seek.word", { stopAtEnd: true                                           , ... }]` |
  * | Extend to next word end                      | `wordEnd.extend`          | `s-e` (kakoune: normal), `e` (helix: select)     | `[".seek.word", { stopAtEnd: true ,           shift: "extend"               , ... }]` |
- * | Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (kakoune: normal)                          | `[".seek.word", { stopAtEnd: true , ws: true                                , ... }]` |
+ * | Select to next non-whitespace word end       | `wordEnd.ws`              | `a-e` (kakoune: normal), `s-e` (helix: normal)   | `[".seek.word", { stopAtEnd: true , ws: true                                , ... }]` |
  * | Extend to next non-whitespace word end       | `wordEnd.ws.extend`       | `s-a-e` (kakoune: normal), `s-e` (helix: select) | `[".seek.word", { stopAtEnd: true , ws: true, shift: "extend"               , ... }]` |
  */
 export function word(

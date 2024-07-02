@@ -21,7 +21,7 @@ declare module "./selections";
 /**
  * Copy selections text.
  *
- * @keys `y` (kakoune: normal)
+ * @keys `y` (core: normal), `y` (helix: select)
  */
 export function saveText(
   document: vscode.TextDocument,
@@ -244,17 +244,16 @@ const pipeHistory: string[] = [];
  * Run the specified command or code with the contents of each selection, and
  * save the result to a register.
  *
- * @keys `a-|` (kakoune: normal)
- *
+ * @keys `a-|` (core: normal), `a-|` (helix: select)
  * See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes-through-external-programs
  *
  * #### Additional commands
  *
- * | Title               | Identifier     | Keybinding              | Commands                                                                                                                    |
- * | ------------------- | -------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
- * | Pipe and replace    | `pipe.replace` | `|` (kakoune: normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|",                                  ... }]` |
- * | Pipe and append     | `pipe.append`  | `!` (kakoune: normal)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "end"  , shift: "select", ... }]` |
- * | Pipe and prepend    | `pipe.prepend` | `a-!` (kakoune: normal) | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "start", shift: "select", ... }]` |
+ * | Title               | Identifier     | Keybinding                                    | Commands                                                                                                                    |
+ * | ------------------- | -------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+ * | Pipe and replace    | `pipe.replace` | `|` (core: normal), `|` (helix: select)       | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|",                                  ... }]` |
+ * | Pipe and append     | `pipe.append`  | `!` (core: normal), `!` (helix: select)       | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "end"  , shift: "select", ... }]` |
+ * | Pipe and prepend    | `pipe.prepend` | `a-!` (core: normal), `a-!` (helix: select)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "start", shift: "select", ... }]` |
  */
 export async function pipe(
   _: Context,
@@ -291,16 +290,15 @@ const filterHistory: string[] = [];
 /**
  * Filter selections.
  *
- * @keys `$` (kakoune: normal)
- *
+ * @keys `$` (core: normal), `$` (helix: select)
  * #### Variants
  *
- * | Title                      | Identifier              | Keybinding                | Commands                                                                 |
- * | -------------------------- | ----------------------- | --------------------------| ------------------------------------------------------------------------ |
- * | Keep matching selections   | `filter.regexp`         | `a-k` (kakoune: normal)   | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
- * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (kakoune: normal) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
- * | Clear secondary selections | `clear.secondary`       | `,` (kakoune: normal)     | `[".selections.filter", { expression: "i === count"            , ... }]` |
- * | Clear main selections      | `clear.main`            | `a-,` (kakoune: normal)   | `[".selections.filter", { expression: "i !== count"            , ... }]` |
+ * | Title                      | Identifier              | Keybinding                                      | Commands                                                                 |
+ * | -------------------------- | ----------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
+ * | Keep matching selections   | `filter.regexp`         | `a-k` (core: normal), `a-k` (helix: select)     | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
+ * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal), `s-a-k` (helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
+ * | Clear secondary selections | `clear.secondary`       | `,` (core: normal), `,` (helix: select)         | `[".selections.filter", { expression: "i === count"            , ... }]` |
+ * | Clear main selections      | `clear.main`            | `a-,` (core: normal), `a-,` (helix: select)     | `[".selections.filter", { expression: "i !== count"            , ... }]` |
  */
 export function filter(
   _: Context,
@@ -348,9 +346,9 @@ export function filter(
  *
  * #### Variants
  *
- * | Title          | Identifier      | Keybinding            | Command                                                                                           |
- * | -------------- | --------------- | --------------------- | ------------------------------------------------------------------------------------------------- |
- * | Leap or select | `select.orLeap` | `s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
+ * | Title          | Identifier      | Keybinding                              | Command                                                                                           |
+ * | -------------- | --------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------- |
+ * | Leap or select | `select.orLeap` | `s` (core: normal), `s` (helix: select) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
  */
 export function select(
   _: Context,
@@ -379,7 +377,7 @@ export function select(
 /**
  * Split selections.
  *
- * @keys `s-s` (kakoune: normal)
+ * @keys `s-s` (core: normal), `s-s` (helix: select)
  */
 export function split(
   _: Context,
@@ -417,9 +415,9 @@ export function split(
  *
  * #### Variants
  *
- * | Title                   | Identifier                   | Keybinding              | Command                                                                                                              |
- * | ----------------------- | ---------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------- |
- * | Leap or select backward | `splitLines.orLeap.backward` | `a-s` (kakoune: normal) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
+ * | Title                   | Identifier                   | Keybinding                                  | Command                                                                                                              |
+ * | ----------------------- | ---------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+ * | Leap or select backward | `splitLines.orLeap.backward` | `a-s` (core: normal), `a-s` (helix: select) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
  */
 export function splitLines(
   _: Context,
@@ -476,7 +474,7 @@ export function splitLines(
  *
  * Expand selections to contain full lines (including end-of-line characters).
  *
- * @keys `x` (kakoune: normal)
+ * @keys `x` (kakoune: normal), `s-x` (helix: normal), `s-x` (helix: select)
  */
 export function expandToLines(_: Context) {
   return Selections.updateByIndex((_i, selection, document) => {
@@ -510,7 +508,7 @@ export function expandToLines(_: Context) {
  *
  * Trim selections to only contain full lines (from start to line break).
  *
- * @keys `a-x` (kakoune: normal)
+ * @keys `a-x` (core: normal), `a-x` (helix: select)
  */
 export function trimLines(_: Context) {
   return Selections.updateByIndex((_, selection) => {
@@ -542,7 +540,7 @@ export function trimLines(_: Context) {
  *
  * Trim whitespace at beginning and end of selections.
  *
- * @keys `_` (kakoune: normal)
+ * @keys `_` (core: normal), `_` (helix: select)
  */
 export function trimWhitespace(_: Context) {
   const blank = getCharacters(CharSet.Blank, _.document),
@@ -569,7 +567,7 @@ export function trimWhitespace(_: Context) {
  * @param where Which edge each selection should be reduced to; defaults to
  *   "active".
  *
- * @keys `;` (kakoune: normal)
+ * @keys `;` (core: normal), `;` (helix: select)
  *
  * #### Variant
  *
@@ -650,7 +648,7 @@ export function reduce(
  * @param direction If unspecified, flips each direction. Otherwise, ensures
  *   that all selections face the given direction.
  *
- * @keys `a-;` (kakoune: normal)
+ * @keys `a-;` (core: normal), `a-;` (helix: select)
  *
  * #### Variants
  *

@@ -206,6 +206,12 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           description: "Controls which mode is set by default when an editor is opened.",
           ...modeNamePattern,
         },
+        "dance.behavior": {
+          enum: ["kakoune", "helix"],
+          enumItemLabels: ["Kakoune", "Helix"],
+          description: "Controls which base set of editor keybinds to use",
+          default: "kakoune",
+        },
         "dance.modes": {
           type: "object",
           scope: "language-overridable",
@@ -765,32 +771,28 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               ...symbols.map((x) => `Shift+${x}`),
             ]);
 
-      const keysToAssignForNormal = new Set(keysToAssign);
-      const keysToAssignForVisual = new Set(keysToAssign);
-
-      for (const keybinding of keybindings) {
-        if (keybinding.when.includes("dance.mode == 'normal'")) {
-          keysToAssignForNormal.delete(keybinding.key);
+      for (const [category, mode] of [
+        ["kakoune", "normal"],
+        ["helix", "normal"],
+        ["helix", "select"],
+      ]) {
+        const unassignedKeys = new Set(keysToAssign);
+        for (const keybinding of keybindings) {
+          const isInCategory =
+            keybinding.when.includes(`dance.behavior == '${category}'`) || !keybinding.when.includes("dance.behavior");
+          const isMode = keybinding.when.includes(`dance.mode == '${mode}'`);
+          if (isMode && isInCategory) {
+            unassignedKeys.delete(keybinding.key);
+          }
         }
-        if (keybinding.when.includes("dance.mode == 'select'")) {
-          keysToAssignForVisual.delete(keybinding.key);
+
+        for (const unassignedKey of unassignedKeys) {
+          keybindings.push({
+            key: unassignedKey,
+            command: "dance.ignore",
+            when: `dance.mode == '${mode}' && dance.behavior == '${category}'`,
+          });
         }
-      }
-
-      for (const keyToAssign of keysToAssignForNormal) {
-        keybindings.push({
-          command: "dance.ignore",
-          key: keyToAssign,
-          when: "editorTextFocus && dance.mode == 'normal'",
-        });
-      }
-
-      for (const keyToAssign of keysToAssignForVisual) {
-        keybindings.push({
-          command: "dance.ignore",
-          key: keyToAssign,
-          when: "editorTextFocus && dance.mode == 'select'",
-        });
       }
 
       return keybindings;

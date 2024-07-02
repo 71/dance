@@ -519,6 +519,9 @@ export function parseKeys(keys: string) {
     const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
           whenClauses = ["editorTextFocus"];
 
+    if (category !== "core") {
+      whenClauses.push(`dance.behavior == '${category}'`);
+    }
     for (let tag of tags.split(", ")) {
       const negate = tag.startsWith("!");
       if (negate) {

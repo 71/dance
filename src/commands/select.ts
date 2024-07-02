@@ -36,21 +36,25 @@ const preferredColumnsToken =
  *
  * #### Variants
  *
- * | Title       | Identifier    | Keybinding                                                                | Command                                                           |
+ * | Title       | Identifier    | Keybinding                                                                                        | Command                                                           |
  * | ----------- | ------------- | ------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
- * | Jump down   | `down.jump`   | `j` (kakoune: normal)  , `down` (kakoune: normal)                                                 | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
+ * | Jump down   | `down.jump`   | `j` (core: normal)  , `down` (core: normal)                                                       | `[".select.vertically", { direction:  1, shift: "jump"  , ... }]` |
  * | Extend down | `down.extend` | `s-j` (kakoune: normal), `s-down` (kakoune: normal), `j` (helix: select), `down` (helix: select)  | `[".select.vertically", { direction:  1, shift: "extend", ... }]` |
- * | Jump up     | `up.jump`     | `k` (kakoune: normal)  , `up` (kakoune: normal)                                                   | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
+ * | Jump up     | `up.jump`     | `k` (core: normal)  , `up` (core: normal)                                                         | `[".select.vertically", { direction: -1, shift: "jump"  , ... }]` |
  * | Extend up   | `up.extend`   | `s-k` (kakoune: normal), `s-up` (kakoune: normal)  , `k` (helix: select), `up` (helix: select)    | `[".select.vertically", { direction: -1, shift: "extend", ... }]` |
  *
  * The following keybindings are also defined:
  *
- * | Keybinding                                       | Command                                                                    |
- * | ------------------------------------------------ | -------------------------------------------------------------------------- |
- * | `c-f` (kakoune: normal), `c-f` (kakoune: insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]` |
- * | `c-d` (kakoune: normal), `c-d` (kakoune: insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]` |
- * | `c-b` (kakoune: normal), `c-b` (kakoune: insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]` |
- * | `c-u` (kakoune: normal), `c-u` (kakoune: insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]` |
+ * | Keybinding                                 | Command                                                                      |
+ * | -------------------------------------------| ---------------------------------------------------------------------------- |
+ * | `c-f` (core: normal), `c-f` (core: insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]`   |
+ * | `c-d` (core: normal), `c-d` (core: insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]`   |
+ * | `c-b` (core: normal), `c-b` (core: insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]`   |
+ * | `c-u` (core: normal), `c-u` (core: insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]`   |
+ * | `c-f` (helix: select)                      | `[".select.vertically", { direction:  1, by: "page"    , shift: "extend" }]` |
+ * | `c-d` (helix: select)                      | `[".select.vertically", { direction:  1, by: "halfPage", shift: "extend" }]` |
+ * | `c-b` (helix: select)                      | `[".select.vertically", { direction: -1, by: "page"    , shift: "extend" }]` |
+ * | `c-u` (helix: select)                      | `[".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]` |
  */
 export function vertically(
   _: Context,
@@ -224,9 +228,9 @@ export function vertically(
  *
  * | Title        | Identifier     | Keybinding                                                                                         | Command                                                             |
  * | ------------ | -------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
- * | Jump right   | `right.jump`   | `l` (kakoune: normal)  , `right` (kakoune: normal)                                                 | `[".select.horizontally", { direction:  1, shift: "jump"  , ... }]` |
+ * | Jump right   | `right.jump`   | `l` (core: normal)  , `right` (core: normal)                                                       | `[".select.horizontally", { direction:  1, shift: "jump"  , ... }]` |
  * | Extend right | `right.extend` | `s-l` (kakoune: normal), `s-right` (kakoune: normal), `l` (helix: select), `right` (helix: select) | `[".select.horizontally", { direction:  1, shift: "extend", ... }]` |
- * | Jump left    | `left.jump`    | `h` (kakoune: normal)  , `left` (kakoune: normal)                                                  | `[".select.horizontally", { direction: -1, shift: "jump"  , ... }]` |
+ * | Jump left    | `left.jump`    | `h` (core: normal)  , `left` (core: normal)                                                        | `[".select.horizontally", { direction: -1, shift: "jump"  , ... }]` |
  * | Extend left  | `left.extend`  | `s-h` (kakoune: normal), `s-left` (kakoune: normal), `h` (helix: select), `left` (helix: select)   | `[".select.horizontally", { direction: -1, shift: "extend", ... }]` |
  */
 export function horizontally(
@@ -293,7 +297,7 @@ export function horizontally(
  *
  * | Title     | Identifier  | Keybinding                                   | Command                                    |
  * | --------- | ----------- | -------------------------------------------- | ------------------------------------------ |
- * | Go to     | `to.jump`   | `g` (kakoune: normal)                        | `[".select.to", { shift: "jump"  , ... }]` |
+ * | Go to     | `to.jump`   | `g` (core: normal)                           | `[".select.to", { shift: "jump"  , ... }]` |
  * | Extend to | `to.extend` | `s-g` (kakoune: normal), `g` (helix: select) | `[".select.to", { shift: "extend", ... }]` |
  */
 export function to(
@@ -341,6 +345,7 @@ export function line_below(_: Context, count: number) {
 
 /**
  * Extend to line below.
+ * @keys `x` (helix: normal), `x` (helix: select)
  */
 export function line_below_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {
@@ -448,18 +453,18 @@ export function line_above_extend(_: Context, count: number) {
 /**
  * Select to line start.
  *
- * @keys `a-h` (kakoune: normal), `home` (kakoune: normal)
+ * @keys `a-h` (kakoune: normal), `home` (core: normal)
  *
  * #### Variants
  *
- * | Title                             | Identifier                   | Keybinding                                            | Command                                                            |
- * | --------------------              | ------------------           | ----------------------------------------------------- | ------------------------------------------------------------------ |
- * | Jump to line start                | `lineStart.jump`             |                                                       | `[".select.lineStart", {                  shift: "jump"  , ... }]` |
- * | Extend to line start              | `lineStart.extend`           | `s-a-h` (kakoune: normal), `s-home` (kakoune: normal) | `[".select.lineStart", {                  shift: "extend", ... }]` |
- * | Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                                       | `[".select.lineStart", { skipBlank: true, shift: "jump"  , ... }]` |
- * | Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                                       | `[".select.lineStart", { skipBlank: true, shift: "extend", ... }]` |
- * | Jump to first line                | `firstLine.jump`             |                                                       | `[".select.lineStart", { count: 0,        shift: "jump"  , ... }]` |
- * | Extend to first line              | `firstLine.extend`           |                                                       | `[".select.lineStart", { count: 0,        shift: "extend", ... }]` |
+ * | Title                             | Identifier                   | Keybinding                                                                    | Command                                                            |
+ * | --------------------              | ------------------           | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+ * | Jump to line start                | `lineStart.jump`             |                                                                               | `[".select.lineStart", {                  shift: "jump"  , ... }]` |
+ * | Extend to line start              | `lineStart.extend`           | `s-a-h` (kakoune: normal), `s-home` (kakoune: normal), `home` (helix: select) | `[".select.lineStart", {                  shift: "extend", ... }]` |
+ * | Jump to line start (skip blank)   | `lineStart.skipBlank.jump`   |                                                                               | `[".select.lineStart", { skipBlank: true, shift: "jump"  , ... }]` |
+ * | Extend to line start (skip blank) | `lineStart.skipBlank.extend` |                                                                               | `[".select.lineStart", { skipBlank: true, shift: "extend", ... }]` |
+ * | Jump to first line                | `firstLine.jump`             |                                                                               | `[".select.lineStart", { count: 0,        shift: "jump"  , ... }]` |
+ * | Extend to first line              | `firstLine.extend`           |                                                                               | `[".select.lineStart", { count: 0,        shift: "extend", ... }]` |
  */
 export function lineStart(
   _: Context,
@@ -498,15 +503,15 @@ export function lineStart(
  * @param lineBreak If `true`, selects the line break in character selection
  *   mode.
  *
- * @keys `a-l` (kakoune: normal), `end` (kakoune: normal)
+ * @keys `a-l` (kakoune: normal), `end` (core: normal)
  *
  * #### Variants
  *
- * | Title                    | Identifier           | Keybinding                                           | Command                                                         |
- * | ------------------------ | -------------------- | ---------------------------------------------------- | --------------------------------------------------------------- |
- * | Extend to line end       | `lineEnd.extend`     | `s-a-l` (kakoune: normal), `s-end` (kakoune: normal) | `[".select.lineEnd", {                 shift: "extend", ... }]` |
- * | Jump to last character   | `documentEnd.jump`   |                                                      | `[".select.lineEnd", { count: MAX_INT, shift: "jump"  , ... }]` |
- * | Extend to last character | `documentEnd.extend` |                                                      | `[".select.lineEnd", { count: MAX_INT, shift: "extend", ... }]` |
+ * | Title                    | Identifier           | Keybinding                                                                  | Command                                                         |
+ * | ------------------------ | -------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------- |
+ * | Extend to line end       | `lineEnd.extend`     | `s-a-l` (kakoune: normal), `s-end` (kakoune: normal), `end` (helix: select) | `[".select.lineEnd", {                 shift: "extend", ... }]` |
+ * | Jump to last character   | `documentEnd.jump`   |                                                                             | `[".select.lineEnd", { count: MAX_INT, shift: "jump"  , ... }]` |
+ * | Extend to last character | `documentEnd.extend` |                                                                             | `[".select.lineEnd", { count: MAX_INT, shift: "extend", ... }]` |
  */
 export function lineEnd(
   _: Context,

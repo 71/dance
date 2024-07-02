@@ -190,7 +190,7 @@ export async function run(
  * press is awaited again and the returned register will be specific to the
  * current document.
  *
- * @keys `"` (kakoune: normal)
+ * @keys `"` (core: normal)
  * @noreplay
  */
 export async function selectRegister(
