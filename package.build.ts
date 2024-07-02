@@ -206,6 +206,12 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           description: "Controls which mode is set by default when an editor is opened.",
           ...modeNamePattern,
         },
+        "dance.behavior": {
+          enum: ["kakoune", "helix"],
+          enumItemLabels: ["Kakoune", "Helix"],
+          description: "Controls which base set of editor keybinds to use",
+          default: "kakoune",
+        },
         "dance.modes": {
           type: "object",
           scope: "language-overridable",
