@@ -1,0 +1,2270 @@
+{
+  "name": "dance-helix-keybinds",
+  "description": "Helix keybindings for dance",
+  "version": "0.1.0",
+  "license": "ISC",
+  "author": {
+    "name": "Grégoire Geis",
+    "email": "opensource@gregoirege.is"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/71/dance.git"
+  },
+  "engines": {
+    "vscode": "^1.63.0"
+  },
+  "displayName": "Dance",
+  "publisher": "gregoire",
+  "categories": [
+    "Keymaps",
+    "Other"
+  ],
+  "readme": "README.md",
+  "icon": "dance.png",
+  "scripts": {
+    "package": "vsce package --allow-star-activation",
+    "publish": "vsce publish --allow-star-activation",
+    "package:pre": "vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.1.0001",
+    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.1.0001"
+  },
+  "contributes": {
+    "configurationDefaults": {
+      "dance.defaultMode": "helix/normal",
+      "dance.modes": {
+        "": {
+          "hiddenSelectionsIndicatorsDecoration": {
+            "after": {
+              "color": "$list.warningForeground"
+            },
+            "backgroundColor": "$inputValidation.warningBackground",
+            "borderColor": "$inputValidation.warningBorder",
+            "borderStyle": "solid",
+            "borderWidth": "1px",
+            "isWholeLine": true
+          }
+        },
+        "input": {
+          "cursorStyle": "underline-thin"
+        },
+        "helix/insert": {
+          "onLeaveMode": [
+            [
+              ".selections.save",
+              {
+                "register": " insert"
+              }
+            ]
+          ]
+        },
+        "helix/select": {
+          "cursorStyle": "block",
+          "selectionBehavior": "character"
+        },
+        "helix/normal": {
+          "cursorStyle": "block",
+          "selectionBehavior": "character",
+          "decorations": {
+            "applyTo": "main",
+            "backgroundColor": "$editor.hoverHighlightBackground",
+            "isWholeLine": true
+          },
+          "onEnterMode": [
+            [
+              ".selections.restore",
+              {
+                "register": " ^",
+                "try": true
+              }
+            ]
+          ],
+          "onLeaveMode": [
+            [
+              ".selections.save",
+              {
+                "register": " ^",
+                "style": {
+                  "borderColor": "$editor.selectionBackground",
+                  "borderStyle": "solid",
+                  "borderWidth": "2px",
+                  "borderRadius": "1px"
+                },
+                "until": [
+                  [
+                    "mode-did-change",
+                    {
+                      "include": "normal"
+                    }
+                  ],
+                  [
+                    "selections-did-change"
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      },
+      "dance.menus": {
+        "match": {
+          "title": "Match",
+          "items": {
+            "m": {
+              "command": "dance.seek.enclosing",
+              "text": "Goto matching bracket"
+            },
+            "a": {
+              "command": "dance.openMenu",
+              "args": [
+                {
+                  "menu": "object",
+                  "title": "Match around"
+                }
+              ],
+              "text": "Select around object"
+            },
+            "i": {
+              "command": "dance.openMenu",
+              "args": [
+                {
+                  "menu": "object",
+                  "title": "Match inside",
+                  "pass": [
+                    {
+                      "inner": true
+                    }
+                  ]
+                }
+              ],
+              "text": "Select inside object"
+            }
+          }
+        },
+        "object": {
+          "title": "Select object...",
+          "items": {
+            "()": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "\\((?#inner)\\)"
+                }
+              ],
+              "text": "parenthesis block"
+            },
+            "{}": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "\\{(?#inner)\\}"
+                }
+              ],
+              "text": "braces block"
+            },
+            "[]": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "\\[(?#inner)\\]"
+                }
+              ],
+              "text": "brackets block"
+            },
+            "<>": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "<(?#inner)>"
+                }
+              ],
+              "text": "angle block"
+            },
+            "\"": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#noescape)\"(?#inner)(?#noescape)\""
+                }
+              ],
+              "text": "double quote string"
+            },
+            "'": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#noescape)'(?#inner)(?#noescape)'"
+                }
+              ],
+              "text": "single quote string"
+            },
+            "`": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#noescape)`(?#inner)(?#noescape)`"
+                }
+              ],
+              "text": "grave quote string"
+            },
+            "w": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "[\\p{L}_\\d]+(?<after>[^\\S\\n]+)"
+                }
+              ],
+              "text": "word"
+            },
+            "W": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "[\\S]+(?<after>[^\\S\\n]+)"
+                }
+              ],
+              "text": "WORD"
+            },
+            "p": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#predefined=paragraph)"
+                }
+              ],
+              "text": "paragraph"
+            },
+            "a": {
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#predefined=argument)"
+                }
+              ],
+              "text": "argument"
+            },
+            "!": {
+              "command": "dance.seek.object",
+              "text": "custom object desc"
+            }
+          }
+        },
+        "view": {
+          "title": "View",
+          "items": {
+            "cz": {
+              "text": "Align view center",
+              "command": "dance.view.line",
+              "args": [
+                {
+                  "at": "center"
+                }
+              ]
+            },
+            "t": {
+              "text": "Align view top",
+              "command": "dance.view.line",
+              "args": [
+                {
+                  "at": "top"
+                }
+              ]
+            },
+            "b": {
+              "text": "Align view bottom",
+              "command": "dance.view.line",
+              "args": [
+                {
+                  "at": "bottom"
+                }
+              ]
+            },
+            "k": {
+              "text": "Scroll view up",
+              "command": "editorScroll",
+              "args": [
+                {
+                  "by": "line",
+                  "revealCursor": true,
+                  "to": "up"
+                }
+              ]
+            },
+            "j": {
+              "text": "Scroll view down",
+              "command": "editorScroll",
+              "args": [
+                {
+                  "by": "line",
+                  "revealCursor": true,
+                  "to": "down"
+                }
+              ]
+            },
+            "/": {
+              "text": "Search for regex pattern",
+              "command": "dance.search"
+            },
+            "?": {
+              "text": "Reverse search for regex pattern",
+              "command": "dance.search.backward"
+            },
+            "n": {
+              "text": "Select next search match",
+              "command": "dance.search.next"
+            },
+            "N": {
+              "text": "Select previous search match",
+              "command": "dance.search.previous"
+            }
+          }
+        },
+        "goto": {
+          "title": "Goto",
+          "items": {
+            "g": {
+              "text": "to line number else file start",
+              "command": "dance.select.lineStart"
+            },
+            "e": {
+              "text": "to last line",
+              "command": "dance.select.lineEnd",
+              "args": [
+                {
+                  "count": 2147483647
+                }
+              ]
+            },
+            "f": {
+              "text": "to file/URLs in selections",
+              "command": "dance.selections.open"
+            },
+            "h": {
+              "text": "to line start",
+              "command": "dance.select.lineStart"
+            },
+            "l": {
+              "text": "to line end",
+              "command": "dance.select.lineEnd"
+            },
+            "i": {
+              "text": "to first non-blank in line",
+              "command": "dance.select.lineStart",
+              "args": [
+                {
+                  "skipBlank": true
+                }
+              ]
+            },
+            "d": {
+              "text": "to definition",
+              "command": "editor.action.revealDefinition"
+            },
+            "r": {
+              "text": "to references",
+              "command": "editor.action.goToReferences"
+            },
+            "j": {
+              "text": "to last line",
+              "command": "dance.select.lastLine"
+            },
+            "t": {
+              "text": "to window top",
+              "command": "dance.select.firstVisibleLine"
+            },
+            "c": {
+              "text": "to window center",
+              "command": "dance.select.middleVisibleLine"
+            },
+            "b": {
+              "text": "to window bottom",
+              "command": "dance.select.lastVisibleLine"
+            },
+            "a": {
+              "text": "to last buffer",
+              "command": "workbench.action.openPreviousRecentlyUsedEditorInGroup"
+            },
+            "A": {
+              "text": "to last buffer...",
+              "command": "workbench.action.quickOpenPreviousRecentlyUsedEditorInGroup"
+            },
+            "n": {
+              "text": "to next buffer",
+              "command": "workbench.action.nextEditor"
+            },
+            "p": {
+              "text": "to previous buffer",
+              "command": "workbench.action.previousEditor"
+            },
+            ".": {
+              "text": "to last buffer modification position",
+              "command": "dance.selections.restore",
+              "args": [
+                {
+                  "register": " insert"
+                }
+              ]
+            }
+          }
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "category": "core",
+        "key": "Shift+7",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Align selections",
+        "command": "dance.edit.align"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+`",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Swap case",
+        "command": "dance.edit.case.swap"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+`",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Swap case",
+        "command": "dance.edit.case.swap"
+      },
+      {
+        "category": "core",
+        "key": "`",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Transform to lower case",
+        "command": "dance.edit.case.toLower"
+      },
+      {
+        "category": "helix",
+        "key": "`",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Transform to lower case",
+        "command": "dance.edit.case.toLower"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+`",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Transform to upper case",
+        "command": "dance.edit.case.toUpper"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+`",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Transform to upper case",
+        "command": "dance.edit.case.toUpper"
+      },
+      {
+        "category": "core",
+        "key": "Shift+,",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Deindent selected lines (including incomplete indent)",
+        "command": "dance.edit.deindent.withIncomplete"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+,",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Deindent selected lines (including incomplete indent)",
+        "command": "dance.edit.deindent.withIncomplete"
+      },
+      {
+        "category": "core",
+        "key": "Alt+D",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Delete",
+        "command": "dance.edit.delete"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+D",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Delete",
+        "command": "dance.edit.delete"
+      },
+      {
+        "category": "core",
+        "key": "Shift+.",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Indent selected lines",
+        "command": "dance.edit.indent"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+.",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Indent selected lines",
+        "command": "dance.edit.indent"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+J",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Join lines",
+        "command": "dance.edit.join"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+J",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Join lines",
+        "command": "dance.edit.join"
+      },
+      {
+        "category": "core",
+        "key": "Shift+Alt+J",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Join lines and select inserted separators",
+        "command": "dance.edit.join.select"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Alt+J",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Join lines and select inserted separators",
+        "command": "dance.edit.join.select"
+      },
+      {
+        "category": "core",
+        "key": "Shift+O",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Insert new line above and switch to insert",
+        "command": "dance.edit.newLine.above.insert"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+O",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Insert new line above and switch to insert",
+        "command": "dance.edit.newLine.above.insert"
+      },
+      {
+        "category": "core",
+        "key": "O",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Insert new line below and switch to insert",
+        "command": "dance.edit.newLine.below.insert"
+      },
+      {
+        "category": "helix",
+        "key": "O",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Insert new line below and switch to insert",
+        "command": "dance.edit.newLine.below.insert"
+      },
+      {
+        "category": "helix",
+        "key": "P",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Paste after",
+        "command": "dance.edit.paste.after"
+      },
+      {
+        "category": "core",
+        "key": "P",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Paste after and select",
+        "command": "dance.edit.paste.after.select"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+P",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Paste before",
+        "command": "dance.edit.paste.before"
+      },
+      {
+        "category": "core",
+        "key": "Shift+P",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Paste before and select",
+        "command": "dance.edit.paste.before.select"
+      },
+      {
+        "category": "core",
+        "key": "R",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Replace characters",
+        "command": "dance.edit.replaceCharacters"
+      },
+      {
+        "category": "core",
+        "key": "D",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Copy and delete",
+        "command": "dance.edit.yank-delete"
+      },
+      {
+        "category": "helix",
+        "key": "D",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Copy and delete",
+        "command": "dance.edit.yank-delete"
+      },
+      {
+        "category": "core",
+        "key": "C",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Copy, delete and switch to Insert",
+        "command": "dance.edit.yank-delete-insert"
+      },
+      {
+        "category": "helix",
+        "key": "C",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Copy, delete and switch to Insert",
+        "command": "dance.edit.yank-delete-insert"
+      },
+      {
+        "category": "core",
+        "key": "Shift+U",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Redo",
+        "command": "dance.history.redo"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+U",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Redo",
+        "command": "dance.history.redo"
+      },
+      {
+        "category": "core",
+        "key": ".",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Repeat last edit without a command",
+        "command": "dance.history.repeat.edit"
+      },
+      {
+        "category": "core",
+        "key": "NumPad_Decimal",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Repeat last edit without a command",
+        "command": "dance.history.repeat.edit"
+      },
+      {
+        "category": "core",
+        "key": "Alt+.",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Repeat last seek",
+        "command": "dance.history.repeat.seek"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+.",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Repeat last seek",
+        "command": "dance.history.repeat.seek"
+      },
+      {
+        "category": "core",
+        "key": "U",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Undo",
+        "command": "dance.history.undo"
+      },
+      {
+        "category": "helix",
+        "key": "U",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Undo",
+        "command": "dance.history.undo"
+      },
+      {
+        "category": "core",
+        "key": "Escape",
+        "when": "editorTextFocus && dance.mode == 'helix/normal' && !dance.isRecording && !markersNavigationVisible",
+        "title": "Cancel Dance operation",
+        "command": "dance.cancel"
+      },
+      {
+        "category": "core",
+        "key": "Escape",
+        "when": "editorTextFocus && dance.mode == 'input'",
+        "title": "Cancel Dance operation",
+        "command": "dance.cancel"
+      },
+      {
+        "category": "core",
+        "key": "Up",
+        "when": "inputFocus && dance.inPrompt",
+        "command": "dance.changeInput",
+        "args": {
+          "action": "previous"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Down",
+        "when": "inputFocus && dance.inPrompt",
+        "command": "dance.changeInput",
+        "args": {
+          "action": "next"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Shift+'",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select register for next command",
+        "command": "dance.selectRegister"
+      },
+      {
+        "category": "core",
+        "key": "0",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 0 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 0
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad0",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 0 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 0
+        }
+      },
+      {
+        "category": "core",
+        "key": "1",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 1 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 1
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad1",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 1 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 1
+        }
+      },
+      {
+        "category": "core",
+        "key": "2",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 2 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 2
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad2",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 2 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 2
+        }
+      },
+      {
+        "category": "core",
+        "key": "3",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 3 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 3
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad3",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 3 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 3
+        }
+      },
+      {
+        "category": "core",
+        "key": "4",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 4 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 4
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad4",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 4 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 4
+        }
+      },
+      {
+        "category": "core",
+        "key": "5",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 5 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 5
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad5",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 5 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 5
+        }
+      },
+      {
+        "category": "core",
+        "key": "6",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 6 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 6
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad6",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 6 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 6
+        }
+      },
+      {
+        "category": "core",
+        "key": "7",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 7 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 7
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad7",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 7 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 7
+        }
+      },
+      {
+        "category": "core",
+        "key": "8",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 8 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 8
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad8",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 8 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 8
+        }
+      },
+      {
+        "category": "core",
+        "key": "9",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 9 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 9
+        }
+      },
+      {
+        "category": "core",
+        "key": "NumPad9",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 9 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 9
+        }
+      },
+      {
+        "category": "core",
+        "key": "Shift+;",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "command": "workbench.action.showCommands",
+        "args": {
+          "$exclude": []
+        }
+      },
+      {
+        "category": "core",
+        "key": "A",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Insert after",
+        "command": "dance.modes.insert.after"
+      },
+      {
+        "category": "helix",
+        "key": "A",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Insert after",
+        "command": "dance.modes.insert.after"
+      },
+      {
+        "category": "core",
+        "key": "I",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Insert before",
+        "command": "dance.modes.insert.before"
+      },
+      {
+        "category": "helix",
+        "key": "I",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Insert before",
+        "command": "dance.modes.insert.before"
+      },
+      {
+        "category": "core",
+        "key": "Shift+A",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Insert at line end",
+        "command": "dance.modes.insert.lineEnd"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+A",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Insert at line end",
+        "command": "dance.modes.insert.lineEnd"
+      },
+      {
+        "category": "core",
+        "key": "Shift+I",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Insert at line start",
+        "command": "dance.modes.insert.lineStart"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+I",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Insert at line start",
+        "command": "dance.modes.insert.lineStart"
+      },
+      {
+        "category": "core",
+        "key": "Escape",
+        "when": "editorTextFocus && dance.mode == 'helix/insert'",
+        "title": "Set mode to Normal",
+        "command": "dance.modes.set.normal"
+      },
+      {
+        "category": "helix",
+        "key": "Escape",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Set mode to Normal",
+        "command": "dance.modes.set.normal"
+      },
+      {
+        "category": "helix",
+        "key": "V",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Set mode to Normal",
+        "command": "dance.modes.set.normal"
+      },
+      {
+        "category": "helix",
+        "key": "V",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Set mode to Select",
+        "command": "dance.modes.set.select"
+      },
+      {
+        "category": "core",
+        "key": "/",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Search",
+        "command": "dance.search"
+      },
+      {
+        "category": "core",
+        "key": "NumPad_Divide",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Search",
+        "command": "dance.search"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+/",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Search backward",
+        "command": "dance.search.backward"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+/",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Search backward (extend)",
+        "command": "dance.search.backward.extend"
+      },
+      {
+        "category": "helix",
+        "key": "/",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Search (extend)",
+        "command": "dance.search.extend"
+      },
+      {
+        "category": "core",
+        "key": "N",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select next match",
+        "command": "dance.search.next"
+      },
+      {
+        "category": "helix",
+        "key": "N",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Add next match",
+        "command": "dance.search.next.add"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+N",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select previous match",
+        "command": "dance.search.previous"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+N",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Add previous match",
+        "command": "dance.search.previous.add"
+      },
+      {
+        "category": "core",
+        "key": "Shift+Alt+8",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Search current selection",
+        "command": "dance.search.selection"
+      },
+      {
+        "category": "core",
+        "key": "Alt+NumPad_Multiply",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Search current selection",
+        "command": "dance.search.selection"
+      },
+      {
+        "category": "core",
+        "key": "Shift+8",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Search current selection (smart)",
+        "command": "dance.search.selection.smart"
+      },
+      {
+        "category": "core",
+        "key": "NumPad_Multiply",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Search current selection (smart)",
+        "command": "dance.search.selection.smart"
+      },
+      {
+        "category": "helix",
+        "key": "M",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Open match menu",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "match"
+        }
+      },
+      {
+        "category": "helix",
+        "key": "M",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Open match menu with extend",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "match",
+          "pass": [
+            {
+              "shift": "extend"
+            }
+          ]
+        }
+      },
+      {
+        "category": "core",
+        "key": "T",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to character (excluded)",
+        "command": "dance.seek"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+T",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to character (excluded, backward)",
+        "command": "dance.seek.backward"
+      },
+      {
+        "category": "helix",
+        "key": "T",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to character (excluded)",
+        "command": "dance.seek.extend"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+T",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to character (excluded, backward)",
+        "command": "dance.seek.extend.backward"
+      },
+      {
+        "category": "core",
+        "key": "F",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to character (included)",
+        "command": "dance.seek.included"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+F",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to character (included, backward)",
+        "command": "dance.seek.included.backward"
+      },
+      {
+        "category": "helix",
+        "key": "F",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to character (included)",
+        "command": "dance.seek.included.extend"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+F",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to character (included, backward)",
+        "command": "dance.seek.included.extend.backward"
+      },
+      {
+        "category": "core",
+        "key": "W",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to next word start",
+        "command": "dance.seek.word"
+      },
+      {
+        "category": "core",
+        "key": "B",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to previous word start",
+        "command": "dance.seek.word.backward"
+      },
+      {
+        "category": "helix",
+        "key": "W",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to next word start",
+        "command": "dance.seek.word.extend"
+      },
+      {
+        "category": "helix",
+        "key": "B",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to previous word start",
+        "command": "dance.seek.word.extend.backward"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+W",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to next non-whitespace word start",
+        "command": "dance.seek.word.ws"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+B",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to previous non-whitespace word start",
+        "command": "dance.seek.word.ws.backward"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+W",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to next non-whitespace word start",
+        "command": "dance.seek.word.ws.extend"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+B",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to previous non-whitespace word start",
+        "command": "dance.seek.word.ws.extend.backward"
+      },
+      {
+        "category": "core",
+        "key": "E",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to next word end",
+        "command": "dance.seek.wordEnd"
+      },
+      {
+        "category": "helix",
+        "key": "E",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to next word end",
+        "command": "dance.seek.wordEnd.extend"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+E",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to next non-whitespace word end",
+        "command": "dance.seek.wordEnd.ws"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+E",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to next non-whitespace word end",
+        "command": "dance.seek.wordEnd.ws.extend"
+      },
+      {
+        "category": "helix",
+        "key": "J",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend down",
+        "command": "dance.select.down.extend"
+      },
+      {
+        "category": "helix",
+        "key": "Down",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend down",
+        "command": "dance.select.down.extend"
+      },
+      {
+        "category": "core",
+        "key": "J",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Jump down",
+        "command": "dance.select.down.jump"
+      },
+      {
+        "category": "core",
+        "key": "Down",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Jump down",
+        "command": "dance.select.down.jump"
+      },
+      {
+        "category": "helix",
+        "key": "H",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend left",
+        "command": "dance.select.left.extend"
+      },
+      {
+        "category": "helix",
+        "key": "Left",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend left",
+        "command": "dance.select.left.extend"
+      },
+      {
+        "category": "core",
+        "key": "H",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Jump left",
+        "command": "dance.select.left.jump"
+      },
+      {
+        "category": "core",
+        "key": "Left",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Jump left",
+        "command": "dance.select.left.jump"
+      },
+      {
+        "category": "helix",
+        "key": "X",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Extend to line below",
+        "command": "dance.select.line.below.extend"
+      },
+      {
+        "category": "helix",
+        "key": "X",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to line below",
+        "command": "dance.select.line.below.extend"
+      },
+      {
+        "category": "core",
+        "key": "End",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to line end",
+        "command": "dance.select.lineEnd"
+      },
+      {
+        "category": "helix",
+        "key": "End",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to line end",
+        "command": "dance.select.lineEnd.extend"
+      },
+      {
+        "category": "core",
+        "key": "Home",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select to line start",
+        "command": "dance.select.lineStart"
+      },
+      {
+        "category": "helix",
+        "key": "Home",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to line start",
+        "command": "dance.select.lineStart.extend"
+      },
+      {
+        "category": "helix",
+        "key": "L",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend right",
+        "command": "dance.select.right.extend"
+      },
+      {
+        "category": "helix",
+        "key": "Right",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend right",
+        "command": "dance.select.right.extend"
+      },
+      {
+        "category": "core",
+        "key": "L",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Jump right",
+        "command": "dance.select.right.jump"
+      },
+      {
+        "category": "core",
+        "key": "Right",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Jump right",
+        "command": "dance.select.right.jump"
+      },
+      {
+        "category": "helix",
+        "key": "G",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend to",
+        "command": "dance.select.to.extend"
+      },
+      {
+        "category": "core",
+        "key": "G",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Go to",
+        "command": "dance.select.to.jump"
+      },
+      {
+        "category": "helix",
+        "key": "K",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend up",
+        "command": "dance.select.up.extend"
+      },
+      {
+        "category": "helix",
+        "key": "Up",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Extend up",
+        "command": "dance.select.up.extend"
+      },
+      {
+        "category": "core",
+        "key": "K",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Jump up",
+        "command": "dance.select.up.jump"
+      },
+      {
+        "category": "core",
+        "key": "Up",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Jump up",
+        "command": "dance.select.up.jump"
+      },
+      {
+        "category": "core",
+        "key": "Ctrl+F",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "page",
+          "shift": "jump"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Ctrl+F",
+        "when": "editorTextFocus && dance.mode == 'helix/insert'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "page",
+          "shift": "jump"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Ctrl+D",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "halfPage",
+          "shift": "jump"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Ctrl+D",
+        "when": "editorTextFocus && dance.mode == 'helix/insert'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "halfPage",
+          "shift": "jump"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Ctrl+B",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "page",
+          "shift": "jump"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Ctrl+B",
+        "when": "editorTextFocus && dance.mode == 'helix/insert'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "page",
+          "shift": "jump"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Ctrl+U",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "halfPage",
+          "shift": "jump"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Ctrl+U",
+        "when": "editorTextFocus && dance.mode == 'helix/insert'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "halfPage",
+          "shift": "jump"
+        }
+      },
+      {
+        "category": "helix",
+        "key": "Ctrl+F",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "page",
+          "shift": "extend"
+        }
+      },
+      {
+        "category": "helix",
+        "key": "Ctrl+D",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": 1,
+          "by": "halfPage",
+          "shift": "extend"
+        }
+      },
+      {
+        "category": "helix",
+        "key": "Ctrl+B",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "page",
+          "shift": "extend"
+        }
+      },
+      {
+        "category": "helix",
+        "key": "Ctrl+U",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.select.vertically",
+        "args": {
+          "direction": -1,
+          "by": "halfPage",
+          "shift": "extend"
+        }
+      },
+      {
+        "category": "core",
+        "key": "Alt+;",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Change direction of selections",
+        "command": "dance.selections.changeDirection"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+;",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Change direction of selections",
+        "command": "dance.selections.changeDirection"
+      },
+      {
+        "category": "core",
+        "key": "Alt+,",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Clear main selections",
+        "command": "dance.selections.clear.main"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+,",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Clear main selections",
+        "command": "dance.selections.clear.main"
+      },
+      {
+        "category": "core",
+        "key": ",",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Clear secondary selections",
+        "command": "dance.selections.clear.secondary"
+      },
+      {
+        "category": "helix",
+        "key": ",",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Clear secondary selections",
+        "command": "dance.selections.clear.secondary"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+X",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Expand to lines",
+        "command": "dance.selections.expandToLines"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+X",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Expand to lines",
+        "command": "dance.selections.expandToLines"
+      },
+      {
+        "category": "core",
+        "key": "Shift+4",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Filter selections",
+        "command": "dance.selections.filter"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+4",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Filter selections",
+        "command": "dance.selections.filter"
+      },
+      {
+        "category": "core",
+        "key": "Alt+K",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Keep matching selections",
+        "command": "dance.selections.filter.regexp"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+K",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Keep matching selections",
+        "command": "dance.selections.filter.regexp"
+      },
+      {
+        "category": "core",
+        "key": "Shift+Alt+K",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Clear matching selections",
+        "command": "dance.selections.filter.regexp.inverse"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Alt+K",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Clear matching selections",
+        "command": "dance.selections.filter.regexp.inverse"
+      },
+      {
+        "category": "core",
+        "key": "Shift+Alt+\\",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Pipe selections",
+        "command": "dance.selections.pipe"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Alt+\\",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Pipe selections",
+        "command": "dance.selections.pipe"
+      },
+      {
+        "category": "core",
+        "key": "Shift+1",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Pipe and append",
+        "command": "dance.selections.pipe.append"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+1",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Pipe and append",
+        "command": "dance.selections.pipe.append"
+      },
+      {
+        "category": "core",
+        "key": "Shift+Alt+1",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Pipe and prepend",
+        "command": "dance.selections.pipe.prepend"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Alt+1",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Pipe and prepend",
+        "command": "dance.selections.pipe.prepend"
+      },
+      {
+        "category": "core",
+        "key": "Shift+\\",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Pipe and replace",
+        "command": "dance.selections.pipe.replace"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+\\",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Pipe and replace",
+        "command": "dance.selections.pipe.replace"
+      },
+      {
+        "category": "core",
+        "key": ";",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Reduce selections to their cursor",
+        "command": "dance.selections.reduce"
+      },
+      {
+        "category": "helix",
+        "key": ";",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Reduce selections to their cursor",
+        "command": "dance.selections.reduce"
+      },
+      {
+        "category": "core",
+        "key": "Y",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Copy selections text",
+        "command": "dance.selections.saveText"
+      },
+      {
+        "category": "helix",
+        "key": "Y",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Copy selections text",
+        "command": "dance.selections.saveText"
+      },
+      {
+        "category": "core",
+        "key": "S",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Leap or select",
+        "command": "dance.selections.select.orLeap"
+      },
+      {
+        "category": "helix",
+        "key": "S",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Leap or select",
+        "command": "dance.selections.select.orLeap"
+      },
+      {
+        "category": "core",
+        "key": "Shift+S",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Split selections",
+        "command": "dance.selections.split"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+S",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Split selections",
+        "command": "dance.selections.split"
+      },
+      {
+        "category": "core",
+        "key": "Alt+S",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Leap or select backward",
+        "command": "dance.selections.splitLines.orLeap.backward"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+S",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Leap or select backward",
+        "command": "dance.selections.splitLines.orLeap.backward"
+      },
+      {
+        "category": "core",
+        "key": "Alt+X",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Trim lines",
+        "command": "dance.selections.trimLines"
+      },
+      {
+        "category": "helix",
+        "key": "Alt+X",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Trim lines",
+        "command": "dance.selections.trimLines"
+      },
+      {
+        "category": "core",
+        "key": "Shift+-",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Trim whitespace",
+        "command": "dance.selections.trimWhitespace"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+-",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Trim whitespace",
+        "command": "dance.selections.trimWhitespace"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Alt+0",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Rotate selections clockwise (contents only)",
+        "command": "dance.selections.rotate.contents"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Alt+0",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Rotate selections clockwise (contents only)",
+        "command": "dance.selections.rotate.contents"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Alt+9",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Rotate selections counter-clockwise (contents only)",
+        "command": "dance.selections.rotate.contents.reverse"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Alt+9",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Rotate selections counter-clockwise (contents only)",
+        "command": "dance.selections.rotate.contents.reverse"
+      },
+      {
+        "category": "core",
+        "key": "Shift+0",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Rotate selections clockwise (selections only)",
+        "command": "dance.selections.rotate.selections"
+      },
+      {
+        "category": "core",
+        "key": "Shift+9",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Rotate selections counter-clockwise (selections only)",
+        "command": "dance.selections.rotate.selections.reverse"
+      },
+      {
+        "category": "helix",
+        "key": "Shift+9",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Rotate selections counter-clockwise (selections only)",
+        "command": "dance.selections.rotate.selections.reverse"
+      },
+      {
+        "category": "helix",
+        "key": "Z",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Show view menu",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "view",
+          "$exclude": []
+        }
+      },
+      {
+        "category": "helix",
+        "key": "Z",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Show view menu",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "view",
+          "$exclude": []
+        }
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Z",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Show view menu (locked)",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "view",
+          "locked": true,
+          "$exclude": []
+        }
+      },
+      {
+        "category": "helix",
+        "key": "Shift+Z",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Show view menu (locked)",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "view",
+          "locked": true,
+          "$exclude": []
+        }
+      },
+      {
+        "key": "Q",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+C",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+D",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+G",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+H",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+K",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+L",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+M",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+Q",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+R",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+V",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+Y",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+2",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+3",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+5",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+6",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "'",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "-",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "=",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Tab",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Space",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "NumPad_Add",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "NumPad_Subtract",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+=",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+Tab",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+Space",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+NumPad_Add",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Shift+NumPad_Subtract",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "Q",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "R",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "0",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "1",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "2",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "3",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "4",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "5",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "6",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "7",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "8",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "9",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+C",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+D",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+G",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+H",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+K",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+L",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+M",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+Q",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+R",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+V",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+Y",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+0",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+2",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+3",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+5",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+6",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+7",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+8",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "'",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "-",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "=",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Tab",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Space",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "NumPad_Add",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "NumPad_Subtract",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+'",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+=",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+Tab",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+Space",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+NumPad_Add",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+NumPad_Subtract",
+        "command": "dance.ignore",
+        "when": "dance.mode == 'helix/select'"
+      }
+    ]
+  }
+}

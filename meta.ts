@@ -460,6 +460,15 @@ export declare namespace Builder {
     line: number;
   }
 
+  export interface Keybinding {
+      readonly title?: string;
+      readonly key: string;
+      readonly when: string;
+      readonly command: string;
+      readonly category?: string;
+      readonly args?: any;
+  }
+
   export interface ParsedModule {
     readonly path: string;
     readonly name: string;
@@ -476,13 +485,7 @@ export declare namespace Builder {
       readonly enablement?: string;
     }[];
 
-    readonly keybindings: {
-      readonly title?: string;
-      readonly key: string;
-      readonly when: string;
-      readonly command: string;
-      readonly args?: any;
-    }[];
+    readonly keybindings: Keybinding[];
   }
 }
 
@@ -518,10 +521,6 @@ export function parseKeys(keys: string) {
 
     const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
           whenClauses = ["editorTextFocus"];
-
-    if (category !== "core") {
-      whenClauses.push(`dance.behavior == '${category}'`);
-    }
     for (let tag of tags.split(", ")) {
       const negate = tag.startsWith("!");
       if (negate) {
@@ -603,11 +602,10 @@ function getCommands(module: Omit<Builder.ParsedModule, "commands">) {
 /**
  * Returns all defined keybindings in the given module.
  */
-function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
+function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">): Builder.Keybinding[] {
   return [
     ...module.functions.flatMap((f) => parseKeys(f.properties["keys"] ?? "").map((key) => ({
-      key: key.key,
-      when: key.when,
+      ...key,
       title: f.summary,
       command: `dance.${f.qualifiedName}`,
     }))),
@@ -619,8 +617,7 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
 
         if (qualifiedIdentifier !== undefined) {
           return parsedKeys.map((key) => ({
-            key: key.key,
-            when: key.when,
+            ...key,
             title,
             command: `dance.${qualifiedIdentifier}`,
           }));
@@ -637,8 +634,7 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
           }
 
           return parsedKeys.map((key) => ({
-            key: key.key,
-            when: key.when,
+            ...key,
             title,
             command,
             args: parsedCommands[0][1],
@@ -646,8 +642,7 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
         }
 
         return parsedKeys.map((key) => ({
-          key: key.key,
-          when: key.when,
+          ...key,
           title,
           command: "dance.run",
           args: {
@@ -656,6 +651,36 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
         }));
       }),
   ].sort((a, b) => a.command.localeCompare(b.command));
+}
+
+export function generateIgnoredKeybinds(
+  currentKeybindings: Builder.Keybinding[],
+  when: string,
+): Builder.Keybinding[] {
+  const alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
+        symbols = [...",'-=", "Tab", "Space", "NumPad_Add", "NumPad_Subtract"],
+        keysToAssign = new Set([
+          ...alphanum,
+          ...alphanum.map((x) => `Shift+${x}`),
+          ...symbols,
+          ...symbols.map((x) => `Shift+${x}`),
+        ]),
+        ignoredKeybindings: Builder.Keybinding[] = [];
+
+  const unassignedKeys = new Set(keysToAssign);
+  for (const keybinding of currentKeybindings) {
+    unassignedKeys.delete(keybinding.key);
+  }
+
+  for (const unassignedKey of unassignedKeys) {
+    ignoredKeybindings.push({
+      key: unassignedKey,
+      command: "dance.ignore",
+      when,
+    });
+  }
+
+  return ignoredKeybindings;
 }
 
 /**

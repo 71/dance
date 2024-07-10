@@ -3,5 +3,6 @@
 /src/commands/load-all.ts linguist-generated
 /src/commands/README.md linguist-generated
 /package.json linguist-generated
+/extensions/helix/package.json linguist-generated
 /test/suite/api.test.ts linguist-generated
 /test/suite/commands/*.test.ts linguist-generated

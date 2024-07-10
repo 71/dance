@@ -10,6 +10,18 @@
       "outFiles": ["${workspaceFolder}/out/**/*.js"],
     },
     {
+      "name": "Launch extension with helix keybinds",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "${workspaceFolder}/.vscode-test",
+        "--extensionDevelopmentPath=${workspaceFolder}",
+        "--extensionDevelopmentPath=${workspaceFolder}/extensions/helix/",
+      ],
+      "outFiles": ["${workspaceFolder}/out/**/*.js"],
+    },
+    {
       "name": "Run all tests",
       "type": "extensionHost",
       "request": "launch",

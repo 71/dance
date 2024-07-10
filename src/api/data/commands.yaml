@@ -234,7 +234,8 @@ edit.join:
 
   keys:
     qwerty: |-
-      `a-j` (core: normal)
+      `a-j` (kakoune: normal)
+      `s-j` (helix: normal)
       `s-j` (helix: select)
 
   doc:
@@ -2738,6 +2739,26 @@ anonymous:
     keys:
       qwerty: |-
         `up` (core: prompt)
+
+  - title:
+      en: Open match menu
+
+    commands: |-
+      [".openMenu", { menu: "match" }]
+
+    keys:
+      qwerty: |-
+        `m` (helix: normal)
+
+  - title:
+      en: Open match menu with extend
+
+    commands: |-
+      [".openMenu", { menu: "match", pass: [{shift: "extend"}] }]
+
+    keys:
+      qwerty: |-
+        `m` (helix: select)
 
   - title:
       en: Show view menu

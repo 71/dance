@@ -1,4 +1,4 @@
-import type { Builder } from "./meta";
+import { type Builder, generateIgnoredKeybinds } from "./meta";
 import { availableClipboardRegisters } from "./src/utils/constants";
 
 // Shared values
@@ -22,7 +22,7 @@ const builtinModesAreDeprecatedMessage =
   "Built-in modes are deprecated. Use `#dance.modes#` instead.";
 
 const modeNamePattern = {
-  pattern: /^[a-zA-Z]\w*$/.source,
+  pattern: /^[a-zA-Z]\w*\/?\w*$/.source,
   patternErrorMessage: "",
 };
 
@@ -129,6 +129,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "publish": "vsce publish --allow-star-activation",
     "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
     "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
+    "package-helix": `cd extensions/helix && npm run package`,
   },
 
   devDependencies: {
@@ -205,12 +206,6 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           default: "normal",
           description: "Controls which mode is set by default when an editor is opened.",
           ...modeNamePattern,
-        },
-        "dance.behavior": {
-          enum: ["kakoune", "helix"],
-          enumItemLabels: ["Kakoune", "Helix"],
-          description: "Controls which base set of editor keybinds to use",
-          default: "kakoune",
         },
         "dance.modes": {
           type: "object",
@@ -591,13 +586,13 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               },
             },
           } as Record<string,
-                      { items: Record<string, { text: string; command: string; args?: any[] }>}>,
+            { items: Record<string, { text: string; command: string; args?: any[] }> }>,
         },
 
         "dance.systemClipboardRegister": {
           enum: ["dquote", null, ...availableClipboardRegisters],
           enumItemLabels: ['"', "None"],
-          enumDescriptions:["The default yank register", "Disables using the system clipboard"],
+          enumDescriptions: ["The default yank register", "Disables using the system clipboard"],
           default: "dquote",
           description: "Controls which register maps to the system clipboard.",
         },
@@ -761,42 +756,16 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     // TODO: unassign default keybindings, and force the user to explicitly set
     // them up.
     keybindings: (() => {
-      const keybindings = modules.flatMap((module) => module.keybindings),
-            alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
-            symbols = [...",'-=", "Tab", "Space", "NumPad_Add", "NumPad_Subtract"],
-            keysToAssign = new Set([
-              ...alphanum,
-              ...alphanum.map((x) => `Shift+${x}`),
-              ...symbols,
-              ...symbols.map((x) => `Shift+${x}`),
-            ]);
+      const keybindings = modules
+        .flatMap((module) => module.keybindings)
+        .filter((keybinding) => ["core", "kakoune", undefined].includes(keybinding.category));
 
-      for (const [category, mode] of [
-        ["kakoune", "normal"],
-        ["helix", "normal"],
-        ["helix", "select"],
-      ]) {
-        const unassignedKeys = new Set(keysToAssign);
-        for (const keybinding of keybindings) {
-          const isInCategory =
-            keybinding.when.includes(`dance.behavior == '${category}'`) || !keybinding.when.includes("dance.behavior");
-          const isMode = keybinding.when.includes(`dance.mode == '${mode}'`);
-          if (isMode && isInCategory) {
-            unassignedKeys.delete(keybinding.key);
-          }
-        }
-
-        for (const unassignedKey of unassignedKeys) {
-          keybindings.push({
-            key: unassignedKey,
-            command: "dance.ignore",
-            when: `dance.mode == '${mode}' && dance.behavior == '${category}'`,
-          });
-        }
-      }
-
-      return keybindings;
+      return [
+        ...keybindings,
+        ...generateIgnoredKeybinds(keybindings,`dance.mode == 'normal'`),
+      ];
     })(),
+
   },
 });
 

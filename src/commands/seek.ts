@@ -10,6 +10,13 @@ import { SyntaxNode, Tree, TreeSitter } from "../utils/tree-sitter";
 
 /**
  * Update selections based on the text surrounding them.
+ *
+ * #### Predefined keybindings
+ *
+ * | Title                       | Keybinding          | Command                                                       |
+ * | --------------------------- | ------------------- | ------------------------------------------------------------- |
+ * | Open match menu             | `m` (helix: normal) | `[".openMenu", { menu: "match"                            }]` |
+ * | Open match menu with extend | `m` (helix: select) | `[".openMenu", { menu: "match", pass: [{shift: "extend"}] }]` |
  */
 declare module "./seek";
 

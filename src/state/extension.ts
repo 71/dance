@@ -35,11 +35,6 @@ export class Extension implements vscode.Disposable {
     return this._gotoMenus as ReadonlyMap<string, Menu>;
   }
 
-  private _behavior = "";
-  public get behavior() {
-    return this._behavior;
-  }
-
   // State.
   // ==========================================================================
 
@@ -169,15 +164,6 @@ export class Extension implements vscode.Disposable {
             validator.leave();
           }
         }
-      },
-      true,
-    );
-
-    this.observePreference<string>(
-      ".behavior",
-      (value, _validator, _inspect) => {
-        this._behavior = value;
-        vscode.commands.executeCommand("setContext", "dance.behavior", this._behavior);
       },
       true,
     );

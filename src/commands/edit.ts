@@ -133,7 +133,7 @@ export async function insert(
 /**
  * Join lines.
  *
- * @keys `a-j` (core: normal), `s-j` (helix: select)
+ * @keys `a-j` (kakoune: normal), `s-j` (helix: normal), `s-j` (helix: select)
  */
 export function join(_: Context, separator?: Argument<string>) {
   return joinLines(Selections.lines(), separator);
