@@ -763,7 +763,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
 
       return [
         ...keybindings,
-        ...generateIgnoredKeybinds(keybindings,`dance.mode == 'normal'`),
+        ...generateIgnoredKeybinds(keybindings,`editorTextFocus && dance.mode == 'normal'`),
       ];
     })(),
 

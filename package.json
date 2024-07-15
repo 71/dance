@@ -4023,92 +4023,92 @@
       {
         "key": "Shift+D",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+X",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+Y",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+2",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+3",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+6",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "'",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "-",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "=",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Tab",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Space",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "NumPad_Add",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "NumPad_Subtract",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+=",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+Tab",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+Space",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+NumPad_Add",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+NumPad_Subtract",
         "command": "dance.ignore",
-        "when": "dance.mode == 'normal'"
+        "when": "editorTextFocus && dance.mode == 'normal'"
       }
     ]
   }

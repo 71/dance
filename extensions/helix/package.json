@@ -1737,347 +1737,347 @@
       {
         "key": "Q",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+D",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+G",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+H",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+K",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+L",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+M",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+Q",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+R",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+V",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+Y",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+2",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+3",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+5",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+6",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "'",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "-",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "=",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Tab",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Space",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "NumPad_Add",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "NumPad_Subtract",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+=",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+Tab",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+Space",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+NumPad_Add",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Shift+NumPad_Subtract",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/normal'"
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
         "key": "Q",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "R",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "0",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "1",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "2",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "3",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "4",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "5",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "6",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "7",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "8",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "9",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+D",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+G",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+H",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+K",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+L",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+M",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+Q",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+R",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+V",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+Y",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+0",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+2",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+3",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+5",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+6",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+7",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+8",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "'",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "-",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "=",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Tab",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Space",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "NumPad_Add",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "NumPad_Subtract",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+'",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+=",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+Tab",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+Space",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+NumPad_Add",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "Shift+NumPad_Subtract",
         "command": "dance.ignore",
-        "when": "dance.mode == 'helix/select'"
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       }
     ]
   }

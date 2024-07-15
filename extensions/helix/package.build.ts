@@ -189,7 +189,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
       }
 
       for (const mode of ["normal", "select"]) {
-        const whenMode = `dance.mode == 'helix/${mode}'`;
+        const whenMode = `editorTextFocus && dance.mode == 'helix/${mode}'`;
         ignoredKeybindings.push(...generateIgnoredKeybinds(
           keybindings.filter(key => key.when.includes(whenMode)),
           whenMode,
