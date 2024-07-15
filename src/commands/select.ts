@@ -13,7 +13,7 @@ declare module "./select";
 /**
  * Select whole buffer.
  *
- * @keys `%` (kakoune: normal)
+ * @keys `%` (core: normal), `%` (helix: select)
  */
 export function buffer(_: Context) {
   Selections.set([Selections.wholeBuffer()]);

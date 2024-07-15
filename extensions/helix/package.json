@@ -1153,6 +1153,18 @@
         "command": "dance.seek.wordEnd.ws.extend"
       },
       {
+        "key": "Shift+5",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Select whole buffer",
+        "command": "dance.select.buffer"
+      },
+      {
+        "key": "Shift+5",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Select whole buffer",
+        "command": "dance.select.buffer"
+      },
+      {
         "key": "J",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Extend down",
@@ -1800,11 +1812,6 @@
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
-        "key": "Shift+5",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'"
-      },
-      {
         "key": "Shift+6",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
@@ -1991,11 +1998,6 @@
       },
       {
         "key": "Shift+3",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/select'"
-      },
-      {
-        "key": "Shift+5",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/select'"
       },

@@ -127,7 +127,7 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="../seek.ts#L202"><code>seek.wordEnd.ws.extend</code></a></td><td>Extend to next non-whitespace word end</td><td><code>Shift+Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+E</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#seek.syntax.experimental"><code>seek.syntax.experimental</code></a></td><td>Select syntax object</td><td></td></tr>
 <tr><td><a href="#seek.word"><code>seek.word</code></a></td><td>Select to next word start</td><td><code>W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td rowspan=41><a href="#select"><code>select</code></a></td><td><a href="#select.buffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td rowspan=41><a href="#select"><code>select</code></a></td><td><a href="#select.buffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#select.firstVisibleLine"><code>select.firstVisibleLine</code></a></td><td>Select to first visible line</td><td></td></tr>
 <tr><td><a href="#select.horizontally"><code>select.horizontally</code></a></td><td>Select horizontally</td><td></td></tr>
 <tr><td><a href="#select.lastLine"><code>select.lastLine</code></a></td><td>Select to last line</td><td></td></tr>
@@ -1172,7 +1172,8 @@ Select whole buffer.
 
 
 
-Default keybinding: `%` (kakoune: normal)
+Default keybinding: `%` (core: normal)
+`%` (helix: select)
 
 <a name="select.vertically" />
 

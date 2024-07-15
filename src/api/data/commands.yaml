@@ -1582,7 +1582,8 @@ select.buffer:
 
   keys:
     qwerty: |-
-      `%` (kakoune: normal)
+      `%` (core: normal)
+      `%` (helix: select)
 
   doc:
     en: |+
