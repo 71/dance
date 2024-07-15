@@ -797,13 +797,13 @@ export async function sort(
 /**
  * Copy selections below.
  *
- * @keys `s-c` (kakoune: normal)
+ * @keys `s-c` (core: normal), `s-c` (helix: select)
  *
  * #### Variant
  *
- * | Title                 | Identifier   | Keybinding                | Command                                   |
- * | --------------------- | ------------ | ------------------------- | ----------------------------------------- |
- * | Copy selections above | `copy.above` | `s-a-c` (kakoune: normal) | `[".selections.copy", { direction: -1 }]` |
+ * | Title                 | Identifier   | Keybinding                                         | Command                                   |
+ * | --------------------- | ------------ | -------------------------------------------------- | ----------------------------------------- |
+ * | Copy selections above | `copy.above` | `s-a-c` (kakoune: normal), `s-a-c` (helix: select) | `[".selections.copy", { direction: -1 }]` |
  */
 export function copy(
   _: Context,

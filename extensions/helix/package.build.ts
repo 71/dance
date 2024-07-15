@@ -180,7 +180,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             keybindings = modules
               .flatMap((module) => module.keybindings)
               .filter((keybinding) => ["core", "helix", undefined].includes(keybinding.category))
-              .map((k) => ({ ...k }));
+              .map(({ category, ...kb }) => kb);
+
       for (const mode of ["normal", "select", "insert"]) {
         for (const keybind of keybindings) {
           keybind.when = keybind.when.replace(`dance.mode == '${mode}'`, `dance.mode == 'helix/${mode}'`);

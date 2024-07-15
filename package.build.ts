@@ -758,7 +758,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     keybindings: (() => {
       const keybindings = modules
         .flatMap((module) => module.keybindings)
-        .filter((keybinding) => ["core", "kakoune", undefined].includes(keybinding.category));
+        .filter((keybinding) => ["core", "kakoune", undefined].includes(keybinding.category))
+        .map(({ category, ...kb }) => kb);
 
       return [
         ...keybindings,
