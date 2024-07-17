@@ -51,7 +51,7 @@ depending on the keyboard layout. The following layouts _will be_\* supported:
 <tr><td><a href="./edit.ts#L47"><code>edit.yank-replace</code></a></td><td>Copy and replace</td><td><code>Shift+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#edit.indent"><code>edit.indent</code></a></td><td>Indent selected lines</td><td><code>Shift+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+.</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#edit.indent.withEmpty"><code>edit.indent.withEmpty</code></a></td><td>Indent selected lines (including empty lines)</td><td><code>Shift+Alt+.</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="#edit.insert"><code>edit.insert</code></a></td><td>Insert contents of register</td><td><code>Shift+Alt+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="#edit.insert"><code>edit.insert</code></a></td><td>Insert contents of register</td><td><code>Shift+Alt+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+R</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+R</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#edit.join"><code>edit.join</code></a></td><td>Join lines</td><td><code>Alt+J</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+J</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+J</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#edit.join.select"><code>edit.join.select</code></a></td><td>Join lines and select inserted separators</td><td><code>Shift+Alt+J</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Alt+J</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#edit.newLine.above"><code>edit.newLine.above</code></a></td><td>Insert new line above each selection</td><td><code>Shift+Alt+O</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -283,7 +283,7 @@ Specify `all` to paste all contents next to each selection.
 | Title                              | Identifier               | Keybinding                                       | Commands                                                                                                                       |
 | ---------------------------------- | ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
 | Pick register and replace          | `selectRegister-insert`  | `c-r` (kakoune: normal), `c-r` (kakoune: insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                                |
-| Paste before                       | `paste.before`           | `s-p` (helix: select)                             | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
+| Paste before                       | `paste.before`           | `s-p` (helix: select)                            | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
 | Paste after                        | `paste.after`            | `p` (helix: select)                              | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                               |
 | Paste before and select            | `paste.before.select`    | `s-p` (core: normal)                             | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                              |
 | Paste after and select             | `paste.after.select`     | `p` (core: normal)                               | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                              |
@@ -308,6 +308,8 @@ This command:
 - takes an argument `where` of type `"active" | "anchor" | "start" | "end" | undefined`.
 
 Default keybinding: `s-a-r` (kakoune: normal)
+`s-r` (helix: normal)
+`s-r` (helix: select)
 
 <a name="edit.join" />
 

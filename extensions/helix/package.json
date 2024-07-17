@@ -488,6 +488,18 @@
         "command": "dance.edit.indent"
       },
       {
+        "key": "Shift+R",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Insert contents of register",
+        "command": "dance.edit.insert"
+      },
+      {
+        "key": "Shift+R",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Insert contents of register",
+        "command": "dance.edit.insert"
+      },
+      {
         "key": "Shift+J",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Join lines",
@@ -1787,11 +1799,6 @@
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
-        "key": "Shift+R",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'"
-      },
-      {
         "key": "Shift+V",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
@@ -1968,11 +1975,6 @@
       },
       {
         "key": "Shift+Q",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/select'"
-      },
-      {
-        "key": "Shift+R",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/select'"
       },

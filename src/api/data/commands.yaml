@@ -193,6 +193,8 @@ edit.insert:
   keys:
     qwerty: |-
       `s-a-r` (kakoune: normal)
+      `s-r` (helix: normal)
+      `s-r` (helix: select)
 
   doc:
     en: |
@@ -214,7 +216,7 @@ edit.insert:
       | Title                              | Identifier               | Keybinding                                       | Commands                                                                                                                       |
       | ---------------------------------- | ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
       | Pick register and replace          | `selectRegister-insert`  | `c-r` (kakoune: normal), `c-r` (kakoune: insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                                |
-      | Paste before                       | `paste.before`           | `s-p` (helix: select)                             | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
+      | Paste before                       | `paste.before`           | `s-p` (helix: select)                            | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
       | Paste after                        | `paste.after`            | `p` (helix: select)                              | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                               |
       | Paste before and select            | `paste.before.select`    | `s-p` (core: normal)                             | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                              |
       | Paste after and select             | `paste.after.select`     | `p` (core: normal)                               | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                              |
