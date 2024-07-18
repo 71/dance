@@ -1,12 +1,18 @@
 {
-  "name": "dance-helix-keybinds",
-  "description": "Helix keybindings for dance",
+  "name": "dance-helix-keybindingss",
+  "description": "Helix keybindings for Dance",
   "version": "0.1.0",
   "license": "ISC",
   "author": {
     "name": "Grégoire Geis",
     "email": "opensource@gregoirege.is"
   },
+  "contributors": [
+    {
+      "name": "Rémi Lavergne",
+      "url": "https://github.com/Strackeror"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/71/dance.git"

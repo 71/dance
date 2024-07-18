@@ -653,8 +653,13 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">): Buil
   ].sort((a, b) => a.command.localeCompare(b.command));
 }
 
+/**
+ * Takes a list of keybindings and generates `dance.ignore` keybindings for
+ * common keys that are unused. This is used for modes where we don't want the
+ * user to be able to type
+ */
 export function generateIgnoredKeybinds(
-  currentKeybindings: Builder.Keybinding[],
+  currentKeybindings: readonly Builder.Keybinding[],
   when: string,
 ): Builder.Keybinding[] {
   const alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],

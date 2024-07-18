@@ -22,7 +22,7 @@ const builtinModesAreDeprecatedMessage =
   "Built-in modes are deprecated. Use `#dance.modes#` instead.";
 
 const modeNamePattern = {
-  pattern: /^[a-zA-Z]\w*\/?\w*$/.source,
+  pattern: /^[a-zA-Z]\w*(\/\w+)?$/.source,
   patternErrorMessage: "",
 };
 
@@ -129,7 +129,11 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "publish": "vsce publish --allow-star-activation",
     "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
     "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
-    "package-helix": `cd extensions/helix && npm run package`,
+
+    "package-helix": `cd extensions/helix && yarn run package`,
+    "publish-helix": `cd extensions/helix && yarn run publish`,
+    "package-helix:pre": `cd extensions/helix && yarn run package:pre`,
+    "publish-helix:pre": `cd extensions/helix && yarn run publish:pre`,
   },
 
   devDependencies: {
@@ -763,7 +767,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
 
       return [
         ...keybindings,
-        ...generateIgnoredKeybinds(keybindings,`editorTextFocus && dance.mode == 'normal'`),
+        ...generateIgnoredKeybinds(keybindings, `editorTextFocus && dance.mode == 'normal'`),
       ];
     })(),
 

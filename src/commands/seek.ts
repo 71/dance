@@ -13,10 +13,10 @@ import { SyntaxNode, Tree, TreeSitter } from "../utils/tree-sitter";
  *
  * #### Predefined keybindings
  *
- * | Title                       | Keybinding          | Command                                                       |
- * | --------------------------- | ------------------- | ------------------------------------------------------------- |
- * | Open match menu             | `m` (helix: normal) | `[".openMenu", { menu: "match"                            }]` |
- * | Open match menu with extend | `m` (helix: select) | `[".openMenu", { menu: "match", pass: [{shift: "extend"}] }]` |
+ * | Title                       | Keybinding          | Command                                                         |
+ * | --------------------------- | ------------------- | --------------------------------------------------------------- |
+ * | Open match menu             | `m` (helix: normal) | `[".openMenu", { menu: "match"                              }]` |
+ * | Open match menu with extend | `m` (helix: select) | `[".openMenu", { menu: "match", pass: [{ shift: "extend" }] }]` |
  */
 declare module "./seek";
 

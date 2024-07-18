@@ -70,15 +70,10 @@ function findMode(modeName: string, context?: Context) {
         split = currentMode.name.split("/");
   if (split.length === 2) {
     const namespacedMode = context.extension.modes.get(`${split[0]}/${modeName}`);
-    if (namespacedMode) {
+    if (namespacedMode !== undefined) {
       return namespacedMode;
     }
   }
 
-  const directMode = context.extension.modes.get(modeName);
-  if (directMode) {
-    return directMode;
-  }
-
-  return undefined;
+  return context.extension.modes.get(modeName);
 }

@@ -3,7 +3,7 @@
 
 import { Builder, generateIgnoredKeybinds } from "../../meta";
 import * as fs from "fs/promises";
-import { SelectionBehavior } from "../../src/api";
+import { extensionId } from "../../src/utils/constants";
 
 const version = "0.1.0",
       preRelease = 1,
@@ -14,15 +14,22 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   // Common package.json properties.
   // ==========================================================================
 
-  name: "dance-helix-keybinds",
-  description: "Helix keybindings for dance",
+  name: "dance-helix-keybindingss",
+  description: "Helix keybindings for Dance",
   version,
   license: "ISC",
-
+  extensionDependencies: [extensionId],
   author: {
     name: "Grégoire Geis",
     email: "opensource@gregoirege.is",
   },
+
+  contributors: [
+    {
+      name: "Rémi Lavergne",
+      url: "https://github.com/Strackeror",
+    },
+  ],
 
   repository: {
     type: "git",
@@ -33,7 +40,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     vscode: "^1.63.0",
   },
 
-  displayName: "Dance",
+  displayName: "Dance (Helix keybindings)",
   publisher: "gregoire",
   categories: ["Keymaps", "Other"],
   readme: "README.md",

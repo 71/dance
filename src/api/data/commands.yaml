@@ -1814,14 +1814,14 @@ select.line.below.extend:
   title:
     en: Extend to line below
 
-  doc:
-    en: |
-      Extend to line below.
-
   keys:
     qwerty: |-
       `x` (helix: normal)
       `x` (helix: select)
+
+  doc:
+    en: |+
+      Extend to line below.
 
 select.lineEnd:
   title:
@@ -2759,7 +2759,7 @@ anonymous:
       en: Open match menu with extend
 
     commands: |-
-      [".openMenu", { menu: "match", pass: [{shift: "extend"}] }]
+      [".openMenu", { menu: "match", pass: [{ shift: "extend" }] }]
 
     keys:
       qwerty: |-

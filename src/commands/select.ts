@@ -345,6 +345,7 @@ export function line_below(_: Context, count: number) {
 
 /**
  * Extend to line below.
+ *
  * @keys `x` (helix: normal), `x` (helix: select)
  */
 export function line_below_extend(_: Context, count: number) {
