@@ -3967,6 +3967,12 @@
         "command": "dance.selections.splitLines.orLeap.backward"
       },
       {
+        "key": "Enter",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Toggle selection indices",
+        "command": "dance.selections.toggleIndices"
+      },
+      {
         "key": "Alt+X",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Trim lines",

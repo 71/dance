@@ -14,7 +14,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   // Common package.json properties.
   // ==========================================================================
 
-  name: "dance-helix-keybindingss",
+  name: "dance-helix-keybindings",
   description: "Helix keybindings for Dance",
   version,
   license: "ISC",
@@ -45,6 +45,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   categories: ["Keymaps", "Other"],
   readme: "README.md",
   icon: "dance.png",
+  extensionKind: ["ui", "workspace"],
 
   scripts: {
     "package": "vsce package --allow-star-activation",

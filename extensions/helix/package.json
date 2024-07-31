@@ -1,8 +1,11 @@
 {
-  "name": "dance-helix-keybindingss",
+  "name": "dance-helix-keybindings",
   "description": "Helix keybindings for Dance",
   "version": "0.1.0",
   "license": "ISC",
+  "extensionDependencies": [
+    "gregoire.dance"
+  ],
   "author": {
     "name": "Grégoire Geis",
     "email": "opensource@gregoirege.is"
@@ -20,7 +23,7 @@
   "engines": {
     "vscode": "^1.63.0"
   },
-  "displayName": "Dance",
+  "displayName": "Dance (Helix keybindings)",
   "publisher": "gregoire",
   "categories": [
     "Keymaps",
@@ -28,6 +31,10 @@
   ],
   "readme": "README.md",
   "icon": "dance.png",
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "scripts": {
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
@@ -1655,6 +1662,18 @@
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Leap or select backward",
         "command": "dance.selections.splitLines.orLeap.backward"
+      },
+      {
+        "key": "Enter",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Toggle selection indices",
+        "command": "dance.selections.toggleIndices"
+      },
+      {
+        "key": "Enter",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Toggle selection indices",
+        "command": "dance.selections.toggleIndices"
       },
       {
         "key": "Alt+X",

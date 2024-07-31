@@ -874,7 +874,7 @@ const indicesToken = PerEditorState.registerState<AutoDisposable>(/* isDisposabl
 /**
  * Toggle selection indices.
  *
- * @keys `enter` (dance: normal)
+ * @keys `enter` (core: normal), `enter` (helix: select)
  *
  * #### Variants
  *

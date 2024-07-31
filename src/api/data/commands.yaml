@@ -2627,7 +2627,8 @@ selections.toggleIndices:
 
   keys:
     qwerty: |-
-      `enter` (dance: normal)
+      `enter` (core: normal)
+      `enter` (helix: select)
 
   doc:
     en: |
