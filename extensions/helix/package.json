@@ -30,7 +30,7 @@
     "Other"
   ],
   "readme": "README.md",
-  "icon": "dance.png",
+  "icon": "assets/dance.png",
   "extensionKind": [
     "ui",
     "workspace"
@@ -45,21 +45,6 @@
     "configurationDefaults": {
       "dance.defaultMode": "helix/normal",
       "dance.modes": {
-        "": {
-          "hiddenSelectionsIndicatorsDecoration": {
-            "after": {
-              "color": "$list.warningForeground"
-            },
-            "backgroundColor": "$inputValidation.warningBackground",
-            "borderColor": "$inputValidation.warningBorder",
-            "borderStyle": "solid",
-            "borderWidth": "1px",
-            "isWholeLine": true
-          }
-        },
-        "input": {
-          "cursorStyle": "underline-thin"
-        },
         "helix/insert": {
           "onLeaveMode": [
             [
