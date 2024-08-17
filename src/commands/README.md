@@ -222,7 +222,7 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="#selections.trimWhitespace"><code>selections.trimWhitespace</code></a></td><td>Trim whitespace</td><td><code>Shift+-</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+-</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td rowspan=6><a href="#selections.rotate"><code>selections.rotate</code></a></td><td><a href="#selections.rotate.both"><code>selections.rotate.both</code></a></td><td>Rotate selections clockwise</td><td><code>Shift+Alt+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#selections.rotate.contents"><code>selections.rotate.contents</code></a></td><td>Rotate selections clockwise (contents only)</td><td><code>Shift+Alt+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Alt+0</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
-<tr><td><a href="#selections.rotate.selections"><code>selections.rotate.selections</code></a></td><td>Rotate selections clockwise (selections only)</td><td><code>Shift+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="#selections.rotate.selections"><code>selections.rotate.selections</code></a></td><td>Rotate selections clockwise (selections only)</td><td><code>Shift+0</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+0</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="./selections.rotate.ts#L18"><code>selections.rotate.both.reverse</code></a></td><td>Rotate selections counter-clockwise</td><td><code>Shift+Alt+9</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./selections.rotate.ts#L37"><code>selections.rotate.contents.reverse</code></a></td><td>Rotate selections counter-clockwise (contents only)</td><td><code>Shift+Alt+9</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Alt+9</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="./selections.rotate.ts#L56"><code>selections.rotate.selections.reverse</code></a></td><td>Rotate selections counter-clockwise (selections only)</td><td><code>Shift+9</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+9</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
@@ -291,10 +291,10 @@ Specify `all` to paste all contents next to each selection.
 | Paste all after                    | `pasteAll.after`         |                                                  | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, ... }]`                                                    |
 | Paste all before and select        | `pasteAll.before.select` | `s-a-p` (kakoune: normal)                        | `[".edit.insert", { handleNewLine: true, where: "start", all: true, shift: "select", ... }]`                                   |
 | Paste all after and select         | `pasteAll.after.select`  | `a-p` (kakoune: normal)                          | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, shift: "select", ... }]`                                   |
-| Delete                             | `delete`                 | `a-d` (core: normal), `a-d` (helix: select)      | `[".edit.insert", { register: "_", ... }]`                                                                                     |
+| Delete                             | `delete`                 | `a-d` (core: normal; helix: select)              | `[".edit.insert", { register: "_", ... }]`                                                                                     |
 | Delete and switch to Insert        | `delete-insert`          | `a-c` (kakoune: normal)                          | `[".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]`                                          |
-| Copy and delete                    | `yank-delete`            | `d` (core: normal), `d` (helix: select)          | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
-| Copy, delete and switch to Insert  | `yank-delete-insert`     | `c` (core: normal), `c` (helix: select)          | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
+| Copy and delete                    | `yank-delete`            | `d` (core: normal; helix: select)                | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
+| Copy, delete and switch to Insert  | `yank-delete-insert`     | `c` (core: normal; helix: select)                | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
 | Copy and replace                   | `yank-replace`           | `s-r` (kakoune: normal)                          | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]`               |
 
 This command:
@@ -308,8 +308,7 @@ This command:
 - takes an argument `where` of type `"active" | "anchor" | "start" | "end" | undefined`.
 
 Default keybinding: `s-a-r` (kakoune: normal)
-`s-r` (helix: normal)
-`s-r` (helix: select)
+`s-r` (helix: normal; helix: select)
 
 <a name="edit.join" />
 
@@ -322,8 +321,7 @@ This command:
 - takes an argument `separator` of type `string`.
 
 Default keybinding: `a-j` (kakoune: normal)
-`s-j` (helix: normal)
-`s-j` (helix: select)
+`s-j` (helix: normal; helix: select)
 
 <a name="edit.join.select" />
 
@@ -335,8 +333,7 @@ Join lines and select inserted separators.
 This command:
 - takes an argument `separator` of type `string`.
 
-Default keybinding: `s-a-j` (core: normal)
-`s-a-j` (helix: select)
+Default keybinding: `s-a-j` (core: normal; helix: select)
 
 <a name="edit.indent" />
 
@@ -348,8 +345,7 @@ Indent selected lines.
 This command:
 - may be repeated with a given number of repetitions.
 
-Default keybinding: `>` (core: normal)
-`>` (helix: select)
+Default keybinding: `>` (core: normal; helix: select)
 
 <a name="edit.indent.withEmpty" />
 
@@ -385,8 +381,7 @@ Deindent selected lines (including incomplete indent).
 This command:
 - may be repeated with a given number of repetitions.
 
-Default keybinding: `<` (core: normal)
-`<` (helix: select)
+Default keybinding: `<` (core: normal; helix: select)
 
 <a name="edit.case.toLower" />
 
@@ -408,8 +403,7 @@ Transform to upper case.
 
 
 Default keybinding: `` s-` `` (kakoune: normal)
-`` a-` `` (helix: normal)
-`` a-` `` (helix: select)
+`` a-` `` (helix: normal; helix: select)
 
 <a name="edit.case.swap" />
 
@@ -420,8 +414,7 @@ Swap case.
 
 
 Default keybinding: `` a-` `` (kakoune: normal)
-`` s-` `` (helix: normal)
-`` s-` `` (helix: select)
+`` s-` `` (helix: normal; helix: select)
 
 <a name="edit.replaceCharacters" />
 
@@ -478,9 +471,9 @@ keep the current selections.
 
 #### Additional keybindings
 
-| Title                                      | Identifier             | Keybinding                                  | Commands                                                                          |
-| ------------------------------------------ | ---------------------- | ------------------------------------------- | --------------------------------------------------------------------------------- |
-| Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (core: normal), `s-o` (helix: select) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before", { ... }]` |
+| Title                                      | Identifier             | Keybinding                          | Commands                                                                          |
+| ------------------------------------------ | ---------------------- | ------------------------------------| --------------------------------------------------------------------------------- |
+| Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (core: normal; helix: select) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before", { ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -500,9 +493,9 @@ keep the current selections.
 
 #### Additional keybindings
 
-| Title                                      | Identifier             | Keybinding                              | Commands                                                                          |
-| ------------------------------------------ | ---------------------- | --------------------------------------- | --------------------------------------------------------------------------------- |
-| Insert new line below and switch to insert | `newLine.below.insert` | `o` (core: normal), `o` (helix: select) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before", { ... }]` |
+| Title                                      | Identifier             | Keybinding                        | Commands                                                                          |
+| ------------------------------------------ | ---------------------- | --------------------------------- | --------------------------------------------------------------------------------- |
+| Insert new line below and switch to insert | `newLine.below.insert` | `o` (core: normal; helix: select) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before", { ... }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -524,8 +517,7 @@ Undo.
 This command:
 - does not require an active text editor.
 
-Default keybinding: `u` (core: normal)
-`u` (helix: select)
+Default keybinding: `u` (core: normal; helix: select)
 
 <a name="history.redo" />
 
@@ -537,8 +529,7 @@ Redo.
 This command:
 - does not require an active text editor.
 
-Default keybinding: `s-u` (core: normal)
-`s-u` (helix: select)
+Default keybinding: `s-u` (core: normal; helix: select)
 
 <a name="history.undo.selections" />
 
@@ -571,10 +562,10 @@ Default keybinding: `s-a-u` (kakoune: normal)
 Repeat last change.
 
 
-| Title                        | Identifier         | Keybinding                                  | Commands                                                                      |
-| ---------------------------- | ------------------ | ------------------------------------------- | ----------------------------------------------------------------------------- |
-| Repeat last selection change | `repeat.selection` |                                             | `[".history.repeat", { filter: "dance\\.(seek\|select\|selections)", +count }]` |
-| Repeat last seek             | `repeat.seek`      | `a-.` (core: normal), `a-.` (helix: select) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
+| Title                        | Identifier         | Keybinding                          | Commands                                                                      |
+| ---------------------------- | ------------------ | ------------------------------------| ----------------------------------------------------------------------------- |
+| Repeat last selection change | `repeat.selection` |                                     | `[".history.repeat", { filter: "dance\\.(seek\|select\|selections)", +count }]` |
+| Repeat last seek             | `repeat.seek`      | `a-.` (core: normal; helix: select) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -826,18 +817,18 @@ Update the current counter used to repeat the next command.
 
 #### Additional keybindings
 
-| Title                          | Keybinding                                                                                   | Command                              |
-| ------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-| Add the digit 0 to the counter | `0` (core: normal), `NumPad0` (core: normal), `0` (helix: select), `NumPad0` (helix: select) | `[".updateCount", { addDigits: 0 }]` |
-| Add the digit 1 to the counter | `1` (core: normal), `NumPad1` (core: normal), `1` (helix: select), `NumPad1` (helix: select) | `[".updateCount", { addDigits: 1 }]` |
-| Add the digit 2 to the counter | `2` (core: normal), `NumPad2` (core: normal), `2` (helix: select), `NumPad2` (helix: select) | `[".updateCount", { addDigits: 2 }]` |
-| Add the digit 3 to the counter | `3` (core: normal), `NumPad3` (core: normal), `3` (helix: select), `NumPad3` (helix: select) | `[".updateCount", { addDigits: 3 }]` |
-| Add the digit 4 to the counter | `4` (core: normal), `NumPad4` (core: normal), `4` (helix: select), `NumPad4` (helix: select) | `[".updateCount", { addDigits: 4 }]` |
-| Add the digit 5 to the counter | `5` (core: normal), `NumPad5` (core: normal), `5` (helix: select), `NumPad5` (helix: select) | `[".updateCount", { addDigits: 5 }]` |
-| Add the digit 6 to the counter | `6` (core: normal), `NumPad6` (core: normal), `6` (helix: select), `NumPad6` (helix: select) | `[".updateCount", { addDigits: 6 }]` |
-| Add the digit 7 to the counter | `7` (core: normal), `NumPad7` (core: normal), `7` (helix: select), `NumPad7` (helix: select) | `[".updateCount", { addDigits: 7 }]` |
-| Add the digit 8 to the counter | `8` (core: normal), `NumPad8` (core: normal), `8` (helix: select), `NumPad8` (helix: select) | `[".updateCount", { addDigits: 8 }]` |
-| Add the digit 9 to the counter | `9` (core: normal), `NumPad9` (core: normal), `9` (helix: select), `NumPad9` (helix: select) | `[".updateCount", { addDigits: 9 }]` |
+| Title                          | Keybinding                                                                 | Command                              |
+| ------------------------------ | -------------------------------------------------------------------------- | ------------------------------------ |
+| Add the digit 0 to the counter | `0` (core: normal; helix: select), `NumPad0` (core: normal; helix: select) | `[".updateCount", { addDigits: 0 }]` |
+| Add the digit 1 to the counter | `1` (core: normal; helix: select), `NumPad1` (core: normal; helix: select) | `[".updateCount", { addDigits: 1 }]` |
+| Add the digit 2 to the counter | `2` (core: normal; helix: select), `NumPad2` (core: normal; helix: select) | `[".updateCount", { addDigits: 2 }]` |
+| Add the digit 3 to the counter | `3` (core: normal; helix: select), `NumPad3` (core: normal; helix: select) | `[".updateCount", { addDigits: 3 }]` |
+| Add the digit 4 to the counter | `4` (core: normal; helix: select), `NumPad4` (core: normal; helix: select) | `[".updateCount", { addDigits: 4 }]` |
+| Add the digit 5 to the counter | `5` (core: normal; helix: select), `NumPad5` (core: normal; helix: select) | `[".updateCount", { addDigits: 5 }]` |
+| Add the digit 6 to the counter | `6` (core: normal; helix: select), `NumPad6` (core: normal; helix: select) | `[".updateCount", { addDigits: 6 }]` |
+| Add the digit 7 to the counter | `7` (core: normal; helix: select), `NumPad7` (core: normal; helix: select) | `[".updateCount", { addDigits: 7 }]` |
+| Add the digit 8 to the counter | `8` (core: normal; helix: select), `NumPad8` (core: normal; helix: select) | `[".updateCount", { addDigits: 8 }]` |
+| Add the digit 9 to the counter | `9` (core: normal; helix: select), `NumPad9` (core: normal; helix: select) | `[".updateCount", { addDigits: 9 }]` |
 
 
 This command:
@@ -910,20 +901,20 @@ Set Dance mode.
 
 #### Variants
 
-| Title              | Identifier   | Keybinding                                                             | Command                                                     |
-| ------------------ | ------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------- |
-| Set mode to Normal | `set.normal` | `escape` (core: insert), `escape` (helix: select), `v` (helix: select) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
-| Set mode to Insert | `set.insert` |                                                                        | `[".modes.set", { mode: "insert" }]`                        |
-| Set mode to Select | `set.select` | `v` (helix: normal)                                                    | `[".modes.set", { mode: "select" }]`                        |
+| Title              | Identifier   | Keybinding                                                  | Command                                                     |
+| ------------------ | ------------ | ----------------------------------------------------------- | ----------------------------------------------------------- |
+| Set mode to Normal | `set.normal` | `escape` (core: insert; helix: select), `v` (helix: select) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
+| Set mode to Insert | `set.insert` |                                                             | `[".modes.set", { mode: "insert" }]`                        |
+| Set mode to Select | `set.select` | `v` (helix: normal)                                         | `[".modes.set", { mode: "select" }]`                        |
 
 Other variants are provided to switch to insert mode:
 
-| Title                | Identifier         | Keybinding                                  | Commands                                                                                                                                                                            |
-| -------------------- | ------------------ | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Insert before        | `insert.before`    | `i` (core: normal), `i` (helix: select)     | `[".selections.faceBackward", { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
-| Insert after         | `insert.after`     | `a` (core: normal), `a` (helix: select)     | `[".selections.faceForward" , { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
-| Insert at line start | `insert.lineStart` | `s-i` (core: normal), `s-i` (helix: select) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
-| Insert at line end   | `insert.lineEnd`   | `s-a` (core: normal), `s-a` (helix: select) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
+| Title                | Identifier         | Keybinding                          | Commands                                                                                                                                                                            |
+| -------------------- | ------------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Insert before        | `insert.before`    | `i` (core: normal; helix: select)   | `[".selections.faceBackward", { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
+| Insert after         | `insert.after`     | `a` (core: normal; helix: select)   | `[".selections.faceForward" , { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
+| Insert at line start | `insert.lineStart` | `s-i` (core: normal; helix: select) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
+| Insert at line end   | `insert.lineEnd`   | `s-a` (core: normal; helix: select) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
 
 
 This command:
@@ -1189,8 +1180,7 @@ Select whole buffer.
 
 
 
-Default keybinding: `%` (core: normal)
-`%` (helix: select)
+Default keybinding: `%` (core: normal; helix: select)
 
 <a name="select.vertically" />
 
@@ -1210,16 +1200,16 @@ Select vertically.
 
 The following keybindings are also defined:
 
-| Keybinding                                 | Command                                                                      |
-| -------------------------------------------| ---------------------------------------------------------------------------- |
-| `c-f` (core: normal), `c-f` (core: insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]`   |
-| `c-d` (core: normal), `c-d` (core: insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]`   |
-| `c-b` (core: normal), `c-b` (core: insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]`   |
-| `c-u` (core: normal), `c-u` (core: insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]`   |
-| `c-f` (helix: select)                      | `[".select.vertically", { direction:  1, by: "page"    , shift: "extend" }]` |
-| `c-d` (helix: select)                      | `[".select.vertically", { direction:  1, by: "halfPage", shift: "extend" }]` |
-| `c-b` (helix: select)                      | `[".select.vertically", { direction: -1, by: "page"    , shift: "extend" }]` |
-| `c-u` (helix: select)                      | `[".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]` |
+| Keybinding                         | Command                                                                      |
+| -----------------------------------| ---------------------------------------------------------------------------- |
+| `c-f` (core: normal; core: insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]`   |
+| `c-d` (core: normal; core: insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]`   |
+| `c-b` (core: normal; core: insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]`   |
+| `c-u` (core: normal; core: insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]`   |
+| `c-f` (helix: select)              | `[".select.vertically", { direction:  1, by: "page"    , shift: "extend" }]` |
+| `c-d` (helix: select)              | `[".select.vertically", { direction:  1, by: "halfPage", shift: "extend" }]` |
+| `c-b` (helix: select)              | `[".select.vertically", { direction: -1, by: "page"    , shift: "extend" }]` |
+| `c-u` (helix: select)              | `[".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -1285,8 +1275,7 @@ Extend to line below.
 This command:
 - may be repeated with a given number of repetitions.
 
-Default keybinding: `x` (helix: normal)
-`x` (helix: select)
+Default keybinding: `x` (helix: normal; helix: select)
 
 <a name="select.line.above" />
 
@@ -1420,8 +1409,7 @@ Copy selections text.
 This command:
 - accepts a register (by default, it uses `dquote`).
 
-Default keybinding: `y` (core: normal)
-`y` (helix: select)
+Default keybinding: `y` (core: normal; helix: select)
 
 <a name="selections.save" />
 
@@ -1485,18 +1473,17 @@ See https://github.com/mawww/kakoune/blob/master/doc/pages/keys.asciidoc#changes
 
 #### Additional commands
 
-| Title               | Identifier     | Keybinding                                    | Commands                                                                                                                    |
-| ------------------- | -------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| Pipe and replace    | `pipe.replace` | `\|` (core: normal), `\|` (helix: select)       | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|",                                  ... }]` |
-| Pipe and append     | `pipe.append`  | `!` (core: normal), `!` (helix: select)       | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|", where: "end"  , shift: "select", ... }]` |
-| Pipe and prepend    | `pipe.prepend` | `a-!` (core: normal), `a-!` (helix: select)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|", where: "start", shift: "select", ... }]` |
+| Title               | Identifier     | Keybinding                          | Commands                                                                                                                    |
+| ------------------- | -------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Pipe and replace    | `pipe.replace` | `\|` (core: normal; helix: select)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|",                                  ... }]` |
+| Pipe and append     | `pipe.append`  | `!` (core: normal; helix: select)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|", where: "end"  , shift: "select", ... }]` |
+| Pipe and prepend    | `pipe.prepend` | `a-!` (core: normal; helix: select) | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "\|", where: "start", shift: "select", ... }]` |
 
 This command:
 - accepts a register (by default, it uses `pipe`).
 - takes an input `expression` of type `string`.
 
-Default keybinding: `a-|` (core: normal)
-`a-|` (helix: select)
+Default keybinding: `a-|` (core: normal; helix: select)
 
 <a name="selections.filter" />
 
@@ -1506,12 +1493,12 @@ Filter selections.
 
 #### Variants
 
-| Title                      | Identifier              | Keybinding                                      | Commands                                                                 |
-| -------------------------- | ----------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
-| Keep matching selections   | `filter.regexp`         | `a-k` (core: normal), `a-k` (helix: select)     | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
-| Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal), `s-a-k` (helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
-| Clear secondary selections | `clear.secondary`       | `,` (core: normal), `,` (helix: select)         | `[".selections.filter", { expression: "i === count"            , ... }]` |
-| Clear main selections      | `clear.main`            | `a-,` (core: normal), `a-,` (helix: select)     | `[".selections.filter", { expression: "i !== count"            , ... }]` |
+| Title                      | Identifier              | Keybinding                            | Commands                                                                 |
+| -------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| Keep matching selections   | `filter.regexp`         | `a-k` (core: normal; helix: select)   | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
+| Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal; helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
+| Clear secondary selections | `clear.secondary`       | `,` (core: normal; helix: select)     | `[".selections.filter", { expression: "i === count"            , ... }]` |
+| Clear main selections      | `clear.main`            | `a-,` (core: normal; helix: select)   | `[".selections.filter", { expression: "i !== count"            , ... }]` |
 
 This command:
 - accepts an argument of type `{ expression?: string }`.
@@ -1520,8 +1507,7 @@ This command:
 - takes an argument `interactive` of type `boolean`.
 - takes an argument `inverse` of type `boolean`.
 
-Default keybinding: `$` (core: normal)
-`$` (helix: select)
+Default keybinding: `$` (core: normal; helix: select)
 
 <a name="selections.select" />
 
@@ -1531,9 +1517,9 @@ Select within selections.
 
 #### Variants
 
-| Title          | Identifier      | Keybinding                              | Command                                                                                           |
-| -------------- | --------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| Leap or select | `select.orLeap` | `s` (core: normal), `s` (helix: select) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
+| Title          | Identifier      | Keybinding                        | Command                                                                                           |
+| -------------- | --------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Leap or select | `select.orLeap` | `s` (core: normal; helix: select) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
 
 This command:
 - accepts an argument of type `{ re?: string | RegExp }`.
@@ -1551,8 +1537,7 @@ This command:
 - takes an argument `excludeEmpty` of type `boolean`.
 - takes an argument `interactive` of type `boolean`.
 
-Default keybinding: `s-s` (core: normal)
-`s-s` (helix: select)
+Default keybinding: `s-s` (core: normal; helix: select)
 
 <a name="selections.splitLines" />
 
@@ -1562,9 +1547,9 @@ Split selections at line boundaries.
 
 #### Variants
 
-| Title                   | Identifier                   | Keybinding                                  | Command                                                                                                              |
-| ----------------------- | ---------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Leap or select backward | `splitLines.orLeap.backward` | `a-s` (core: normal), `a-s` (helix: select) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
+| Title                   | Identifier                   | Keybinding                          | Command                                                                                                              |
+| ----------------------- | ---------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Leap or select backward | `splitLines.orLeap.backward` | `a-s` (core: normal; helix: select) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
@@ -1581,8 +1566,7 @@ Expand selections to contain full lines (including end-of-line characters).
 
 
 Default keybinding: `x` (kakoune: normal)
-`s-x` (helix: normal)
-`s-x` (helix: select)
+`s-x` (helix: normal; helix: select)
 
 <a name="selections.trimLines" />
 
@@ -1594,8 +1578,7 @@ Trim selections to only contain full lines (from start to line break).
 
 
 
-Default keybinding: `a-x` (core: normal)
-`a-x` (helix: select)
+Default keybinding: `a-x` (core: normal; helix: select)
 
 <a name="selections.trimWhitespace" />
 
@@ -1607,8 +1590,7 @@ Trim whitespace at beginning and end of selections.
 
 
 
-Default keybinding: `_` (core: normal)
-`_` (helix: select)
+Default keybinding: `_` (core: normal; helix: select)
 
 <a name="selections.reduce" />
 
@@ -1628,8 +1610,7 @@ This command:
 - takes an argument `empty` of type `boolean`.
 - takes an argument `where` of type `"active" | "anchor" | "start" | "end" | "both"`.
 
-Default keybinding: `;` (core: normal)
-`;` (helix: select)
+Default keybinding: `;` (core: normal; helix: select)
 
 <a name="selections.changeDirection" />
 
@@ -1647,8 +1628,7 @@ Change direction of selections.
 | Backward selections | `faceBackward` |                         | `[".selections.changeDirection", { direction: -1 }]` |
 
 
-Default keybinding: `a-;` (core: normal)
-`a-;` (helix: select)
+Default keybinding: `a-;` (core: normal; helix: select)
 
 <a name="selections.changeOrder" />
 
@@ -1684,15 +1664,14 @@ Copy selections below.
 
 #### Variant
 
-| Title                 | Identifier   | Keybinding                                         | Command                                   |
-| --------------------- | ------------ | -------------------------------------------------- | ----------------------------------------- |
-| Copy selections above | `copy.above` | `s-a-c` (kakoune: normal), `s-a-c` (helix: select) | `[".selections.copy", { direction: -1 }]` |
+| Title                 | Identifier   | Keybinding                            | Command                                   |
+| --------------------- | ------------ | ------------------------------------- | ----------------------------------------- |
+| Copy selections above | `copy.above` | `s-a-c` (core: normal; helix: select) | `[".selections.copy", { direction: -1 }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
 
-Default keybinding: `s-c` (core: normal)
-`s-c` (helix: select)
+Default keybinding: `s-c` (core: normal; helix: select)
 
 <a name="selections.merge" />
 
@@ -1728,8 +1707,7 @@ This command:
 - takes an argument `display` of type `boolean | undefined`.
 - takes an argument `until` of type `AutoDisposable.Event[]`.
 
-Default keybinding: `enter` (core: normal)
-`enter` (helix: select)
+Default keybinding: `enter` (core: normal; helix: select)
 
 ## [`selections.rotate`](./selections.rotate.ts)
 
@@ -1763,16 +1741,15 @@ Rotate selections clockwise (contents only).
 
 The following command is also available:
 
-| Title                                               | Identifier         | Keybinding                                   | Command                                              |
-| --------------------------------------------------- | ------------------ | -------------------------------------------- | ---------------------------------------------------- |
-| Rotate selections counter-clockwise (contents only) | `contents.reverse` | `a-(` (helix: normal), `a-(` (helix: select) | `[".selections.rotate.contents", { reverse: true }]` |
+| Title                                               | Identifier         | Keybinding                           | Command                                              |
+| --------------------------------------------------- | ------------------ | ------------------------------------ | ---------------------------------------------------- |
+| Rotate selections counter-clockwise (contents only) | `contents.reverse` | `a-(` (helix: normal; helix: select) | `[".selections.rotate.contents", { reverse: true }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `reverse` of type `boolean`.
 
-Default keybinding: `a-)` (helix: normal)
-`a-)` (helix: select)
+Default keybinding: `a-)` (helix: normal; helix: select)
 
 <a name="selections.rotate.selections" />
 
@@ -1783,15 +1760,15 @@ Rotate selections clockwise (selections only).
 
 The following keybinding is also available:
 
-| Title                                                 | Identifier           | Keybinding                              | Command                                                |
-| ----------------------------------------------------- | -------------------- | --------------------------------------- | ------------------------------------------------------ |
-| Rotate selections counter-clockwise (selections only) | `selections.reverse` | `(` (core: normal), `(` (helix: select) | `[".selections.rotate.selections", { reverse: true }]` |
+| Title                                                 | Identifier           | Keybinding                        | Command                                                |
+| ----------------------------------------------------- | -------------------- | --------------------------------- | ------------------------------------------------------ |
+| Rotate selections counter-clockwise (selections only) | `selections.reverse` | `(` (core: normal; helix: select) | `[".selections.rotate.selections", { reverse: true }]` |
 
 This command:
 - may be repeated with a given number of repetitions.
 - takes an argument `reverse` of type `boolean`.
 
-Default keybinding: `)` (core: normal)
+Default keybinding: `)` (core: normal; helix: select)
 
 ## [`view`](./view.ts)
 
@@ -1799,10 +1776,10 @@ Moving the editor view.
 
 #### Predefined keybindings
 
-| Title                   | Keybinding                                                            | Command                                              |
-| ----------------------- | --------------------------------------------------------------------- | ---------------------------------------------------- |
-| Show view menu          | `v` (kakoune: normal), `z` (helix: normal), `z` (helix: select)       | `[".openMenu", { menu: "view", ...               }]` |
-| Show view menu (locked) | `s-v` (kakoune: normal), `s-z` (helix: normal), `s-z` (helix: select) | `[".openMenu", { menu: "view", locked: true, ... }]` |
+| Title                   | Keybinding                                                    | Command                                              |
+| ----------------------- | ------------------------------------------------------------- | ---------------------------------------------------- |
+| Show view menu          | `v` (kakoune: normal), `z` (helix: normal; helix: select)     | `[".openMenu", { menu: "view", ...               }]` |
+| Show view menu (locked) | `s-v` (kakoune: normal), `s-z` (helix: normal; helix: select) | `[".openMenu", { menu: "view", locked: true, ... }]` |
 
 <a name="view.line" />
 

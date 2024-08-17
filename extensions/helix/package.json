@@ -706,15 +706,6 @@
         }
       },
       {
-        "key": "NumPad0",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 0 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 0
-        }
-      },
-      {
         "key": "0",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 0 to the counter",
@@ -725,6 +716,15 @@
       },
       {
         "key": "NumPad0",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 0 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 0
+        }
+      },
+      {
+        "key": "NumPad0",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 0 to the counter",
         "command": "dance.updateCount",
@@ -742,15 +742,6 @@
         }
       },
       {
-        "key": "NumPad1",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 1 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 1
-        }
-      },
-      {
         "key": "1",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 1 to the counter",
@@ -761,6 +752,15 @@
       },
       {
         "key": "NumPad1",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 1 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 1
+        }
+      },
+      {
+        "key": "NumPad1",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 1 to the counter",
         "command": "dance.updateCount",
@@ -778,15 +778,6 @@
         }
       },
       {
-        "key": "NumPad2",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 2 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 2
-        }
-      },
-      {
         "key": "2",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 2 to the counter",
@@ -797,6 +788,15 @@
       },
       {
         "key": "NumPad2",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 2 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 2
+        }
+      },
+      {
+        "key": "NumPad2",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 2 to the counter",
         "command": "dance.updateCount",
@@ -814,15 +814,6 @@
         }
       },
       {
-        "key": "NumPad3",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 3 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 3
-        }
-      },
-      {
         "key": "3",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 3 to the counter",
@@ -833,6 +824,15 @@
       },
       {
         "key": "NumPad3",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 3 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 3
+        }
+      },
+      {
+        "key": "NumPad3",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 3 to the counter",
         "command": "dance.updateCount",
@@ -850,15 +850,6 @@
         }
       },
       {
-        "key": "NumPad4",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 4 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 4
-        }
-      },
-      {
         "key": "4",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 4 to the counter",
@@ -869,6 +860,15 @@
       },
       {
         "key": "NumPad4",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 4 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 4
+        }
+      },
+      {
+        "key": "NumPad4",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 4 to the counter",
         "command": "dance.updateCount",
@@ -886,15 +886,6 @@
         }
       },
       {
-        "key": "NumPad5",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 5 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 5
-        }
-      },
-      {
         "key": "5",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 5 to the counter",
@@ -905,6 +896,15 @@
       },
       {
         "key": "NumPad5",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 5 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 5
+        }
+      },
+      {
+        "key": "NumPad5",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 5 to the counter",
         "command": "dance.updateCount",
@@ -922,15 +922,6 @@
         }
       },
       {
-        "key": "NumPad6",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 6 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 6
-        }
-      },
-      {
         "key": "6",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 6 to the counter",
@@ -941,6 +932,15 @@
       },
       {
         "key": "NumPad6",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 6 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 6
+        }
+      },
+      {
+        "key": "NumPad6",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 6 to the counter",
         "command": "dance.updateCount",
@@ -958,15 +958,6 @@
         }
       },
       {
-        "key": "NumPad7",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 7 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 7
-        }
-      },
-      {
         "key": "7",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 7 to the counter",
@@ -977,6 +968,15 @@
       },
       {
         "key": "NumPad7",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 7 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 7
+        }
+      },
+      {
+        "key": "NumPad7",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 7 to the counter",
         "command": "dance.updateCount",
@@ -994,15 +994,6 @@
         }
       },
       {
-        "key": "NumPad8",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Add the digit 8 to the counter",
-        "command": "dance.updateCount",
-        "args": {
-          "addDigits": 8
-        }
-      },
-      {
         "key": "8",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 8 to the counter",
@@ -1013,6 +1004,15 @@
       },
       {
         "key": "NumPad8",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Add the digit 8 to the counter",
+        "command": "dance.updateCount",
+        "args": {
+          "addDigits": 8
+        }
+      },
+      {
+        "key": "NumPad8",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 8 to the counter",
         "command": "dance.updateCount",
@@ -1030,8 +1030,8 @@
         }
       },
       {
-        "key": "NumPad9",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "key": "9",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Add the digit 9 to the counter",
         "command": "dance.updateCount",
         "args": {
@@ -1039,8 +1039,8 @@
         }
       },
       {
-        "key": "9",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "key": "NumPad9",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Add the digit 9 to the counter",
         "command": "dance.updateCount",
         "args": {
@@ -1683,6 +1683,12 @@
       },
       {
         "key": "Shift+Alt+C",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Copy selections above",
+        "command": "dance.selections.copy.above"
+      },
+      {
+        "key": "Shift+Alt+C",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Copy selections above",
         "command": "dance.selections.copy.above"
@@ -1906,6 +1912,12 @@
       {
         "key": "Shift+0",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Rotate selections clockwise (selections only)",
+        "command": "dance.selections.rotate.selections"
+      },
+      {
+        "key": "Shift+0",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Rotate selections clockwise (selections only)",
         "command": "dance.selections.rotate.selections"
       },
@@ -2140,11 +2152,6 @@
       },
       {
         "key": "Shift+Y",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/select'"
-      },
-      {
-        "key": "Shift+0",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/select'"
       },

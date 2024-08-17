@@ -497,73 +497,76 @@ export function parseKeys(keys: string) {
   if (keys.length === 0) {
     return [];
   }
-
-  return keys.replace(/\n/g, ", ").split(/ *, (?=`)/g).map((keyString) => {
+  return keys.replace(/\n/g, ", ").split(/ *, (?=`)/g).flatMap((keyString) => {
     const [,, rawKeybinding, rawMetadata] = /^(`+)(.+?)\1 \((.+?)\)$/.exec(keyString)!,
-          keybinding = rawKeybinding.trim().replace(
-            specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m]),
-          [, category, tags] = /(\w+): (.+)/.exec(rawMetadata)!;
+          keybinding = rawKeybinding
+            .trim().replace(
+              specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m],
+            );
+    return rawMetadata.split(";").map((metadata) => {
+      const [, category, tags] = /(\w+): (.+)/.exec(metadata)!;
 
-    // Reorder to match Ctrl+Shift+Alt+_
-    let key = "";
+      // Reorder to match Ctrl+Shift+Alt+_
+      let key = "";
 
-    if (keybinding.includes("c-")) {
-      key += "Ctrl+";
-    }
-
-    if (keybinding.includes("s-")) {
-      key += "Shift+";
-    }
-
-    if (keybinding.includes("a-")) {
-      key += "Alt+";
-    }
-
-    const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
-          whenClauses = ["editorTextFocus"];
-    for (let tag of tags.split(", ")) {
-      const negate = tag.startsWith("!");
-      if (negate) {
-        tag = tag.slice(1);
+      if (keybinding.includes("c-")) {
+        key += "Ctrl+";
       }
-      switch (tag) {
-      case "normal":
-      case "insert":
-      case "input":
-      case "select":
-        whenClauses.push(`dance.mode ${negate ? "!=" : "=="} '${tag}'`);
-        break;
 
-      case "recording":
-        whenClauses.push(`${negate ? "!" : ""}dance.isRecording`);
-        break;
+      if (keybinding.includes("s-")) {
+        key += "Shift+";
+      }
 
-      case "prompt":
-        assert(!negate);
-        whenClauses.splice(whenClauses.indexOf("editorTextFocus"), 1);
-        whenClauses.push("inputFocus && dance.inPrompt");
-        break;
+      if (keybinding.includes("a-")) {
+        key += "Alt+";
+      }
 
-      default: {
-        const match = /^"(!?\w+)"$/.exec(tag);
-
-        if (match === null) {
-          throw new Error("unknown keybinding tag " + tag);
+      const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
+            whenClauses = ["editorTextFocus"];
+      for (let tag of tags.split(", ")) {
+        const negate = tag.startsWith("!");
+        if (negate) {
+          tag = tag.slice(1);
         }
+        switch (tag) {
+        case "normal":
+        case "insert":
+        case "input":
+        case "select":
+          whenClauses.push(`dance.mode ${negate ? "!=" : "=="} '${tag}'`);
+          break;
 
-        whenClauses.push((negate ? "!" : "") + match[1]);
-        break;
+        case "recording":
+          whenClauses.push(`${negate ? "!" : ""}dance.isRecording`);
+          break;
+
+        case "prompt":
+          assert(!negate);
+          whenClauses.splice(whenClauses.indexOf("editorTextFocus"), 1);
+          whenClauses.push("inputFocus && dance.inPrompt");
+          break;
+
+        default: {
+          const match = /^"(!?\w+)"$/.exec(tag);
+
+          if (match === null) {
+            throw new Error("unknown keybinding tag " + tag);
+          }
+
+          whenClauses.push((negate ? "!" : "") + match[1]);
+          break;
+        }
+        }
       }
-      }
-    }
 
-    key += remainingKeybinding[0].toUpperCase() + remainingKeybinding.slice(1);
+      key += remainingKeybinding[0].toUpperCase() + remainingKeybinding.slice(1);
 
-    return {
-      category,
-      key,
-      when: whenClauses.join(" && "),
-    };
+      return {
+        category,
+        key,
+        when: whenClauses.join(" && "),
+      };
+    });
   });
 }
 

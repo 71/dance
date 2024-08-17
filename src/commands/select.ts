@@ -13,7 +13,7 @@ declare module "./select";
 /**
  * Select whole buffer.
  *
- * @keys `%` (core: normal), `%` (helix: select)
+ * @keys `%` (core: normal; helix: select)
  */
 export function buffer(_: Context) {
   Selections.set([Selections.wholeBuffer()]);
@@ -45,16 +45,16 @@ const preferredColumnsToken =
  *
  * The following keybindings are also defined:
  *
- * | Keybinding                                 | Command                                                                      |
- * | -------------------------------------------| ---------------------------------------------------------------------------- |
- * | `c-f` (core: normal), `c-f` (core: insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]`   |
- * | `c-d` (core: normal), `c-d` (core: insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]`   |
- * | `c-b` (core: normal), `c-b` (core: insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]`   |
- * | `c-u` (core: normal), `c-u` (core: insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]`   |
- * | `c-f` (helix: select)                      | `[".select.vertically", { direction:  1, by: "page"    , shift: "extend" }]` |
- * | `c-d` (helix: select)                      | `[".select.vertically", { direction:  1, by: "halfPage", shift: "extend" }]` |
- * | `c-b` (helix: select)                      | `[".select.vertically", { direction: -1, by: "page"    , shift: "extend" }]` |
- * | `c-u` (helix: select)                      | `[".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]` |
+ * | Keybinding                         | Command                                                                      |
+ * | -----------------------------------| ---------------------------------------------------------------------------- |
+ * | `c-f` (core: normal; core: insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]`   |
+ * | `c-d` (core: normal; core: insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]`   |
+ * | `c-b` (core: normal; core: insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]`   |
+ * | `c-u` (core: normal; core: insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]`   |
+ * | `c-f` (helix: select)              | `[".select.vertically", { direction:  1, by: "page"    , shift: "extend" }]` |
+ * | `c-d` (helix: select)              | `[".select.vertically", { direction:  1, by: "halfPage", shift: "extend" }]` |
+ * | `c-b` (helix: select)              | `[".select.vertically", { direction: -1, by: "page"    , shift: "extend" }]` |
+ * | `c-u` (helix: select)              | `[".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]` |
  */
 export function vertically(
   _: Context,
@@ -346,7 +346,7 @@ export function line_below(_: Context, count: number) {
 /**
  * Extend to line below.
  *
- * @keys `x` (helix: normal), `x` (helix: select)
+ * @keys `x` (helix: normal; helix: select)
  */
 export function line_below_extend(_: Context, count: number) {
   if (count === 0 || count === 1) {

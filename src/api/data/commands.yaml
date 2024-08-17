@@ -64,8 +64,7 @@ edit.case.swap:
   keys:
     qwerty: |-
       `` a-` `` (kakoune: normal)
-      `` s-` `` (helix: normal)
-      `` s-` `` (helix: select)
+      `` s-` `` (helix: normal; helix: select)
 
   doc:
     en: |+
@@ -91,8 +90,7 @@ edit.case.toUpper:
   keys:
     qwerty: |-
       `` s-` `` (kakoune: normal)
-      `` a-` `` (helix: normal)
-      `` a-` `` (helix: select)
+      `` a-` `` (helix: normal; helix: select)
 
   doc:
     en: |+
@@ -131,8 +129,7 @@ edit.deindent.withIncomplete:
 
   keys:
     qwerty: |-
-      `<` (core: normal)
-      `<` (helix: select)
+      `<` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -147,8 +144,7 @@ edit.delete:
 
   keys:
     qwerty: |-
-      `a-d` (core: normal)
-      `a-d` (helix: select)
+      `a-d` (core: normal; helix: select)
 
 edit.delete-insert:
   title:
@@ -167,8 +163,7 @@ edit.indent:
 
   keys:
     qwerty: |-
-      `>` (core: normal)
-      `>` (helix: select)
+      `>` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -193,8 +188,7 @@ edit.insert:
   keys:
     qwerty: |-
       `s-a-r` (kakoune: normal)
-      `s-r` (helix: normal)
-      `s-r` (helix: select)
+      `s-r` (helix: normal; helix: select)
 
   doc:
     en: |
@@ -224,10 +218,10 @@ edit.insert:
       | Paste all after                    | `pasteAll.after`         |                                                  | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, ... }]`                                                    |
       | Paste all before and select        | `pasteAll.before.select` | `s-a-p` (kakoune: normal)                        | `[".edit.insert", { handleNewLine: true, where: "start", all: true, shift: "select", ... }]`                                   |
       | Paste all after and select         | `pasteAll.after.select`  | `a-p` (kakoune: normal)                          | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, shift: "select", ... }]`                                   |
-      | Delete                             | `delete`                 | `a-d` (core: normal), `a-d` (helix: select)      | `[".edit.insert", { register: "_", ... }]`                                                                                     |
+      | Delete                             | `delete`                 | `a-d` (core: normal; helix: select)              | `[".edit.insert", { register: "_", ... }]`                                                                                     |
       | Delete and switch to Insert        | `delete-insert`          | `a-c` (kakoune: normal)                          | `[".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]`                                          |
-      | Copy and delete                    | `yank-delete`            | `d` (core: normal), `d` (helix: select)          | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
-      | Copy, delete and switch to Insert  | `yank-delete-insert`     | `c` (core: normal), `c` (helix: select)          | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
+      | Copy and delete                    | `yank-delete`            | `d` (core: normal; helix: select)                | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
+      | Copy, delete and switch to Insert  | `yank-delete-insert`     | `c` (core: normal; helix: select)                | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
       | Copy and replace                   | `yank-replace`           | `s-r` (kakoune: normal)                          | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]`               |
 
 edit.join:
@@ -237,8 +231,7 @@ edit.join:
   keys:
     qwerty: |-
       `a-j` (kakoune: normal)
-      `s-j` (helix: normal)
-      `s-j` (helix: select)
+      `s-j` (helix: normal; helix: select)
 
   doc:
     en: |+
@@ -250,8 +243,7 @@ edit.join.select:
 
   keys:
     qwerty: |-
-      `s-a-j` (core: normal)
-      `s-a-j` (helix: select)
+      `s-a-j` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -275,9 +267,9 @@ edit.newLine.above:
 
       #### Additional keybindings
 
-      | Title                                      | Identifier             | Keybinding                                  | Commands                                                                          |
-      | ------------------------------------------ | ---------------------- | ------------------------------------------- | --------------------------------------------------------------------------------- |
-      | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (core: normal), `s-o` (helix: select) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before", { ... }]` |
+      | Title                                      | Identifier             | Keybinding                          | Commands                                                                          |
+      | ------------------------------------------ | ---------------------- | ------------------------------------| --------------------------------------------------------------------------------- |
+      | Insert new line above and switch to insert | `newLine.above.insert` | `s-o` (core: normal; helix: select) | `[".edit.newLine.above", { shift: "select" }], [".modes.insert.before", { ... }]` |
 
 edit.newLine.above.insert:
   title:
@@ -288,8 +280,7 @@ edit.newLine.above.insert:
 
   keys:
     qwerty: |-
-      `s-o` (core: normal)
-      `s-o` (helix: select)
+      `s-o` (core: normal; helix: select)
 
 edit.newLine.below:
   title:
@@ -309,9 +300,9 @@ edit.newLine.below:
 
       #### Additional keybindings
 
-      | Title                                      | Identifier             | Keybinding                              | Commands                                                                          |
-      | ------------------------------------------ | ---------------------- | --------------------------------------- | --------------------------------------------------------------------------------- |
-      | Insert new line below and switch to insert | `newLine.below.insert` | `o` (core: normal), `o` (helix: select) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before", { ... }]` |
+      | Title                                      | Identifier             | Keybinding                        | Commands                                                                          |
+      | ------------------------------------------ | ---------------------- | --------------------------------- | --------------------------------------------------------------------------------- |
+      | Insert new line below and switch to insert | `newLine.below.insert` | `o` (core: normal; helix: select) | `[".edit.newLine.below", { shift: "select" }], [".modes.insert.before", { ... }]` |
 
 edit.newLine.below.insert:
   title:
@@ -322,8 +313,7 @@ edit.newLine.below.insert:
 
   keys:
     qwerty: |-
-      `o` (core: normal)
-      `o` (helix: select)
+      `o` (core: normal; helix: select)
 
 edit.paste.after:
   title:
@@ -444,8 +434,7 @@ edit.yank-delete:
 
   keys:
     qwerty: |-
-      `d` (core: normal)
-      `d` (helix: select)
+      `d` (core: normal; helix: select)
 
 edit.yank-delete-insert:
   title:
@@ -456,8 +445,7 @@ edit.yank-delete-insert:
 
   keys:
     qwerty: |-
-      `c` (core: normal)
-      `c` (helix: select)
+      `c` (core: normal; helix: select)
 
 edit.yank-replace:
   title:
@@ -513,8 +501,7 @@ history.redo:
 
   keys:
     qwerty: |-
-      `s-u` (core: normal)
-      `s-u` (helix: select)
+      `s-u` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -541,10 +528,10 @@ history.repeat:
       Repeat last change.
 
 
-      | Title                        | Identifier         | Keybinding                                  | Commands                                                                      |
-      | ---------------------------- | ------------------ | ------------------------------------------- | ----------------------------------------------------------------------------- |
-      | Repeat last selection change | `repeat.selection` |                                             | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
-      | Repeat last seek             | `repeat.seek`      | `a-.` (core: normal), `a-.` (helix: select) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
+      | Title                        | Identifier         | Keybinding                          | Commands                                                                      |
+      | ---------------------------- | ------------------ | ------------------------------------| ----------------------------------------------------------------------------- |
+      | Repeat last selection change | `repeat.selection` |                                     | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
+      | Repeat last seek             | `repeat.seek`      | `a-.` (core: normal; helix: select) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
 
 history.repeat.edit:
   title:
@@ -568,8 +555,7 @@ history.repeat.seek:
 
   keys:
     qwerty: |-
-      `a-.` (core: normal)
-      `a-.` (helix: select)
+      `a-.` (core: normal; helix: select)
 
 history.repeat.selection:
   title:
@@ -587,8 +573,7 @@ history.undo:
 
   keys:
     qwerty: |-
-      `u` (core: normal)
-      `u` (helix: select)
+      `u` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -642,8 +627,7 @@ modes.insert.after:
 
   keys:
     qwerty: |-
-      `a` (core: normal)
-      `a` (helix: select)
+      `a` (core: normal; helix: select)
 
 modes.insert.before:
   title:
@@ -654,8 +638,7 @@ modes.insert.before:
 
   keys:
     qwerty: |-
-      `i` (core: normal)
-      `i` (helix: select)
+      `i` (core: normal; helix: select)
 
 modes.insert.lineEnd:
   title:
@@ -666,8 +649,7 @@ modes.insert.lineEnd:
 
   keys:
     qwerty: |-
-      `s-a` (core: normal)
-      `s-a` (helix: select)
+      `s-a` (core: normal; helix: select)
 
 modes.insert.lineStart:
   title:
@@ -678,8 +660,7 @@ modes.insert.lineStart:
 
   keys:
     qwerty: |-
-      `s-i` (core: normal)
-      `s-i` (helix: select)
+      `s-i` (core: normal; helix: select)
 
 modes.set:
   title:
@@ -691,20 +672,20 @@ modes.set:
 
       #### Variants
 
-      | Title              | Identifier   | Keybinding                                                             | Command                                                     |
-      | ------------------ | ------------ | ---------------------------------------------------------------------- | ----------------------------------------------------------- |
-      | Set mode to Normal | `set.normal` | `escape` (core: insert), `escape` (helix: select), `v` (helix: select) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
-      | Set mode to Insert | `set.insert` |                                                                        | `[".modes.set", { mode: "insert" }]`                        |
-      | Set mode to Select | `set.select` | `v` (helix: normal)                                                    | `[".modes.set", { mode: "select" }]`                        |
+      | Title              | Identifier   | Keybinding                                                  | Command                                                     |
+      | ------------------ | ------------ | ----------------------------------------------------------- | ----------------------------------------------------------- |
+      | Set mode to Normal | `set.normal` | `escape` (core: insert; helix: select), `v` (helix: select) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
+      | Set mode to Insert | `set.insert` |                                                             | `[".modes.set", { mode: "insert" }]`                        |
+      | Set mode to Select | `set.select` | `v` (helix: normal)                                         | `[".modes.set", { mode: "select" }]`                        |
 
       Other variants are provided to switch to insert mode:
 
-      | Title                | Identifier         | Keybinding                                  | Commands                                                                                                                                                                            |
-      | -------------------- | ------------------ | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-      | Insert before        | `insert.before`    | `i` (core: normal), `i` (helix: select)     | `[".selections.faceBackward", { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
-      | Insert after         | `insert.after`     | `a` (core: normal), `a` (helix: select)     | `[".selections.faceForward" , { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
-      | Insert at line start | `insert.lineStart` | `s-i` (core: normal), `s-i` (helix: select) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
-      | Insert at line end   | `insert.lineEnd`   | `s-a` (core: normal), `s-a` (helix: select) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
+      | Title                | Identifier         | Keybinding                          | Commands                                                                                                                                                                            |
+      | -------------------- | ------------------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+      | Insert before        | `insert.before`    | `i` (core: normal; helix: select)   | `[".selections.faceBackward", { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
+      | Insert after         | `insert.after`     | `a` (core: normal; helix: select)   | `[".selections.faceForward" , { record: false }],           [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
+      | Insert at line start | `insert.lineStart` | `s-i` (core: normal; helix: select) | `[".select.lineStart", { shift: "jump", skipBlank: true }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "start", record: false, empty: true, ... }]` |
+      | Insert at line end   | `insert.lineEnd`   | `s-a` (core: normal; helix: select) | `[".select.lineEnd"  , { shift: "jump"                  }], [".modes.set", { mode: "insert", +mode }], [".selections.reduce", { where: "end"  , record: false, empty: true, ... }]` |
 
 modes.set.insert:
   title:
@@ -720,14 +701,13 @@ modes.set.normal:
   title:
     en: Set mode to Normal
 
-  commands: |-
-    [".modes.set", { mode: "normal" }], ["hideSuggestWidget"]
-
   keys:
     qwerty: |-
-      `escape` (core: insert)
-      `escape` (helix: select)
+      `escape` (core: insert; helix: select)
       `v` (helix: select)
+
+  commands: |-
+    [".modes.set", { mode: "normal" }], ["hideSuggestWidget"]
 
 modes.set.select:
   title:
@@ -1584,8 +1564,7 @@ select.buffer:
 
   keys:
     qwerty: |-
-      `%` (core: normal)
-      `%` (helix: select)
+      `%` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -1816,8 +1795,7 @@ select.line.below.extend:
 
   keys:
     qwerty: |-
-      `x` (helix: normal)
-      `x` (helix: select)
+      `x` (helix: normal; helix: select)
 
   doc:
     en: |+
@@ -2066,16 +2044,16 @@ select.vertically:
 
       The following keybindings are also defined:
 
-      | Keybinding                                 | Command                                                                      |
-      | -------------------------------------------| ---------------------------------------------------------------------------- |
-      | `c-f` (core: normal), `c-f` (core: insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]`   |
-      | `c-d` (core: normal), `c-d` (core: insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]`   |
-      | `c-b` (core: normal), `c-b` (core: insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]`   |
-      | `c-u` (core: normal), `c-u` (core: insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]`   |
-      | `c-f` (helix: select)                      | `[".select.vertically", { direction:  1, by: "page"    , shift: "extend" }]` |
-      | `c-d` (helix: select)                      | `[".select.vertically", { direction:  1, by: "halfPage", shift: "extend" }]` |
-      | `c-b` (helix: select)                      | `[".select.vertically", { direction: -1, by: "page"    , shift: "extend" }]` |
-      | `c-u` (helix: select)                      | `[".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]` |
+      | Keybinding                         | Command                                                                      |
+      | -----------------------------------| ---------------------------------------------------------------------------- |
+      | `c-f` (core: normal; core: insert) | `[".select.vertically", { direction:  1, by: "page"    , shift: "jump" }]`   |
+      | `c-d` (core: normal; core: insert) | `[".select.vertically", { direction:  1, by: "halfPage", shift: "jump" }]`   |
+      | `c-b` (core: normal; core: insert) | `[".select.vertically", { direction: -1, by: "page"    , shift: "jump" }]`   |
+      | `c-u` (core: normal; core: insert) | `[".select.vertically", { direction: -1, by: "halfPage", shift: "jump" }]`   |
+      | `c-f` (helix: select)              | `[".select.vertically", { direction:  1, by: "page"    , shift: "extend" }]` |
+      | `c-d` (helix: select)              | `[".select.vertically", { direction:  1, by: "halfPage", shift: "extend" }]` |
+      | `c-b` (helix: select)              | `[".select.vertically", { direction: -1, by: "page"    , shift: "extend" }]` |
+      | `c-u` (helix: select)              | `[".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]` |
 
 selections.changeDirection:
   title:
@@ -2083,8 +2061,7 @@ selections.changeDirection:
 
   keys:
     qwerty: |-
-      `a-;` (core: normal)
-      `a-;` (helix: select)
+      `a-;` (core: normal; helix: select)
 
   doc:
     en: |
@@ -2124,8 +2101,7 @@ selections.clear.main:
 
   keys:
     qwerty: |-
-      `a-,` (core: normal)
-      `a-,` (helix: select)
+      `a-,` (core: normal; helix: select)
 
 selections.clear.secondary:
   title:
@@ -2136,8 +2112,7 @@ selections.clear.secondary:
 
   keys:
     qwerty: |-
-      `,` (core: normal)
-      `,` (helix: select)
+      `,` (core: normal; helix: select)
 
 selections.copy:
   title:
@@ -2145,8 +2120,7 @@ selections.copy:
 
   keys:
     qwerty: |-
-      `s-c` (core: normal)
-      `s-c` (helix: select)
+      `s-c` (core: normal; helix: select)
 
   doc:
     en: |
@@ -2155,9 +2129,9 @@ selections.copy:
 
       #### Variant
 
-      | Title                 | Identifier   | Keybinding                                         | Command                                   |
-      | --------------------- | ------------ | -------------------------------------------------- | ----------------------------------------- |
-      | Copy selections above | `copy.above` | `s-a-c` (kakoune: normal), `s-a-c` (helix: select) | `[".selections.copy", { direction: -1 }]` |
+      | Title                 | Identifier   | Keybinding                            | Command                                   |
+      | --------------------- | ------------ | ------------------------------------- | ----------------------------------------- |
+      | Copy selections above | `copy.above` | `s-a-c` (core: normal; helix: select) | `[".selections.copy", { direction: -1 }]` |
 
 selections.copy.above:
   title:
@@ -2168,8 +2142,7 @@ selections.copy.above:
 
   keys:
     qwerty: |-
-      `s-a-c` (kakoune: normal)
-      `s-a-c` (helix: select)
+      `s-a-c` (core: normal; helix: select)
 
 selections.expandToLines:
   title:
@@ -2178,8 +2151,7 @@ selections.expandToLines:
   keys:
     qwerty: |-
       `x` (kakoune: normal)
-      `s-x` (helix: normal)
-      `s-x` (helix: select)
+      `s-x` (helix: normal; helix: select)
 
   doc:
     en: |+
@@ -2214,8 +2186,7 @@ selections.filter:
 
   keys:
     qwerty: |-
-      `$` (core: normal)
-      `$` (helix: select)
+      `$` (core: normal; helix: select)
 
   doc:
     en: |
@@ -2223,12 +2194,12 @@ selections.filter:
 
       #### Variants
 
-      | Title                      | Identifier              | Keybinding                                      | Commands                                                                 |
-      | -------------------------- | ----------------------- | ----------------------------------------------- | ------------------------------------------------------------------------ |
-      | Keep matching selections   | `filter.regexp`         | `a-k` (core: normal), `a-k` (helix: select)     | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
-      | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal), `s-a-k` (helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
-      | Clear secondary selections | `clear.secondary`       | `,` (core: normal), `,` (helix: select)         | `[".selections.filter", { expression: "i === count"            , ... }]` |
-      | Clear main selections      | `clear.main`            | `a-,` (core: normal), `a-,` (helix: select)     | `[".selections.filter", { expression: "i !== count"            , ... }]` |
+      | Title                      | Identifier              | Keybinding                            | Commands                                                                 |
+      | -------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+      | Keep matching selections   | `filter.regexp`         | `a-k` (core: normal; helix: select)   | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
+      | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal; helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
+      | Clear secondary selections | `clear.secondary`       | `,` (core: normal; helix: select)     | `[".selections.filter", { expression: "i === count"            , ... }]` |
+      | Clear main selections      | `clear.main`            | `a-,` (core: normal; helix: select)   | `[".selections.filter", { expression: "i !== count"            , ... }]` |
 
 selections.filter.regexp:
   title:
@@ -2239,8 +2210,7 @@ selections.filter.regexp:
 
   keys:
     qwerty: |-
-      `a-k` (core: normal)
-      `a-k` (helix: select)
+      `a-k` (core: normal; helix: select)
 
 selections.filter.regexp.inverse:
   title:
@@ -2248,8 +2218,7 @@ selections.filter.regexp.inverse:
 
   keys:
     qwerty: |-
-      `s-a-k` (core: normal)
-      `s-a-k` (helix: select)
+      `s-a-k` (core: normal; helix: select)
 
   commands: |-
     [".selections.filter", { defaultExpression: "/", inverse: true, $exclude: [] }]
@@ -2301,8 +2270,7 @@ selections.pipe:
 
   keys:
     qwerty: |-
-      `a-|` (core: normal)
-      `a-|` (helix: select)
+      `a-|` (core: normal; helix: select)
 
   doc:
     en: |
@@ -2315,11 +2283,11 @@ selections.pipe:
 
       #### Additional commands
 
-      | Title               | Identifier     | Keybinding                                    | Commands                                                                                                                    |
-      | ------------------- | -------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-      | Pipe and replace    | `pipe.replace` | `|` (core: normal), `|` (helix: select)       | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|",                                  ... }]` |
-      | Pipe and append     | `pipe.append`  | `!` (core: normal), `!` (helix: select)       | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "end"  , shift: "select", ... }]` |
-      | Pipe and prepend    | `pipe.prepend` | `a-!` (core: normal), `a-!` (helix: select)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "start", shift: "select", ... }]` |
+      | Title               | Identifier     | Keybinding                          | Commands                                                                                                                    |
+      | ------------------- | -------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+      | Pipe and replace    | `pipe.replace` | `|` (core: normal; helix: select)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|",                                  ... }]` |
+      | Pipe and append     | `pipe.append`  | `!` (core: normal; helix: select)   | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "end"  , shift: "select", ... }]` |
+      | Pipe and prepend    | `pipe.prepend` | `a-!` (core: normal; helix: select) | `[".selections.pipe", { +expression,register }], [".edit.insert", { register: "|", where: "start", shift: "select", ... }]` |
 
 selections.pipe.append:
   title:
@@ -2330,8 +2298,7 @@ selections.pipe.append:
 
   keys:
     qwerty: |-
-      `!` (core: normal)
-      `!` (helix: select)
+      `!` (core: normal; helix: select)
 
 selections.pipe.prepend:
   title:
@@ -2342,8 +2309,7 @@ selections.pipe.prepend:
 
   keys:
     qwerty: |-
-      `a-!` (core: normal)
-      `a-!` (helix: select)
+      `a-!` (core: normal; helix: select)
 
 selections.pipe.replace:
   title:
@@ -2354,8 +2320,7 @@ selections.pipe.replace:
 
   keys:
     qwerty: |-
-      `|` (core: normal)
-      `|` (helix: select)
+      `|` (core: normal; helix: select)
 
 selections.reduce:
   title:
@@ -2363,8 +2328,7 @@ selections.reduce:
 
   keys:
     qwerty: |-
-      `;` (core: normal)
-      `;` (helix: select)
+      `;` (core: normal; helix: select)
 
   doc:
     en: |
@@ -2463,14 +2427,13 @@ selections.rotate.contents:
 
       The following command is also available:
 
-      | Title                                               | Identifier         | Keybinding                                   | Command                                              |
-      | --------------------------------------------------- | ------------------ | -------------------------------------------- | ---------------------------------------------------- |
-      | Rotate selections counter-clockwise (contents only) | `contents.reverse` | `a-(` (helix: normal), `a-(` (helix: select) | `[".selections.rotate.contents", { reverse: true }]` |
+      | Title                                               | Identifier         | Keybinding                           | Command                                              |
+      | --------------------------------------------------- | ------------------ | ------------------------------------ | ---------------------------------------------------- |
+      | Rotate selections counter-clockwise (contents only) | `contents.reverse` | `a-(` (helix: normal; helix: select) | `[".selections.rotate.contents", { reverse: true }]` |
 
   keys:
     qwerty: |-
-      `a-)` (helix: normal)
-      `a-)` (helix: select)
+      `a-)` (helix: normal; helix: select)
 
 selections.rotate.contents.reverse:
   title:
@@ -2478,8 +2441,7 @@ selections.rotate.contents.reverse:
 
   keys:
     qwerty: |-
-      `a-(` (helix: normal)
-      `a-(` (helix: select)
+      `a-(` (helix: normal; helix: select)
 
   commands: |-
     [".selections.rotate.contents", { reverse: true }]
@@ -2490,7 +2452,7 @@ selections.rotate.selections:
 
   keys:
     qwerty: |-
-      `)` (core: normal)
+      `)` (core: normal; helix: select)
 
   doc:
     en: |
@@ -2499,9 +2461,9 @@ selections.rotate.selections:
 
       The following keybinding is also available:
 
-      | Title                                                 | Identifier           | Keybinding                              | Command                                                |
-      | ----------------------------------------------------- | -------------------- | --------------------------------------- | ------------------------------------------------------ |
-      | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `(` (core: normal), `(` (helix: select) | `[".selections.rotate.selections", { reverse: true }]` |
+      | Title                                                 | Identifier           | Keybinding                        | Command                                                |
+      | ----------------------------------------------------- | -------------------- | --------------------------------- | ------------------------------------------------------ |
+      | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `(` (core: normal; helix: select) | `[".selections.rotate.selections", { reverse: true }]` |
 
 selections.rotate.selections.reverse:
   title:
@@ -2512,8 +2474,7 @@ selections.rotate.selections.reverse:
 
   keys:
     qwerty: |-
-      `(` (core: normal)
-      `(` (helix: select)
+      `(` (core: normal; helix: select)
 
 selections.save:
   title:
@@ -2533,8 +2494,7 @@ selections.saveText:
 
   keys:
     qwerty: |-
-      `y` (core: normal)
-      `y` (helix: select)
+      `y` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -2550,9 +2510,9 @@ selections.select:
 
       #### Variants
 
-      | Title          | Identifier      | Keybinding                              | Command                                                                                           |
-      | -------------- | --------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------- |
-      | Leap or select | `select.orLeap` | `s` (core: normal), `s` (helix: select) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
+      | Title          | Identifier      | Keybinding                        | Command                                                                                           |
+      | -------------- | --------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
+      | Leap or select | `select.orLeap` | `s` (core: normal; helix: select) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
 
 selections.select.orLeap:
   title:
@@ -2563,8 +2523,7 @@ selections.select.orLeap:
 
   keys:
     qwerty: |-
-      `s` (core: normal)
-      `s` (helix: select)
+      `s` (core: normal; helix: select)
 
 selections.showIndices:
   title:
@@ -2588,8 +2547,7 @@ selections.split:
 
   keys:
     qwerty: |-
-      `s-s` (core: normal)
-      `s-s` (helix: select)
+      `s-s` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -2605,9 +2563,9 @@ selections.splitLines:
 
       #### Variants
 
-      | Title                   | Identifier                   | Keybinding                                  | Command                                                                                                              |
-      | ----------------------- | ---------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-      | Leap or select backward | `splitLines.orLeap.backward` | `a-s` (core: normal), `a-s` (helix: select) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
+      | Title                   | Identifier                   | Keybinding                          | Command                                                                                                              |
+      | ----------------------- | ---------------------------- | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+      | Leap or select backward | `splitLines.orLeap.backward` | `a-s` (core: normal; helix: select) | `[".ifEmpty", { then: [[".seek.leap", { direction: -1, ... }]], otherwise: [[".selections.splitLines", { ... }]] }]` |
 
 selections.splitLines.orLeap.backward:
   title:
@@ -2618,8 +2576,7 @@ selections.splitLines.orLeap.backward:
 
   keys:
     qwerty: |-
-      `a-s` (core: normal)
-      `a-s` (helix: select)
+      `a-s` (core: normal; helix: select)
 
 selections.toggleIndices:
   title:
@@ -2627,8 +2584,7 @@ selections.toggleIndices:
 
   keys:
     qwerty: |-
-      `enter` (core: normal)
-      `enter` (helix: select)
+      `enter` (core: normal; helix: select)
 
   doc:
     en: |
@@ -2648,8 +2604,7 @@ selections.trimLines:
 
   keys:
     qwerty: |-
-      `a-x` (core: normal)
-      `a-x` (helix: select)
+      `a-x` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -2663,8 +2618,7 @@ selections.trimWhitespace:
 
   keys:
     qwerty: |-
-      `_` (core: normal)
-      `_` (helix: select)
+      `_` (core: normal; helix: select)
 
   doc:
     en: |+
@@ -2701,18 +2655,18 @@ updateCount:
 
       #### Additional keybindings
 
-      | Title                          | Keybinding                                                                                   | Command                              |
-      | ------------------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------ |
-      | Add the digit 0 to the counter | `0` (core: normal), `NumPad0` (core: normal), `0` (helix: select), `NumPad0` (helix: select) | `[".updateCount", { addDigits: 0 }]` |
-      | Add the digit 1 to the counter | `1` (core: normal), `NumPad1` (core: normal), `1` (helix: select), `NumPad1` (helix: select) | `[".updateCount", { addDigits: 1 }]` |
-      | Add the digit 2 to the counter | `2` (core: normal), `NumPad2` (core: normal), `2` (helix: select), `NumPad2` (helix: select) | `[".updateCount", { addDigits: 2 }]` |
-      | Add the digit 3 to the counter | `3` (core: normal), `NumPad3` (core: normal), `3` (helix: select), `NumPad3` (helix: select) | `[".updateCount", { addDigits: 3 }]` |
-      | Add the digit 4 to the counter | `4` (core: normal), `NumPad4` (core: normal), `4` (helix: select), `NumPad4` (helix: select) | `[".updateCount", { addDigits: 4 }]` |
-      | Add the digit 5 to the counter | `5` (core: normal), `NumPad5` (core: normal), `5` (helix: select), `NumPad5` (helix: select) | `[".updateCount", { addDigits: 5 }]` |
-      | Add the digit 6 to the counter | `6` (core: normal), `NumPad6` (core: normal), `6` (helix: select), `NumPad6` (helix: select) | `[".updateCount", { addDigits: 6 }]` |
-      | Add the digit 7 to the counter | `7` (core: normal), `NumPad7` (core: normal), `7` (helix: select), `NumPad7` (helix: select) | `[".updateCount", { addDigits: 7 }]` |
-      | Add the digit 8 to the counter | `8` (core: normal), `NumPad8` (core: normal), `8` (helix: select), `NumPad8` (helix: select) | `[".updateCount", { addDigits: 8 }]` |
-      | Add the digit 9 to the counter | `9` (core: normal), `NumPad9` (core: normal), `9` (helix: select), `NumPad9` (helix: select) | `[".updateCount", { addDigits: 9 }]` |
+      | Title                          | Keybinding                                                                 | Command                              |
+      | ------------------------------ | -------------------------------------------------------------------------- | ------------------------------------ |
+      | Add the digit 0 to the counter | `0` (core: normal; helix: select), `NumPad0` (core: normal; helix: select) | `[".updateCount", { addDigits: 0 }]` |
+      | Add the digit 1 to the counter | `1` (core: normal; helix: select), `NumPad1` (core: normal; helix: select) | `[".updateCount", { addDigits: 1 }]` |
+      | Add the digit 2 to the counter | `2` (core: normal; helix: select), `NumPad2` (core: normal; helix: select) | `[".updateCount", { addDigits: 2 }]` |
+      | Add the digit 3 to the counter | `3` (core: normal; helix: select), `NumPad3` (core: normal; helix: select) | `[".updateCount", { addDigits: 3 }]` |
+      | Add the digit 4 to the counter | `4` (core: normal; helix: select), `NumPad4` (core: normal; helix: select) | `[".updateCount", { addDigits: 4 }]` |
+      | Add the digit 5 to the counter | `5` (core: normal; helix: select), `NumPad5` (core: normal; helix: select) | `[".updateCount", { addDigits: 5 }]` |
+      | Add the digit 6 to the counter | `6` (core: normal; helix: select), `NumPad6` (core: normal; helix: select) | `[".updateCount", { addDigits: 6 }]` |
+      | Add the digit 7 to the counter | `7` (core: normal; helix: select), `NumPad7` (core: normal; helix: select) | `[".updateCount", { addDigits: 7 }]` |
+      | Add the digit 8 to the counter | `8` (core: normal; helix: select), `NumPad8` (core: normal; helix: select) | `[".updateCount", { addDigits: 8 }]` |
+      | Add the digit 9 to the counter | `9` (core: normal; helix: select), `NumPad9` (core: normal; helix: select) | `[".updateCount", { addDigits: 9 }]` |
 
 updateRegister:
   title:
@@ -2775,8 +2729,7 @@ anonymous:
     keys:
       qwerty: |-
         `v` (kakoune: normal)
-        `z` (helix: normal)
-        `z` (helix: select)
+        `z` (helix: normal; helix: select)
 
   - title:
       en: Show view menu (locked)
@@ -2787,8 +2740,7 @@ anonymous:
     keys:
       qwerty: |-
         `s-v` (kakoune: normal)
-        `s-z` (helix: normal)
-        `s-z` (helix: select)
+        `s-z` (helix: normal; helix: select)
 
   - commands: |-
       [".select.vertically", { direction: -1, by: "halfPage", shift: "extend" }]
@@ -2802,8 +2754,7 @@ anonymous:
 
     keys:
       qwerty: |-
-        `c-u` (core: normal)
-        `c-u` (core: insert)
+        `c-u` (core: normal; core: insert)
 
   - commands: |-
       [".select.vertically", { direction: -1, by: "page" , shift: "extend" }]
@@ -2817,8 +2768,7 @@ anonymous:
 
     keys:
       qwerty: |-
-        `c-b` (core: normal)
-        `c-b` (core: insert)
+        `c-b` (core: normal; core: insert)
 
   - commands: |-
       [".select.vertically", { direction: 1, by: "halfPage", shift: "extend" }]
@@ -2832,8 +2782,7 @@ anonymous:
 
     keys:
       qwerty: |-
-        `c-d` (core: normal)
-        `c-d` (core: insert)
+        `c-d` (core: normal; core: insert)
 
   - commands: |-
       [".select.vertically", { direction: 1, by: "page" , shift: "extend" }]
@@ -2847,8 +2796,7 @@ anonymous:
 
     keys:
       qwerty: |-
-        `c-f` (core: normal)
-        `c-f` (core: insert)
+        `c-f` (core: normal; core: insert)
 
   - commands: |-
       [".selections.restore.withCurrent", { reverse: true, $exclude: [] }]
@@ -2868,10 +2816,8 @@ anonymous:
         `s-0` (core: normal)
         `NumPad0` (core: normal)
       qwerty: |-
-        `0` (core: normal)
-        `NumPad0` (core: normal)
-        `0` (helix: select)
-        `NumPad0` (helix: select)
+        `0` (core: normal; helix: select)
+        `NumPad0` (core: normal; helix: select)
 
   - title:
       en: Add the digit 1 to the counter
@@ -2884,10 +2830,8 @@ anonymous:
         `s-1` (core: normal)
         `NumPad1` (core: normal)
       qwerty: |-
-        `1` (core: normal)
-        `NumPad1` (core: normal)
-        `1` (helix: select)
-        `NumPad1` (helix: select)
+        `1` (core: normal; helix: select)
+        `NumPad1` (core: normal; helix: select)
 
   - title:
       en: Add the digit 2 to the counter
@@ -2900,10 +2844,8 @@ anonymous:
         `s-2` (core: normal)
         `NumPad2` (core: normal)
       qwerty: |-
-        `2` (core: normal)
-        `NumPad2` (core: normal)
-        `2` (helix: select)
-        `NumPad2` (helix: select)
+        `2` (core: normal; helix: select)
+        `NumPad2` (core: normal; helix: select)
 
   - title:
       en: Add the digit 3 to the counter
@@ -2916,10 +2858,8 @@ anonymous:
         `s-3` (core: normal)
         `NumPad3` (core: normal)
       qwerty: |-
-        `3` (core: normal)
-        `NumPad3` (core: normal)
-        `3` (helix: select)
-        `NumPad3` (helix: select)
+        `3` (core: normal; helix: select)
+        `NumPad3` (core: normal; helix: select)
 
   - title:
       en: Add the digit 4 to the counter
@@ -2932,10 +2872,8 @@ anonymous:
         `s-4` (core: normal)
         `NumPad4` (core: normal)
       qwerty: |-
-        `4` (core: normal)
-        `NumPad4` (core: normal)
-        `4` (helix: select)
-        `NumPad4` (helix: select)
+        `4` (core: normal; helix: select)
+        `NumPad4` (core: normal; helix: select)
 
   - title:
       en: Add the digit 5 to the counter
@@ -2948,10 +2886,8 @@ anonymous:
         `s-5` (core: normal)
         `NumPad5` (core: normal)
       qwerty: |-
-        `5` (core: normal)
-        `NumPad5` (core: normal)
-        `5` (helix: select)
-        `NumPad5` (helix: select)
+        `5` (core: normal; helix: select)
+        `NumPad5` (core: normal; helix: select)
 
   - title:
       en: Add the digit 6 to the counter
@@ -2964,10 +2900,8 @@ anonymous:
         `s-6` (core: normal)
         `NumPad6` (core: normal)
       qwerty: |-
-        `6` (core: normal)
-        `NumPad6` (core: normal)
-        `6` (helix: select)
-        `NumPad6` (helix: select)
+        `6` (core: normal; helix: select)
+        `NumPad6` (core: normal; helix: select)
 
   - title:
       en: Add the digit 7 to the counter
@@ -2980,10 +2914,8 @@ anonymous:
         `s-7` (core: normal)
         `NumPad7` (core: normal)
       qwerty: |-
-        `7` (core: normal)
-        `NumPad7` (core: normal)
-        `7` (helix: select)
-        `NumPad7` (helix: select)
+        `7` (core: normal; helix: select)
+        `NumPad7` (core: normal; helix: select)
 
   - title:
       en: Add the digit 8 to the counter
@@ -2996,10 +2928,8 @@ anonymous:
         `s-8` (core: normal)
         `NumPad8` (core: normal)
       qwerty: |-
-        `8` (core: normal)
-        `NumPad8` (core: normal)
-        `8` (helix: select)
-        `NumPad8` (helix: select)
+        `8` (core: normal; helix: select)
+        `NumPad8` (core: normal; helix: select)
 
   - title:
       en: Add the digit 9 to the counter
@@ -3012,10 +2942,8 @@ anonymous:
         `s-9` (core: normal)
         `NumPad9` (core: normal)
       qwerty: |-
-        `9` (core: normal)
-        `NumPad9` (core: normal)
-        `9` (helix: select)
-        `NumPad9` (helix: select)
+        `9` (core: normal; helix: select)
+        `NumPad9` (core: normal; helix: select)
 
   - commands: |-
       ["workbench.action.showCommands", { $exclude: [] }]

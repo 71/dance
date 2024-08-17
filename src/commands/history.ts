@@ -15,7 +15,7 @@ declare module "./history";
 /**
  * Undo.
  *
- * @keys `u` (core: normal), `u` (helix: select)
+ * @keys `u` (core: normal; helix: select)
  */
 export function undo() {
   return vscode.commands.executeCommand("undo");
@@ -24,7 +24,7 @@ export function undo() {
 /**
  * Redo.
  *
- * @keys `s-u` (core: normal), `s-u` (helix: select)
+ * @keys `s-u` (core: normal; helix: select)
  */
 export function redo() {
   return vscode.commands.executeCommand("redo");
@@ -53,10 +53,10 @@ export function redo_selections() {
  *
  * @noreplay
  *
- * | Title                        | Identifier         | Keybinding                                  | Commands                                                                      |
- * | ---------------------------- | ------------------ | ------------------------------------------- | ----------------------------------------------------------------------------- |
- * | Repeat last selection change | `repeat.selection` |                                             | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
- * | Repeat last seek             | `repeat.seek`      | `a-.` (core: normal), `a-.` (helix: select) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
+ * | Title                        | Identifier         | Keybinding                          | Commands                                                                      |
+ * | ---------------------------- | ------------------ | ------------------------------------| ----------------------------------------------------------------------------- |
+ * | Repeat last selection change | `repeat.selection` |                                     | `[".history.repeat", { filter: "dance\\.(seek|select|selections)", +count }]` |
+ * | Repeat last seek             | `repeat.seek`      | `a-.` (core: normal; helix: select) | `[".history.repeat", { filter: "dance\\.seek", +count }]`                     |
  */
 export async function repeat(
   _: Context,

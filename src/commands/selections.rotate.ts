@@ -28,13 +28,13 @@ export function both(_: Context, repetitions: number, reverse: Argument<boolean>
 /**
  * Rotate selections clockwise (contents only).
  *
- * @keys `a-)` (helix: normal), `a-)` (helix: select)
+ * @keys `a-)` (helix: normal; helix: select)
  *
  * The following command is also available:
  *
- * | Title                                               | Identifier         | Keybinding                                   | Command                                              |
- * | --------------------------------------------------- | ------------------ | -------------------------------------------- | ---------------------------------------------------- |
- * | Rotate selections counter-clockwise (contents only) | `contents.reverse` | `a-(` (helix: normal), `a-(` (helix: select) | `[".selections.rotate.contents", { reverse: true }]` |
+ * | Title                                               | Identifier         | Keybinding                           | Command                                              |
+ * | --------------------------------------------------- | ------------------ | ------------------------------------ | ---------------------------------------------------- |
+ * | Rotate selections counter-clockwise (contents only) | `contents.reverse` | `a-(` (helix: normal; helix: select) | `[".selections.rotate.contents", { reverse: true }]` |
  */
 export function contents(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
   if (reverse) {
@@ -47,13 +47,13 @@ export function contents(_: Context, repetitions: number, reverse: Argument<bool
 /**
  * Rotate selections clockwise (selections only).
  *
- * @keys `)` (core: normal)
+ * @keys `)` (core: normal; helix: select)
  *
  * The following keybinding is also available:
  *
- * | Title                                                 | Identifier           | Keybinding                              | Command                                                |
- * | ----------------------------------------------------- | -------------------- | --------------------------------------- | ------------------------------------------------------ |
- * | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `(` (core: normal), `(` (helix: select) | `[".selections.rotate.selections", { reverse: true }]` |
+ * | Title                                                 | Identifier           | Keybinding                        | Command                                                |
+ * | ----------------------------------------------------- | -------------------- | --------------------------------- | ------------------------------------------------------ |
+ * | Rotate selections counter-clockwise (selections only) | `selections.reverse` | `(` (core: normal; helix: select) | `[".selections.rotate.selections", { reverse: true }]` |
  */
 export function selections(_: Context, repetitions: number, reverse: Argument<boolean> = false) {
   if (reverse) {
