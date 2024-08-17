@@ -130,8 +130,6 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
     "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
 
-    "package-helix": `cd extensions/helix && yarn run package`,
-    "publish-helix": `cd extensions/helix && yarn run publish`,
     "package-helix:pre": `cd extensions/helix && yarn run package:pre`,
     "publish-helix:pre": `cd extensions/helix && yarn run publish:pre`,
   },

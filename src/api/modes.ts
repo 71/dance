@@ -13,7 +13,7 @@ export function toMode(modeName: string, count: number): Thenable<void>;
 export async function toMode(modeName: string, count?: number) {
   const context = Context.current,
         extension = context.extension,
-        mode = findMode(modeName);
+        mode = findMode(modeName, context);
   if (mode === undefined || mode.isPendingDeletion) {
     throw new Error(`mode ${JSON.stringify(modeName)} does not exist`);
   }
@@ -62,7 +62,10 @@ export async function toMode(modeName: string, count?: number) {
   }, 0);
 }
 
-/* Find a mode by name, prioritizing one that's within the same 'namespace' */
+/**
+ * Returns the {@link Mode} with the given name, prioritizing one that's within the name "namespace"
+ * as the current mode.
+ */
 function findMode(modeName: string, context?: Context) {
   context = context ?? Context.current;
 
