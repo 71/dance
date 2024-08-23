@@ -7,7 +7,7 @@ import { extensionId } from "../../src/utils/constants";
 
 const version = "0.1.0",
       preRelease = 1,
-      preReleaseVersion = version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"));
+      preReleaseVersion = `${version}-pre${preRelease}`;
 
 export const pkg = (modules: Builder.ParsedModule[]) => ({
 
