@@ -21,7 +21,10 @@ declare module "./selections";
 /**
  * Copy selections text.
  *
- * @keys `y` (core: normal; helix: select)
+ * @keys `y` (core: normal)
+ * | Keybindings         | Commands                                          |
+ * | -----------         | --------                                          |
+ * | `y` (helix: select) | `[".selections.saveText"], [".modes.set.normal"]` |
  */
 export function saveText(
   document: vscode.TextDocument,

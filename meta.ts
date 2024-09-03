@@ -114,7 +114,9 @@ function parseAdditional(qualificationPrefix: string, text: string, textStartLin
           const key = keys[j],
                 value = valueConverter[key](values[j].trim());
 
-          (obj as Record<string, any>)[key] = value;
+          if (value.length !== 0) {
+            (obj as Record<string, any>)[key] = value;
+          }
         }
 
         if ("identifier" in obj) {

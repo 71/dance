@@ -425,20 +425,8 @@
         "command": "dance.edit.case.swap"
       },
       {
-        "key": "Shift+`",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Swap case",
-        "command": "dance.edit.case.swap"
-      },
-      {
         "key": "`",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Transform to lower case",
-        "command": "dance.edit.case.toLower"
-      },
-      {
-        "key": "`",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Transform to lower case",
         "command": "dance.edit.case.toLower"
       },
@@ -449,20 +437,8 @@
         "command": "dance.edit.case.toUpper"
       },
       {
-        "key": "Alt+`",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Transform to upper case",
-        "command": "dance.edit.case.toUpper"
-      },
-      {
         "key": "Shift+,",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Deindent selected lines (including incomplete indent)",
-        "command": "dance.edit.deindent.withIncomplete"
-      },
-      {
-        "key": "Shift+,",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Deindent selected lines (including incomplete indent)",
         "command": "dance.edit.deindent.withIncomplete"
       },
@@ -473,32 +449,14 @@
         "command": "dance.edit.delete"
       },
       {
-        "key": "Alt+D",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Delete",
-        "command": "dance.edit.delete"
-      },
-      {
         "key": "Shift+.",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Indent selected lines",
         "command": "dance.edit.indent"
       },
       {
-        "key": "Shift+.",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Indent selected lines",
-        "command": "dance.edit.indent"
-      },
-      {
         "key": "Shift+R",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Insert contents of register",
-        "command": "dance.edit.insert"
-      },
-      {
-        "key": "Shift+R",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Insert contents of register",
         "command": "dance.edit.insert"
       },
@@ -549,24 +507,12 @@
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Insert new line below and switch to insert",
         "command": "dance.edit.newLine.below.insert"
-      },
-      {
-        "key": "P",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Paste after",
-        "command": "dance.edit.paste.after"
       },
       {
         "key": "P",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Paste after and select",
         "command": "dance.edit.paste.after.select"
-      },
-      {
-        "key": "Shift+P",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Paste before",
-        "command": "dance.edit.paste.before"
       },
       {
         "key": "Shift+P",
@@ -587,12 +533,6 @@
         "command": "dance.edit.yank-delete"
       },
       {
-        "key": "D",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Copy and delete",
-        "command": "dance.edit.yank-delete"
-      },
-      {
         "key": "C",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Copy, delete and switch to Insert",
@@ -603,6 +543,171 @@
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Copy, delete and switch to Insert",
         "command": "dance.edit.yank-delete-insert"
+      },
+      {
+        "key": "Shift+R",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.insert"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "Alt+D",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.delete"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "D",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.yank-delete"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "Shift+P",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.paste.before"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "P",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.paste.after"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "Shift+.",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.indent"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "Shift+,",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.deindent"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "`",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.case.toLower"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "Alt+`",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.case.toUpper"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "Shift+`",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.case.swap"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
+        "key": "R",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".edit.replaceCharacters"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
       },
       {
         "key": "Shift+U",
@@ -1624,6 +1729,21 @@
         }
       },
       {
+        "key": "Y",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "command": "dance.run",
+        "args": {
+          "commands": [
+            [
+              ".selections.saveText"
+            ],
+            [
+              ".modes.set.normal"
+            ]
+          ]
+        }
+      },
+      {
         "key": "Alt+;",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Change direction of selections",
@@ -1794,12 +1914,6 @@
       {
         "key": "Y",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Copy selections text",
-        "command": "dance.selections.saveText"
-      },
-      {
-        "key": "Y",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Copy selections text",
         "command": "dance.selections.saveText"
       },
@@ -2092,11 +2206,6 @@
       },
       {
         "key": "Q",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/select'"
-      },
-      {
-        "key": "R",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
