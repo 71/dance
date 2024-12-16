@@ -2,9 +2,11 @@ import * as vscode from "vscode";
 
 import { Context } from "./context";
 import { keypress, promptLocked, promptOne } from "./prompt";
+import { CancellationError } from "./errors";
 
 export interface Menu {
   readonly title?: string;
+  readonly menu_type?: 'hotkey' | 'palette'
   readonly items: Menu.Items;
 }
 
@@ -41,6 +43,12 @@ export function validateMenu(menu: Menu) {
     errors.push("menu title must be a string");
   }
 
+  if (menu.menu_type !== undefined && !(menu.menu_type == 'hotkey' || menu.menu_type == 'palette')) {
+    errors.push("menu_type must be 'hotkey' (default) or 'palette'")
+  }
+
+  const is_hotkey = (menu.menu_type ?? 'hotkey') == 'hotkey';
+
   for (const key in menu.items) {
     const item = menu.items[key],
           itemDisplay = JSON.stringify(key);
@@ -65,16 +73,18 @@ export function validateMenu(menu: Menu) {
       continue;
     }
 
-    for (let i = 0; i < key.length; i++) {
-      const keyCode = key.charCodeAt(i),
-            prevKey = seenKeyCodes.get(keyCode);
+    if (is_hotkey) {
+      for (let i = 0; i < key.length; i++) {
+        const keyCode = key.charCodeAt(i),
+              prevKey = seenKeyCodes.get(keyCode);
 
-      if (prevKey) {
-        errors.push(`menu has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`);
-        continue;
+        if (prevKey) {
+          errors.push(`menu has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`);
+          continue;
+        }
+
+        seenKeyCodes.set(keyCode, key);
       }
-
-      seenKeyCodes.set(keyCode, key);
     }
   }
 
@@ -105,7 +115,13 @@ export async function showMenu(
 ) {
   const entries = Object.entries(menu.items);
   const items = entries.map((x) => [x[0], x[1].text] as const);
-  const choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
+
+  let choice: string | number;
+  if ((menu.menu_type ?? 'hotkey') == 'hotkey') {
+    choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
+  } else {
+    choice = await promptPalette(items, {title: menu.title});
+  }
 
   if (typeof choice === "string") {
     if (prefix !== undefined) {
@@ -182,6 +198,31 @@ export async function showMenuAfterDelay(
   } finally {
     cancellationTokenSource.dispose();
   }
+}
+
+function promptPalette(
+  items: readonly (readonly [string, string])[],
+  quickPickOptions: vscode.QuickPickOptions,
+  context = Context.WithoutActiveEditor.current,
+): Thenable<number> {
+
+  const ii = Object.fromEntries(items.map(([label, _desc], i) => ([label, i])))
+
+  return new Promise<number>(async (resolve, reject) => {
+    const result = await vscode.window.showQuickPick(
+      items.map(([label, description]) => ({
+        label: label,
+        description: description,
+      } satisfies vscode.QuickPickItem)),
+      {...quickPickOptions},
+      context.cancellationToken
+    );
+    if (result !== undefined) {
+      resolve(ii[result.label])
+    } else {
+      reject(new CancellationError(CancellationError.Reason.PressedEscape))
+    }
+  });
 }
 
 /**
