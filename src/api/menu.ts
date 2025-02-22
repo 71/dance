@@ -6,7 +6,7 @@ import { CancellationError } from "./errors";
 
 export interface Menu {
   readonly title?: string;
-  readonly menu_type?: 'hotkey' | 'palette'
+  readonly menuType?: 'hotkey' | 'palette'
   readonly items: Menu.Items;
 }
 
@@ -43,11 +43,11 @@ export function validateMenu(menu: Menu) {
     errors.push("menu title must be a string");
   }
 
-  if (menu.menu_type !== undefined && menu.menu_type !== 'hotkey' && menu.menu_type !== 'palette') {
-    errors.push("menu_type must be 'hotkey' (default) or 'palette'")
+  if (menu.menuType !== undefined && menu.menuType !== 'hotkey' && menu.menuType !== 'palette') {
+    errors.push("menuType must be 'hotkey' (default) or 'palette'")
   }
 
-  const is_hotkey = (menu.menu_type ?? 'hotkey') == 'hotkey';
+  const isHotkey = (menu.menuType ?? 'hotkey') === 'hotkey';
 
   for (const key in menu.items) {
     const item = menu.items[key],
@@ -73,7 +73,7 @@ export function validateMenu(menu: Menu) {
       continue;
     }
 
-    if (is_hotkey) {
+    if (isHotkey) {
       for (let i = 0; i < key.length; i++) {
         const keyCode = key.charCodeAt(i),
               prevKey = seenKeyCodes.get(keyCode);
@@ -117,7 +117,7 @@ export async function showMenu(
   const items = entries.map((x) => [x[0], x[1].text] as const);
 
   let choice: string | number;
-  if ((menu.menu_type ?? 'hotkey') == 'hotkey') {
+  if ((menu.menuType ?? 'hotkey') == 'hotkey') {
     choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
   } else {
     choice = await promptPalette(items, {title: menu.title});
@@ -206,19 +206,18 @@ function promptPalette(
   context = Context.WithoutActiveEditor.current,
 ): Thenable<number> {
 
-  const ii = Object.fromEntries(items.map(([label, _desc], i) => ([label, i])))
-
   return new Promise<number>(async (resolve, reject) => {
     const result = await vscode.window.showQuickPick(
-      items.map(([label, description]) => ({
+      items.map(([label, description], i) => ({
         label: label,
         description: description,
-      } satisfies vscode.QuickPickItem)),
+        _i: i
+      } satisfies vscode.QuickPickItem & {_i: number})),
       {...quickPickOptions},
       context.cancellationToken
     );
     if (result !== undefined) {
-      resolve(ii[result.label])
+      resolve(result._i)
     } else {
       reject(new CancellationError(CancellationError.Reason.PressedEscape))
     }
