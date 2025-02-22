@@ -361,7 +361,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               title: {
                 type: "string",
               },
-              menu_type: {
+              menuType: {
                 type: "string",
                 enum: ["hotkey", "palette"],
                 default: "hotkey"

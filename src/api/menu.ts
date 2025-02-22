@@ -43,7 +43,7 @@ export function validateMenu(menu: Menu) {
     errors.push("menu title must be a string");
   }
 
-  if (menu.menu_type !== undefined && !(menu.menu_type == 'hotkey' || menu.menu_type == 'palette')) {
+  if (menu.menu_type !== undefined && menu.menu_type !== 'hotkey' && menu.menu_type !== 'palette') {
     errors.push("menu_type must be 'hotkey' (default) or 'palette'")
   }
 
