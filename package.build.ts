@@ -368,13 +368,13 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 type: "string",
                 enum: [
                   "palette",
-                  "hotkey"
+                  "hotkey",
                 ],
                 markdownEnumDescriptions: [
                   "A `palette` menu is a standard VSCode QuickPick menu, e.g. like the stock VSCode command palette.",
-                  "A `hotkey` menu is used to give a menu and keybinds emulating Kakoune's multi-key commands, e.g. [g]oto → [l]ine-end."
+                  "A `hotkey` menu is used to give a menu and keybinds emulating Kakoune's multi-key commands, e.g. [g]oto → [l]ine-end.",
                 ],
-                default: "hotkey"
+                default: "hotkey",
               },
               items: {
                 type: "object",
