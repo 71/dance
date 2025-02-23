@@ -145,12 +145,12 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
         goto: {
           title: "Goto",
           items: {
-            "g": { text: "to line number else file start", command: "dance.select.lineStart" },
+            "g": { text: "to line number else file start", command: "dance.select.lineStart", "args": [{ "count": 1 }] },
             "e": { text: "to last line", command: "dance.select.lineEnd", args: [{ count: 2 ** 31 - 1 }] },
             "f": { text: "to file/URLs in selections", command: "dance.selections.open" },
             "h": { text: "to line start", command: "dance.select.lineStart" },
             "l": { text: "to line end", command: "dance.select.lineEnd" },
-            "i": { text: "to first non-blank in line", command: "dance.select.lineStart", args: [{ skipBlank: true }] },
+            "s": { text: "to first non-blank in line", command: "dance.select.lineStart", args: [{ skipBlank: true }] },
             "d": { text: "to definition", command: "editor.action.revealDefinition" },
             "r": { text: "to references", command: "editor.action.goToReferences" },
             "j": { text: "to last line", command: "dance.select.lastLine" },

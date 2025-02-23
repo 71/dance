@@ -321,7 +321,12 @@
           "items": {
             "g": {
               "text": "to line number else file start",
-              "command": "dance.select.lineStart"
+              "command": "dance.select.lineStart",
+              "args": [
+                {
+                  "count": 1
+                }
+              ]
             },
             "e": {
               "text": "to last line",
@@ -344,7 +349,7 @@
               "text": "to line end",
               "command": "dance.select.lineEnd"
             },
-            "i": {
+            "s": {
               "text": "to first non-blank in line",
               "command": "dance.select.lineStart",
               "args": [
