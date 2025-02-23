@@ -365,17 +365,15 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                 type: "string",
               },
               menuType: {
-                anyOf: [
-                  {
-                    const: "palette",
-                    description: "A `palette` menu is a standard VSCode QuickPick menu, e.g. like the stock VSCode command palette."
-                  },
-                  {
-                    const: "hotkey",
-                    description: "A `hotkey` menu is used to give a menu and keybinds emulating Helix's multi-key Static Commands, e.g. [g]oto → [e]nd."
-                  }
+                type: "string",
+                enum: [
+                  "palette",
+                  "hotkey"
                 ],
-                description: 'meny type test',
+                markdownEnumDescriptions: [
+                  "A `palette` menu is a standard VSCode QuickPick menu, e.g. like the stock VSCode command palette.",
+                  "A `hotkey` menu is used to give a menu and keybinds emulating Kakoune's multi-key commands, e.g. [g]oto → [l]ine-end."
+                ],
                 default: "hotkey"
               },
               items: {
