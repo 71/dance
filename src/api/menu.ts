@@ -6,6 +6,12 @@ import { CancellationError } from "./errors";
 
 export interface Menu {
   readonly title?: string;
+  /**
+    * `hotkey` menus are built into a tree of hotkey characters, to
+    * implement kakoune's multi-key commands/menus, like [g]oto → [l]ine-end.
+    *
+    * `palette` menus are just stock-standard VSCode QuickPicks.
+    */
   readonly menuType?: 'hotkey' | 'palette'
   readonly items: Menu.Items;
 }
@@ -117,7 +123,7 @@ export async function showMenu(
   const items = entries.map((x) => [x[0], x[1].text] as const);
 
   let choice: string | number;
-  if ((menu.menuType ?? 'hotkey') == 'hotkey') {
+  if ((menu.menuType ?? 'hotkey') === 'hotkey') {
     choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
   } else {
     choice = await promptPalette(items, {title: menu.title});
