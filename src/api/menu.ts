@@ -12,7 +12,7 @@ export interface Menu {
     *
     * `palette` menus are just stock-standard VSCode QuickPicks.
     */
-  readonly menuType?: 'hotkey' | 'palette'
+  readonly menuType?: "hotkey" | "palette"
   readonly items: Menu.Items;
 }
 
@@ -49,11 +49,11 @@ export function validateMenu(menu: Menu) {
     errors.push("menu title must be a string");
   }
 
-  if (menu.menuType !== undefined && menu.menuType !== 'hotkey' && menu.menuType !== 'palette') {
-    errors.push("menuType must be 'hotkey' (default) or 'palette'")
+  if (menu.menuType !== undefined && menu.menuType !== "hotkey" && menu.menuType !== "palette") {
+    errors.push("menuType must be 'hotkey' (default) or 'palette'");
   }
 
-  const isHotkey = (menu.menuType ?? 'hotkey') === 'hotkey';
+  const isHotkey = (menu.menuType ?? "hotkey") === "hotkey";
 
   for (const key in menu.items) {
     const item = menu.items[key],
@@ -123,10 +123,10 @@ export async function showMenu(
   const items = entries.map((x) => [x[0], x[1].text] as const);
 
   let choice: string | number;
-  if ((menu.menuType ?? 'hotkey') === 'hotkey') {
+  if ((menu.menuType ?? "hotkey") === "hotkey") {
     choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
   } else {
-    choice = await promptPalette(items, {title: menu.title});
+    choice = await promptPalette(items, { title: menu.title });
   }
 
   if (typeof choice === "string") {
@@ -207,28 +207,25 @@ export async function showMenuAfterDelay(
   }
 }
 
-function promptPalette(
+async function promptPalette(
   items: readonly (readonly [string, string])[],
   quickPickOptions: vscode.QuickPickOptions,
   context = Context.WithoutActiveEditor.current,
-): Thenable<number> {
-
-  return new Promise<number>(async (resolve, reject) => {
-    const result = await vscode.window.showQuickPick(
-      items.map(([label, description], i) => ({
-        label: label,
-        description: description,
-        _i: i
+): Promise<number> {
+  const result = await vscode.window.showQuickPick(
+    items.map(([label, description], i) => ({
+        label,
+        description,
+        _i: i,
       } satisfies vscode.QuickPickItem & {_i: number})),
-      {...quickPickOptions},
-      context.cancellationToken
-    );
-    if (result !== undefined) {
-      resolve(result._i)
-    } else {
-      reject(new CancellationError(CancellationError.Reason.PressedEscape))
-    }
-  });
+      { ...quickPickOptions },
+    context.cancellationToken,
+  );
+
+  if (result === undefined) {
+    throw new CancellationError(CancellationError.Reason.PressedEscape);
+  }
+  return result._i;
 }
 
 /**
