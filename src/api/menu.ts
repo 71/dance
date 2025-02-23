@@ -187,7 +187,7 @@ export async function showMenuAfterDelay(
       const pickedItem = menu.items[itemKeys],
             args = mergeArgs(pickedItem.args, additionalArgs);
 
-      return Context.WithoutActiveEditor.wrap(
+      await Context.WithoutActiveEditor.wrap(
         vscode.commands.executeCommand(pickedItem.command, ...args),
       );
     }
@@ -197,7 +197,8 @@ export async function showMenuAfterDelay(
     }
   } catch (e) {
     if (!currentContext.cancellationToken.isCancellationRequested) {
-      return showMenu(menu, additionalArgs, prefix);
+      await showMenu(menu, additionalArgs, prefix);
+      return;
     }
 
     throw e;
