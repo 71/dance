@@ -208,6 +208,20 @@
                   "Selections are anchored to characters, like Kakoune; that is, they are positioned *on* characters, and therefore cannot be empty. Additionally, one-character selections will behave as if they were non-directional, like Kakoune."
                 ]
               },
+              "activeModeDisplayTextTransform": {
+                "enum": [
+                  "as-is",
+                  "uppercase",
+                  "lowercase"
+                ],
+                "default": "as-is",
+                "description": "Controls how the active mode is formatted in the status bar.",
+                "enumDescriptions": [
+                  "Display the name with its original formatting.",
+                  "Convert the name to uppercase.",
+                  "Convert the name to lowercase."
+                ]
+              },
               "decorations": {
                 "type": [
                   "array",
