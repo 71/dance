@@ -77,8 +77,9 @@ const selectionDecorationType = {
 // Package information
 // ============================================================================
 
-const version = "0.5.15",
-      preRelease = 1;
+export const version = "0.5.15",
+             preRelease = 1,
+             preReleaseVersion = `${version}-pre${preRelease}`;
 
 export const pkg = (modules: Builder.ParsedModule[]) => ({
 
@@ -127,8 +128,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "vscode:prepublish": "yarn run generate && yarn run compile && yarn run compile-web",
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
-    "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
-    "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
+    "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
+    "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
 
     "package-helix:pre": `cd extensions/helix && yarn run package:pre`,
     "publish-helix:pre": `cd extensions/helix && yarn run publish:pre`,

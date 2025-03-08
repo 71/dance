@@ -2,12 +2,9 @@
 // ============================================================================
 
 import { Builder, generateIgnoredKeybinds } from "../../meta";
+import { version, preReleaseVersion } from "../../package.build";
 import * as fs from "fs/promises";
 import { extensionId } from "../../src/utils/constants";
-
-const version = "0.1.0",
-      preRelease = 1,
-      preReleaseVersion = `${version}-pre${preRelease}`;
 
 export const pkg = (modules: Builder.ParsedModule[]) => ({
 
