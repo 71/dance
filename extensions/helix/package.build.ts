@@ -50,8 +50,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   scripts: {
     "package": "vsce package --allow-star-activation --follow-symlinks",
     "publish": "vsce publish --allow-star-activation --follow-symlinks",
-    "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json --follow-symlinks ${preReleaseVersion}`,
-    "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json --follow-symlinks ${preReleaseVersion}`,
+    "package:pre": `vsce package --allow-star-activation --follow-symlinks --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
+    "publish:pre": `vsce publish --allow-star-activation --follow-symlinks --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
   },
 
   contributes: {
