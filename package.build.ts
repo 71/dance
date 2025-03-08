@@ -131,8 +131,10 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
     "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
 
-    "package-helix:pre": `cd extensions/helix && yarn run package:pre`,
-    "publish-helix:pre": `cd extensions/helix && yarn run publish:pre`,
+    "package-helix": "cd extensions/helix && vsce package --allow-star-activation --follow-symlinks",
+    "publish-helix": "cd extensions/helix && vsce publish --allow-star-activation --follow-symlinks",
+    "package-helix:pre": `cd extensions/helix && vsce package --allow-star-activation --follow-symlinks --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
+    "publish-helix:pre": `cd extensions/helix && vsce publish --allow-star-activation --follow-symlinks --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
   },
 
   devDependencies: {
