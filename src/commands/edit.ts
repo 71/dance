@@ -516,7 +516,8 @@ async function insertLinesNativelyAndCopySelections(
   Selections.updateByIndex(prepareSelectionForLineInsertion);
 
   if (repetitions === 1) {
-    return vscode.commands.executeCommand(command);
+    await vscode.commands.executeCommand(command);
+    return;
   }
 
   const isLastCharacterAt = [] as boolean[];
