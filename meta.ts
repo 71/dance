@@ -114,7 +114,9 @@ function parseAdditional(qualificationPrefix: string, text: string, textStartLin
           const key = keys[j],
                 value = valueConverter[key](values[j].trim());
 
-          (obj as Record<string, any>)[key] = value;
+          if (value.length !== 0) {
+            (obj as Record<string, any>)[key] = value;
+          }
         }
 
         if ("identifier" in obj) {
@@ -460,6 +462,15 @@ export declare namespace Builder {
     line: number;
   }
 
+  export interface Keybinding {
+      readonly title?: string;
+      readonly key: string;
+      readonly when: string;
+      readonly command: string;
+      readonly category?: string;
+      readonly args?: any;
+  }
+
   export interface ParsedModule {
     readonly path: string;
     readonly name: string;
@@ -476,13 +487,7 @@ export declare namespace Builder {
       readonly enablement?: string;
     }[];
 
-    readonly keybindings: {
-      readonly title?: string;
-      readonly key: string;
-      readonly when: string;
-      readonly command: string;
-      readonly args?: any;
-    }[];
+    readonly keybindings: Keybinding[];
   }
 }
 
@@ -494,74 +499,76 @@ export function parseKeys(keys: string) {
   if (keys.length === 0) {
     return [];
   }
-
-  return keys.replace(/\n/g, ", ").split(/ *, (?=`)/g).map((keyString) => {
+  return keys.replace(/\n/g, ", ").split(/ *, (?=`)/g).flatMap((keyString) => {
     const [,, rawKeybinding, rawMetadata] = /^(`+)(.+?)\1 \((.+?)\)$/.exec(keyString)!,
-          keybinding = rawKeybinding.trim().replace(
-            specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m]),
-          [, category, tags] = /(\w+): (.+)/.exec(rawMetadata)!;
+          keybinding = rawKeybinding
+            .trim().replace(
+              specialCharacterRegExp, (m) => (specialCharacterMapping as Record<string, string>)[m],
+            );
+    return rawMetadata.split(";").map((metadata) => {
+      const [, category, tags] = /(\w+): (.+)/.exec(metadata)!;
 
-    // Reorder to match Ctrl+Shift+Alt+_
-    let key = "";
+      // Reorder to match Ctrl+Shift+Alt+_
+      let key = "";
 
-    if (keybinding.includes("c-")) {
-      key += "Ctrl+";
-    }
-
-    if (keybinding.includes("s-")) {
-      key += "Shift+";
-    }
-
-    if (keybinding.includes("a-")) {
-      key += "Alt+";
-    }
-
-    const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
-          whenClauses = ["editorTextFocus"];
-
-    for (let tag of tags.split(", ")) {
-      const negate = tag.startsWith("!");
-      if (negate) {
-        tag = tag.slice(1);
+      if (keybinding.includes("c-")) {
+        key += "Ctrl+";
       }
-      switch (tag) {
-      case "normal":
-      case "insert":
-      case "input":
-      case "select":
-        whenClauses.push(`dance.mode ${negate ? "!=" : "=="} '${tag}'`);
-        break;
 
-      case "recording":
-        whenClauses.push(`${negate ? "!" : ""}dance.isRecording`);
-        break;
+      if (keybinding.includes("s-")) {
+        key += "Shift+";
+      }
 
-      case "prompt":
-        assert(!negate);
-        whenClauses.splice(whenClauses.indexOf("editorTextFocus"), 1);
-        whenClauses.push("inputFocus && dance.inPrompt");
-        break;
+      if (keybinding.includes("a-")) {
+        key += "Alt+";
+      }
 
-      default: {
-        const match = /^"(!?\w+)"$/.exec(tag);
-
-        if (match === null) {
-          throw new Error("unknown keybinding tag " + tag);
+      const remainingKeybinding = keybinding.replace(/[csa]-/g, ""),
+            whenClauses = ["editorTextFocus"];
+      for (let tag of tags.split(", ")) {
+        const negate = tag.startsWith("!");
+        if (negate) {
+          tag = tag.slice(1);
         }
+        switch (tag) {
+        case "normal":
+        case "insert":
+        case "input":
+        case "select":
+          whenClauses.push(`dance.mode ${negate ? "!=" : "=="} '${tag}'`);
+          break;
 
-        whenClauses.push((negate ? "!" : "") + match[1]);
-        break;
+        case "recording":
+          whenClauses.push(`${negate ? "!" : ""}dance.isRecording`);
+          break;
+
+        case "prompt":
+          assert(!negate);
+          whenClauses.splice(whenClauses.indexOf("editorTextFocus"), 1);
+          whenClauses.push("inputFocus && dance.inPrompt");
+          break;
+
+        default: {
+          const match = /^"(!?\w+)"$/.exec(tag);
+
+          if (match === null) {
+            throw new Error("unknown keybinding tag " + tag);
+          }
+
+          whenClauses.push((negate ? "!" : "") + match[1]);
+          break;
+        }
+        }
       }
-      }
-    }
 
-    key += remainingKeybinding[0].toUpperCase() + remainingKeybinding.slice(1);
+      key += remainingKeybinding[0].toUpperCase() + remainingKeybinding.slice(1);
 
-    return {
-      category,
-      key,
-      when: whenClauses.join(" && "),
-    };
+      return {
+        category,
+        key,
+        when: whenClauses.join(" && "),
+      };
+    });
   });
 }
 
@@ -600,11 +607,10 @@ function getCommands(module: Omit<Builder.ParsedModule, "commands">) {
 /**
  * Returns all defined keybindings in the given module.
  */
-function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
+function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">): Builder.Keybinding[] {
   return [
     ...module.functions.flatMap((f) => parseKeys(f.properties["keys"] ?? "").map((key) => ({
-      key: key.key,
-      when: key.when,
+      ...key,
       title: f.summary,
       command: `dance.${f.qualifiedName}`,
     }))),
@@ -616,8 +622,7 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
 
         if (qualifiedIdentifier !== undefined) {
           return parsedKeys.map((key) => ({
-            key: key.key,
-            when: key.when,
+            ...key,
             title,
             command: `dance.${qualifiedIdentifier}`,
           }));
@@ -634,8 +639,7 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
           }
 
           return parsedKeys.map((key) => ({
-            key: key.key,
-            when: key.when,
+            ...key,
             title,
             command,
             args: parsedCommands[0][1],
@@ -643,8 +647,7 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
         }
 
         return parsedKeys.map((key) => ({
-          key: key.key,
-          when: key.when,
+          ...key,
           title,
           command: "dance.run",
           args: {
@@ -653,6 +656,41 @@ function getKeybindings(module: Omit<Builder.ParsedModule, "keybindings">) {
         }));
       }),
   ].sort((a, b) => a.command.localeCompare(b.command));
+}
+
+/**
+ * Takes a list of keybindings and generates `dance.ignore` keybindings for
+ * common keys that are unused. This is used for modes where we don't want the
+ * user to be able to type
+ */
+export function generateIgnoredKeybinds(
+  currentKeybindings: readonly Builder.Keybinding[],
+  when: string,
+): Builder.Keybinding[] {
+  const alphanum = [..."ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"],
+        symbols = [...",'-=", "Tab", "Space", "NumPad_Add", "NumPad_Subtract"],
+        keysToAssign = new Set([
+          ...alphanum,
+          ...alphanum.map((x) => `Shift+${x}`),
+          ...symbols,
+          ...symbols.map((x) => `Shift+${x}`),
+        ]),
+        ignoredKeybindings: Builder.Keybinding[] = [];
+
+  const unassignedKeys = new Set(keysToAssign);
+  for (const keybinding of currentKeybindings) {
+    unassignedKeys.delete(keybinding.key);
+  }
+
+  for (const unassignedKey of unassignedKeys) {
+    ignoredKeybindings.push({
+      key: unassignedKey,
+      command: "dance.ignore",
+      when,
+    });
+  }
+
+  return ignoredKeybindings;
 }
 
 /**

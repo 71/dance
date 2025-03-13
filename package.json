@@ -33,7 +33,9 @@
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
     "package:pre": "vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.15001",
-    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.15001"
+    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.5.15001",
+    "package-helix:pre": "cd extensions/helix && yarn run package:pre",
+    "publish-helix:pre": "cd extensions/helix && yarn run publish:pre"
   },
   "devDependencies": {
     "@types/glob": "^7.2.0",
@@ -93,7 +95,7 @@
           "scope": "language-overridable",
           "default": "normal",
           "description": "Controls which mode is set by default when an editor is opened.",
-          "pattern": "^[a-zA-Z]\\w*$",
+          "pattern": "^[a-zA-Z]\\w*(\\/\\w+)?$",
           "patternErrorMessage": ""
         },
         "dance.modes": {
@@ -102,7 +104,7 @@
           "additionalProperties": {
             "type": "object",
             "propertyNames": {
-              "pattern": "^[a-zA-Z]\\w*$",
+              "pattern": "^[a-zA-Z]\\w*(\\/\\w+)?$",
               "patternErrorMessage": ""
             },
             "properties": {
@@ -112,7 +114,7 @@
                   "null"
                 ],
                 "description": "Controls how default configuration options are obtained for this mode. Specify a string to inherit from the mode with the given name, and null to inherit from the VS Code configuration.",
-                "pattern": "^[a-zA-Z]\\w*$",
+                "pattern": "^[a-zA-Z]\\w*(\\/\\w+)?$",
                 "patternErrorMessage": ""
               },
               "cursorStyle": {
@@ -2932,20 +2934,8 @@
         "command": "dance.edit.yank-delete"
       },
       {
-        "key": "D",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Copy and delete",
-        "command": "dance.edit.yank-delete"
-      },
-      {
         "key": "C",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Copy, delete and switch to Insert",
-        "command": "dance.edit.yank-delete-insert"
-      },
-      {
-        "key": "C",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Copy, delete and switch to Insert",
         "command": "dance.edit.yank-delete-insert"
       },
@@ -2986,12 +2976,6 @@
         "command": "dance.history.redo"
       },
       {
-        "key": "Shift+U",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Redo",
-        "command": "dance.history.redo"
-      },
-      {
         "key": "Shift+Alt+U",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Redo a change of selections",
@@ -3018,12 +3002,6 @@
       {
         "key": "U",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Undo",
-        "command": "dance.history.undo"
-      },
-      {
-        "key": "U",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Undo",
         "command": "dance.history.undo"
       },
@@ -3286,12 +3264,6 @@
         "command": "dance.modes.set.normal"
       },
       {
-        "key": "Escape",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Set mode to Normal",
-        "command": "dance.modes.set.normal"
-      },
-      {
         "key": "Ctrl+V",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Temporary Insert mode",
@@ -3496,20 +3468,8 @@
         "command": "dance.seek.extend"
       },
       {
-        "key": "T",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend to character (excluded)",
-        "command": "dance.seek.extend"
-      },
-      {
         "key": "Shift+Alt+T",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to character (excluded, backward)",
-        "command": "dance.seek.extend.backward"
-      },
-      {
-        "key": "Shift+T",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend to character (excluded, backward)",
         "command": "dance.seek.extend.backward"
       },
@@ -3532,20 +3492,8 @@
         "command": "dance.seek.included.extend"
       },
       {
-        "key": "F",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend to character (included)",
-        "command": "dance.seek.included.extend"
-      },
-      {
         "key": "Shift+Alt+F",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to character (included, backward)",
-        "command": "dance.seek.included.extend.backward"
-      },
-      {
-        "key": "Shift+F",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend to character (included, backward)",
         "command": "dance.seek.included.extend.backward"
       },
@@ -3568,20 +3516,8 @@
         "command": "dance.seek.word.extend"
       },
       {
-        "key": "W",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend to next word start",
-        "command": "dance.seek.word.extend"
-      },
-      {
         "key": "Shift+B",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to previous word start",
-        "command": "dance.seek.word.extend.backward"
-      },
-      {
-        "key": "B",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend to previous word start",
         "command": "dance.seek.word.extend.backward"
       },
@@ -3604,20 +3540,8 @@
         "command": "dance.seek.word.ws.extend"
       },
       {
-        "key": "Shift+W",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend to next non-whitespace word start",
-        "command": "dance.seek.word.ws.extend"
-      },
-      {
         "key": "Shift+Alt+B",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to previous non-whitespace word start",
-        "command": "dance.seek.word.ws.extend.backward"
-      },
-      {
-        "key": "Shift+B",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend to previous non-whitespace word start",
         "command": "dance.seek.word.ws.extend.backward"
       },
@@ -3634,12 +3558,6 @@
         "command": "dance.seek.wordEnd.extend"
       },
       {
-        "key": "E",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend to next word end",
-        "command": "dance.seek.wordEnd.extend"
-      },
-      {
         "key": "Alt+E",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Select to next non-whitespace word end",
@@ -3648,12 +3566,6 @@
       {
         "key": "Shift+Alt+E",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend to next non-whitespace word end",
-        "command": "dance.seek.wordEnd.ws.extend"
-      },
-      {
-        "key": "Shift+E",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend to next non-whitespace word end",
         "command": "dance.seek.wordEnd.ws.extend"
       },
@@ -3672,18 +3584,6 @@
       {
         "key": "Shift+Down",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend down",
-        "command": "dance.select.down.extend"
-      },
-      {
-        "key": "J",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend down",
-        "command": "dance.select.down.extend"
-      },
-      {
-        "key": "Down",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend down",
         "command": "dance.select.down.extend"
       },
@@ -3708,18 +3608,6 @@
       {
         "key": "Shift+Left",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend left",
-        "command": "dance.select.left.extend"
-      },
-      {
-        "key": "H",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend left",
-        "command": "dance.select.left.extend"
-      },
-      {
-        "key": "Left",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend left",
         "command": "dance.select.left.extend"
       },
@@ -3797,18 +3685,6 @@
       },
       {
         "key": "L",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend right",
-        "command": "dance.select.right.extend"
-      },
-      {
-        "key": "Right",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend right",
-        "command": "dance.select.right.extend"
-      },
-      {
-        "key": "L",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Jump right",
         "command": "dance.select.right.jump"
@@ -3827,12 +3703,6 @@
       },
       {
         "key": "G",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend to",
-        "command": "dance.select.to.extend"
-      },
-      {
-        "key": "G",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Go to",
         "command": "dance.select.to.jump"
@@ -3846,18 +3716,6 @@
       {
         "key": "Shift+Up",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Extend up",
-        "command": "dance.select.up.extend"
-      },
-      {
-        "key": "K",
-        "when": "editorTextFocus && dance.mode == 'select'",
-        "title": "Extend up",
-        "command": "dance.select.up.extend"
-      },
-      {
-        "key": "Up",
-        "when": "editorTextFocus && dance.mode == 'select'",
         "title": "Extend up",
         "command": "dance.select.up.extend"
       },
@@ -4170,439 +4028,94 @@
         }
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+D",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+X",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+Y",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+2",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+3",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+6",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "'",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "-",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "=",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Tab",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Space",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "NumPad_Add",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "NumPad_Subtract",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+=",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+Tab",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+Space",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+NumPad_Add",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
-        "command": "dance.ignore",
         "key": "Shift+NumPad_Subtract",
+        "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'normal'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "A",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "I",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "M",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "N",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "O",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "P",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Q",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "R",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "S",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "V",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "X",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Y",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Z",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "0",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "1",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "2",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "3",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "4",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "5",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "6",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "7",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "8",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "9",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+A",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+C",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+D",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+G",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+H",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+I",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+J",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+K",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+L",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+M",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+N",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+O",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+P",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+Q",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+R",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+S",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+V",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+X",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+Y",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+Z",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+0",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+1",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+2",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+3",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+4",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+5",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+6",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+7",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+8",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+9",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": ",",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "'",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "-",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "=",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Tab",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Space",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "NumPad_Add",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "NumPad_Subtract",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+,",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+'",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+-",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+=",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+Tab",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+Space",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+NumPad_Add",
-        "when": "editorTextFocus && dance.mode == 'select'"
-      },
-      {
-        "command": "dance.ignore",
-        "key": "Shift+NumPad_Subtract",
-        "when": "editorTextFocus && dance.mode == 'select'"
       }
     ]
   }

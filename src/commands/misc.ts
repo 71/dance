@@ -190,7 +190,7 @@ export async function run(
  * press is awaited again and the returned register will be specific to the
  * current document.
  *
- * @keys `"` (kakoune: normal)
+ * @keys `"` (core: normal)
  * @noreplay
  */
 export async function selectRegister(
@@ -256,18 +256,18 @@ export async function updateRegister(
  *
  * #### Additional keybindings
  *
- * | Title                          | Keybinding                                   | Command                              |
- * | ------------------------------ | -------------------------------------------- | ------------------------------------ |
- * | Add the digit 0 to the counter | `0` (core: normal), `NumPad0` (core: normal) | `[".updateCount", { addDigits: 0 }]` |
- * | Add the digit 1 to the counter | `1` (core: normal), `NumPad1` (core: normal) | `[".updateCount", { addDigits: 1 }]` |
- * | Add the digit 2 to the counter | `2` (core: normal), `NumPad2` (core: normal) | `[".updateCount", { addDigits: 2 }]` |
- * | Add the digit 3 to the counter | `3` (core: normal), `NumPad3` (core: normal) | `[".updateCount", { addDigits: 3 }]` |
- * | Add the digit 4 to the counter | `4` (core: normal), `NumPad4` (core: normal) | `[".updateCount", { addDigits: 4 }]` |
- * | Add the digit 5 to the counter | `5` (core: normal), `NumPad5` (core: normal) | `[".updateCount", { addDigits: 5 }]` |
- * | Add the digit 6 to the counter | `6` (core: normal), `NumPad6` (core: normal) | `[".updateCount", { addDigits: 6 }]` |
- * | Add the digit 7 to the counter | `7` (core: normal), `NumPad7` (core: normal) | `[".updateCount", { addDigits: 7 }]` |
- * | Add the digit 8 to the counter | `8` (core: normal), `NumPad8` (core: normal) | `[".updateCount", { addDigits: 8 }]` |
- * | Add the digit 9 to the counter | `9` (core: normal), `NumPad9` (core: normal) | `[".updateCount", { addDigits: 9 }]` |
+ * | Title                          | Keybinding                                                                 | Command                              |
+ * | ------------------------------ | -------------------------------------------------------------------------- | ------------------------------------ |
+ * | Add the digit 0 to the counter | `0` (core: normal; helix: select), `NumPad0` (core: normal; helix: select) | `[".updateCount", { addDigits: 0 }]` |
+ * | Add the digit 1 to the counter | `1` (core: normal; helix: select), `NumPad1` (core: normal; helix: select) | `[".updateCount", { addDigits: 1 }]` |
+ * | Add the digit 2 to the counter | `2` (core: normal; helix: select), `NumPad2` (core: normal; helix: select) | `[".updateCount", { addDigits: 2 }]` |
+ * | Add the digit 3 to the counter | `3` (core: normal; helix: select), `NumPad3` (core: normal; helix: select) | `[".updateCount", { addDigits: 3 }]` |
+ * | Add the digit 4 to the counter | `4` (core: normal; helix: select), `NumPad4` (core: normal; helix: select) | `[".updateCount", { addDigits: 4 }]` |
+ * | Add the digit 5 to the counter | `5` (core: normal; helix: select), `NumPad5` (core: normal; helix: select) | `[".updateCount", { addDigits: 5 }]` |
+ * | Add the digit 6 to the counter | `6` (core: normal; helix: select), `NumPad6` (core: normal; helix: select) | `[".updateCount", { addDigits: 6 }]` |
+ * | Add the digit 7 to the counter | `7` (core: normal; helix: select), `NumPad7` (core: normal; helix: select) | `[".updateCount", { addDigits: 7 }]` |
+ * | Add the digit 8 to the counter | `8` (core: normal; helix: select), `NumPad8` (core: normal; helix: select) | `[".updateCount", { addDigits: 8 }]` |
+ * | Add the digit 9 to the counter | `9` (core: normal; helix: select), `NumPad9` (core: normal; helix: select) | `[".updateCount", { addDigits: 9 }]` |
  *
  * @noreplay
  */
