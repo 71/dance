@@ -184,12 +184,15 @@ export async function showMenuAfterDelay(
         continue;
       }
 
+      // found a match, run it and finish the loop
       const pickedItem = menu.items[itemKeys],
             args = mergeArgs(pickedItem.args, additionalArgs);
 
       await Context.WithoutActiveEditor.wrap(
         vscode.commands.executeCommand(pickedItem.command, ...args),
       );
+
+      return;
     }
 
     if (prefix !== undefined) {
