@@ -364,7 +364,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               title: {
                 type: "string",
               },
-              menuType: {
+              type: {
                 type: "string",
                 enum: [
                   "palette",

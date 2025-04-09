@@ -12,7 +12,7 @@ export interface Menu {
     *
     * `palette` menus are just stock-standard VSCode QuickPicks.
     */
-  readonly menuType?: "hotkey" | "palette"
+  readonly type?: "hotkey" | "palette"
   readonly items: Menu.Items;
 }
 
@@ -49,11 +49,11 @@ export function validateMenu(menu: Menu) {
     errors.push("menu title must be a string");
   }
 
-  if (menu.menuType !== undefined && menu.menuType !== "hotkey" && menu.menuType !== "palette") {
-    errors.push("menuType must be 'hotkey' (default) or 'palette'");
+  if (menu.type !== undefined && menu.type !== "hotkey" && menu.type !== "palette") {
+    errors.push("menu.type must be 'hotkey' (default) or 'palette'");
   }
 
-  const isHotkey = (menu.menuType ?? "hotkey") === "hotkey";
+  const isHotkey = (menu.type ?? "hotkey") === "hotkey";
 
   for (const key in menu.items) {
     const item = menu.items[key],
@@ -123,7 +123,7 @@ export async function showMenu(
   const items = entries.map((x) => [x[0], x[1].text] as const);
 
   let choice: string | number;
-  if ((menu.menuType ?? "hotkey") === "hotkey") {
+  if ((menu.type ?? "hotkey") === "hotkey") {
     choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
   } else {
     choice = await promptPalette(items, { title: menu.title });
