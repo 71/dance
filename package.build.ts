@@ -386,7 +386,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                       description: "Text shown in the menu.",
                     },
                     command: {
-                      type: "string",
+                      $ref: "vscode://schemas/keybindings#/definitions/commandNames",
                       description: "Command to execute on item selection.",
                     },
                     args: {
