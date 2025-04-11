@@ -2,9 +2,17 @@ import * as vscode from "vscode";
 
 import { Context } from "./context";
 import { keypress, promptLocked, promptOne } from "./prompt";
+import { CancellationError } from "./errors";
 
 export interface Menu {
   readonly title?: string;
+  /**
+    * `hotkey` menus are built into a tree of hotkey characters, to
+    * implement kakoune's multi-key commands/menus, like [g]oto → [l]ine-end.
+    *
+    * `palette` menus are just stock-standard VSCode QuickPicks.
+    */
+  readonly type?: "hotkey" | "palette"
   readonly items: Menu.Items;
 }
 
@@ -41,6 +49,12 @@ export function validateMenu(menu: Menu) {
     errors.push("menu title must be a string");
   }
 
+  if (menu.type !== undefined && menu.type !== "hotkey" && menu.type !== "palette") {
+    errors.push("menu.type must be 'hotkey' (default) or 'palette'");
+  }
+
+  const isHotkey = (menu.type ?? "hotkey") === "hotkey";
+
   for (const key in menu.items) {
     const item = menu.items[key],
           itemDisplay = JSON.stringify(key);
@@ -65,16 +79,18 @@ export function validateMenu(menu: Menu) {
       continue;
     }
 
-    for (let i = 0; i < key.length; i++) {
-      const keyCode = key.charCodeAt(i),
-            prevKey = seenKeyCodes.get(keyCode);
+    if (isHotkey) {
+      for (let i = 0; i < key.length; i++) {
+        const keyCode = key.charCodeAt(i),
+              prevKey = seenKeyCodes.get(keyCode);
 
-      if (prevKey) {
-        errors.push(`menu has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`);
-        continue;
+        if (prevKey) {
+          errors.push(`menu has duplicate key '${key[i]}' (specified by '${prevKey}' and '${key}').`);
+          continue;
+        }
+
+        seenKeyCodes.set(keyCode, key);
       }
-
-      seenKeyCodes.set(keyCode, key);
     }
   }
 
@@ -105,7 +121,13 @@ export async function showMenu(
 ) {
   const entries = Object.entries(menu.items);
   const items = entries.map((x) => [x[0], x[1].text] as const);
-  const choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
+
+  let choice: string | number;
+  if ((menu.type ?? "hotkey") === "hotkey") {
+    choice = await promptOne(items, (quickPick) => quickPick.title = menu.title);
+  } else {
+    choice = await promptPalette(items, { title: menu.title });
+  }
 
   if (typeof choice === "string") {
     if (prefix !== undefined) {
@@ -162,12 +184,15 @@ export async function showMenuAfterDelay(
         continue;
       }
 
+      // found a match, run it and finish the loop
       const pickedItem = menu.items[itemKeys],
             args = mergeArgs(pickedItem.args, additionalArgs);
 
-      return Context.WithoutActiveEditor.wrap(
+      await Context.WithoutActiveEditor.wrap(
         vscode.commands.executeCommand(pickedItem.command, ...args),
       );
+
+      return;
     }
 
     if (prefix !== undefined) {
@@ -175,13 +200,35 @@ export async function showMenuAfterDelay(
     }
   } catch (e) {
     if (!currentContext.cancellationToken.isCancellationRequested) {
-      return showMenu(menu, additionalArgs, prefix);
+      await showMenu(menu, additionalArgs, prefix);
+      return;
     }
 
     throw e;
   } finally {
     cancellationTokenSource.dispose();
   }
+}
+
+async function promptPalette(
+  items: readonly (readonly [string, string])[],
+  quickPickOptions: vscode.QuickPickOptions,
+  context = Context.WithoutActiveEditor.current,
+): Promise<number> {
+  const result = await vscode.window.showQuickPick(
+    items.map(([label, description], i) => ({
+        label,
+        description,
+        _i: i,
+      } satisfies vscode.QuickPickItem & {_i: number})),
+      { ...quickPickOptions },
+    context.cancellationToken,
+  );
+
+  if (result === undefined) {
+    throw new CancellationError(CancellationError.Reason.PressedEscape);
+  }
+  return result._i;
 }
 
 /**
