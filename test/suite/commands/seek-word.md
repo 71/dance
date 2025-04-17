@@ -336,3 +336,13 @@ a b c d
 a b c d
 |^^ 0
 ```
+
+## 6 two-words-extend-backward
+[up](#6)
+
+- .seek.word.extend.backward
+
+```
+aaa bbb ccc ddd
+        ^^^^  0
+```

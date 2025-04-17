@@ -549,5 +549,24 @@ suite("./test/suite/commands/seek-word.md", function () {
     `);
   });
 
+  test("6 > two-words-extend-backward", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      aaa bbb ccc ddd
+              ^^^^^^^ 0
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "character" });
+    await executeCommand("dance.seek.word.extend.backward");
+    await executeCommand("dance.dev.setSelectionBehavior", { mode: "normal", value: "caret" });
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/seek-word.md:340:1", 6, String.raw`
+      aaa bbb ccc ddd
+              ^^^^  0
+    `);
+  });
+
   groupTestsByParentName(this);
 });
