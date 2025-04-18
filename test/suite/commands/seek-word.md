@@ -337,8 +337,17 @@ a b c d
 |^^ 0
 ```
 
-## 6 two-words-extend-backward
-[up](#6)
+# 7
+
+> behavior <- character
+
+```
+aaa bbb ccc ddd
+        ^^^^^^^ 0
+```
+
+## 7 two-words-extend-backward
+[up](#7)
 
 - .seek.word.extend.backward
 
