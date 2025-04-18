@@ -238,9 +238,9 @@ export function word(
           let newselection = new vscode.Selection(oldanchor, selection.active);
           if (newselection.isReversed !== wasreversed) {
             // The selection changed direction, we need to shift the anchor
-            newselection = new vscode.Selection(newanchor, selection.active)
+            newselection = new vscode.Selection(newanchor, selection.active);
           }
-          return newselection
+          return newselection;
         }
 
         return [selection];
@@ -254,9 +254,9 @@ export function word(
       let newselection = new vscode.Selection(oldanchor, selection.active);
       if (newselection.isReversed !== wasreversed) {
         // The selection changed direction, we need to shift the anchor
-        newselection = new vscode.Selection(newanchor, selection.active)
+        newselection = new vscode.Selection(newanchor, selection.active);
       }
-      return newselection
+      return newselection;
     }
 
     return selection;
