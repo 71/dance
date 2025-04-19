@@ -336,3 +336,22 @@ a b c d
 a b c d
 |^^ 0
 ```
+
+# 7
+
+> behavior <- character
+
+```
+aaa bbb ccc ddd
+        ^^^^^^^ 0
+```
+
+## 7 two-words-extend-backward
+[up](#7)
+
+- .seek.word.extend.backward
+
+```
+aaa bbb ccc ddd
+        ^^^^  0
+```
