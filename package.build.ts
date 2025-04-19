@@ -757,13 +757,6 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
       enablement: x.enablement,
     }))),
 
-    menus: {
-      commandPalette: modules.flatMap((module) => module.commands.map((x) => ({
-        command: x.id,
-        when: x.when,
-      }))),
-    },
-
     // Keybindings.
     // ========================================================================
 
