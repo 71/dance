@@ -54,6 +54,16 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
   },
 
+  devDependencies: {
+    "@vscode/vsce": "^3.3.2",
+  },
+
+  files: [
+    "LICENSE",
+    "README.md",
+    "assets/dance.png",
+  ],
+
   contributes: {
     configurationDefaults: {
       "dance.defaultMode": "helix/normal",

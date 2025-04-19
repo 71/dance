@@ -4,6 +4,10 @@
     "out": true
   },
 
+  // Most of Dance isn't consistently formatted, so only modified code should be reformatted for
+  // those that have `formatOnSave` enabled.
+  "editor.formatOnSaveMode": "modifications",
+
   // Run tasks (`compile` and `generate`) automatically.
   "task.allowAutomaticTasks": "on",
 
