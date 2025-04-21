@@ -213,9 +213,9 @@ export function word(
   const charset = ws ? CharSet.NonBlank : CharSet.Word;
 
   Selections.updateWithFallbackByIndex((_i, selection) => {
-    const wasreversed = selection.isReversed;
-    const oldanchor = selection.anchor;
-    const newanchor = Selections.seekFrom(selection, direction, selection.anchor, _);
+    const wasReversed = selection.isReversed;
+    const oldAnchor = selection.anchor;
+    const newAnchor = Selections.seekFrom(selection, direction, selection.anchor, _);
     let active = Selections.seekFrom(selection, direction, selection.active, _);
 
     for (let i = 0; i < repetitions; i++) {
@@ -235,12 +235,12 @@ export function word(
         }
 
         if (shift === Shift.Extend) {
-          let newselection = new vscode.Selection(oldanchor, selection.active);
-          if (newselection.isReversed !== wasreversed) {
+          let newSelection = new vscode.Selection(oldAnchor, selection.active);
+          if (newSelection.isReversed !== wasReversed) {
             // The selection changed direction, we need to shift the anchor
-            newselection = new vscode.Selection(newanchor, selection.active);
+            newSelection = new vscode.Selection(newAnchor, selection.active);
           }
-          return newselection;
+          return newSelection;
         }
 
         return [selection];
@@ -251,12 +251,12 @@ export function word(
     }
 
     if (shift === Shift.Extend) {
-      let newselection = new vscode.Selection(oldanchor, selection.active);
-      if (newselection.isReversed !== wasreversed) {
+      let newSelection = new vscode.Selection(oldAnchor, selection.active);
+      if (newSelection.isReversed !== wasReversed) {
         // The selection changed direction, we need to shift the anchor
-        newselection = new vscode.Selection(newanchor, selection.active);
+        newSelection = new vscode.Selection(newAnchor, selection.active);
       }
-      return newselection;
+      return newSelection;
     }
 
     return selection;
