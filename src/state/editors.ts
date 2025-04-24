@@ -1,10 +1,10 @@
 import * as vscode from "vscode";
 
-import type { Extension } from "./extension";
-import type { Mode } from "./modes";
 import { command, commands, Context, Positions, SelectionBehavior, Selections } from "../api";
 import { extensionName } from "../utils/constants";
 import { assert } from "../utils/errors";
+import type { Extension } from "./extension";
+import type { Mode } from "./modes";
 
 /**
  * Dance-specific state related to a single `vscode.TextEditor`.
@@ -234,12 +234,25 @@ export class PerEditorState implements vscode.Disposable {
   public notifyDidBecomeActive() {
     const { editor, mode } = this;
 
-    this.extension.statusBar.activeModeSegment.setContent(mode.name);
+    this.extension.statusBar.activeModeSegment.setContent(this._formatDisplayName(mode.name));
 
     editor.options.lineNumbers = mode.lineNumbers;
     editor.options.cursorStyle = mode.cursorStyle;
 
     return vscode.commands.executeCommand("setContext", extensionName + ".mode", mode.name);
+  }
+
+  private _formatDisplayName(modeName: string) {
+    switch (vscode.workspace.getConfiguration(extensionName)
+      .get<string>("activeModeDisplayTextTransform")) {
+    case "uppercase":
+      return modeName.toUpperCase();
+    case "lowercase":
+      return modeName.toLowerCase();
+    case "as-is":
+    default:
+      return modeName;
+    }
   }
 
   /**
