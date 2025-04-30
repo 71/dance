@@ -398,15 +398,15 @@ export class Extension implements vscode.Disposable {
    * Runs the given async function, displaying an error message and returning
    * the specified value if it throws an exception during its execution.
    */
-  public async runPromiseSafely<T>(
-    f: () => Thenable<T>,
+  public runPromiseSafely<T>(
+    f: () => T,
     errorValue: () => T,
     errorMessage: (error: any) => string,
   ) {
     this.dismissErrorMessage();
 
     try {
-      return await f();
+      return f();
     } catch (e) {
       if (!(e instanceof CancellationError)) {
         this.showDismissibleErrorMessage(errorMessage(e));
