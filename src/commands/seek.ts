@@ -867,6 +867,117 @@ export async function leap(
   }
 }
 
+/**
+ * Goto word
+ *
+ * | Title              | Identifier         | Command                                         |
+ * | -------------------| ------------------ | ----------------------------------------------- |
+ * | Goto word          | `wordLabel`        | `[".seek.wordLabel", { shift: "select", ... }]` |
+ * | Goto word (extend) | `wordLabel.extend` | `[".seek.wordLabel", { shift: "extend", ... }]` |
+ */
+export async function wordLabel(
+  _: Context,
+
+  labelChars: Argument<string> = "abcdefghijklmnopqrstuvwxyz",
+  shift = Shift.Select,
+) {
+  ArgumentError.validate("labelsChars", !labelChars.includes(" "), "must not contain a space ' '");
+
+  labelChars = labelChars.toLowerCase();
+
+  ArgumentError.validate(
+    "labels",
+    new Set(labelChars as Iterable<string>).size === [...labelChars].length, "must not reuse characters");
+
+  const labels = [];
+  for (const a of labelChars) {
+    for (const b of labelChars) {
+      labels.push(`${a}${b}`);
+    }
+  }
+
+  const editor = _.editor,
+        doc = _.document,
+        highlightColor = new vscode.ThemeColor("inputValidation.errorBackground"),
+        foregroundColor = new vscode.ThemeColor("input.foreground");
+
+  const wordSelections = Selections.selectWithin(
+    new RegExp("\\w\\w+"), // words with 2 or more characters
+    editor.visibleRanges.flatMap((range) => {
+      return [Selections.fromRange(range)];
+    }),
+  )
+    .sort()
+    .filter(
+      (selection) => !selection.contains(_.selections[0].active),
+    );
+
+  const labelsToSelections = new Map<string, vscode.Selection>();
+  for (let i = 0; i < wordSelections.length && i < labels.length; i++) {
+    labelsToSelections.set(labels[i], wordSelections[i]);
+  }
+
+  const decorations: vscode.DecorationOptions[] = [];
+
+  // Render labels
+  labelsToSelections.forEach((selection, label) => {
+    const range = new vscode.Range(selection.start, selection.start);
+    const decoration: vscode.DecorationOptions = {
+      range,
+      renderOptions: {
+        after: {
+          contentText: label,
+          backgroundColor: highlightColor,
+          color: foregroundColor,
+          width: "2ch",
+          textDecoration: "none; position: absolute;",
+        },
+      },
+    };
+
+    decorations.push(decoration);
+  });
+
+  const decorationType = vscode.window.createTextEditorDecorationType({
+    before: { textDecoration: "none" },
+  });
+
+  editor.setDecorations(decorationType, decorations);
+
+  let input = "";
+  try {
+    while (input.length < 2) {
+      input += await keypress(_);
+    }
+    const chosenSelection = labelsToSelections.get(input);
+    if (chosenSelection) {
+      if (shift === Shift.Extend) {
+        const primarySelection = _.selections[0];
+        const direction = chosenSelection.start.isBefore(primarySelection.active)
+          ? Direction.Backward
+          : Direction.Forward;
+        const newSelection =
+          direction === Direction.Backward
+            ? Selections.fromStartEnd(
+              Selections.start(chosenSelection),
+              Selections.end(primarySelection),
+              true,
+            )
+            : Selections.fromStartEnd(
+              Selections.start(primarySelection),
+              Selections.end(chosenSelection),
+              false,
+            );
+        Selections.set([newSelection], _);
+      } else {
+        Selections.set([chosenSelection], _);
+      }
+    }
+  } finally {
+    editor.setDecorations(decorationType, []);
+  }
+}
+
 function preprocessRegExp(re: string) {
   return re.replace(/\(\?#noescape\)/g, "(?<=(?<!\\\\)(?:\\\\{2})*)");
 }
