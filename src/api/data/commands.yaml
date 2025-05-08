@@ -1566,6 +1566,26 @@ seek.wordEnd.ws.extend:
       `s-a-e` (kakoune: normal)
       `s-e` (helix: select)
 
+seek.wordLabel:
+  title:
+    en: Goto word
+
+  doc:
+    en: |
+      Goto word
+
+      | Title              | Identifier         | Command                                         |
+      | -------------------| ------------------ | ----------------------------------------------- |
+      | Goto word          | `wordLabel`        | `[".seek.wordLabel", { shift: "select", ... }]` |
+      | Goto word (extend) | `wordLabel.extend` | `[".seek.wordLabel", { shift: "extend", ... }]` |
+
+seek.wordLabel.extend:
+  title:
+    en: Goto word (extend)
+
+  commands: |-
+    [".seek.wordLabel", { shift: "extend", $exclude: [] }]
+
 select.buffer:
   title:
     en: Select whole buffer

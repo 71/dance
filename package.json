@@ -1551,6 +1551,21 @@
         "category": "Dance"
       },
       {
+        "command": "dance.seek.wordLabel",
+        "title": "Goto word",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.wordLabel",
+        "title": "Goto word",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.wordLabel.extend",
+        "title": "Goto word (extend)",
+        "category": "Dance"
+      },
+      {
         "command": "dance.select.buffer",
         "title": "Select whole buffer",
         "category": "Dance"
