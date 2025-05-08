@@ -659,7 +659,7 @@ export const commands: Commands = function () {
     ),
     "dance.selections.select": new CommandDescriptor(
       "dance.selections.select",
-      (_, argument) => _.runAsync(async (_) => await selections_select(_, argument["interactive"], argument)),
+      (_, argument) => _.runAsync(async (_) => await selections_select(_, getRegister<[Register.Flags.CanRead, Register.Flags.CanWrite]>(_, argument, "slash", Register.Flags.CanRead | Register.Flags.CanWrite), argument["interactive"], argument)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.selections.sort": new CommandDescriptor(
@@ -669,7 +669,7 @@ export const commands: Commands = function () {
     ),
     "dance.selections.split": new CommandDescriptor(
       "dance.selections.split",
-      (_, argument) => _.runAsync(async (_) => await selections_split(_, argument["excludeEmpty"], argument["interactive"], argument)),
+      (_, argument) => _.runAsync(async (_) => await selections_split(_, getRegister<[Register.Flags.CanRead, Register.Flags.CanWrite]>(_, argument, "slash", Register.Flags.CanRead | Register.Flags.CanWrite), argument["excludeEmpty"], argument["interactive"], argument)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.selections.splitLines": new CommandDescriptor(
