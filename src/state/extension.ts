@@ -35,6 +35,11 @@ export class Extension implements vscode.Disposable {
     return this._gotoMenus as ReadonlyMap<string, Menu>;
   }
 
+  private _activeModeDisplayPreference: string;
+  public get activeModeDisplayPreference() {
+    return this._activeModeDisplayPreference;
+  }
+
   // State.
   // ==========================================================================
 
@@ -119,6 +124,17 @@ export class Extension implements vscode.Disposable {
 
   public constructor(public readonly commands: Commands) {
     this.recorder = new Recorder(this);
+
+    // Configuration: mode display preference.
+    this._activeModeDisplayPreference = vscode.workspace.getConfiguration(extensionName)
+      .get<string>("activeModeDisplayTextTransform") ?? "as-is";
+    this.observePreference<string>(
+      ".activeModeDisplayTextTransform",
+      (value, validator, inspect) => {
+        this._activeModeDisplayPreference = value;
+      },
+      true,
+    );
 
     // Configuration: menus.
     this.observePreference<Record<string, Menu>>(
