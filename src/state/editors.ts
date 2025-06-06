@@ -243,8 +243,7 @@ export class PerEditorState implements vscode.Disposable {
   }
 
   private _formatDisplayName(modeName: string) {
-    switch (vscode.workspace.getConfiguration(extensionName)
-      .get<string>("activeModeDisplayTextTransform")) {
+    switch (this.extension.activeModeDisplayPreference) {
     case "uppercase":
       return modeName.toUpperCase();
     case "lowercase":

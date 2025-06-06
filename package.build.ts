@@ -280,21 +280,6 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                   + "non-directional, like Kakoune.",
                 ],
               },
-              activeModeDisplayTextTransform: {
-                "enum": [
-                  "as-is",
-                  "uppercase",
-                  "lowercase",
-
-                ],
-                "default": "as-is",
-                "description": "Controls how the active mode is formatted in the status bar.",
-                "enumDescriptions": [
-                  "Display the name with its original formatting.",
-                  "Convert the name to uppercase.",
-                  "Convert the name to lowercase.",
-                ],
-              },
               decorations: {
                 ...selectionDecorationType,
                 type: ["array", "object", "null"],
@@ -364,6 +349,21 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             },
           },
           description: "Controls the different modes available in Dance.",
+        },
+
+        "dance.activeModeDisplayTextTransform": {
+          "enum": [
+            "as-is",
+            "uppercase",
+            "lowercase",
+          ],
+          "default": "as-is",
+          "description": "Controls how the active mode is formatted in the status bar.",
+          "enumDescriptions": [
+            "Display the name with its original formatting.",
+            "Convert the name to uppercase.",
+            "Convert the name to lowercase.",
+          ],
         },
 
         "dance.menus": {
