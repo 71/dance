@@ -68,12 +68,15 @@ export function vertically(
 ) {
   // Adjust repetitions if a `by` parameter is given.
   if (by !== undefined) {
-    const visibleRange = _.editor.visibleRanges[0];
+    const visibleLines = _.editor.visibleRanges.reduce(
+      (lines, range) => lines + (range.end.line - range.start.line),
+      0,
+    );
 
     if (by === "page") {
-      repetitions *= visibleRange.end.line - visibleRange.start.line;
+      repetitions *= visibleLines;
     } else if (by === "halfPage") {
-      repetitions *= ((visibleRange.end.line - visibleRange.start.line) / 2) | 0;
+      repetitions *= (visibleLines / 2) | 0;
     }
   }
 
