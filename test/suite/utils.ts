@@ -396,6 +396,7 @@ export class ExpectedDocument {
             end = editor.document.lineAt(editor.document.lineCount - 1).rangeIncludingLineBreak.end;
 
       builder.replace(new vscode.Range(start, end), this.text);
+      builder.setEndOfLine(vscode.EndOfLine.LF);
     });
 
     if (this.selections.length > 0) {

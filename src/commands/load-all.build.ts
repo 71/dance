@@ -226,6 +226,10 @@ function determineFunctionFlags(f: Builder.ParsedFunction) {
     flags.push("DoNotReplay");
   }
 
+  if ("keepephemeral" in f.properties) {
+    flags.push("KeepEphemeralState");
+  }
+
   if (flags.length === 0) {
     return "CommandDescriptor.Flags.None";
   }
