@@ -318,7 +318,7 @@ const menuHistory: string[] = [];
  * like `jj`.
  *
  * @noreplay
- * @keepephemeral
+ * @keepcontext
  */
 export async function openMenu(
   _: Context.WithoutActiveEditor,

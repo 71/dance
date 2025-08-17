@@ -226,8 +226,8 @@ function determineFunctionFlags(f: Builder.ParsedFunction) {
     flags.push("DoNotReplay");
   }
 
-  if ("keepephemeral" in f.properties) {
-    flags.push("KeepEphemeralState");
+  if ("keepcontext" in f.properties) {
+    flags.push("KeepContext");
   }
 
   if (flags.length === 0) {
