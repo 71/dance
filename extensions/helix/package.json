@@ -414,6 +414,10 @@
                   "register": " insert"
                 }
               ]
+            },
+            "w": {
+              "text": "to word",
+              "command": "dance.seek.wordLabel"
             }
           }
         }
