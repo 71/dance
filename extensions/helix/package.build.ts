@@ -69,6 +69,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
       "dance.defaultMode": "helix/normal",
       "dance.modes": {
         "helix/insert": {
+          lineNumbers: "on",
           onLeaveMode: [
             [".selections.save", {
               register: " insert",
@@ -76,10 +77,12 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           ],
         },
         "helix/select": {
+          lineNumbers: "on",
           cursorStyle: "block",
           selectionBehavior: "character",
         },
         "helix/normal": {
+          lineNumbers: "relative",
           cursorStyle: "block",
           selectionBehavior: "character",
           decorations: {
@@ -116,6 +119,9 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             "m": { command: "dance.seek.enclosing", text: "Goto matching bracket" },
             "a": { command: "dance.openMenu", args: [{ menu: "object", title: "Match around" }], text: "Select around object" },
             "i": { command: "dance.openMenu", args: [{ menu: "object", title: "Match inside", pass: [{ inner: true }] }], text: "Select inside object" },
+            "s": { command: "dance.openMenu", args: [{ menu: "surround", title: "Surround object" }], text: "Surround object" },
+            "r": { command: "dance.openMenu", args: [{ menu: "resurround", title: "Resurround object" }], text: "Resurround object" },
+            "d": { command: "dance.openMenu", args: [{ menu: "unsurround", title: "Unsurround object" }], text: "Unsurround object" },
           },
         },
 
@@ -136,6 +142,100 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             "!": { command, text: "custom object desc" },
           }))(),
         },
+
+      surround: {
+        title: "Surround object with...",
+        items: (() => {
+          const pairs = {
+            "()": "parenthesis block",
+            "{}": "braces block",
+            "[]": "brackets block",
+            "<>": "angle block",
+            '"': "double quote string",
+            "'": "single quote string",
+            "`": "grave quote string",
+          };
+
+          return Object.fromEntries(
+            Object.entries(pairs)
+              .map(([key, description]) => {
+                const [open, close] = key.length === 1 ? [key, key] : Array.from(key);
+                const commands = [
+                  { command: "dance.edit.insert", args: { shift: "extend", text: open, where: "start" } },
+                  { command: "dance.edit.insert", args: { shift: "extend", text: close, where: "end" } },
+                ];
+
+                return [key, { command: "dance.run", args: { commands }, text: description }];
+              }),
+          );
+        })(),
+      },
+
+      resurround: {
+        title: "Resurround object...",
+        items: (() => {
+          const pairs = {
+            "()": "parenthesis block",
+            "{}": "braces block",
+            "[]": "brackets block",
+            "<>": "angle block",
+            '"': "double quote string",
+            "'": "single quote string",
+            "`": "grave quote string",
+          };
+          const enclosing = ["\\(", "\\)", "\\{", "\\}", "\\[", "\\]", "<", ">", '"', '"', "'", "'", "`", "`"];
+
+          return Object.fromEntries(
+            Object.entries(pairs)
+              .map(([key, description]) => {
+                const [open, close] = key.length === 1 ? [key, key] : Array.from(key);
+                const commands = [
+                  { command: "dance.seek.enclosing", args: { pairs: enclosing } },
+                  { command: "dance.edit.insert", args: { text: open, where: "start" } },
+                  { command: "dance.edit.insert", args: { text: close, where: "end" } },
+                  { command: "dance.selections.reduce.edges" },
+                  { command: "dance.edit.delete" },
+                  { command: "dance.selections.clear.secondary" },
+                ];
+
+                return [key, { command: "dance.run", args: { commands }, text: description }];
+              }),
+          );
+        })(),
+      },
+
+      unsurround: {
+        title: "Unsurround object...",
+        items: (() => {
+          const pairs = {
+            "m": { description: "enclosing pair", input: undefined },
+            "()": { description: "parenthesis block", input: "\\((?#inner)\\)" },
+            "{}": { description: "braces block", input: "\\{(?#inner)\\}" },
+            "[]": { description: "brackets block", input: "\\[(?#inner)\\]" },
+            "<>": { description: "angle block", input: "<(?#inner)>" },
+            '"': { description: "double quote string", input: '(?#noescape)"(?#inner)(?#noescape)"' },
+            "'": { description: "single quote string", input: "(?#noescape)'(?#inner)(?#noescape)'" },
+            "`": { description: "grave quote string", input: "(?#noescape)`(?#inner)(?#noescape)`" },
+          };
+
+          return Object.fromEntries(
+            Object.entries(pairs)
+              .map(([key, { description, input }]) => {
+                const seekCommand = input === undefined
+                  ? { command: "dance.seek.enclosing" }
+                  : { command: "dance.seek.object", args: [{ input }] };
+                const commands = [
+                  seekCommand,
+                    { command: "dance.selections.reduce.edges" },
+                    { command: "dance.edit.delete" },
+                    { command: "dance.selections.clear.secondary" },
+                ];
+
+                return [key, { command: "dance.run", args: { commands }, text: description }];
+              }),
+          );
+        })(),
+      },
 
         view: {
           "title": "View",
