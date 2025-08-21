@@ -1,4 +1,32 @@
+import { Context } from "../api";
 import { assert } from "./errors";
+
+
+/**
+ * Wrapper around RegExp.exec that takes into account the user's smart case
+ * preference.
+ */
+export function smartExec(re: RegExp, string: string): RegExpExecArray | null {
+  const pattern = re.source;
+  const flags = re.flags;
+
+  if (!Context.current.extension.isSmartCaseEnabled) {
+    return re.exec(string);
+  }
+
+  const hasUpperCase = /[A-Z]/.test(pattern);
+  if (hasUpperCase) {
+    return re.exec(string);
+  }
+
+  const adjustedFlags = flags.includes('i')
+    ? flags
+    : flags + 'i';
+
+  const adjustedRegex = new RegExp(pattern, adjustedFlags);
+
+  return adjustedRegex.exec(string);
+};
 
 /**
  * Returns whether this `RegExp` may match on a string that contains a `\n`
@@ -1207,7 +1235,7 @@ export function execLast(re: RegExp, text: string) {
       lastMatchIndex = 0;
 
   for (;;) {
-    const match = re.exec(text);
+    const match = smartExec(re, text);
 
     if (match === null) {
       break;
@@ -1357,7 +1385,7 @@ export function replaceUnlessEscaped(text: string, re: RegExp, replace: (...args
 export function matchUnlessEscaped(text: string, re: RegExp) {
   assert(re.global);
 
-  for (let match = re.exec(text); match !== null; match = re.exec(text)) {
+  for (let match = smartExec(re, text); match !== null; match = smartExec(re, text)) {
     if (!isEscaped(text, match.index)) {
       return match;
     }
@@ -1394,7 +1422,7 @@ export function splitRange(text: string, re: RegExp) {
   for (let start = 0;;) {
     re.lastIndex = 0;
 
-    const match = re.exec(text);
+    const match = smartExec(re, text);
 
     if (match === null || text.length === 0) {
       sections.push([start, start + text.length]);
@@ -1424,7 +1452,7 @@ export function execRange(text: string, re: RegExp) {
   const sections: [start: number, end: number, match: RegExpExecArray][] = [];
   let diff = 0;
 
-  for (let match = re.exec(text); match !== null && text.length > 0; match = re.exec(text)) {
+  for (let match = smartExec(re, text); match !== null && text.length > 0; match = smartExec(re, text)) {
     const start = match.index,
           end = start + match[0].length;
 
