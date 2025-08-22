@@ -85,9 +85,9 @@ export async function search(
  *
  * @keys `a-*` (core: normal), `a-NumPad_Multiply` (core: normal)
  *
- * | Title                            | Identifier        | Keybinding                                           | Command                                             |
- * | -------------------------------- | ----------------- | ---------------------------------------------------- | --------------------------------------------------- |
- * | Search current selection (smart) | `selection.smart` | `*` (core: normal), `NumPad_Multiply` (core: normal) | `[".search.selection", { smart: true, +register }]` |
+ * | Title                            | Identifier        | Keybinding                                                                         | Command                                             |
+ * | -------------------------------- | ----------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------- |
+ * | Search current selection (smart) | `selection.smart` | `*` (core: normal; helix: select), `NumPad_Multiply` (core: normal; helix: select) | `[".search.selection", { smart: true, +register }]` |
  */
 export function selection(
   document: vscode.TextDocument,

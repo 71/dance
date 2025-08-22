@@ -1312,8 +1312,20 @@
         "command": "dance.search.selection.smart"
       },
       {
+        "key": "Shift+8",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Search current selection (smart)",
+        "command": "dance.search.selection.smart"
+      },
+      {
         "key": "NumPad_Multiply",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Search current selection (smart)",
+        "command": "dance.search.selection.smart"
+      },
+      {
+        "key": "NumPad_Multiply",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Search current selection (smart)",
         "command": "dance.search.selection.smart"
       },
@@ -2279,11 +2291,6 @@
       },
       {
         "key": "Shift+7",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/select'"
-      },
-      {
-        "key": "Shift+8",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/select'"
       },

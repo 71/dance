@@ -1010,9 +1010,9 @@ search.selection:
       Search current selection.
 
 
-      | Title                            | Identifier        | Keybinding                                           | Command                                             |
-      | -------------------------------- | ----------------- | ---------------------------------------------------- | --------------------------------------------------- |
-      | Search current selection (smart) | `selection.smart` | `*` (core: normal), `NumPad_Multiply` (core: normal) | `[".search.selection", { smart: true, +register }]` |
+      | Title                            | Identifier        | Keybinding                                                                         | Command                                             |
+      | -------------------------------- | ----------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------- |
+      | Search current selection (smart) | `selection.smart` | `*` (core: normal; helix: select), `NumPad_Multiply` (core: normal; helix: select) | `[".search.selection", { smart: true, +register }]` |
 
 search.selection.smart:
   title:
@@ -1023,8 +1023,8 @@ search.selection.smart:
 
   keys:
     qwerty: |-
-      `*` (core: normal)
-      `NumPad_Multiply` (core: normal)
+      `*` (core: normal; helix: select)
+      `NumPad_Multiply` (core: normal; helix: select)
 
 seek:
   title:
