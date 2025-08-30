@@ -285,18 +285,18 @@ let lastObjectInput: string | undefined;
  *
  * #### Variants
  *
- * | Title                        | Identifier                     | Keybinding                                       | Command                                                                                       |
- * | ---------------------------- | ------------------------------ | ------------------------------------------------ | --------------------------------------------------------------------------------------------- |
- * | Select whole object          | `askObject`                    | `a-a` (kakoune: normal), `a-a` (kakoune: insert) | `[".openMenu", { menu: "object",                          title: "Select whole object..." }]` |
- * | Select inner object          | `askObject.inner`              | `a-i` (kakoune: normal), `a-i` (kakoune: insert) | `[".openMenu", { menu: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
- * | Select to whole object start | `askObject.start`              | `[` (kakoune: normal)                            | `[".openMenu", { menu: "object", pass: [{              where: "start"                  }] }]` |
- * | Extend to whole object start | `askObject.start.extend`       | `{` (kakoune: normal)                            | `[".openMenu", { menu: "object", pass: [{              where: "start", shift: "extend" }] }]` |
- * | Select to inner object start | `askObject.inner.start`        | `a-[` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start"                  }] }]` |
- * | Extend to inner object start | `askObject.inner.start.extend` | `a-{` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start", shift: "extend" }] }]` |
- * | Select to whole object end   | `askObject.end`                | `]` (kakoune: normal)                            | `[".openMenu", { menu: "object", pass: [{              where: "end"                    }] }]` |
- * | Extend to whole object end   | `askObject.end.extend`         | `}` (kakoune: normal)                            | `[".openMenu", { menu: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
- * | Select to inner object end   | `askObject.inner.end`          | `a-]` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"                    }] }]` |
- * | Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (kakoune: normal)                          | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
+ * | Title                        | Identifier                     | Keybinding                                                | Command                                                                                       |
+ * | ---------------------------- | ------------------------------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+ * | Select whole object          | `askObject`                    | `a-a` (kakoune: normal), `a-a` (kakoune: insert)          | `[".openMenu", { menu: "object",                          title: "Select whole object..." }]` |
+ * | Select inner object          | `askObject.inner`              | `a-i` (kakoune: normal), `a-i` (kakoune: insert)          | `[".openMenu", { menu: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
+ * | Select to whole object start | `askObject.start`              | `[` (kakoune: normal), `[` (helix: normal; helix: select) | `[".openMenu", { menu: "object", pass: [{              where: "start"                  }] }]` |
+ * | Extend to whole object start | `askObject.start.extend`       | `{` (kakoune: normal)                                     | `[".openMenu", { menu: "object", pass: [{              where: "start", shift: "extend" }] }]` |
+ * | Select to inner object start | `askObject.inner.start`        | `a-[` (kakoune: normal)                                   | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start"                  }] }]` |
+ * | Extend to inner object start | `askObject.inner.start.extend` | `a-{` (kakoune: normal)                                   | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start", shift: "extend" }] }]` |
+ * | Select to whole object end   | `askObject.end`                | `]` (kakoune: normal), `]` (helix: normal; helix: select) | `[".openMenu", { menu: "object", pass: [{              where: "end"                    }] }]` |
+ * | Extend to whole object end   | `askObject.end.extend`         | `}` (kakoune: normal)                                     | `[".openMenu", { menu: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
+ * | Select to inner object end   | `askObject.inner.end`          | `a-]` (kakoune: normal)                                   | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"                    }] }]` |
+ * | Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (kakoune: normal)                                   | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
  */
 export async function object(
   _: Context,
