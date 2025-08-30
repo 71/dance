@@ -226,9 +226,9 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
                   : { command: "dance.seek.object", args: [{ input }] };
                 const commands = [
                   seekCommand,
-                    { command: "dance.selections.reduce.edges" },
-                    { command: "dance.edit.delete" },
-                    { command: "dance.selections.clear.secondary" },
+                  { command: "dance.selections.reduce.edges" },
+                  { command: "dance.edit.delete" },
+                  { command: "dance.selections.clear.secondary" },
                 ];
 
                 return [key, { command: "dance.run", args: { commands }, text: description }];
