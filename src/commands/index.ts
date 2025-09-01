@@ -54,6 +54,10 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
     return (this.flags & CommandDescriptor.Flags.DoNotReplay) === 0;
   }
 
+  public get shouldResetEphemeralState() {
+    return (this.flags & CommandDescriptor.Flags.KeepEphemeralState) === 0;
+  }
+
   public constructor(
     /**
      * The unique identifier of the command.
@@ -104,8 +108,10 @@ export class CommandDescriptor<Flags extends CommandDescriptor.Flags = CommandDe
       context.doNotRecord();
     }
 
-    extension.currentCount = 0;
-    extension.currentRegister = undefined;
+    if (this.shouldResetEphemeralState) {
+      extension.currentCount = 0;
+      extension.currentRegister = undefined;
+    }
 
     let result: unknown;
 
@@ -168,6 +174,9 @@ export /* enum */ namespace CommandDescriptor {
 
     /** The command should not be replayed in macros and repeats. */
     DoNotReplay = 0b0010,
+
+    /** The command should not reset ephemeral state (selected count/register). */
+    KeepEphemeralState = 0b0100,
   }
 }
 

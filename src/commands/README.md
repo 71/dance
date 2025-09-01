@@ -860,7 +860,7 @@ This command:
 
 <a name="openMenu" />
 
-### [`openMenu`](./misc.ts#L309-L331)
+### [`openMenu`](./misc.ts#L309-L332)
 
 Open menu.
 
@@ -884,7 +884,7 @@ This command:
 
 <a name="changeInput" />
 
-### [`changeInput`](./misc.ts#L372-L386)
+### [`changeInput`](./misc.ts#L373-L387)
 
 Change current input.
 
@@ -901,7 +901,7 @@ This command:
 
 <a name="ifEmpty" />
 
-### [`ifEmpty`](./misc.ts#L396-L407)
+### [`ifEmpty`](./misc.ts#L397-L408)
 
 Executes one of the specified commands depending on whether the current
 selections are empty.
