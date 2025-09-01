@@ -11,6 +11,7 @@ import type { Commands } from "../commands";
 import { extensionName } from "../utils/constants";
 import { AutoDisposable } from "../utils/disposables";
 import { assert, CancellationError } from "../utils/errors";
+import { watchKeymaps } from "../utils/keymaps";
 import { SettingsValidator } from "../utils/settings-validator";
 import { onDidLoadTreeSitter, type TreeSitter } from "../utils/tree-sitter";
 
@@ -189,6 +190,9 @@ export class Extension implements vscode.Disposable {
 
     // Tree Sitter support.
     this._subscriptions.push(onDidLoadTreeSitter((treeSitter) => this._treeSitter = treeSitter));
+
+    // Sanity checks
+    this._subscriptions.push(watchKeymaps());
   }
 
   /**
