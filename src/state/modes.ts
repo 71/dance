@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import type { Extension } from "./extension";
 import { command, SelectionBehavior } from "../api";
-import { extensionName } from "../utils/constants";
+import { extensionId, extensionName } from "../utils/constants";
 import { SettingsValidator } from "../utils/settings-validator";
 
 /**
@@ -687,6 +687,39 @@ export class Modes implements Iterable<Mode> {
             this._defaultMode = mode;
           }
         } else {
+          mode.isPendingDeletion = false;
+          mode.apply(configuration, validator);
+        }
+      }
+
+      // Add modes contributed by Dance and by extensions.
+      const contributedModes: Record<string, Mode.Configuration> = {
+        ...vscode.extensions.getExtension(extensionId)!.packageJSON!.contributes.configuration.properties["dance.modes"].default,
+      };
+
+      for (const extension of vscode.extensions.all) {
+        const extensionModes =
+            extension.packageJSON?.contributes?.configurationDefaults?.["dance.modes"] ?? {};
+
+        for (const modeName in extensionModes) {
+          contributedModes[modeName] ??= extensionModes[modeName];
+        }
+      }
+
+      for (const modeName in contributedModes) {
+        removeModes.delete(modeName);
+
+        const configuration = contributedModes[modeName];
+        let mode = this._modes.get(modeName);
+
+        if (mode === undefined) {
+          this._modes.set(modeName, mode = new Mode(this, modeName, configuration));
+
+          if (modeName === expectedDefaultModeName) {
+            this._defaultMode.dispose();
+            this._defaultMode = mode;
+          }
+        } else if (mode.isPendingDeletion) {
           mode.isPendingDeletion = false;
           mode.apply(configuration, validator);
         }
