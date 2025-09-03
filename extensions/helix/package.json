@@ -1,7 +1,7 @@
 {
   "name": "dance-helix",
   "description": "Helix keybindings for Dance",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "ISC",
   "extensionDependencies": [
     "gregoire.dance"
@@ -38,8 +38,8 @@
   "scripts": {
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
-    "package:pre": "vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.1.0001",
-    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.1.0001"
+    "package:pre": "vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.1.1001",
+    "publish:pre": "vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json 0.1.1001"
   },
   "devDependencies": {
     "@vscode/vsce": "^3.3.2"
