@@ -5,7 +5,7 @@ import { Builder, generateIgnoredKeybinds } from "../../meta";
 import * as fs from "fs/promises";
 import { extensionId } from "../../src/utils/constants";
 
-const version = "0.1.0",
+const version = "0.1.1",
       preRelease = 1;
 
 export const pkg = (modules: Builder.ParsedModule[]) => ({
