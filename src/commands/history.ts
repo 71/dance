@@ -113,11 +113,11 @@ export async function repeat_edit(_: Context, repetitions: number) {
     if (cursor.is(Entry.ChangeTextEditorMode)) {
       const modeName = cursor.entry().mode().name;
 
-      if (modeName === "normal") {
+      if (modeName === "normal" || modeName.endsWith("/normal")) {
         cursor.previous();
 
         endCursor = cursor.clone();
-      } else if (modeName === "insert" && endCursor !== undefined) {
+      } else if ((modeName === "insert" || modeName.endsWith("/insert")) && endCursor !== undefined) {
         cursor.next();
 
         startCursor = cursor.clone();
