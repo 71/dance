@@ -6,15 +6,14 @@ import * as fs from "fs/promises";
 import { extensionId } from "../../src/utils/constants";
 
 const version = "0.1.0",
-      preRelease = 1,
-      preReleaseVersion = `${version}-pre${preRelease}`;
+      preRelease = 1;
 
 export const pkg = (modules: Builder.ParsedModule[]) => ({
 
   // Common package.json properties.
   // ==========================================================================
 
-  name: "dance-helix-keybindings",
+  name: "dance-helix",
   description: "Helix keybindings for Dance",
   version,
   license: "ISC",
@@ -40,7 +39,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
     vscode: "^1.63.0",
   },
 
-  displayName: "Dance (Helix keybindings)",
+  displayName: "Dance - Helix keymap",
   publisher: "gregoire",
   categories: ["Keymaps", "Other"],
   readme: "README.md",
@@ -50,8 +49,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
   scripts: {
     "package": "vsce package --allow-star-activation",
     "publish": "vsce publish --allow-star-activation",
-    "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
-    "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${preReleaseVersion}`,
+    "package:pre": `vsce package --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
+    "publish:pre": `vsce publish --allow-star-activation --pre-release --no-git-tag-version --no-update-package-json ${version.replace(/\d+$/, "$&" + preRelease.toString().padStart(3, "0"))}`,
   },
 
   devDependencies: {
