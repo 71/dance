@@ -1568,6 +1568,29 @@ seek.wordEnd.ws.extend:
       `s-a-e` (kakoune: normal)
       `s-e` (helix: select)
 
+seek.wordLabel:
+  title:
+    en: Leap to word
+
+  doc:
+    en: |
+      Leap to word.
+
+      This is the same as goto word (gw) in helix.
+
+      #### Variants
+
+      | Title                 | Identifier         | Command                                         |
+      | ----------------------| ------------------ | ----------------------------------------------- |
+      | Leap to word (extend) | `wordLabel.extend` | `[".seek.wordLabel", { shift: "extend", ... }]` |
+
+seek.wordLabel.extend:
+  title:
+    en: Leap to word (extend)
+
+  commands: |-
+    [".seek.wordLabel", { shift: "extend", $exclude: [] }]
+
 select.buffer:
   title:
     en: Select whole buffer

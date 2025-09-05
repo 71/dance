@@ -218,6 +218,7 @@ import {
   seek as seek,
   syntax_experimental as seek_syntax_experimental,
   word as seek_word,
+  wordLabel as seek_wordLabel,
 } from "./seek";
 
 import {
@@ -494,6 +495,11 @@ export const commands: Commands = function () {
     "dance.seek.word": new CommandDescriptor(
       "dance.seek.word",
       (_, argument) => _.runAsync(async (_) => await seek_word(_, getRepetitions(_, argument), argument["stopAtEnd"], argument["ws"], getDirection(argument), getShift(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    "dance.seek.wordLabel": new CommandDescriptor(
+      "dance.seek.wordLabel",
+      (_, argument) => _.runAsync(async (_) => await seek_wordLabel(_, argument["labelChars"], getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.select.buffer": new CommandDescriptor(
@@ -1099,6 +1105,12 @@ export const commands: Commands = function () {
     "dance.seek.leap.backward",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".seek.leap", { direction: -1, $exclude: [] }]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.seek.wordLabel.extend",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".seek.wordLabel", { shift: "extend", $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,
