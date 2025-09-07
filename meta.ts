@@ -274,7 +274,7 @@ function parseDocComments(code: string, modulePath: string) {
   docCommentRe.lastIndex = 0;
 
   return {
-    path: path.relative(path.dirname(__dirname), modulePath).replace(/\\/g, "/"),
+    path: path.join("dance", path.relative(__dirname, modulePath)).replace(/\\/g, "/"),
     name: moduleName,
     doc: moduleDoc,
 
