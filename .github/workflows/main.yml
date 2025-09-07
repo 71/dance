@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
 
       - name: Install dependencies
         run: yarn
@@ -32,8 +32,11 @@ jobs:
 
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
 
       - name: Install dependencies
         run: yarn
@@ -68,10 +71,11 @@ jobs:
 
       - name: Compute pre-release versions
         id: pre-release-versions
+        shell: bash
         run: |
           yarn
-          echo MARKETPLACE=`node -e "console.log(JSON.parse(require('child_process').execFileSync(process.execPath, ['node_modules/vsce/vsce', 'show', 'gregoire.dance', '--json'], { encoding: 'utf8' })).versions[0].version)"` >> "$GITHUB_OUTPUT"
-          echo LOCAL=`node -e "console.log(/[0-9]+.[0-9]+.[0-9]+/.exec(require('./package.json').scripts['package:pre'])[0])"` >> "$GITHUB_OUTPUT"
+          echo MARKETPLACE=$(yarn run --silent vsce show gregoire.dance --json | jq '.versions[0].version' --raw-output) >> "$GITHUB_OUTPUT"
+          echo LOCAL=$(cat package.json | jq '.scripts["package:pre"]' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+') >> "$GITHUB_OUTPUT"
 
       - name: Build pre-release .vsix
         run: yarn run package:pre
