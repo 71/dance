@@ -444,7 +444,7 @@ export const commands: Commands = function () {
     "dance.openMenu": new CommandDescriptor(
       "dance.openMenu",
       (_, argument) => _.runAsync(async (_) => await openMenu(_, getInputOr("menu", argument), argument["prefix"], argument["pass"], argument["locked"], argument["delay"], argument["title"])),
-      CommandDescriptor.Flags.DoNotReplay,
+      CommandDescriptor.Flags.DoNotReplay | CommandDescriptor.Flags.KeepContext,
     ),
     "dance.run": new CommandDescriptor(
       "dance.run",

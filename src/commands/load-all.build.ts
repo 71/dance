@@ -226,6 +226,10 @@ function determineFunctionFlags(f: Builder.ParsedFunction) {
     flags.push("DoNotReplay");
   }
 
+  if ("keepcontext" in f.properties) {
+    flags.push("KeepContext");
+  }
+
   if (flags.length === 0) {
     return "CommandDescriptor.Flags.None";
   }
