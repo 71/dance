@@ -274,6 +274,141 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             },
           },
         },
+
+      "space": {
+        title: "Space",
+        items: {
+          "f": { text: "Open file picker", command: "workbench.action.quickOpen" },
+          "F": {
+            text: "Open file picker at current working directory",
+            command: "dance.run",
+            args: [
+              {
+                code: [
+                  "const editor = vscode.window.activeTextEditor;",
+                  "if (!editor) { return; }",
+                  "const currentFileUri = editor.document.uri;",
+                  "",
+                  "const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');",
+                  "",
+                  "const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);",
+                  "if (workspaceFolder) {",
+                  "",
+                  "  const relativeDirectoryPath = vscode.workspace.asRelativePath(currentDirectoryUri);",
+                  "",
+                  "  const quickOpenPrefix = relativeDirectoryPath.endsWith('/')",
+                  "    ? relativeDirectoryPath",
+                  "    : `${relativeDirectoryPath}/`;",
+                  "",
+                  "  await vscode.commands.executeCommand(",
+                  "    'workbench.action.quickOpen',",
+                  "    quickOpenPrefix",
+                  "  );",
+                  "} else {",
+                  "  await vscode.commands.executeCommand(",
+                  "    'workbench.action.quickOpen'",
+                  "  );",
+                  "}",
+                ],
+              },
+            ],
+          },
+          "b": {
+            text: "Open buffer picker",
+            command: "workbench.action.showAllEditors",
+          },
+          "s": {
+            text: "Open symbol picker",
+            command: "workbench.action.gotoSymbol",
+          },
+          "S": {
+            text: "Open workspace symbol picker",
+            command: "workbench.action.showAllSymbols",
+            args: [],
+          },
+          "d": {
+            text: "Open diagnostic picker",
+            command: "workbench.action.problems.focus",
+          },
+          "D": {
+            text: "Open diagnostic picker",
+            command: "workbench.action.problems.focus",
+          },
+          "g": {
+            text: "Open changed file picker",
+            command: "workbench.view.scm",
+          },
+          "a": {
+            text: "Perform code action",
+            command: "editor.action.quickFix",
+          },
+          "G": {
+            text: "Debug",
+            command: "workbench.action.debug.start",
+          },
+          "w": {
+            text: "Window",
+            command: "dance.window.windowMenu",
+          },
+          "y": {
+            text: "Yank selections to clipboard",
+            command: "dance.selections.saveText",
+            args: [{
+              register: "",
+            }],
+          },
+          "Y": {
+            text: "Yank main selection to clipboard",
+            command: "dance.selections.saveText",
+            args: [{
+              register: "",
+            }],
+          },
+          "p": {
+            text: "Paste clipboard after selections",
+            command: "dance.edit.insert",
+            args: [{
+              handleNewLine: true,
+              where: "end",
+            }],
+          },
+          // The following comment was left by https://github.com/Silverquark
+          // Not sure if it’s still needed.
+          //
+          // There is a zero width space (U+200B) behind the P.
+          // This is a dirty hack. Otherwise vscode will think its the same as lowecase p
+          // Any other symbol would also work, but this one is invisible
+          "P​": {
+            text: "Paste clipboard before selections",
+            command: "dance.edit.insert",
+            args: [{
+              handleNewLine: true,
+              where: "start",
+            }],
+          },
+          "R": {
+            text: "Replace selections by clipborad content",
+            command: "editor.action.clipboardPasteAction",
+            args: [],
+          },
+          "/": {
+            text: "Global Search in workspace folder",
+            command: "workbench.action.findInFiles",
+          },
+          "k": {
+            text: "Show docs for item under cursor (hover)",
+            command: "editor.action.showHover",
+          },
+          "r": {
+            text: "Rename symbol",
+            command: "editor.action.rename",
+          },
+          "h": {
+            text: "Select symbol reference",
+            command: "editor.action.referenceSearch.trigger",
+          },
+        },
+      },
       },
     },
 
