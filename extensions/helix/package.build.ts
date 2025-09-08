@@ -274,6 +274,24 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             "w": { text: "to word", command: "dance.seek.wordLabel" },
           },
         },
+
+      leftBracket: {
+        title: "Left bracket",
+        items: {
+          "d": { text: "Goto previous diagnostic", command: "editor.action.marker.prevInFiles" },
+          "g": { text: "Goto previous change", command: "workbench.action.editor.previousChange" },
+          " ": { text: "Add newline above", command: "dance.edit.newLine.above" },
+        },
+      },
+
+      rightBracket: {
+        title: "Right bracket",
+        items: {
+          "d": { text: "Goto next diagnostic", command: "editor.action.marker.nextInFiles" },
+          "g": { text: "Goto next change", command: "workbench.action.editor.nextChange" },
+          " ": { text: "Add newline below", command: "dance.edit.newLine.below" },
+        },
+      },
       },
     },
 
