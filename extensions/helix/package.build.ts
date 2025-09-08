@@ -285,30 +285,39 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             args: [
               {
                 code: [
-                  "const editor = vscode.window.activeTextEditor;",
-                  "if (!editor) { return; }",
-                  "const currentFileUri = editor.document.uri;",
-                  "",
-                  "const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');",
-                  "",
-                  "const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);",
-                  "if (workspaceFolder) {",
-                  "",
-                  "  const relativeDirectoryPath = vscode.workspace.asRelativePath(currentDirectoryUri);",
-                  "",
-                  "  const quickOpenPrefix = relativeDirectoryPath.endsWith('/')",
-                  "    ? relativeDirectoryPath",
-                  "    : `${relativeDirectoryPath}/`;",
-                  "",
-                  "  await vscode.commands.executeCommand(",
-                  "    'workbench.action.quickOpen',",
-                  "    quickOpenPrefix",
-                  "  );",
-                  "} else {",
-                  "  await vscode.commands.executeCommand(",
-                  "    'workbench.action.quickOpen'",
-                  "  );",
-                  "}",
+                  `
+                  const editor = vscode.window.activeTextEditor;
+                  const fallback = () => vscode.commands.executeCommand(
+                      'workbench.action.quickOpen',
+                    );
+
+                  if (!editor) {
+                    return await fallback();
+                  }
+
+                  const currentFileUri = editor.document.uri;
+                  const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');
+
+                  const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);
+                  if (!workspaceFolder) {
+                    return await fallback()
+                  }
+
+                  const relativeDirectoryPath = vscode.workspace.asRelativePath(
+                      currentDirectoryUri,
+                      false
+                    );
+
+                  const quickOpenPrefix = relativeDirectoryPath.endsWith('/')
+                    ? relativeDirectoryPath
+                    : \`\${relativeDirectoryPath}/\`;
+
+                  await vscode.commands.executeCommand(
+                    'workbench.action.quickOpen',
+                    quickOpenPrefix
+                  );
+
+                  `.split("\n").map(line => line.trim()).join(""),
                 ],
               },
             ],
@@ -348,7 +357,8 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           },
           "w": {
             text: "Window",
-            command: "dance.window.windowMenu",
+            command: "dance.openMenu",
+            args: [{ menu: "window" }],
           },
           "y": {
             text: "Yank selections to clipboard",
@@ -406,6 +416,80 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           "h": {
             text: "Select symbol reference",
             command: "editor.action.referenceSearch.trigger",
+          },
+        },
+
+        "window": {
+          title: "Window",
+          items: {
+            "w": {
+              text: "Goto next window",
+              command: "workbench.action.nextEditor",
+            },
+            "s": {
+              text: "Horizontal bottom split",
+              command: "workbench.action.splitEditorDown",
+            },
+            "v": {
+              text: "Vertical right split",
+              command: "workbench.action.splitEditor",
+            },
+            "t": {
+              text: "Transpose splits",
+              command: "workbench.action.toggleEditorGroupLayout",
+            },
+            // "f": {
+            //   text: "Open files in selection (hsplit)",
+            //   command: "dance.selections.open", function needs to be modified
+            // },
+            // "F": {
+            //   text: "Open files in selection (vsplit)",
+            //   command: "dance.selections.open", function needs to be modified
+            // },
+            "q": {
+              text: "Close window",
+              command: "workbench.action.closeActiveEditor",
+            },
+            "o": {
+              text: "Close all other windows (Current window only)",
+              command: "workbench.action.closeOtherEditors",
+            },
+            "h": {
+              text: "Jump to the split on the left",
+              command: "workbench.action.focusLeftGroup",
+            },
+            "j": {
+              text: "Jump to the split below",
+              command: "workbench.action.focusBelowGroup",
+            },
+            "k": {
+              text: "Jump to the split above",
+              command: "workbench.action.focusAboveGroup",
+            },
+            "l": {
+              text: "Jump to the split to the right",
+              command: "workbench.action.focusRightGroup",
+            },
+            "H": {
+              text: "Swap with the split to the left",
+              command: "workbench.action.moveActiveEditorGroupLeft",
+            },
+            "J": {
+              text: "Swap with the split below",
+              command: "workbench.action.moveActiveEditorGroupDown",
+            },
+            "K": {
+              text: "Swap with the split above",
+              command: "workbench.action.moveActiveEditorGroupUp",
+            },
+            "L": {
+              text: "Swap with the split to the right",
+              command: "workbench.action.moveActiveEditorGroupRight",
+            },
+            // "n": { Not easily possible. Neccessary?
+            //   text: "New split scratch buffer",
+            //   command: "",
+            // },
           },
         },
       },
