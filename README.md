@@ -194,42 +194,16 @@ make the extension integrate better with VS Code.
   TL;DR: adding `"keyboard.dispatch": "keyCode"` to your VS Code settings will
   likely fix it.
 
+## Helix
+
+Dance also supports [Helix](https://helix-editor.com) keybindings, as they are
+very similar to Kakoune's. The source code for all keybindings is shared in `src`,
+with the [Helix extension](extensions/helix) defining new modes (`helix/normal`,
+...) with different sets of built-in keybindings.
+
+The Helix extension is available in the [VS Code marketplace](
+https://marketplace.visualstudio.com/items?itemName=gregoire.dance-helix).
+
 ## Contributing
 
-### Bugs
-
-There are unfortunately still bugs lurking around. If you find one, please
-ensure that it has not been reported yet and submit a [test](./test/README.md)
-that does not pass and can be used to reliably reproduce the bug.
-
-### Features
-
-If you'd like to add or improve a feature, please make sure that no similar
-feature has been requested in the [issues] and file a new issue for it. This
-will ensure that no two people work on the same feature at the same time, and
-will be a good place to ask for help in case you want to tackle this yourself.\
-Since some features are not general enough, it may be requested of you to make a
-plugin that uses the Dance API or to simply use scripts in the meantime.
-
-When contributing, please be mindful of the existing coding conventions and
-naming.
-
-Your PR will be rebased on top of `master` in order to keep a clean commit
-history. Please avoid unnecessary commits (`git commit --amend` is your friend).
-
-### Misc.
-
-[Pre-release versions](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions)
-follow the pattern `<major>.<minor>.<prev-patch><pre-release>`, so for instance
-pre-release `1` of version `0.5.13` is `0.5.12001`.
-
-[api]: ./src/api
-[commands]: ./src/commands
-[issues]: https://github.com/71/dance/issues
-[vim]: https://www.vim.org
-[kakoune]: https://github.com/mawww/kakoune
-[run]: ./src/commands/README.md#run
-[vsc]: https://github.com/Microsoft/vscode
-[vscodevim]: https://github.com/VSCodeVim/Vim
-[vsccommands]: https://code.visualstudio.com/api/extension-guides/command
-[vsckeybindings]: https://code.visualstudio.com/docs/getstarted/keybindings
+See [`CONTRIBUTING.md`](CONTRIBUTING.md).
