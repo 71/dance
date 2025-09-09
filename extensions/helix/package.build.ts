@@ -275,7 +275,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           },
         },
 
-      "space": {
+      space: {
         title: "Space",
         items: {
           "f": { text: "Open file picker", command: "workbench.action.quickOpen" },
@@ -285,39 +285,36 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             args: [
               {
                 code: [
-                  `
-                  const editor = vscode.window.activeTextEditor;
-                  const fallback = () => vscode.commands.executeCommand(
-                      'workbench.action.quickOpen',
-                    );
+                  "const fallback = () => vscode.commands.executeCommand(",
+                  "    'workbench.action.quickOpen',",
+                  "  );",
 
-                  if (!editor) {
-                    return await fallback();
-                  }
+                  "const editor = vscode.window.activeTextEditor;",
+                  "if (!editor) {",
+                  "  return await fallback();",
+                  "}",
 
-                  const currentFileUri = editor.document.uri;
-                  const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');
+                  "const currentFileUri = editor.document.uri;",
+                  "const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');",
 
-                  const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);
-                  if (!workspaceFolder) {
-                    return await fallback()
-                  }
+                  "const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);",
+                  "if (!workspaceFolder) {",
+                  "  return await fallback()",
+                  "}",
 
-                  const relativeDirectoryPath = vscode.workspace.asRelativePath(
-                      currentDirectoryUri,
-                      false
-                    );
+                  "const relativeDirectoryPath = vscode.workspace.asRelativePath(",
+                  "    currentDirectoryUri,",
+                  "    /** includeWorkspaceFolder = */ false",
+                  "  );",
 
-                  const quickOpenPrefix = relativeDirectoryPath.endsWith('/')
-                    ? relativeDirectoryPath
-                    : \`\${relativeDirectoryPath}/\`;
+                  "const quickOpenPrefix = relativeDirectoryPath.endsWith('/')",
+                  "  ? relativeDirectoryPath",
+                  "  : relativeDirectoryPath + '/';",
 
-                  await vscode.commands.executeCommand(
-                    'workbench.action.quickOpen',
-                    quickOpenPrefix
-                  );
-
-                  `.split("\n").map(line => line.trim()).join(""),
+                  "await vscode.commands.executeCommand(",
+                  "  'workbench.action.quickOpen',",
+                  "  quickOpenPrefix,",
+                  ");",
                 ],
               },
             ],
@@ -326,6 +323,10 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             text: "Open buffer picker",
             command: "workbench.action.showAllEditors",
           },
+          // "j": {
+          //   text: "Open jumplist picker",
+          //   command: "", // TODO
+          // },
           "s": {
             text: "Open symbol picker",
             command: "workbench.action.gotoSymbol",
@@ -333,7 +334,6 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           "S": {
             text: "Open workspace symbol picker",
             command: "workbench.action.showAllSymbols",
-            args: [],
           },
           "d": {
             text: "Open diagnostic picker",
@@ -351,6 +351,10 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             text: "Perform code action",
             command: "editor.action.quickFix",
           },
+          // "'": {
+          //   text: "Open last picker",
+          //   command: "", // TODO
+          // },
           "G": {
             text: "Debug",
             command: "workbench.action.debug.start",
@@ -369,9 +373,16 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           },
           "Y": {
             text: "Yank main selection to clipboard",
-            command: "dance.selections.saveText",
+            command: "dance.run",
             args: [{
-              register: "",
+              code: [
+                "const editor = vscode.window.activeTextEditor;",
+                "if (!editor) {",
+                "  return;",
+                "}",
+                "const text = editor.document.getText(editor.selection);",
+                "await vscode.env.clipboard.writeText(text);",
+              ],
             }],
           },
           "p": {
@@ -382,13 +393,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
               where: "end",
             }],
           },
-          // The following comment was left by https://github.com/Silverquark
-          // Not sure if it’s still needed.
-          //
-          // There is a zero width space (U+200B) behind the P.
-          // This is a dirty hack. Otherwise vscode will think its the same as lowecase p
-          // Any other symbol would also work, but this one is invisible
-          "P​": {
+          "P": {
             text: "Paste clipboard before selections",
             command: "dance.edit.insert",
             args: [{
@@ -440,11 +445,11 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             },
             // "f": {
             //   text: "Open files in selection (hsplit)",
-            //   command: "dance.selections.open", function needs to be modified
+            //   command: "dance.selections.open", // function needs to be modified
             // },
             // "F": {
             //   text: "Open files in selection (vsplit)",
-            //   command: "dance.selections.open", function needs to be modified
+            //   command: "dance.selections.open", // function needs to be modified
             // },
             "q": {
               text: "Close window",

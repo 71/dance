@@ -1205,7 +1205,30 @@
               "args": [
                 {
                   "code": [
-                    "const editor = vscode.window.activeTextEditor;const fallback = () => vscode.commands.executeCommand('workbench.action.quickOpen',);if (!editor) {return await fallback();}const currentFileUri = editor.document.uri;const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);if (!workspaceFolder) {return await fallback()}const relativeDirectoryPath = vscode.workspace.asRelativePath(currentDirectoryUri,false);const quickOpenPrefix = relativeDirectoryPath.endsWith('/')? relativeDirectoryPath: `${relativeDirectoryPath}/`;await vscode.commands.executeCommand('workbench.action.quickOpen',quickOpenPrefix);"
+                    "const fallback = () => vscode.commands.executeCommand(",
+                    "    'workbench.action.quickOpen',",
+                    "  );",
+                    "const editor = vscode.window.activeTextEditor;",
+                    "if (!editor) {",
+                    "  return await fallback();",
+                    "}",
+                    "const currentFileUri = editor.document.uri;",
+                    "const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');",
+                    "const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);",
+                    "if (!workspaceFolder) {",
+                    "  return await fallback()",
+                    "}",
+                    "const relativeDirectoryPath = vscode.workspace.asRelativePath(",
+                    "    currentDirectoryUri,",
+                    "    /** includeWorkspaceFolder = */ false",
+                    "  );",
+                    "const quickOpenPrefix = relativeDirectoryPath.endsWith('/')",
+                    "  ? relativeDirectoryPath",
+                    "  : relativeDirectoryPath + '/';",
+                    "await vscode.commands.executeCommand(",
+                    "  'workbench.action.quickOpen',",
+                    "  quickOpenPrefix,",
+                    ");"
                   ]
                 }
               ]
@@ -1220,8 +1243,7 @@
             },
             "S": {
               "text": "Open workspace symbol picker",
-              "command": "workbench.action.showAllSymbols",
-              "args": []
+              "command": "workbench.action.showAllSymbols"
             },
             "d": {
               "text": "Open diagnostic picker",
@@ -1263,10 +1285,17 @@
             },
             "Y": {
               "text": "Yank main selection to clipboard",
-              "command": "dance.selections.saveText",
+              "command": "dance.run",
               "args": [
                 {
-                  "register": ""
+                  "code": [
+                    "const editor = vscode.window.activeTextEditor;",
+                    "if (!editor) {",
+                    "  return;",
+                    "}",
+                    "const text = editor.document.getText(editor.selection);",
+                    "await vscode.env.clipboard.writeText(text);"
+                  ]
                 }
               ]
             },
@@ -1280,7 +1309,7 @@
                 }
               ]
             },
-            "P​": {
+            "P": {
               "text": "Paste clipboard before selections",
               "command": "dance.edit.insert",
               "args": [
