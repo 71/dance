@@ -1,3 +1,4 @@
+/src/api/data/*.yaml linguist-generated
 /src/commands/layouts/*.md linguist-generated
 /src/commands/load-all.ts linguist-generated
 /src/commands/README.md linguist-generated
