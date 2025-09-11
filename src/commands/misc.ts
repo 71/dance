@@ -317,6 +317,13 @@ const menuHistory: string[] = [];
  * key if it does not match any menu entry. This can be used to implement chords
  * like `jj`.
  *
+ * #### Predefined menus
+ *
+ * | Title         | Keybinding          | Command                                   |
+ * | ------------- | ------------------- | ----------------------------------------- |
+ * | Left bracket  | `[` (helix: normal) | `[".openMenu", { menu: "leftBracket" }]`  |
+ * | Right bracket | `]` (helix: normal) | `[".openMenu", { menu: "rightBracket" }]` |
+ *
  * @noreplay
  */
 export async function openMenu(
