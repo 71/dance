@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 
 import type { Argument, InputOr } from ".";
 import { closestSurroundedBy, command, Context, Direction, keypress, Lines, moveToExcluded, moveWhileBackward, moveWhileForward, Objects, Pair, pair, Positions, prompt, search, SelectionBehavior, Selections, Shift, surroundedBy, wordBoundary } from "../api";
-import { CharSet } from "../utils/charset";
+import { CharSet, getCharacters } from "../utils/charset";
 import { ArgumentError, assert } from "../utils/errors";
 import { escapeForRegExp, execRange } from "../utils/regexp";
 import * as TrackedSelection from "../utils/tracked-selection";
@@ -864,6 +864,129 @@ export async function leap(
 
     activeLabeledSets.forEach((set) => set.dispose());
     inactiveLabeledSets.forEach((set) => set.dispose());
+  }
+}
+
+/**
+ * Leap to word.
+ *
+ * This is the same as goto word (gw) in helix.
+ *
+ * #### Variants
+ *
+ * | Title                 | Identifier         | Command                                         |
+ * | ----------------------| ------------------ | ----------------------------------------------- |
+ * | Leap to word (extend) | `wordLabel.extend` | `[".seek.wordLabel", { shift: "extend", ... }]` |
+ */
+export async function wordLabel(
+  _: Context,
+
+  labelChars: Argument<string> = "abcdefghijklmnopqrstuvwxyz",
+  shift = Shift.Select,
+) {
+  ArgumentError.validate(
+    "labelChars",
+    !/\s/.test(labelChars),
+    "must not contain whitespace",
+  );
+
+  ArgumentError.validate(
+    "labelChars",
+    new Set(labelChars as Iterable<string>).size === [...labelChars].length,
+    "must not reuse characters",
+  );
+
+  const editor = _.editor,
+        doc = _.document,
+        highlightColor = new vscode.ThemeColor("inputValidation.errorBackground"),
+        foregroundColor = new vscode.ThemeColor("input.foreground");
+
+  const wordSelections = Selections.topToBottom(
+    Selections.selectWithin(
+      new RegExp(
+        `\\b\\w[^\\s${escapeForRegExp(
+          getCharacters(CharSet.Punctuation, doc),
+        )}]+`,
+      ), // words with 2 or more characters
+      editor.visibleRanges.map(Selections.fromRange),
+    ),
+  ).filter((selection) => !selection.contains(_.selections[0].active));
+
+  const labelsToSelections = new Map<string, vscode.Selection>();
+  for (
+    let i = 0;
+    i < wordSelections.length && i < labelChars.length * labelChars.length;
+    i++
+  ) {
+    const labelFirstChar = labelChars[Math.floor(i / labelChars.length)];
+    const labelSecondChar = labelChars[i % labelChars.length];
+    labelsToSelections.set(
+      `${labelFirstChar}${labelSecondChar}`,
+      wordSelections[i],
+    );
+  }
+
+  // Render labels
+  const decorations = Array.from(
+    labelsToSelections,
+    ([label, selection]): vscode.DecorationOptions => {
+      const range = new vscode.Range(selection.start, selection.start);
+
+      return {
+        range,
+        renderOptions: {
+          after: {
+            contentText: label,
+            backgroundColor: highlightColor,
+            color: foregroundColor,
+            width: "2ch",
+            textDecoration: "none; position: absolute;",
+          },
+        },
+      };
+    },
+  );
+
+  const decorationType = vscode.window.createTextEditorDecorationType({
+    before: { textDecoration: "none" },
+  });
+
+  try {
+    editor.setDecorations(decorationType, decorations);
+
+    let input = "";
+    while (input.length < 2) {
+      input += await keypress(_);
+    }
+    const chosenSelection = labelsToSelections.get(input);
+    if (chosenSelection !== undefined) {
+      if (shift === Shift.Extend) {
+        const primarySelection = _.selections[0];
+        const direction = chosenSelection.start.isBefore(
+          primarySelection.active,
+        )
+          ? Direction.Backward
+          : Direction.Forward;
+        const newSelection =
+          direction === Direction.Backward
+            ? Selections.fromStartEnd(
+              Selections.start(chosenSelection),
+              Selections.end(primarySelection),
+              true,
+            )
+            : Selections.fromStartEnd(
+              Selections.start(primarySelection),
+              Selections.end(chosenSelection),
+              false,
+            );
+        Selections.set([newSelection], _);
+      } else {
+        Selections.set([chosenSelection], _);
+      }
+    }
+  } finally {
+    editor.setDecorations(decorationType, []);
+    decorationType.dispose();
   }
 }
 
