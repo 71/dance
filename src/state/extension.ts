@@ -35,6 +35,12 @@ export class Extension implements vscode.Disposable {
     return this._gotoMenus as ReadonlyMap<string, Menu>;
   }
 
+  private _hideLineNumbersInZenMode = false;
+
+  public get hideLineNumbersInZenMode() {
+    return this._hideLineNumbersInZenMode;
+  }
+
   // State.
   // ==========================================================================
 
@@ -166,6 +172,15 @@ export class Extension implements vscode.Disposable {
         }
       },
       true,
+    );
+
+    // Configuration: VS Code.
+    this.observePreference<boolean>(
+      "zenMode.hideLineNumbers",
+      (value) => {
+        this._hideLineNumbersInZenMode = value;
+      },
+      /*triggerNow=*/ true,
     );
 
     this._subscriptions.push(
