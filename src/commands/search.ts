@@ -85,9 +85,9 @@ export async function search(
  *
  * @keys `a-*` (core: normal), `a-NumPad_Multiply` (core: normal)
  *
- * | Title                            | Identifier        | Keybinding                                           | Command                                             |
- * | -------------------------------- | ----------------- | ---------------------------------------------------- | --------------------------------------------------- |
- * | Search current selection (smart) | `selection.smart` | `*` (core: normal), `NumPad_Multiply` (core: normal) | `[".search.selection", { smart: true, +register }]` |
+ * | Title                            | Identifier        | Keybinding                                                                         | Command                                             |
+ * | -------------------------------- | ----------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------- |
+ * | Search current selection (smart) | `selection.smart` | `*` (core: normal; helix: select), `NumPad_Multiply` (core: normal; helix: select) | `[".search.selection", { smart: true, +register }]` |
  */
 export function selection(
   document: vscode.TextDocument,
@@ -100,7 +100,9 @@ export function selection(
         isWord = smart ? getCharSetFunction(CharSet.Word, document) : undefined;
 
   for (const selection of selections) {
-    let text = escapeForRegExp(document.getText(selection));
+    // Replace newlines with `\\n`. Otherwise, using `/` after `*` will bring up
+    // a prompt which will remove newlines.
+    let text = escapeForRegExp(document.getText(selection)).replace(/\n/g, "\\n");
 
     if (text.length === 0) {
       continue;
@@ -121,7 +123,7 @@ export function selection(
             lastLine = selection.isSingleLine && firstLine !== undefined
               ? firstLine
               : document.lineAt(selection.end).text,
-            isEndOfWord = lastLineEnd + 1 < lastLine.length
+            isEndOfWord = lastLineEnd > 0 && lastLineEnd + 1 < lastLine.length
               && isWord!(lastLine.charCodeAt(lastLineEnd - 1))
               && !isWord!(lastLine.charCodeAt(lastLineEnd));
 
