@@ -74,12 +74,10 @@ export class PerEditorState implements vscode.Disposable {
   public dispose() {
     this._clearDecorations(this._mode);
 
-    const options = this._editor.options,
-          mode = this._mode,
+    const mode = this._mode,
           vscodeMode = mode.modes.vscodeMode;
 
-    options.cursorStyle = vscodeMode.cursorStyle;
-    options.lineNumbers = vscodeMode.lineNumbers;
+    this._updateEditorOptions(vscodeMode);
 
     if (this._isVisible) {
       this._isVisible = false;
@@ -175,11 +173,8 @@ export class PerEditorState implements vscode.Disposable {
       for (const prop of props) {
         switch (prop) {
         case "cursorStyle":
-          this._editor.options.cursorStyle = mode.cursorStyle;
-          break;
-
         case "lineNumbers":
-          this._editor.options.lineNumbers = mode.lineNumbers;
+          this._updateEditorOptions(mode);
           break;
 
         case "decorations":
@@ -232,12 +227,10 @@ export class PerEditorState implements vscode.Disposable {
    * @deprecated Do not call -- internal implementation detail.
    */
   public notifyDidBecomeActive() {
-    const { editor, mode } = this;
+    const { mode } = this;
 
     this.extension.statusBar.activeModeSegment.setContent(mode.name);
-
-    editor.options.lineNumbers = mode.lineNumbers;
-    editor.options.cursorStyle = mode.cursorStyle;
+    this._updateEditorOptions(mode);
 
     return vscode.commands.executeCommand("setContext", extensionName + ".mode", mode.name);
   }
@@ -382,10 +375,23 @@ export class PerEditorState implements vscode.Disposable {
       editor.setDecorations(this.extension.editors.characterDecorationType, []);
     }
 
-    editor.options.cursorStyle = mode.cursorStyle;
-    editor.options.lineNumbers = mode.lineNumbers;
 
     this._updateOffscreenSelectionsIndicators(mode);
+  }
+
+  private _updateEditorOptions(mode: Mode) {
+    const editor = this._editor;
+
+    // By default, zen mode hides line numbers. Unfortunately, there is no way
+    // for us to detect whether zen mode is currently active, so we guess
+    // instead.
+    const isMaybeInZenMode = this.extension.hideLineNumbersInZenMode
+        && editor.options.lineNumbers === vscode.TextEditorLineNumbersStyle.Off;
+
+    if (!isMaybeInZenMode) {
+      editor.options.lineNumbers = mode.lineNumbers;
+    }
+    editor.options.cursorStyle = mode.cursorStyle;
   }
 
   private _updateSelectionsAfterBehaviorChange(mode: Mode) {
