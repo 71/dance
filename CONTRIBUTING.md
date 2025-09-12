@@ -139,10 +139,3 @@ help, please [contact me](mailto:opensource@gregoirege.is)!
 [api]: ./src/api
 [commands]: ./src/commands
 [issues]: https://github.com/71/dance/issues
-[vim]: https://www.vim.org
-[kakoune]: https://github.com/mawww/kakoune
-[run]: ./src/commands/README.md#run
-[vsc]: https://github.com/Microsoft/vscode
-[vscodevim]: https://github.com/VSCodeVim/Vim
-[vsccommands]: https://code.visualstudio.com/api/extension-guides/command
-[vsckeybindings]: https://code.visualstudio.com/docs/getstarted/keybindings

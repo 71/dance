@@ -207,3 +207,13 @@ https://marketplace.visualstudio.com/items?itemName=gregoire.dance-helix).
 ## Contributing
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+[api]: ./src/api
+[commands]: ./src/commands
+[vim]: https://www.vim.org
+[kakoune]: https://github.com/mawww/kakoune
+[run]: ./src/commands/README.md#run
+[vsc]: https://github.com/Microsoft/vscode
+[vscodevim]: https://github.com/VSCodeVim/Vim
+[vsccommands]: https://code.visualstudio.com/api/extension-guides/command
+[vsckeybindings]: https://code.visualstudio.com/docs/getstarted/keybindings
