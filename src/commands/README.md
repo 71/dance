@@ -84,7 +84,7 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="./modes.ts#L27"><code>modes.insert.lineEnd</code></a></td><td>Insert at line end</td><td><code>Shift+A</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+A</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="./modes.ts#L26"><code>modes.insert.lineStart</code></a></td><td>Insert at line start</td><td><code>Shift+I</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+I</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="./modes.ts#L17"><code>modes.set.insert</code></a></td><td>Set mode to Insert</td><td></td></tr>
-<tr><td><a href="./modes.ts#L16"><code>modes.set.normal</code></a></td><td>Set mode to Normal</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)<code>Escape</code> (<code>editorTextFocus && dance.mode == 'select'</code>)<code>V</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
+<tr><td><a href="./modes.ts#L16"><code>modes.set.normal</code></a></td><td>Set mode to Normal</td><td><code>Escape</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)<code>Escape</code> (<code>editorTextFocus && dance.mode == 'select'</code>)<code>V</code> (<code>editorTextFocus && dance.mode == 'select'</code>)<code>Ctrl+[</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
 <tr><td><a href="./modes.ts#L18"><code>modes.set.select</code></a></td><td>Set mode to Select</td><td><code>V</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./modes.ts#L43"><code>modes.set.temporarily.insert</code></a></td><td>Temporary Insert mode</td><td><code>Ctrl+V</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="./modes.ts#L42"><code>modes.set.temporarily.normal</code></a></td><td>Temporary Normal mode</td><td><code>Ctrl+V</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
@@ -925,11 +925,11 @@ Set Dance mode.
 
 #### Variants
 
-| Title              | Identifier   | Keybinding                                                  | Command                                                     |
-| ------------------ | ------------ | ----------------------------------------------------------- | ----------------------------------------------------------- |
-| Set mode to Normal | `set.normal` | `escape` (core: insert; helix: select), `v` (helix: select) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
-| Set mode to Insert | `set.insert` |                                                             | `[".modes.set", { mode: "insert" }]`                        |
-| Set mode to Select | `set.select` | `v` (helix: normal)                                         | `[".modes.set", { mode: "select" }]`                        |
+| Title              | Identifier   | Keybinding                                                                        | Command                                                     |
+| ------------------ | ------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Set mode to Normal | `set.normal` | `escape` (core: insert; helix: select), `v` (helix: select), `c-[` (core: insert) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
+| Set mode to Insert | `set.insert` |                                                                                   | `[".modes.set", { mode: "insert" }]`                        |
+| Set mode to Select | `set.select` | `v` (helix: normal)                                                               | `[".modes.set", { mode: "select" }]`                        |
 
 Other variants are provided to switch to insert mode:
 
