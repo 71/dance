@@ -1195,6 +1195,40 @@
               "command": "dance.seek.wordLabel"
             }
           }
+        },
+        "leftBracket": {
+          "title": "Left bracket",
+          "items": {
+            "d": {
+              "text": "Goto previous diagnostic",
+              "command": "editor.action.marker.prevInFiles"
+            },
+            "g": {
+              "text": "Goto previous change",
+              "command": "workbench.action.editor.previousChange"
+            },
+            " ": {
+              "text": "Add newline above",
+              "command": "dance.edit.newLine.above"
+            }
+          }
+        },
+        "rightBracket": {
+          "title": "Right bracket",
+          "items": {
+            "d": {
+              "text": "Goto next diagnostic",
+              "command": "editor.action.marker.nextInFiles"
+            },
+            "g": {
+              "text": "Goto next change",
+              "command": "workbench.action.editor.nextChange"
+            },
+            " ": {
+              "text": "Add newline below",
+              "command": "dance.edit.newLine.below"
+            }
+          }
         }
       }
     },
@@ -1570,6 +1604,24 @@
         "command": "dance.changeInput",
         "args": {
           "action": "next"
+        }
+      },
+      {
+        "key": "[",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Left bracket",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "leftBracket"
+        }
+      },
+      {
+        "key": "]",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Right bracket",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "rightBracket"
         }
       },
       {
@@ -2136,30 +2188,6 @@
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Select to character (excluded)",
         "command": "dance.seek"
-      },
-      {
-        "key": "]",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Select to whole object end",
-        "command": "dance.seek.askObject.end"
-      },
-      {
-        "key": "]",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Select to whole object end",
-        "command": "dance.seek.askObject.end"
-      },
-      {
-        "key": "[",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Select to whole object start",
-        "command": "dance.seek.askObject.start"
-      },
-      {
-        "key": "[",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Select to whole object start",
-        "command": "dance.seek.askObject.start"
       },
       {
         "key": "Shift+T",
