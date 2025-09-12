@@ -40,6 +40,8 @@ export class Extension implements vscode.Disposable {
 
   private _treeSitter?: TreeSitter;
 
+  private _isSmartCaseEnabled: boolean = false;
+
   /**
    * `StatusBar` for this instance of the extension.
    */
@@ -117,6 +119,10 @@ export class Extension implements vscode.Disposable {
     return this._treeSitter;
   }
 
+  public get isSmartCaseEnabled(): boolean {
+    return this._isSmartCaseEnabled;
+  }
+
   public constructor(public readonly commands: Commands) {
     this.recorder = new Recorder(this);
 
@@ -189,6 +195,16 @@ export class Extension implements vscode.Disposable {
 
     // Tree Sitter support.
     this._subscriptions.push(onDidLoadTreeSitter((treeSitter) => this._treeSitter = treeSitter));
+
+    // Smart case.
+    this.observePreference<boolean | null>(
+      ".smartCase",
+      (value) => {
+        this._isSmartCaseEnabled = value ?? false;
+      },
+      true,
+    );
+
   }
 
   /**

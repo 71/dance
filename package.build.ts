@@ -611,6 +611,12 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           description: "Controls which register maps to the system clipboard.",
         },
 
+        "dance.smartCase": {
+          type: "boolean",
+          default: false,
+          description: "Controls whether dance should use smart case when searching.",
+        },
+
         // Deprecated configuration:
         "dance.enabled": {
           type: "boolean",
