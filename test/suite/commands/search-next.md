@@ -158,6 +158,33 @@ pear pineapple apple
 kiwi orange kiwi
 ```
 
+### 1 search-apple inverted-next
+[up](#1-search-apple)
+
+- .selections.changeDirection
+- .search.next
+
+```
+apple pineapple pear
+pear pineapple apple
+         |^^^^ 0
+kiwi orange kiwi
+```
+
+### 1 search-apple inverted-next-add
+[up](#1-search-apple)
+
+- .selections.changeDirection
+- .search.next.add
+
+```
+apple pineapple pear
+          |^^^^ 1
+pear pineapple apple
+         |^^^^ 0
+kiwi orange kiwi
+```
+
 # 2
 
 ```

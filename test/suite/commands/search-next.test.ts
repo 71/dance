@@ -257,6 +257,51 @@ suite("./test/suite/commands/search-next.md", function () {
     `);
   });
 
+  test("1 > search-apple > inverted-next", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      apple pineapple pear
+                ^^^^^ 0
+      pear pineapple apple
+      kiwi orange kiwi
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.selections.changeDirection");
+    await executeCommand("dance.search.next");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:161:1", 6, String.raw`
+      apple pineapple pear
+      pear pineapple apple
+               |^^^^ 0
+      kiwi orange kiwi
+    `);
+  });
+
+  test("1 > search-apple > inverted-next-add", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      apple pineapple pear
+                ^^^^^ 0
+      pear pineapple apple
+      kiwi orange kiwi
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.selections.changeDirection");
+    await executeCommand("dance.search.next.add");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:174:1", 6, String.raw`
+      apple pineapple pear
+                |^^^^ 1
+      pear pineapple apple
+               |^^^^ 0
+      kiwi orange kiwi
+    `);
+  });
+
   test("2 > search-next-add", async function () {
     // Set-up document to be in expected initial state.
     await ExpectedDocument.apply(editor, 6, String.raw`
@@ -275,7 +320,7 @@ suite("./test/suite/commands/search-next.md", function () {
     await executeCommand("dance.search.next.add");
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:174:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:201:1", 6, String.raw`
       foo
       foo
       ^^^ 1
@@ -306,7 +351,7 @@ suite("./test/suite/commands/search-next.md", function () {
     await executeCommand("dance.search.next");
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:192:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:219:1", 6, String.raw`
       foo
       foo
       ^^^ 1
@@ -337,7 +382,7 @@ suite("./test/suite/commands/search-next.md", function () {
     await executeCommand("dance.search.next");
 
     // Ensure document is as expected.
-    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:209:1", 6, String.raw`
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/search-next.md:236:1", 6, String.raw`
       foo
       foo
       ^^^ 1
