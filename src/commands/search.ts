@@ -259,5 +259,5 @@ function nextImpl(
   }
 
   return Selections.fromLength(
-    searchResult[0], searchResult[1][0].length, /* isReversed= */ false, document);
+    searchResult[0], searchResult[1][0].length, selection.isReversed, document);
 }
