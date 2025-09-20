@@ -1207,6 +1207,17 @@
               "text": "Goto previous change",
               "command": "workbench.action.editor.previousChange"
             },
+            "p": {
+              "text": "Goto previous paragraph",
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#predefined=paragraph)",
+                  "where": "start",
+                  "inner": false
+                }
+              ]
+            },
             " ": {
               "text": "Add newline above",
               "command": "dance.edit.newLine.above"
@@ -1223,6 +1234,16 @@
             "g": {
               "text": "Goto next change",
               "command": "workbench.action.editor.nextChange"
+            },
+            "p": {
+              "text": "Goto next paragraph",
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#predefined=paragraph)",
+                  "where": "end"
+                }
+              ]
             },
             " ": {
               "text": "Add newline below",
@@ -1604,24 +1625,6 @@
         "command": "dance.changeInput",
         "args": {
           "action": "next"
-        }
-      },
-      {
-        "key": "[",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Left bracket",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "leftBracket"
-        }
-      },
-      {
-        "key": "]",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Right bracket",
-        "command": "dance.openMenu",
-        "args": {
-          "menu": "rightBracket"
         }
       },
       {

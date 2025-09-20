@@ -1216,11 +1216,6 @@
         "category": "Dance"
       },
       {
-        "command": "dance.openMenu",
-        "title": "Open menu",
-        "category": "Dance"
-      },
-      {
         "command": "dance.run",
         "title": "Run code",
         "category": "Dance"

@@ -785,8 +785,10 @@ openMenu:
 
       | Title         | Keybinding          | Command                                   |
       | ------------- | ------------------- | ----------------------------------------- |
-      | Left bracket  | `[` (helix: normal) | `[".openMenu", { menu: "leftBracket" }]`  |
-      | Right bracket | `]` (helix: normal) | `[".openMenu", { menu: "rightBracket" }]` |
+      | Left bracket  | `[` (helix: normal) | `[".openMenu", { menu: "leftBracket" }, pass: [ { shift: "select" } ]]`  |
+      | Left bracket  | `[` (helix: select) | `[".openMenu", { menu: "leftBracket" }, pass: [ { shift: "extend" } ]]`  |
+      | Right bracket | `]` (helix: normal) | `[".openMenu", { menu: "rightBracket" }, pass: [ { shift: "select" } ]]` |
+      | Right bracket | `]` (helix: select) | `[".openMenu", { menu: "rightBracket" }, pass: [ { shift: "extend" } ]]` |
 
 run:
   title:
@@ -2799,7 +2801,17 @@ anonymous:
       en: Left bracket
 
     commands: |-
-      [".openMenu", { menu: "leftBracket" }]
+      [".openMenu", { menu: "leftBracket" }, pass: [ { shift: "extend" } ]]
+
+    keys:
+      qwerty: |-
+        `[` (helix: select)
+
+  - title:
+      en: Left bracket
+
+    commands: |-
+      [".openMenu", { menu: "leftBracket" }, pass: [ { shift: "select" } ]]
 
     keys:
       qwerty: |-
@@ -2829,7 +2841,17 @@ anonymous:
       en: Right bracket
 
     commands: |-
-      [".openMenu", { menu: "rightBracket" }]
+      [".openMenu", { menu: "rightBracket" }, pass: [ { shift: "extend" } ]]
+
+    keys:
+      qwerty: |-
+        `]` (helix: select)
+
+  - title:
+      en: Right bracket
+
+    commands: |-
+      [".openMenu", { menu: "rightBracket" }, pass: [ { shift: "select" } ]]
 
     keys:
       qwerty: |-

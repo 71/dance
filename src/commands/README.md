@@ -862,7 +862,7 @@ This command:
 
 <a name="openMenu" />
 
-### [`openMenu`](./misc.ts#L309-L338)
+### [`openMenu`](./misc.ts#L309-L340)
 
 Open menu.
 
@@ -878,8 +878,10 @@ like `jj`.
 
 | Title         | Keybinding          | Command                                   |
 | ------------- | ------------------- | ----------------------------------------- |
-| Left bracket  | `[` (helix: normal) | `[".openMenu", { menu: "leftBracket" }]`  |
-| Right bracket | `]` (helix: normal) | `[".openMenu", { menu: "rightBracket" }]` |
+| Left bracket  | `[` (helix: normal) | `[".openMenu", { menu: "leftBracket" }, pass: [ { shift: "select" } ]]`  |
+| Left bracket  | `[` (helix: select) | `[".openMenu", { menu: "leftBracket" }, pass: [ { shift: "extend" } ]]`  |
+| Right bracket | `]` (helix: normal) | `[".openMenu", { menu: "rightBracket" }, pass: [ { shift: "select" } ]]` |
+| Right bracket | `]` (helix: select) | `[".openMenu", { menu: "rightBracket" }, pass: [ { shift: "extend" } ]]` |
 
 
 This command:
@@ -893,7 +895,7 @@ This command:
 
 <a name="changeInput" />
 
-### [`changeInput`](./misc.ts#L379-L393)
+### [`changeInput`](./misc.ts#L381-L395)
 
 Change current input.
 
@@ -910,7 +912,7 @@ This command:
 
 <a name="ifEmpty" />
 
-### [`ifEmpty`](./misc.ts#L403-L414)
+### [`ifEmpty`](./misc.ts#L405-L416)
 
 Executes one of the specified commands depending on whether the current
 selections are empty.
