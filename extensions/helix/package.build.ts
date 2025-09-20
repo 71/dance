@@ -280,6 +280,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           items: {
             "d": { text: "Goto previous diagnostic", command: "editor.action.marker.prevInFiles" },
             "g": { text: "Goto previous change", command: "workbench.action.editor.previousChange" },
+            "p": { text: "Goto previous paragraph", command: "dance.seek.object", args: [{ "input": "(?#predefined=paragraph)", "where": "start", "inner": false }] },
             " ": { text: "Add newline above", command: "dance.edit.newLine.above" },
           },
         },
@@ -289,6 +290,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
           items: {
             "d": { text: "Goto next diagnostic", command: "editor.action.marker.nextInFiles" },
             "g": { text: "Goto next change", command: "workbench.action.editor.nextChange" },
+            "p": { text: "Goto next paragraph", command: "dance.seek.object", args: [{ "input": "(?#predefined=paragraph)", "where": "end" }] },
             " ": { text: "Add newline below", command: "dance.edit.newLine.below" },
           },
         },
