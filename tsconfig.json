@@ -2,7 +2,7 @@
   "compilerOptions": {
     "module": "CommonJS",
     "target": "ES2021",
-    "lib": ["ESNext.WeakRef"],
+    "lib": ["ESNext.WeakRef", "ES2021.String"],
     "noEmit": true,
     "sourceMap": true,
     "strict": true,
