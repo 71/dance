@@ -364,7 +364,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             text: "Yank selections to clipboard",
             command: "dance.selections.saveText",
             args: [{
-              register: "",
+              register: "dquote",
             }],
           },
           "Y": {
@@ -385,7 +385,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             text: "Paste clipboard after selections",
             command: "dance.edit.insert",
             args: [{
-              register: "",
+              register: "dquote",
               handleNewLine: true,
               where: "end",
             }],
@@ -394,7 +394,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             text: "Paste clipboard before selections",
             command: "dance.edit.insert",
             args: [{
-              register: "",
+              register: "dquote",
               handleNewLine: true,
               where: "start",
             }],

@@ -1277,7 +1277,7 @@
               "command": "dance.selections.saveText",
               "args": [
                 {
-                  "register": ""
+                  "register": "dquote"
                 }
               ]
             },
@@ -1302,7 +1302,7 @@
               "command": "dance.edit.insert",
               "args": [
                 {
-                  "register": "",
+                  "register": "dquote",
                   "handleNewLine": true,
                   "where": "end"
                 }
@@ -1313,7 +1313,7 @@
               "command": "dance.edit.insert",
               "args": [
                 {
-                  "register": "",
+                  "register": "dquote",
                   "handleNewLine": true,
                   "where": "start"
                 }
