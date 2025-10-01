@@ -1207,6 +1207,17 @@
               "text": "Goto previous change",
               "command": "workbench.action.editor.previousChange"
             },
+            "p": {
+              "text": "Goto previous paragraph",
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#predefined=paragraph)",
+                  "where": "start",
+                  "inner": false
+                }
+              ]
+            },
             " ": {
               "text": "Add newline above",
               "command": "dance.edit.newLine.above"
@@ -1223,6 +1234,16 @@
             "g": {
               "text": "Goto next change",
               "command": "workbench.action.editor.nextChange"
+            },
+            "p": {
+              "text": "Goto next paragraph",
+              "command": "dance.seek.object",
+              "args": [
+                {
+                  "input": "(?#predefined=paragraph)",
+                  "where": "end"
+                }
+              ]
             },
             " ": {
               "text": "Add newline below",
@@ -1612,7 +1633,26 @@
         "title": "Left bracket",
         "command": "dance.openMenu",
         "args": {
-          "menu": "leftBracket"
+          "menu": "leftBracket",
+          "pass": [
+            {
+              "shift": "select"
+            }
+          ]
+        }
+      },
+      {
+        "key": "[",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Left bracket",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "leftBracket",
+          "pass": [
+            {
+              "shift": "extend"
+            }
+          ]
         }
       },
       {
@@ -1621,7 +1661,26 @@
         "title": "Right bracket",
         "command": "dance.openMenu",
         "args": {
-          "menu": "rightBracket"
+          "menu": "rightBracket",
+          "pass": [
+            {
+              "shift": "select"
+            }
+          ]
+        }
+      },
+      {
+        "key": "]",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Right bracket",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "rightBracket",
+          "pass": [
+            {
+              "shift": "extend"
+            }
+          ]
         }
       },
       {

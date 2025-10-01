@@ -738,6 +738,8 @@ async function main() {
 
   if (buildErrors.length > 0) {
     console.error(buildErrors);
+
+    success = false;
   }
 
   if (ensureUpToDate) {
