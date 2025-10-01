@@ -285,32 +285,42 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             args: [
               {
                 code:
-                  `const fallback = () => vscode.commands.executeCommand(
-                    'workbench.action.quickOpen',
-                  );
-                  const editor = vscode.window.activeTextEditor;
-                  if (!editor) {
-                    return await fallback();
-                  }
-                  const currentFileUri = editor.document.uri;
-                  const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');
-                  const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);
-                  if (!workspaceFolder) {
-                    return await fallback();
-                  }
-                  const relativeDirectoryPath = vscode.workspace.asRelativePath(
-                    currentDirectoryUri,
-                    /** includeWorkspaceFolder = */ false
-                  );
-                  const quickOpenPrefix = relativeDirectoryPath.endsWith('/') ? relativeDirectoryPath : relativeDirectoryPath + "/";
-                  await vscode.commands.executeCommand(
-                    'workbench.action.quickOpen',
-                    quickOpenPrefix,
-                  );`
-                  // The indentation of multi-line template strings
-                  .replaceAll("                  ", "")
-                  .replaceAll(/^ {,2}/mg, "")
-                  .split("\n")
+                  (() => {
+                    const codeStr =
+                      `const fallback = () => vscode.commands.executeCommand(
+                        'workbench.action.quickOpen',
+                      );
+                      const editor = vscode.window.activeTextEditor;
+                      if (!editor) {
+                        return await fallback();
+                      }
+                      const currentFileUri = editor.document.uri;
+                      const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');
+                      const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);
+                      if (!workspaceFolder || currentDirectoryUri.fsPath === workspaceFolder.uri.fsPath) {
+                        return await fallback();
+                      }
+                      const relativeDirectoryPath = vscode.workspace.asRelativePath(
+                        currentDirectoryUri,
+                        /** includeWorkspaceFolder = */ false
+                      );
+                      const quickOpenPrefix = relativeDirectoryPath.endsWith('/') ?
+                          relativeDirectoryPath
+                          : relativeDirectoryPath + "/";
+                      await vscode.commands.executeCommand(
+                        'workbench.action.quickOpen',
+                        quickOpenPrefix,
+                      );`;
+
+                    const lines = codeStr.split("\n");
+                    const theThirdLine = lines[2];
+                    // Get the indentation of the multi-line template string
+                    const indent = theThirdLine.match(/^([ \t]*)/)![0];
+                    // Remove the indentation and split into array of lines
+                    return codeStr
+                      .replaceAll(indent, "")
+                      .split("\n");
+                  })()
                 ,
               },
             ],
