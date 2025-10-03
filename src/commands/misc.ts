@@ -319,12 +319,13 @@ const menuHistory: string[] = [];
  *
  * #### Predefined menus
  *
- * | Title         | Keybinding          | Command                                                                  |
- * | ------------- | ------------------- | ------------------------------------------------------------------------ |
- * | Left bracket  | `[` (helix: normal) | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "select" } ] }]` |
- * | Left bracket  | `[` (helix: select) | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "extend" } ] }]` |
- * | Right bracket | `]` (helix: normal) | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "select" } ] }]` |
- * | Right bracket | `]` (helix: select) | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "extend" } ] }]` |
+ * | Title         | Keybinding                             | Command                                                                  |
+ * | ------------- | -------------------------------------- | ------------------------------------------------------------------------ |
+ * | Left bracket  | `[` (helix: normal)                    | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "select" } ] }]` |
+ * | Left bracket  | `[` (helix: select)                    | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "extend" } ] }]` |
+ * | Right bracket | `]` (helix: normal)                    | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "select" } ] }]` |
+ * | Right bracket | `]` (helix: select)                    | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "extend" } ] }]` |
+ * | Space         | `space` (helix: normal; helix: select) | `[".openMenu", { menu: "space" }]`                                       |
  *
  * @noreplay
  */
