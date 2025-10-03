@@ -818,6 +818,11 @@
           "default": "dquote",
           "description": "Controls which register maps to the system clipboard."
         },
+        "dance.smartCase": {
+          "type": "boolean",
+          "default": false,
+          "description": "Controls whether dance should use smart case when searching."
+        },
         "dance.enabled": {
           "type": "boolean",
           "default": true,
@@ -1548,6 +1553,16 @@
       {
         "command": "dance.seek.wordEnd.ws.extend",
         "title": "Extend to next non-whitespace word end",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.wordLabel",
+        "title": "Leap to word",
+        "category": "Dance"
+      },
+      {
+        "command": "dance.seek.wordLabel.extend",
+        "title": "Leap to word (extend)",
         "category": "Dance"
       },
       {

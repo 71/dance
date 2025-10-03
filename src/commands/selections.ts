@@ -353,22 +353,25 @@ export function filter(
  * | -------------- | --------------- | --------------------------------- | ------------------------------------------------------------------------------------------------- |
  * | Leap or select | `select.orLeap` | `s` (core: normal; helix: select) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
  */
-export function select(
+export async function select(
   _: Context,
+  register: RegisterOr<"slash", [Register.Flags.CanRead, Register.Flags.CanWrite]>,
 
   interactive: Argument<boolean> = true,
-  argument: { re?: string | RegExp },
+  argument: { re?: string | RegExp & { originalSource?: string } },
 ) {
   return manipulateSelectionsInteractively(
     _,
     "re",
     argument,
     interactive,
-    promptRegexpOpts("mu"),
+    { ...promptRegexpOpts("mu"), value: (await register.get())?.[0] },
     (re, selections) => {
       if (typeof re === "string") {
         re = newRegExp(re, "mu");
       }
+
+      register.set([re.originalSource ?? re.source]);
 
       Selections.set(Selections.bottomToTop(Selections.selectWithin(re, selections)));
 
@@ -382,23 +385,26 @@ export function select(
  *
  * @keys `s-s` (core: normal; helix: select)
  */
-export function split(
+export async function split(
   _: Context,
+  register: RegisterOr<"slash", [Register.Flags.CanRead, Register.Flags.CanWrite]>,
 
   excludeEmpty: Argument<boolean> = false,
   interactive: Argument<boolean> = true,
-  argument: { re?: string | RegExp },
+  argument: { re?: string | RegExp & { originalSource?: string } },
 ) {
   return manipulateSelectionsInteractively(
     _,
     "re",
     argument,
     interactive,
-    promptRegexpOpts("mu"),
+    { ...promptRegexpOpts("mu"), value: (await register.get())?.[0] },
     (re, selections) => {
       if (typeof re === "string") {
         re = newRegExp(re, "mu");
       }
+
+      register.set([re.originalSource ?? re.source]);
 
       let split = Selections.split(re, selections);
 

@@ -85,19 +85,19 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="../search.ts#L162"><code>search.previous.add</code></a></td><td>Add previous match</td><td><code>Shift+Alt+N</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+N</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../search.ts#L90"><code>search.selection.smart</code></a></td><td>Search current selection (smart)</td><td><code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+8</code> (<code>editorTextFocus && dance.mode == 'select'</code>)<code>NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#search.selection"><code>search.selection</code></a></td><td>Search current selection</td><td><code>Shift+Alt+8</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+NumPad_Multiply</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td rowspan=42><a href="#seek"><code>seek</code></a></td><td><a href="#seek.enclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td rowspan=44><a href="#seek"><code>seek</code></a></td><td><a href="#seek.enclosing"><code>seek.enclosing</code></a></td><td>Select to next enclosing character</td><td><code>M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="#seek.leap"><code>seek.leap</code></a></td><td>Leap forward</td><td></td></tr>
 <tr><td><a href="#seek.object"><code>seek.object</code></a></td><td>Select object</td><td></td></tr>
 <tr><td><a href="#seek.seek"><code>seek.seek</code></a></td><td>Select to character (excluded)</td><td><code>T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L290"><code>seek.askObject</code></a></td><td>Select whole object</td><td><code>Alt+A</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+A</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
-<tr><td><a href="../seek.ts#L296"><code>seek.askObject.end</code></a></td><td>Select to whole object end</td><td><code>]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>]</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
+<tr><td><a href="../seek.ts#L296"><code>seek.askObject.end</code></a></td><td>Select to whole object end</td><td><code>]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L297"><code>seek.askObject.end.extend</code></a></td><td>Extend to whole object end</td><td><code>Shift+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L291"><code>seek.askObject.inner</code></a></td><td>Select inner object</td><td><code>Alt+I</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+I</code> (<code>editorTextFocus && dance.mode == 'insert'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L298"><code>seek.askObject.inner.end</code></a></td><td>Select to inner object end</td><td><code>Alt+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L299"><code>seek.askObject.inner.end.extend</code></a></td><td>Extend to inner object end</td><td><code>Shift+Alt+]</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L294"><code>seek.askObject.inner.start</code></a></td><td>Select to inner object start</td><td><code>Alt+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L295"><code>seek.askObject.inner.start.extend</code></a></td><td>Extend to inner object start</td><td><code>Shift+Alt+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
-<tr><td><a href="../seek.ts#L292"><code>seek.askObject.start</code></a></td><td>Select to whole object start</td><td><code>[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>[</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
+<tr><td><a href="../seek.ts#L292"><code>seek.askObject.start</code></a></td><td>Select to whole object start</td><td><code>[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L293"><code>seek.askObject.start.extend</code></a></td><td>Extend to whole object start</td><td><code>Shift+[</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L33"><code>seek.backward</code></a></td><td>Select to character (excluded, backward)</td><td><code>Alt+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+T</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L98"><code>seek.enclosing.backward</code></a></td><td>Select to previous enclosing character</td><td><code>Alt+M</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
@@ -125,8 +125,10 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="../seek.ts#L200"><code>seek.wordEnd.extend</code></a></td><td>Extend to next word end</td><td><code>Shift+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>E</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L201"><code>seek.wordEnd.ws</code></a></td><td>Select to next non-whitespace word end</td><td><code>Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../seek.ts#L202"><code>seek.wordEnd.ws.extend</code></a></td><td>Extend to next non-whitespace word end</td><td><code>Shift+Alt+E</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+E</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
+<tr><td><a href="../seek.ts#L879"><code>seek.wordLabel.extend</code></a></td><td>Leap to word (extend)</td><td></td></tr>
 <tr><td><a href="#seek.syntax.experimental"><code>seek.syntax.experimental</code></a></td><td>Select syntax object</td><td></td></tr>
 <tr><td><a href="#seek.word"><code>seek.word</code></a></td><td>Select to next word start</td><td><code>W</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="#seek.wordLabel"><code>seek.wordLabel</code></a></td><td>Leap to word</td><td></td></tr>
 <tr><td rowspan=41><a href="#select"><code>select</code></a></td><td><a href="#select.buffer"><code>select.buffer</code></a></td><td>Select whole buffer</td><td><code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+5</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#select.firstVisibleLine"><code>select.firstVisibleLine</code></a></td><td>Select to first visible line</td><td></td></tr>
 <tr><td><a href="#select.horizontally"><code>select.horizontally</code></a></td><td>Select horizontally</td><td></td></tr>
@@ -184,21 +186,21 @@ selections are empty</td><td></td></tr>
 <tr><td><a href="#selections.select"><code>selections.select</code></a></td><td>Select within selections</td><td></td></tr>
 <tr><td><a href="../selections.ts#L304"><code>selections.clear.main</code></a></td><td>Clear main selections</td><td><code>Alt+,</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+,</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../selections.ts#L303"><code>selections.clear.secondary</code></a></td><td>Clear secondary selections</td><td><code>,</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>,</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
-<tr><td><a href="../selections.ts#L809"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
-<tr><td><a href="../selections.ts#L661"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
-<tr><td><a href="../selections.ts#L660"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="../selections.ts#L815"><code>selections.copy.above</code></a></td><td>Copy selections above</td><td><code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Alt+C</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
+<tr><td><a href="../selections.ts#L667"><code>selections.faceBackward</code></a></td><td>Backward selections</td><td></td></tr>
+<tr><td><a href="../selections.ts#L666"><code>selections.faceForward</code></a></td><td>Forward selections</td><td><code>Shift+Alt+;</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../selections.ts#L301"><code>selections.filter.regexp</code></a></td><td>Keep matching selections</td><td><code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+K</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../selections.ts#L302"><code>selections.filter.regexp.inverse</code></a></td><td>Clear matching selections</td><td><code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Alt+K</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
-<tr><td><a href="../selections.ts#L887"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
-<tr><td><a href="../selections.ts#L700"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
-<tr><td><a href="../selections.ts#L699"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
+<tr><td><a href="../selections.ts#L893"><code>selections.hideIndices</code></a></td><td>Hide selection indices</td><td></td></tr>
+<tr><td><a href="../selections.ts#L706"><code>selections.orderAscending</code></a></td><td>Order selections ascending</td><td></td></tr>
+<tr><td><a href="../selections.ts#L705"><code>selections.orderDescending</code></a></td><td>Order selections descending</td><td></td></tr>
 <tr><td><a href="../selections.ts#L258"><code>selections.pipe.append</code></a></td><td>Pipe and append</td><td><code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+1</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../selections.ts#L259"><code>selections.pipe.prepend</code></a></td><td>Pipe and prepend</td><td><code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+Alt+1</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="../selections.ts#L257"><code>selections.pipe.replace</code></a></td><td>Pipe and replace</td><td><code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+\</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
-<tr><td><a href="../selections.ts#L579"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
+<tr><td><a href="../selections.ts#L585"><code>selections.reduce.edges</code></a></td><td>Reduce selections to their ends</td><td><code>Shift+Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)</td></tr>
 <tr><td><a href="../selections.ts#L354"><code>selections.select.orLeap</code></a></td><td>Leap or select</td><td><code>S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>S</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
-<tr><td><a href="../selections.ts#L886"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
-<tr><td><a href="../selections.ts#L423"><code>selections.splitLines.orLeap.backward</code></a></td><td>Leap or select backward</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
+<tr><td><a href="../selections.ts#L892"><code>selections.showIndices</code></a></td><td>Show selection indices</td><td></td></tr>
+<tr><td><a href="../selections.ts#L429"><code>selections.splitLines.orLeap.backward</code></a></td><td>Leap or select backward</td><td><code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Alt+S</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#selections.sort"><code>selections.sort</code></a></td><td>Sort selections</td><td></td></tr>
 <tr><td><a href="#selections.split"><code>selections.split</code></a></td><td>Split selections</td><td><code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'normal'</code>)<code>Shift+S</code> (<code>editorTextFocus && dance.mode == 'select'</code>)</td></tr>
 <tr><td><a href="#selections.splitLines"><code>selections.splitLines</code></a></td><td>Split selections at line boundaries</td><td></td></tr>
@@ -845,7 +847,7 @@ This command:
 
 <a name="openMenu" />
 
-### [`openMenu`](../misc.ts#L309-L331)
+### [`openMenu`](../misc.ts#L309-L340)
 
 Open menu.
 
@@ -856,6 +858,15 @@ Alternatively, a `menu` can be inlined in the arguments.
 Pass a `prefix` argument to insert the prefix string followed by the typed
 key if it does not match any menu entry. This can be used to implement chords
 like `jj`.
+
+#### Predefined menus
+
+| Title         | Keybinding          | Command                                                                  |
+| ------------- | ------------------- | ------------------------------------------------------------------------ |
+| Left bracket  | `[` (helix: normal) | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "select" } ] }]` |
+| Left bracket  | `[` (helix: select) | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "extend" } ] }]` |
+| Right bracket | `]` (helix: normal) | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "select" } ] }]` |
+| Right bracket | `]` (helix: select) | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "extend" } ] }]` |
 
 
 This command:
@@ -869,7 +880,7 @@ This command:
 
 <a name="changeInput" />
 
-### [`changeInput`](../misc.ts#L372-L386)
+### [`changeInput`](../misc.ts#L381-L395)
 
 Change current input.
 
@@ -886,7 +897,7 @@ This command:
 
 <a name="ifEmpty" />
 
-### [`ifEmpty`](../misc.ts#L396-L407)
+### [`ifEmpty`](../misc.ts#L405-L416)
 
 Executes one of the specified commands depending on whether the current
 selections are empty.
@@ -1126,11 +1137,11 @@ Select object.
 | ---------------------------- | ------------------------------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | Select whole object          | `askObject`                    | `a-a` (kakoune: normal), `a-a` (kakoune: insert)          | `[".openMenu", { menu: "object",                          title: "Select whole object..." }]` |
 | Select inner object          | `askObject.inner`              | `a-i` (kakoune: normal), `a-i` (kakoune: insert)          | `[".openMenu", { menu: "object", pass: [{ inner: true }], title: "Select inner object..." }]` |
-| Select to whole object start | `askObject.start`              | `[` (kakoune: normal), `[` (helix: normal; helix: select) | `[".openMenu", { menu: "object", pass: [{              where: "start"                  }] }]` |
+| Select to whole object start | `askObject.start`              | `[` (kakoune: normal)                                     | `[".openMenu", { menu: "object", pass: [{              where: "start"                  }] }]` |
 | Extend to whole object start | `askObject.start.extend`       | `{` (kakoune: normal)                                     | `[".openMenu", { menu: "object", pass: [{              where: "start", shift: "extend" }] }]` |
 | Select to inner object start | `askObject.inner.start`        | `a-[` (kakoune: normal)                                   | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start"                  }] }]` |
 | Extend to inner object start | `askObject.inner.start.extend` | `a-{` (kakoune: normal)                                   | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "start", shift: "extend" }] }]` |
-| Select to whole object end   | `askObject.end`                | `]` (kakoune: normal), `]` (helix: normal; helix: select) | `[".openMenu", { menu: "object", pass: [{              where: "end"                    }] }]` |
+| Select to whole object end   | `askObject.end`                | `]` (kakoune: normal)                                     | `[".openMenu", { menu: "object", pass: [{              where: "end"                    }] }]` |
 | Extend to whole object end   | `askObject.end.extend`         | `}` (kakoune: normal)                                     | `[".openMenu", { menu: "object", pass: [{              where: "end"  , shift: "extend" }] }]` |
 | Select to inner object end   | `askObject.inner.end`          | `a-]` (kakoune: normal)                                   | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"                    }] }]` |
 | Extend to inner object end   | `askObject.inner.end.extend`   | `a-}` (kakoune: normal)                                   | `[".openMenu", { menu: "object", pass: [{ inner: true, where: "end"  , shift: "extend" }] }]` |
@@ -1174,6 +1185,23 @@ Inspired by [`leap.nvim`](https://github.com/ggandor/leap.nvim).
 
 This command:
 - takes an argument `labels` of type `string`.
+
+<a name="seek.wordLabel" />
+
+### [`seek.wordLabel`](../seek.ts#L870-L886)
+
+Leap to word.
+
+This is the same as goto word (gw) in helix.
+
+#### Variants
+
+| Title                 | Identifier         | Command                                         |
+| ----------------------| ------------------ | ----------------------------------------------- |
+| Leap to word (extend) | `wordLabel.extend` | `[".seek.wordLabel", { shift: "extend", ... }]` |
+
+This command:
+- takes an argument `labelChars` of type `string`.
 
 ## [`select`](../select.ts)
 
@@ -1521,7 +1549,7 @@ Default keybinding: `$` (core: normal; helix: select)
 
 <a name="selections.select" />
 
-### [`selections.select`](../selections.ts#L347-L361)
+### [`selections.select`](../selections.ts#L347-L362)
 
 Select within selections.
 
@@ -1532,18 +1560,20 @@ Select within selections.
 | Leap or select | `select.orLeap` | `s` (core: normal; helix: select) | `[".ifEmpty", { then: [[".seek.leap", { ... }]], otherwise: [[".selections.select", { ... }]] }]` |
 
 This command:
-- accepts an argument of type `{ re?: string | RegExp }`.
+- accepts a register (by default, it uses `slash`).
+- accepts an argument of type `{ re?: string | RegExp & { originalSource?: string } }`.
 - takes an argument `interactive` of type `boolean`.
 
 <a name="selections.split" />
 
-### [`selections.split`](../selections.ts#L380-L391)
+### [`selections.split`](../selections.ts#L383-L395)
 
 Split selections.
 
 
 This command:
-- accepts an argument of type `{ re?: string | RegExp }`.
+- accepts a register (by default, it uses `slash`).
+- accepts an argument of type `{ re?: string | RegExp & { originalSource?: string } }`.
 - takes an argument `excludeEmpty` of type `boolean`.
 - takes an argument `interactive` of type `boolean`.
 
@@ -1551,7 +1581,7 @@ Default keybinding: `s-s` (core: normal; helix: select)
 
 <a name="selections.splitLines" />
 
-### [`selections.splitLines`](../selections.ts#L416-L432)
+### [`selections.splitLines`](../selections.ts#L422-L438)
 
 Split selections at line boundaries.
 
@@ -1567,7 +1597,7 @@ This command:
 
 <a name="selections.expandToLines" />
 
-### [`selections.expandToLines`](../selections.ts#L475-L482)
+### [`selections.expandToLines`](../selections.ts#L481-L488)
 
 Expand to lines.
 
@@ -1580,7 +1610,7 @@ Default keybinding: `x` (kakoune: normal)
 
 <a name="selections.trimLines" />
 
-### [`selections.trimLines`](../selections.ts#L509-L516)
+### [`selections.trimLines`](../selections.ts#L515-L522)
 
 Trim lines.
 
@@ -1592,7 +1622,7 @@ Default keybinding: `a-x` (core: normal; helix: select)
 
 <a name="selections.trimWhitespace" />
 
-### [`selections.trimWhitespace`](../selections.ts#L541-L548)
+### [`selections.trimWhitespace`](../selections.ts#L547-L554)
 
 Trim whitespace.
 
@@ -1604,7 +1634,7 @@ Default keybinding: `_` (core: normal; helix: select)
 
 <a name="selections.reduce" />
 
-### [`selections.reduce`](../selections.ts#L567-L586)
+### [`selections.reduce`](../selections.ts#L573-L592)
 
 Reduce selections to their cursor.
 
@@ -1624,7 +1654,7 @@ Default keybinding: `;` (core: normal; helix: select)
 
 <a name="selections.changeDirection" />
 
-### [`selections.changeDirection`](../selections.ts#L648-L663)
+### [`selections.changeDirection`](../selections.ts#L654-L669)
 
 Change direction of selections.
 
@@ -1642,7 +1672,7 @@ Default keybinding: `a-;` (core: normal; helix: select)
 
 <a name="selections.changeOrder" />
 
-### [`selections.changeOrder`](../selections.ts#L688-L702)
+### [`selections.changeOrder`](../selections.ts#L694-L708)
 
 Reverse selections.
 
@@ -1656,7 +1686,7 @@ Reverse selections.
 
 <a name="selections.sort" />
 
-### [`selections.sort`](../selections.ts#L715-L727)
+### [`selections.sort`](../selections.ts#L721-L733)
 
 Sort selections.
 
@@ -1667,7 +1697,7 @@ This command:
 
 <a name="selections.copy" />
 
-### [`selections.copy`](../selections.ts#L800-L818)
+### [`selections.copy`](../selections.ts#L806-L824)
 
 Copy selections below.
 
@@ -1685,7 +1715,7 @@ Default keybinding: `s-c` (core: normal; helix: select)
 
 <a name="selections.merge" />
 
-### [`selections.merge`](../selections.ts#L852-L857)
+### [`selections.merge`](../selections.ts#L858-L863)
 
 Merge contiguous selections.
 
@@ -1695,13 +1725,13 @@ Default keybinding: `a-_` (kakoune: normal)
 
 <a name="selections.open" />
 
-### [`selections.open`](../selections.ts#L861-L864)
+### [`selections.open`](../selections.ts#L867-L870)
 
 Open selected file.
 
 <a name="selections.toggleIndices" />
 
-### [`selections.toggleIndices`](../selections.ts#L877-L894)
+### [`selections.toggleIndices`](../selections.ts#L883-L900)
 
 Toggle selection indices.
 

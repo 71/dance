@@ -3,7 +3,7 @@ import * as vscode from "vscode";
 import { Context } from "../context";
 import * as Positions from "../positions";
 import { Direction } from "../types";
-import { canMatchLineFeed, execLast, matchesStaticStrings } from "../../utils/regexp";
+import { canMatchLineFeed, execLast, matchesStaticStrings, smartExec } from "../../utils/regexp";
 
 /**
  * Searches backward or forward for a pattern starting at the given position.
@@ -206,7 +206,7 @@ function searchNaiveForward(
 
   // Look for a match in all the rest of the document.
   const searchRange = new vscode.Range(origin, end),
-        match = re.exec(document.getText(searchRange));
+        match = smartExec(re, document.getText(searchRange));
 
   if (match === null) {
     return;
@@ -265,7 +265,7 @@ function searchSingleLineRegExpForward(
 
   // Loop for a match line by line, starting at the current line.
   const currentLine = document.lineAt(origin),
-        match = re.exec(currentLine.text.slice(origin.character));
+        match = smartExec(re, currentLine.text.slice(origin.character));
 
   if (match !== null) {
     return [origin.translate(undefined, match.index), match] as search.Result;
@@ -275,14 +275,14 @@ function searchSingleLineRegExpForward(
 
   for (let line = origin.line + 1; line < endLine; line++) {
     const textLine = document.lineAt(line),
-          match = re.exec(textLine.text);
+          match = smartExec(re, textLine.text);
 
     if (match !== null) {
       return [new vscode.Position(line, match.index), match] as search.Result;
     }
   }
 
-  const endMatch = re.exec(document.lineAt(endLine).text.slice(0, end.character));
+  const endMatch = smartExec(re, document.lineAt(endLine).text.slice(0, end.character));
 
   if (endMatch !== null) {
     return [new vscode.Position(endLine, endMatch.index), endMatch] as search.Result;
@@ -330,7 +330,7 @@ function searchOneOfBackward(
     }
 
     const text = lines.join(joiner),
-          match = re.exec(text);
+          match = smartExec(re, text);
 
     if (match !== null) {
       return [new vscode.Position(line, match.index), match] as search.Result;
@@ -375,7 +375,7 @@ function searchOneOfForward(
 
   for (let line = originLine, loopEnd = endLine - lineRange + 1; line < loopEnd; line++) {
     const text = lines.join(joiner),
-          match = re.exec(text);
+          match = smartExec(re, text);
 
     if (match !== null) {
       const character = line === originLine ? origin.character + match.index : match.index;

@@ -270,8 +270,28 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             "A": { text: "to last buffer...", command: "workbench.action.quickOpenPreviousRecentlyUsedEditorInGroup" },
             "n": { text: "to next buffer", command: "workbench.action.nextEditor" },
             "p": { text: "to previous buffer", command: "workbench.action.previousEditor" },
-            ".": { text: "to last buffer modification position", command: "dance.selections.restore", args: [{ register: " insert" }],
-            },
+            ".": { text: "to last buffer modification position", command: "dance.selections.restore", args: [{ register: " insert" }] },
+            "w": { text: "to word", command: "dance.seek.wordLabel" },
+          },
+        },
+
+        leftBracket: {
+          title: "Left bracket",
+          items: {
+            "d": { text: "Goto previous diagnostic", command: "editor.action.marker.prevInFiles" },
+            "g": { text: "Goto previous change", command: "workbench.action.editor.previousChange" },
+            "p": { text: "Goto previous paragraph", command: "dance.seek.object", args: [{ "input": "(?#predefined=paragraph)", "where": "start", "inner": false }] },
+            " ": { text: "Add newline above", command: "dance.edit.newLine.above" },
+          },
+        },
+
+        rightBracket: {
+          title: "Right bracket",
+          items: {
+            "d": { text: "Goto next diagnostic", command: "editor.action.marker.nextInFiles" },
+            "g": { text: "Goto next change", command: "workbench.action.editor.nextChange" },
+            "p": { text: "Goto next paragraph", command: "dance.seek.object", args: [{ "input": "(?#predefined=paragraph)", "where": "end" }] },
+            " ": { text: "Add newline below", command: "dance.edit.newLine.below" },
           },
         },
 
