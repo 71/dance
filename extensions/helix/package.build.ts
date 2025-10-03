@@ -294,6 +294,237 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             " ": { text: "Add newline below", command: "dance.edit.newLine.below" },
           },
         },
+
+      space: {
+        title: "Space",
+        items: {
+          "f": { text: "Open file picker", command: "workbench.action.quickOpen" },
+          "F": {
+            text: "Open file picker at current working directory",
+            command: "dance.run",
+            args: [
+              {
+                code:
+                  (() => {
+                    const codeStr =
+                      `const fallback = () => vscode.commands.executeCommand(
+                        'workbench.action.quickOpen',
+                      );
+                      const editor = vscode.window.activeTextEditor;
+                      if (!editor) {
+                        return await fallback();
+                      }
+                      const currentFileUri = editor.document.uri;
+                      const currentDirectoryUri = vscode.Uri.joinPath(currentFileUri, '..');
+                      const workspaceFolder = vscode.workspace.getWorkspaceFolder(currentFileUri);
+                      if (!workspaceFolder || currentDirectoryUri.fsPath === workspaceFolder.uri.fsPath) {
+                        return await fallback();
+                      }
+                      const relativeDirectoryPath = vscode.workspace.asRelativePath(
+                        currentDirectoryUri,
+                        /** includeWorkspaceFolder = */ false
+                      );
+                      const quickOpenPrefix = relativeDirectoryPath.endsWith('/') ?
+                          relativeDirectoryPath
+                          : relativeDirectoryPath + "/";
+                      await vscode.commands.executeCommand(
+                        'workbench.action.quickOpen',
+                        quickOpenPrefix,
+                      );`;
+
+                    const lines = codeStr.split("\n");
+                    const theThirdLine = lines[2];
+                    // Get the indentation of the multi-line template string
+                    const indent = theThirdLine.match(/^([ \t]*)/)![0];
+                    // Remove the indentation and split into array of lines
+                    return codeStr
+                      .replaceAll(indent, "")
+                      .split("\n");
+                  })()
+                ,
+              },
+            ],
+          },
+          "b": {
+            text: "Open buffer picker",
+            command: "workbench.action.showAllEditors",
+          },
+          // "j": {
+          //   text: "Open jumplist picker",
+          //   command: "", // TODO
+          // },
+          "s": {
+            text: "Open symbol picker",
+            command: "workbench.action.gotoSymbol",
+          },
+          "S": {
+            text: "Open workspace symbol picker",
+            command: "workbench.action.showAllSymbols",
+          },
+          "d": {
+            text: "Open diagnostic picker",
+            command: "workbench.action.problems.focus",
+          },
+          "D": {
+            text: "Open diagnostic picker",
+            command: "workbench.action.problems.focus",
+          },
+          "g": {
+            text: "Open changed file picker",
+            command: "workbench.view.scm",
+          },
+          "a": {
+            text: "Perform code action",
+            command: "editor.action.quickFix",
+          },
+          // "'": {
+          //   text: "Open last picker",
+          //   command: "", // TODO
+          // },
+          "G": {
+            text: "Debug",
+            command: "workbench.action.debug.start",
+          },
+          "w": {
+            text: "Window",
+            command: "dance.openMenu",
+            args: [{ menu: "window" }],
+          },
+          "y": {
+            text: "Yank selections to clipboard",
+            command: "dance.selections.saveText",
+            args: [{
+              register: "dquote",
+            }],
+          },
+          "Y": {
+            text: "Yank main selection to clipboard",
+            command: "dance.run",
+            args: [{
+              code: [
+                "const editor = vscode.window.activeTextEditor;",
+                "if (!editor) {",
+                "  return;",
+                "}",
+                "const text = editor.document.getText(editor.selection);",
+                "await vscode.env.clipboard.writeText(text);",
+              ],
+            }],
+          },
+          "p": {
+            text: "Paste clipboard after selections",
+            command: "dance.edit.insert",
+            args: [{
+              register: "dquote",
+              handleNewLine: true,
+              where: "end",
+            }],
+          },
+          "P": {
+            text: "Paste clipboard before selections",
+            command: "dance.edit.insert",
+            args: [{
+              register: "dquote",
+              handleNewLine: true,
+              where: "start",
+            }],
+          },
+          "R": {
+            text: "Replace selections by clipboard content",
+            command: "editor.action.clipboardPasteAction",
+            args: [],
+          },
+          "/": {
+            text: "Global Search in workspace folder",
+            command: "workbench.action.findInFiles",
+          },
+          "k": {
+            text: "Show docs for item under cursor (hover)",
+            command: "editor.action.showHover",
+          },
+          "r": {
+            text: "Rename symbol",
+            command: "editor.action.rename",
+          },
+          "h": {
+            text: "Select symbol reference",
+            command: "editor.action.referenceSearch.trigger",
+          },
+        },
+      },
+      window: {
+        title: "Window",
+        items: {
+          "w": {
+            text: "Goto next window",
+            command: "workbench.action.nextEditor",
+          },
+          "s": {
+            text: "Horizontal bottom split",
+            command: "workbench.action.splitEditorDown",
+          },
+          "v": {
+            text: "Vertical right split",
+            command: "workbench.action.splitEditor",
+          },
+          "t": {
+            text: "Transpose splits",
+            command: "workbench.action.toggleEditorGroupLayout",
+          },
+          // "f": {
+          //   text: "Open files in selection (hsplit)",
+          //   command: "dance.selections.open", // function needs to be modified
+          // },
+          // "F": {
+          //   text: "Open files in selection (vsplit)",
+          //   command: "dance.selections.open", // function needs to be modified
+          // },
+          "q": {
+            text: "Close window",
+            command: "workbench.action.closeActiveEditor",
+          },
+          "o": {
+            text: "Close windows except current",
+            command: "workbench.action.closeOtherEditors",
+          },
+          "h": {
+            text: "Jump to the split on the left",
+            command: "workbench.action.focusLeftGroup",
+          },
+          "j": {
+            text: "Jump to the split below",
+            command: "workbench.action.focusBelowGroup",
+          },
+          "k": {
+            text: "Jump to the split above",
+            command: "workbench.action.focusAboveGroup",
+          },
+          "l": {
+            text: "Jump to the split to the right",
+            command: "workbench.action.focusRightGroup",
+          },
+          "H": {
+            text: "Swap with the split to the left",
+            command: "workbench.action.moveActiveEditorGroupLeft",
+          },
+          "J": {
+            text: "Swap with the split below",
+            command: "workbench.action.moveActiveEditorGroupDown",
+          },
+          "K": {
+            text: "Swap with the split above",
+            command: "workbench.action.moveActiveEditorGroupUp",
+          },
+          "L": {
+            text: "Swap with the split to the right",
+            command: "workbench.action.moveActiveEditorGroupRight",
+          },
+          // "n": { Not easily possible. Necessary?
+          //   text: "New split scratch buffer",
+          //   command: "",
+          // },
+        },
+      },
       },
     },
 
