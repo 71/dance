@@ -1897,6 +1897,24 @@
         }
       },
       {
+        "key": "Space",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Space",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "space"
+        }
+      },
+      {
+        "key": "Space",
+        "when": "editorTextFocus && dance.mode == 'helix/select'",
+        "title": "Space",
+        "command": "dance.openMenu",
+        "args": {
+          "menu": "space"
+        }
+      },
+      {
         "key": "Shift+'",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Select register for next command",
@@ -3288,11 +3306,6 @@
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
-        "key": "Space",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'"
-      },
-      {
         "key": "NumPad_Add",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
@@ -3414,11 +3427,6 @@
       },
       {
         "key": "Tab",
-        "command": "dance.ignore",
-        "when": "editorTextFocus && dance.mode == 'helix/select'"
-      },
-      {
-        "key": "Space",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/select'"
       },

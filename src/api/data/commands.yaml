@@ -783,12 +783,13 @@ openMenu:
 
       #### Predefined menus
 
-      | Title         | Keybinding          | Command                                                                  |
-      | ------------- | ------------------- | ------------------------------------------------------------------------ |
-      | Left bracket  | `[` (helix: normal) | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "select" } ] }]` |
-      | Left bracket  | `[` (helix: select) | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "extend" } ] }]` |
-      | Right bracket | `]` (helix: normal) | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "select" } ] }]` |
-      | Right bracket | `]` (helix: select) | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "extend" } ] }]` |
+      | Title         | Keybinding                             | Command                                                                  |
+      | ------------- | -------------------------------------- | ------------------------------------------------------------------------ |
+      | Left bracket  | `[` (helix: normal)                    | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "select" } ] }]` |
+      | Left bracket  | `[` (helix: select)                    | `[".openMenu", { menu: "leftBracket",  pass: [ { shift: "extend" } ] }]` |
+      | Right bracket | `]` (helix: normal)                    | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "select" } ] }]` |
+      | Right bracket | `]` (helix: select)                    | `[".openMenu", { menu: "rightBracket", pass: [ { shift: "extend" } ] }]` |
+      | Space         | `space` (helix: normal; helix: select) | `[".openMenu", { menu: "space" }]`                                       |
 
 run:
   title:
@@ -2856,6 +2857,16 @@ anonymous:
     keys:
       qwerty: |-
         `]` (helix: normal)
+
+  - title:
+      en: Space
+
+    commands: |-
+      [".openMenu", { menu: "space" }]
+
+    keys:
+      qwerty: |-
+        `space` (helix: normal; helix: select)
 
   - title:
       en: Show view menu
