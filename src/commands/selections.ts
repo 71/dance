@@ -300,8 +300,6 @@ const filterHistory: string[] = [];
  * | -------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
  * | Keep matching selections   | `filter.regexp`         | `a-k` (core: normal; helix: select)   | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
  * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal; helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
- * | Clear secondary selections | `clear.secondary`       | `,` (core: normal; helix: select)     | `[".selections.filter", { expression: "i === count"            , ... }]` |
- * | Clear main selections      | `clear.main`            | `a-,` (core: normal; helix: select)   | `[".selections.filter", { expression: "i !== count"            , ... }]` |
  */
 export function filter(
   _: Context,
@@ -341,6 +339,33 @@ export function filter(
     }, selections));
 
     return expression;
+  });
+}
+
+/**
+ * Clear selections.
+ *
+ * #### Variants
+ *
+ * | Title                      | Identifier              | Keybinding                            | Commands                                           |
+ * | -------------------------- | ----------------------- | ------------------------------------- | -------------------------------------------------- |
+ * | Clear secondary selections | `clear.secondary`       | `,` (core: normal; helix: select)     | `[".selections.clear", { clearMain: false, ... }]` |
+ * | Clear main selection       | `clear.main`            | `a-,` (core: normal; helix: select)   | `[".selections.clear", { clearMain: true,  ... }]` |
+ */
+export function clear(
+  _: Context,
+  clearMain: Argument<boolean> = false,
+  count: number = 0,
+) {
+  const selections = _.selections;
+  return _.runAsync(async () => {
+    Selections.set(await Selections.filterByIndex((i) => {
+      if (clearMain) {
+        return i !== count;
+      } else {
+        return i === count;
+      }
+    }, selections));
   });
 }
 

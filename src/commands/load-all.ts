@@ -241,6 +241,7 @@ import {
 import {
   changeDirection as selections_changeDirection,
   changeOrder as selections_changeOrder,
+  clear as selections_clear,
   copy as selections_copy,
   expandToLines as selections_expandToLines,
   filter as selections_filter,
@@ -585,6 +586,11 @@ export const commands: Commands = function () {
     "dance.selections.changeOrder": new CommandDescriptor(
       "dance.selections.changeOrder",
       (_, argument) => _.runAsync(async (_) => await selections_changeOrder(_, _.selections.slice(), getDirection(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    "dance.selections.clear": new CommandDescriptor(
+      "dance.selections.clear",
+      (_, argument) => _.runAsync(async (_) => await selections_clear(_, argument["clearMain"], getCount(_, argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.selections.copy": new CommandDescriptor(
@@ -1308,13 +1314,13 @@ export const commands: Commands = function () {
     commands,
     "dance.selections.clear.secondary",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.filter", { expression: "i === count" , $exclude: [] }]],
+    [[".selections.clear", { clearMain: false, $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.selections.clear.main",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.filter", { expression: "i !== count" , $exclude: [] }]],
+    [[".selections.clear", { clearMain: true, $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,
