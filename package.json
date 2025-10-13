@@ -1782,12 +1782,12 @@
       },
       {
         "command": "dance.selections.clear.main",
-        "title": "Clear main selections",
+        "title": "Clear main selection",
         "category": "Dance"
       },
       {
         "command": "dance.selections.clear.secondary",
-        "title": "Clear secondary selections",
+        "title": "Clear all secondary selections",
         "category": "Dance"
       },
       {
@@ -3035,13 +3035,13 @@
       {
         "key": "Alt+,",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Clear main selections",
+        "title": "Clear main selection",
         "command": "dance.selections.clear.main"
       },
       {
         "key": ",",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Clear secondary selections",
+        "title": "Clear all secondary selections",
         "command": "dance.selections.clear.secondary"
       },
       {
