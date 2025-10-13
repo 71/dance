@@ -1781,8 +1781,13 @@
         "category": "Dance"
       },
       {
+        "command": "dance.selections.clear",
+        "title": "Clear selections",
+        "category": "Dance"
+      },
+      {
         "command": "dance.selections.clear.main",
-        "title": "Clear main selections",
+        "title": "Clear main selection",
         "category": "Dance"
       },
       {
@@ -3035,7 +3040,7 @@
       {
         "key": "Alt+,",
         "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Clear main selections",
+        "title": "Clear main selection",
         "command": "dance.selections.clear.main"
       },
       {

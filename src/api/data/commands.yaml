@@ -2112,12 +2112,27 @@ selections.changeOrder:
       | Order selections descending | `orderDescending` | `[".selections.changeOrder", { direction:  1 }]` |
       | Order selections ascending  | `orderAscending`  | `[".selections.changeOrder", { direction: -1 }]` |
 
+selections.clear:
+  title:
+    en: Clear selections
+
+  doc:
+    en: |
+      Clear selections.
+
+      #### Variants
+
+      | Title                      | Identifier              | Keybinding                            | Commands                                           |
+      | -------------------------- | ----------------------- | ------------------------------------- | -------------------------------------------------- |
+      | Clear secondary selections | `clear.secondary`       | `,` (core: normal; helix: select)     | `[".selections.clear", { clearMain: false, ... }]` |
+      | Clear main selection       | `clear.main`            | `a-,` (core: normal; helix: select)   | `[".selections.clear", { clearMain: true,  ... }]` |
+
 selections.clear.main:
   title:
-    en: Clear main selections
+    en: Clear main selection
 
   commands: |-
-    [".selections.filter", { expression: "i !== count" , $exclude: [] }]
+    [".selections.clear", { clearMain: true, $exclude: [] }]
 
   keys:
     qwerty: |-
@@ -2128,7 +2143,7 @@ selections.clear.secondary:
     en: Clear secondary selections
 
   commands: |-
-    [".selections.filter", { expression: "i === count" , $exclude: [] }]
+    [".selections.clear", { clearMain: false, $exclude: [] }]
 
   keys:
     qwerty: |-
@@ -2215,8 +2230,6 @@ selections.filter:
       | -------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
       | Keep matching selections   | `filter.regexp`         | `a-k` (core: normal; helix: select)   | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
       | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal; helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
-      | Clear secondary selections | `clear.secondary`       | `,` (core: normal; helix: select)     | `[".selections.filter", { expression: "i === count"            , ... }]` |
-      | Clear main selections      | `clear.main`            | `a-,` (core: normal; helix: select)   | `[".selections.filter", { expression: "i !== count"            , ... }]` |
 
 selections.filter.regexp:
   title:
