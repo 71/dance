@@ -687,7 +687,7 @@ export class Editors implements vscode.Disposable {
       state.dispose();
     }
 
-    this._lastRemovedEditorStates.length === 0;
+    this._lastRemovedEditorStates.length = 0;
 
     // Dispose of fallback editor, if any.
     const fallback = this._fallbacks.get(document);

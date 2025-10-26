@@ -219,6 +219,24 @@ export class Extension implements vscode.Disposable {
     assert(this._autoDisposables.size === 0);
 
     this.statusBar.dispose();
+
+    // Dispose of all subscriptions to prevent event listener accumulation
+    for (const subscription of this._subscriptions) {
+      subscription.dispose();
+    }
+    this._subscriptions.length = 0;
+
+    // Dispose of core components
+    this.editors.dispose();
+    this.recorder.dispose();
+    this.modes.dispose();
+    this.registers.dispose();
+
+    // Clear configuration handlers
+    this._configurationChangeHandlers.clear();
+
+    // Dismiss any active error messages to clean up their subscriptions
+    this.dismissErrorMessage();
   }
 
   /**

@@ -43,7 +43,13 @@ export function set(selections: readonly vscode.Selection[], context = Context.c
   NotASelectionError.throwIfNotASelectionArray(selections);
 
   context.selections = selections;
-  reveal(selections[0], context);
+
+  // Defer reveal to avoid race condition with onDidChangeTextEditorSelection handlers
+  // This ensures selection update events complete before we scroll the viewport
+  setImmediate(() => {
+    reveal(selections[0], context);
+  });
+
   vscode.commands.executeCommand("editor.action.wordHighlight.trigger");
 
   return selections;
