@@ -1,0 +1,131 @@
+DANCE EXTENSION PERFORMANCE ISSUES - QUICK REFERENCE
+
+================================================================================
+ABSOLUTE PATH REFERENCES
+================================================================================
+
+1. CRITICAL BUG - Extension Not Disposing Resources
+   File: /home/enrico/projects/dance/src/state/extension.ts
+   Lines: 213-222 (dispose method)
+   Issue: Missing calls to this.editors.dispose(), this.recorder.dispose(), 
+          and this._subscriptions.splice(0).forEach(d => d.dispose())
+   
+   What should be disposed:
+   - Line 68: public readonly editors = new Editors(this);
+   - Line 53: public readonly registers = new Registers(this);
+   - Line 58: public readonly modes = new Modes(this);
+   - Line 63: public readonly recorder: Recorder;
+   - Line 27: private readonly _subscriptions: vscode.Disposable[] = [];
+
+2. CRITICAL BUG - Array Never Cleared
+   File: /home/enrico/projects/dance/src/state/editors.ts
+   Line: 690
+   Issue: this._lastRemovedEditorStates.length === 0;
+   Fix:   this._lastRemovedEditorStates.length = 0;
+   
+3. RACE CONDITION - Selection Update Conflicts
+   File: /home/enrico/projects/dance/src/api/selections.ts
+   Lines: 42-50 (set function)
+   Issue: Setting editor.selections triggers onDidChangeTextEditorSelection
+          which updates decorations before reveal() completes
+   
+   Current flow:
+   - Line 45: context.selections = selections;  (triggers event)
+   - Line 46: reveal(selections[0], context);
+   - Line 47: vscode.commands.executeCommand("editor.action.wordHighlight.trigger");
+
+4. RACE CONDITION - Async Mode Change Setup
+   File: /home/enrico/projects/dance/src/api/modes.ts
+   Lines: 41-62
+   Issue: setTimeout(..., 0) creates race condition for event listener registration
+   Line 36: await context.switchToMode(mode);
+   Line 41-62: setTimeout setup of event listeners
+
+5. MULTIPLE DECORATION UPDATE PATHWAYS
+   File: /home/enrico/projects/dance/src/state/editors.ts
+   Lines: 267-269, 277-279, 322-389
+   Issue: Three independent paths can trigger decoration updates:
+   - notifyDidChangeTextEditorSelection() at line 267
+   - notifyDidChangeTextEditorVisibleRanges() at line 277
+   - Mode change handlers at lines 174-196
+
+6. INSUFFICIENT ERROR MESSAGE CLEANUP
+   File: /home/enrico/projects/dance/src/state/extension.ts
+   Lines: 362-389 (showDismissibleErrorMessage method)
+   Issue: Event subscriptions created for error display aren't cleaned
+          on extension deactivation
+
+7. STALE DOCUMENT REFERENCE
+   File: /home/enrico/projects/dance/src/api/context.ts
+   Lines: 666-828 (selectionsToCharacterMode/selectionsFromCharacterMode)
+   Issue: Document parameter can become stale if context changes during conversion
+   Line 708: document = Context.current.document;
+
+8. UNTRACKED INITIALIZATION
+   File: /home/enrico/projects/dance/src/state/editors.ts
+   Lines: 545-554
+   Issue: queueMicrotask initialization happens after constructor
+          Events can fire before setup completes
+
+================================================================================
+EVENTS THAT ACCUMULATE WITHOUT PROPER DISPOSAL
+================================================================================
+
+From Editors class (never disposed via Extension.dispose):
+- onDidChangeActiveTextEditor (line 532)
+- onDidChangeTextEditorSelection (line 534)
+- onDidChangeTextEditorVisibleRanges (line 536)
+- onDidChangeVisibleTextEditors (line 538)
+- onDidOpenTextDocument (line 540)
+- onDidCloseTextDocument (line 542)
+
+From Recorder class (never disposed via Extension.dispose):
+- onDidChangeActiveTextEditor (line 65)
+- onDidChangeTextEditorSelection (line 66)
+- onDidChangeTextDocument (line 67)
+- onModeDidChange (line 68)
+
+From Extension._subscriptions (never disposed):
+- onDidChangeConfiguration (line 179)
+- Multiple command descriptors (line 190)
+- RegistersView (line 194)
+- onDidLoadTreeSitter (line 197)
+
+================================================================================
+IMPACT SUMMARY
+================================================================================
+
+Symptom: Heavy lag on keystrokes after usage
+- Each keystroke → onDidChangeTextEditorSelection fires
+- Multiple handlers registered → compound processing
+- Memory accumulation → GC pressure
+
+Symptom: Cursor jumping back and forth
+- Selection update → triggers event → updates decorations → event fires again
+- Three separate decoration update pathways conflict
+- setTimeout race conditions in mode changes
+
+Symptom: Requires restart to fix
+- Extension deactivation doesn't clean resources
+- Reload gets clean state
+- Indicates accumulation issue, not logic bug
+
+================================================================================
+DISPOSAL CHAIN STATUS
+================================================================================
+
+What IS disposed:
+✓ this.statusBar (line 221)
+✓ this._autoDisposables (line 217)
+✓ this._cancellationTokenSource (lines 214-215)
+✓ Editors._subscriptions (line 558)
+✓ Recorder._subscriptions (line 77)
+
+What IS NOT disposed:
+✗ this.editors
+✗ this.recorder
+✗ this.registers
+✗ this.modes
+✗ this._subscriptions (Extension's array)
+
+================================================================================

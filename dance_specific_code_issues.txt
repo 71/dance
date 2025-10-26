@@ -1,0 +1,411 @@
+DANCE EXTENSION - SPECIFIC CODE ISSUES WITH LINE NUMBERS
+
+================================================================================
+ISSUE #1: CRITICAL - Extension.dispose() Missing Resource Cleanup
+================================================================================
+
+File: /home/enrico/projects/dance/src/state/extension.ts
+Lines: 213-222
+
+CURRENT CODE:
+    public dispose() {
+      this._cancellationTokenSource.cancel();
+      this._cancellationTokenSource.dispose();
+
+      this._autoDisposables.forEach((disposable) => disposable.dispose());
+
+      assert(this._autoDisposables.size === 0);
+
+      this.statusBar.dispose();
+    }
+
+PROBLEMS:
+1. Missing: this.editors.dispose()
+2. Missing: this.recorder.dispose()
+3. Missing: this._subscriptions.splice(0).forEach(d => d.dispose())
+4. Missing: cleanup of error message subscriptions (from showDismissibleErrorMessage)
+
+WHY IT MATTERS:
+- this.editors holds 6 event listeners (lines 532-542)
+- this.recorder holds 4 event listeners (lines 64-69)
+- this._subscriptions holds command descriptors, view registrations, etc (lines 177-197)
+- When extension reloads, these listeners persist as new ones are added
+- Result: Event handler accumulation causing lag and cursor jumping
+
+WHAT EACH MANAGES:
+- this.editors: Manages all visible editor state and selection tracking
+  - Has Disposable at line 557-561 showing proper cleanup pattern
+- this.recorder: Manages activity recording for undo/macro
+  - Has Disposable at line 75-78 showing proper cleanup pattern
+- this._subscriptions: Tracks all global event listeners
+  - Never cleared, unlike in Editors and Recorder classes
+
+================================================================================
+ISSUE #2: CRITICAL - Array Never Cleared in Editors
+================================================================================
+
+File: /home/enrico/projects/dance/src/state/editors.ts
+Line: 690
+
+CURRENT CODE:
+    private _handleDidCloseTextDocument(document: vscode.TextDocument) {
+      // Dispose of previous document state, if any.
+      for (const state of this._lastRemovedEditorStates) {
+        state.dispose();
+      }
+
+      this._lastRemovedEditorStates.length === 0;  // <-- BUG HERE
+
+      // Dispose of fallback editor, if any.
+      const fallback = this._fallbacks.get(document);
+      // ...
+
+CORRECT CODE:
+      this._lastRemovedEditorStates.length = 0;
+
+WHY IT'S A BUG:
+- `===` is comparison operator (returns boolean, discards result)
+- `=` is assignment operator (actually clears the array)
+- Array never cleared, disposed states accumulate
+- Each editor close adds to the leak
+- Over time: significant memory growth
+
+IMPACT:
+- After closing many documents, this._lastRemovedEditorStates grows unbounded
+- Disposed PerEditorState objects held in memory
+- Each has decorations, event subscriptions that won't fire
+- GC pressure increases, causing lag
+
+================================================================================
+ISSUE #3: RACE CONDITION - Selection Updates
+================================================================================
+
+File: /home/enrico/projects/dance/src/api/selections.ts
+Lines: 42-50
+
+CURRENT CODE:
+    export function set(selections: readonly vscode.Selection[], context = Context.current) {
+      NotASelectionError.throwIfNotASelectionArray(selections);
+
+      context.selections = selections;           // LINE 45
+      reveal(selections[0], context);            // LINE 46
+      vscode.commands.executeCommand("editor.action.wordHighlight.trigger");  // LINE 47
+
+      return selections;
+    }
+
+THE RACE CONDITION:
+    Line 45: context.selections = selections
+      ↓ (triggers synchronously)
+    VS Code: onDidChangeTextEditorSelection event fires
+      ↓
+    Editors._handleDidChangeTextEditorSelection (line 593)
+      ↓
+    PerEditorState.notifyDidChangeTextEditorSelection() (line 267)
+      ↓
+    PerEditorState._updateDecorations() (line 322)
+      ↓ (modifies editor state)
+    Returns to line 46
+    
+    Line 46: reveal(selections[0], context)
+      ↓ (may use modified selections)
+    
+    Line 47: wordHighlight.trigger command
+      ↓ (external command may change selections again)
+
+SPECIFIC ISSUES:
+1. _updateDecorations() at line 322 may modify how selections appear
+2. _updateDecorations() calls setDecorations multiple times (lines 353, 355, 380, 382)
+3. These decoration changes can affect selection rendering
+4. The reveal() call at line 46 may use stale selection data
+5. The wordHighlight.trigger command at line 47 creates external interference
+
+KEY CALL CHAIN:
+File: /home/enrico/projects/dance/src/state/editors.ts
+Lines 322-389 _updateDecorations():
+  - Lines 326-333: Gets allSelections and filters by applyTo
+  - Lines 355-356: setDecorations for mode decorations
+  - Lines 359-383: setDecorations for character decorations
+  - Line 386: Updates cursorStyle and lineNumbers options
+  - Line 388: Calls _updateOffscreenSelectionsIndicators()
+
+CONFLICTS:
+1. Multiple setDecorations calls in quick succession
+2. Selection rendering may change while decoration updates happen
+3. Cursor position calculation depends on decoration state
+4. If document is modified during this, positions become stale
+
+================================================================================
+ISSUE #4: RACE CONDITION - Mode Change with setTimeout
+================================================================================
+
+File: /home/enrico/projects/dance/src/api/modes.ts
+Lines: 13-63
+
+CURRENT CODE (lines 36-62):
+    await context.switchToMode(mode);
+
+    // We must start listening for events after a short delay, otherwise we will
+    // be notified of the mode change above, immediately returning to the
+    // previous mode.
+    setTimeout(() => {
+      const { Entry } = extension.recorder;
+
+      disposable
+        .addDisposable(extension.recorder.onDidAddEntry((entry) => {
+          if (entry instanceof Entry.ExecuteCommand
+            && entry.descriptor().identifier.endsWith("updateCount")) {
+            // Ignore number inputs.
+            return;
+          }
+
+          if (entry instanceof Entry.ChangeTextEditor
+            || entry instanceof Entry.ChangeTextEditorMode) {
+            // Immediately dispose.
+            return disposable.dispose();
+          }
+
+          if (--count! === 0) {
+            disposable.dispose();
+          }
+        }));
+    }, 0);
+
+PROBLEMS:
+1. setTimeout(..., 0) means "add to end of event loop"
+2. There's a window where user input isn't being monitored
+3. If user types rapidly during this window, events are missed
+4. If extension reloads during this window, disposable setup fails
+5. No cleanup guarantee if this._editor becomes invalid
+
+TIMING ISSUE:
+    Time 0: switchToMode(mode) completes
+    Time 0: function returns to caller
+    Time 1+: setTimeout callback executes and registers listener
+    
+    Between Time 0 and Time 1:
+    - User input happens but isn't recorded
+    - Mode is "active" but listener not attached
+    - If reload happens here, listener never attached
+
+RELATED CODE:
+File: /home/enrico/projects/dance/src/state/extension.ts
+Lines 362-389: Similar pattern in showDismissibleErrorMessage
+  - Creates subscriptions not tied to extension lifecycle
+  - Won't be cleaned up on extension deactivation
+
+================================================================================
+ISSUE #5: MULTIPLE DECORATION UPDATE PATHWAYS
+================================================================================
+
+File: /home/enrico/projects/dance/src/state/editors.ts
+
+THREE INDEPENDENT UPDATE MECHANISMS:
+
+1. Selection Changes (Line 267):
+    public notifyDidChangeTextEditorSelection() {
+      this._updateDecorations(this._mode);
+    }
+    
+   Triggered by: _handleDidChangeTextEditorSelection (line 593)
+   Triggered by: onDidChangeTextEditorSelection event (line 534)
+
+2. Visible Range Changes (Line 277):
+    public notifyDidChangeTextEditorVisibleRanges() {
+      this._updateOffscreenSelectionsIndicators(this._mode);
+    }
+    
+   Triggered by: _handleDidChangeTextEditorVisibleRanges (line 597)
+   Triggered by: onDidChangeTextEditorVisibleRanges event (line 536)
+
+3. Mode Changes (Lines 174-196):
+    this._modeChangeSubscription = mode.onChanged(([mode, props]) => {
+      for (const prop of props) {
+        switch (prop) {
+          // ... cases that trigger _updateDecorations ...
+        }
+      }
+    });
+    
+   Triggered by: Mode.onChanged event
+   Can trigger: _updateDecorations, _updateSelectionsAfterBehaviorChange
+
+CONFLICT SCENARIO:
+    1. User changes selection
+    2. onDidChangeTextEditorSelection fires → _updateDecorations() called
+    3. While decorations updating, visible range changes
+    4. onDidChangeTextEditorVisibleRanges fires → _updateOffscreenSelectionsIndicators()
+    5. This calls setDecorations again
+    6. If selections are being converted (character vs caret mode), stale data used
+    
+SPECIFIC CALLS IN _updateDecorations (lines 322-389):
+    Line 355: editor.setDecorations(decoration.type, selections);
+    Line 380: editor.setDecorations(..., ranges);
+    Line 382: editor.setDecorations(..., []);
+
+If multiple pathways execute concurrently:
+    - setDecorations calls interleave
+    - Cursor position calculations may use stale data
+    - Selection conversion (toCharacterMode/fromCharacterMode) may fail
+    - Result: Cursor jumps or appears in wrong position
+
+================================================================================
+ISSUE #6: Stale Document Reference
+================================================================================
+
+File: /home/enrico/projects/dance/src/api/context.ts
+Lines: 666-828
+
+PROBLEM AREA in selectionsToCharacterMode (lines 707-720):
+    if (document === undefined) {
+      document = Context.current.document;
+    }
+
+    const activePrevLine = selectionActiveLine - 1,
+          activePrevLineLength = document.lineAt(activePrevLine).text.length;
+
+ISSUE:
+1. Document accessed without validation
+2. If Context.current changes during conversion, stale document used
+3. This can happen during rapid selection changes
+4. Result: Incorrect selection calculations
+
+ALSO IN selectionsFromCharacterMode (lines 800-825):
+    if (document === undefined) {
+      document = Context.current.document;
+    }
+
+    const lineLength = document.lineAt(selectionActiveLine).text.length;
+
+SIMILAR ISSUE:
+1. Multiple document.lineAt() calls with potentially stale reference
+2. If document changes between calls, inconsistent data
+3. Especially problematic with line count checks (line 810: selectionActiveLine + 1 < document.lineCount)
+
+WHEN THIS FAILS:
+- During rapid selection updates
+- When switching documents
+- During multi-buffer operations
+- When document is being modified
+
+================================================================================
+ISSUE #7: Disposal During Async Setup
+================================================================================
+
+File: /home/enrico/projects/dance/src/state/editors.ts
+Lines: 529-554
+
+CURRENT CODE:
+    public constructor(
+      private readonly _extension: Extension,
+    ) {
+      vscode.window.onDidChangeActiveTextEditor(
+        this._handleDidChangeActiveTextEditor, this, this._subscriptions);
+      vscode.window.onDidChangeTextEditorSelection(
+        this._handleDidChangeTextEditorSelection, this, this._subscriptions);
+      vscode.window.onDidChangeTextEditorVisibleRanges(
+        this._handleDidChangeTextEditorVisibleRanges, this, this._subscriptions);
+      vscode.window.onDidChangeVisibleTextEditors(
+        this._handleDidChangeVisibleTextEditors, this, this._subscriptions);
+      vscode.workspace.onDidOpenTextDocument(
+        this._handleDidOpenTextDocument, this, this._subscriptions);
+      vscode.workspace.onDidCloseTextDocument(
+        this._handleDidCloseTextDocument, this, this._subscriptions);
+
+      queueMicrotask(() => {                                  // LINE 545
+        this._handleDidChangeVisibleTextEditors(vscode.window.visibleTextEditors);
+
+        const activeTextEditor = vscode.window.activeTextEditor;
+
+        if (activeTextEditor !== undefined) {
+          this._activeEditor = this._editors.get(activeTextEditor);
+          this._activeEditor?.notifyDidBecomeActive();
+        }
+      });
+    }
+
+RACE CONDITION:
+1. Event handlers registered (synchronously)
+2. Constructor completes (returns)
+3. queueMicrotask scheduled but not yet executed
+4. Events can fire before microtask executes
+5. Events call _handleDidChangeVisibleTextEditors which populates _editors
+6. But microtask also calls _handleDidChangeVisibleTextEditors
+7. Potential duplicate processing or race on _editors access
+
+DISPOSAL ISSUE:
+1. If extension disposed before microtask executes
+2. Callbacks reference disposed extension
+3. _editors.get() may throw if editor was removed
+4. notifyDidBecomeActive() may fail
+
+================================================================================
+ISSUE #8: Error Message Subscriptions Not Cleaned
+================================================================================
+
+File: /home/enrico/projects/dance/src/state/extension.ts
+Lines: 362-389
+
+CURRENT CODE:
+    public showDismissibleErrorMessage(message: string) {
+      // ... error setup ...
+
+      const dispose = () => {
+        this.statusBar.errorSegment.setContent();
+        this._dismissErrorMessage = undefined;
+        subscriptions.splice(0).forEach((d) => d.dispose());
+      };
+
+      const subscriptions = [
+        vscode.window.onDidChangeActiveTextEditor(dispose),    // LINE 384
+        vscode.window.onDidChangeTextEditorSelection(dispose), // LINE 385
+      ];
+
+      this._dismissErrorMessage = dispose;
+    }
+
+PROBLEMS:
+1. Subscriptions created but not added to any lifecycle tracker
+2. If extension deactivates while error showing, subscriptions persist
+3. No cleanup on Extension.dispose()
+4. If error messages are shown multiple times, subscriptions accumulate
+5. Each error message adds 2 more event listeners
+
+WHEN IT FAILS:
+1. User triggers error
+2. Error message shown with subscriptions
+3. User disables/enables extension without dismissing error
+4. Old subscriptions persist
+5. New subscriptions added on re-enable
+6. Handlers accumulate
+
+COMPARISON:
+- Recorders subscriptions: CLEANED in Recorder.dispose()
+- Editors subscriptions: CLEANED in Editors.dispose()
+- Error subscriptions: NOT CLEANED anywhere
+
+================================================================================
+SUMMARY TABLE: What Gets Disposed vs. What Doesn't
+================================================================================
+
+COMPONENT                 CREATED AT                  DISPOSED AT           STATUS
+---------------------------------------------------------------------------------------------------
+Editors.instance          Extension line 68          ???                   ✗ LEAK
+Recorder.instance         Extension line 63          ???                   ✗ LEAK
+Registers.instance        Extension line 53          ???                   ✗ LEAK
+Modes.instance            Extension line 58          ???                   ✗ LEAK
+Extension._subscriptions  Extension lines 177-197    ???                   ✗ LEAK
+Editors._subscriptions    Editors constructor        Editors.dispose()     ✓ OK (but Editors not disposed)
+Recorder._subscriptions   Recorder constructor       Recorder.dispose()    ✓ OK (but Recorder not disposed)
+Error message subs        showDismissibleErrorMessage When error dismissed  ✗ INCOMPLETE
+Mode decorations          Mode.apply() line 247     Mode.dispose()        ✓ OK (but Modes not disposed)
+PerEditorState._change    PerEditorState.setMode()  PerEditorState.dispose() ✓ OK
+
+THE CHAIN FAILURE:
+Extension.dispose() ← Should call → Editors.dispose() ✗ MISSING
+Extension.dispose() ← Should call → Recorder.dispose() ✗ MISSING
+Extension.dispose() ← Should call → Modes.dispose() ✗ MISSING
+Extension.dispose() ← Should call → Registers cleanup ✗ MISSING
+Extension.dispose() ← Should call → _subscriptions cleanup ✗ MISSING
+
+================================================================================
