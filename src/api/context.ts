@@ -667,6 +667,11 @@ export function selectionsToCharacterMode(
   selections: readonly vscode.Selection[],
   document?: vscode.TextDocument,
 ) {
+  // Capture document reference once at the start to avoid stale references
+  if (document === undefined) {
+    document = Context.current.document;
+  }
+
   const characterModeSelections = [] as vscode.Selection[];
 
   for (const selection of selections) {
@@ -704,10 +709,6 @@ export function selectionsToCharacterMode(
       } else {
         // The active character is the first one, so we have to get some
         // information from the document.
-        if (document === undefined) {
-          document = Context.current.document;
-        }
-
         const activePrevLine = selectionActiveLine - 1,
               activePrevLineLength = document.lineAt(activePrevLine).text.length;
 
@@ -716,8 +717,7 @@ export function selectionsToCharacterMode(
       }
     } else if (selectionAnchorLine === selectionActiveLine + 1
                && selectionAnchorCharacter === 0
-               && selectionActiveCharacter === (document ?? (document = Context.current.document))
-                 .lineAt(selectionActiveLine).text.length) {
+               && selectionActiveCharacter === document.lineAt(selectionActiveLine).text.length) {
       // Selection is reversed and one-character long: make it empty.
       anchor = selectionActive;
       changed = true;
@@ -781,6 +781,11 @@ export function selectionsFromCharacterMode(
   selections: readonly vscode.Selection[],
   document?: vscode.TextDocument,
 ) {
+  // Capture document reference once at the start to avoid stale references
+  if (document === undefined) {
+    document = Context.current.document;
+  }
+
   const caretModeSelections = [] as vscode.Selection[];
 
   for (const selection of selections) {
@@ -799,10 +804,6 @@ export function selectionsFromCharacterMode(
 
     if (isEmptyOrForwardFacing) {
       // Selection is empty or forward-facing: extend it if possible.
-      if (document === undefined) {
-        document = Context.current.document;
-      }
-
       const lineLength = document.lineAt(selectionActiveLine).text.length;
 
       if (selectionActiveCharacter === lineLength) {

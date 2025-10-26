@@ -502,6 +502,7 @@ export class Editors implements vscode.Disposable {
   private readonly _onModeDidChange = new vscode.EventEmitter<PerEditorState>();
   private readonly _subscriptions: vscode.Disposable[] = [];
   private _activeEditor?: PerEditorState;
+  private _isDisposed = false;
 
   private readonly _lastRemovedEditorStates: PerEditorState[] = [];
   private _lastRemovedEditorUri: string = "";
@@ -543,6 +544,11 @@ export class Editors implements vscode.Disposable {
       this._handleDidCloseTextDocument, this, this._subscriptions);
 
     queueMicrotask(() => {
+      // Check if disposed before initialization completes
+      if (this._isDisposed) {
+        return;
+      }
+
       this._handleDidChangeVisibleTextEditors(vscode.window.visibleTextEditors);
 
       const activeTextEditor = vscode.window.activeTextEditor;
@@ -555,6 +561,7 @@ export class Editors implements vscode.Disposable {
   }
 
   public dispose() {
+    this._isDisposed = true;
     this._subscriptions.splice(0).forEach((d) => d.dispose());
     this._lastRemovedEditorStates.splice(0).forEach((s) => s.dispose());
     this.characterDecorationType.dispose();

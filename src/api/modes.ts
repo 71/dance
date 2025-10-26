@@ -35,31 +35,30 @@ export async function toMode(modeName: string, count?: number) {
 
   await context.switchToMode(mode);
 
-  // We must start listening for events after a short delay, otherwise we will
-  // be notified of the mode change above, immediately returning to the
-  // previous mode.
-  setTimeout(() => {
-    const { Entry } = extension.recorder;
+  // Use queueMicrotask instead of setTimeout to ensure predictable event listener setup
+  // This avoids the mode change event from the switchToMode above
+  await new Promise<void>((resolve) => queueMicrotask(resolve));
 
-    disposable
-      .addDisposable(extension.recorder.onDidAddEntry((entry) => {
-        if (entry instanceof Entry.ExecuteCommand
-          && entry.descriptor().identifier.endsWith("updateCount")) {
-          // Ignore number inputs.
-          return;
-        }
+  const { Entry } = extension.recorder;
 
-        if (entry instanceof Entry.ChangeTextEditor
-          || entry instanceof Entry.ChangeTextEditorMode) {
-          // Immediately dispose.
-          return disposable.dispose();
-        }
+  disposable
+    .addDisposable(extension.recorder.onDidAddEntry((entry) => {
+      if (entry instanceof Entry.ExecuteCommand
+        && entry.descriptor().identifier.endsWith("updateCount")) {
+        // Ignore number inputs.
+        return;
+      }
 
-        if (--count! === 0) {
-          disposable.dispose();
-        }
-      }));
-  }, 0);
+      if (entry instanceof Entry.ChangeTextEditor
+        || entry instanceof Entry.ChangeTextEditorMode) {
+        // Immediately dispose.
+        return disposable.dispose();
+      }
+
+      if (--count! === 0) {
+        disposable.dispose();
+      }
+    }));
 }
 
 /**
