@@ -2114,10 +2114,11 @@ selections.changeOrder:
 
 selections.clear.main:
   title:
-    en: Clear main selections
+    en: Clear main selection
 
-  commands: |-
-    [".selections.filter", { expression: "i !== count" , $exclude: [] }]
+  doc:
+    en: |
+      Clear main selection.
 
   keys:
     qwerty: |-
@@ -2125,10 +2126,11 @@ selections.clear.main:
 
 selections.clear.secondary:
   title:
-    en: Clear secondary selections
+    en: Clear all secondary selections
 
-  commands: |-
-    [".selections.filter", { expression: "i === count" , $exclude: [] }]
+  doc:
+    en: |
+      Clear all secondary selections.
 
   keys:
     qwerty: |-
@@ -2215,8 +2217,6 @@ selections.filter:
       | -------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
       | Keep matching selections   | `filter.regexp`         | `a-k` (core: normal; helix: select)   | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
       | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal; helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
-      | Clear secondary selections | `clear.secondary`       | `,` (core: normal; helix: select)     | `[".selections.filter", { expression: "i === count"            , ... }]` |
-      | Clear main selections      | `clear.main`            | `a-,` (core: normal; helix: select)   | `[".selections.filter", { expression: "i !== count"            , ... }]` |
 
 selections.filter.regexp:
   title:

@@ -241,6 +241,8 @@ import {
 import {
   changeDirection as selections_changeDirection,
   changeOrder as selections_changeOrder,
+  clear_main as selections_clear_main,
+  clear_secondary as selections_clear_secondary,
   copy as selections_copy,
   expandToLines as selections_expandToLines,
   filter as selections_filter,
@@ -585,6 +587,16 @@ export const commands: Commands = function () {
     "dance.selections.changeOrder": new CommandDescriptor(
       "dance.selections.changeOrder",
       (_, argument) => _.runAsync(async (_) => await selections_changeOrder(_, _.selections.slice(), getDirection(argument))),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    "dance.selections.clear.main": new CommandDescriptor(
+      "dance.selections.clear.main",
+      (_) => _.runAsync(async (_) => await selections_clear_main(_)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
+    "dance.selections.clear.secondary": new CommandDescriptor(
+      "dance.selections.clear.secondary",
+      (_) => _.runAsync(async (_) => await selections_clear_secondary(_)),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.selections.copy": new CommandDescriptor(
@@ -1303,18 +1315,6 @@ export const commands: Commands = function () {
     "dance.selections.filter.regexp.inverse",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".selections.filter", { defaultExpression: "/", inverse: true, $exclude: [] }]],
-  );
-  describeAdditionalCommand(
-    commands,
-    "dance.selections.clear.secondary",
-    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.filter", { expression: "i === count" , $exclude: [] }]],
-  );
-  describeAdditionalCommand(
-    commands,
-    "dance.selections.clear.main",
-    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.filter", { expression: "i !== count" , $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,

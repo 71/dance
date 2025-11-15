@@ -300,8 +300,6 @@ const filterHistory: string[] = [];
  * | -------------------------- | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
  * | Keep matching selections   | `filter.regexp`         | `a-k` (core: normal; helix: select)   | `[".selections.filter", { defaultExpression: "/"               , ... }]` |
  * | Clear matching selections  | `filter.regexp.inverse` | `s-a-k` (core: normal; helix: select) | `[".selections.filter", { defaultExpression: "/", inverse: true, ... }]` |
- * | Clear secondary selections | `clear.secondary`       | `,` (core: normal; helix: select)     | `[".selections.filter", { expression: "i === count"            , ... }]` |
- * | Clear main selections      | `clear.main`            | `a-,` (core: normal; helix: select)   | `[".selections.filter", { expression: "i !== count"            , ... }]` |
  */
 export function filter(
   _: Context,
@@ -342,6 +340,26 @@ export function filter(
 
     return expression;
   });
+}
+
+/**
+ * Clear all secondary selections.
+ * @keys `,` (core: normal; helix: select)
+ */
+export function clear_secondary(
+  _: Context,
+) {
+  Selections.set(_.selections.slice(0, 1));
+}
+
+/**
+ * Clear main selection.
+ * @keys `a-,` (core: normal; helix: select)
+ */
+export function clear_main(
+  _: Context,
+) {
+  Selections.set(_.selections.slice(1));
 }
 
 /**
