@@ -204,7 +204,11 @@ export class Recorder implements vscode.Disposable {
    * call.
    */
   public cursorFromEnd() {
-    return new Cursor(this, this._previousBuffers.length, this._buffer.length - 1);
+    return new Cursor(
+      this,
+      this._previousBuffers.length,
+      this._buffer.length === 0 ? 0 : this._buffer.length - 1,
+    );
   }
 
   /**

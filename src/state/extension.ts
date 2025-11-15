@@ -204,7 +204,6 @@ export class Extension implements vscode.Disposable {
       },
       true,
     );
-
   }
 
   /**
@@ -219,6 +218,24 @@ export class Extension implements vscode.Disposable {
     assert(this._autoDisposables.size === 0);
 
     this.statusBar.dispose();
+
+    // Clear configuration handlers.
+    this._configurationChangeHandlers.clear();
+
+    // Dispose of all subscriptions.
+    for (const subscription of this._subscriptions) {
+      subscription.dispose();
+    }
+    this._subscriptions.length = 0;
+
+    // Dispose of core components.
+    this.editors.dispose();
+    this.recorder.dispose();
+    this.modes.dispose();
+    this.registers.dispose();
+
+    // Dismiss error message, if any.
+    this.dismissErrorMessage();
   }
 
   /**

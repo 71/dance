@@ -552,7 +552,7 @@ export declare namespace Mode {
 /**
  * The set of all modes.
  */
-export class Modes implements Iterable<Mode> {
+export class Modes implements Iterable<Mode>, vscode.Disposable {
   private readonly _vscodeModeDefaults: Mode.Configuration = {
     cursorStyle: "line",
     inheritFrom: null,
@@ -579,6 +579,13 @@ export class Modes implements Iterable<Mode> {
 
     this._vscodeMode.apply(this._vscodeModeDefaults, new SettingsValidator());
     this._observePreferences(extension);
+  }
+
+  public dispose(): void {
+    for (const mode of this._modes.values()) {
+      mode.dispose();
+    }
+    this._modes.clear();
   }
 
   /**
