@@ -82,9 +82,9 @@ export async function executeCommand(command: string, ...args: readonly any[]) {
   const extension =
     vscode.extensions.getExtension<{ extension: Extension }>("gregoire.dance")!.exports.extension;
 
-  extension.runPromiseSafely = async (f) => {
+  extension.runPromiseSafely = (f) => {
     try {
-      return await f();
+      return f();
     } catch (e) {
       error = e;
       throw e;
