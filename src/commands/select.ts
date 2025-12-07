@@ -244,16 +244,13 @@ export function horizontally(
   direction = Direction.Forward,
   shift = Shift.Select,
 ) {
-  const mayNeedAdjustment = direction === Direction.Backward
-                         && _.selectionBehavior === SelectionBehavior.Character;
-
   const newSelections = Selections.mapByIndex((_i, selection, document) => {
     let active = selection.active === selection.start
       ? Selections.activeStart(selection, _)
       : Selections.activeEnd(selection, _);
 
-    if (mayNeedAdjustment) {
-      if (shift === Shift.Extend && Selections.isSingleCharacter(selection)) {
+    if (_.selectionBehavior === SelectionBehavior.Character) {
+      if (direction === Direction.Backward && shift === Shift.Extend && Selections.isSingleCharacter(selection)) {
         active = selection.start;
       } else if (shift === Shift.Jump && selection.active === selection.start) {
         active = Positions.next(active, _.document) ?? active;
