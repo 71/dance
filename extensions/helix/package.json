@@ -2355,6 +2355,12 @@
         "command": "dance.modes.set.normal"
       },
       {
+        "key": "Ctrl+[",
+        "when": "editorTextFocus && dance.mode == 'helix/insert'",
+        "title": "Set mode to Normal",
+        "command": "dance.modes.set.normal"
+      },
+      {
         "key": "V",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Set mode to Select",
