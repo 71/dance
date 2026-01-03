@@ -1504,6 +1504,12 @@
         "command": "dance.edit.delete"
       },
       {
+        "key": "D",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'",
+        "title": "Delete contents of selection",
+        "command": "dance.edit.deleteSelections"
+      },
+      {
         "key": "Shift+.",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Indent selected lines",
@@ -1598,81 +1604,6 @@
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Copy, delete and switch to Insert",
         "command": "dance.edit.yank-delete-insert"
-      },
-      {
-        "key": "Shift+R",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "command": "dance.run",
-        "args": {
-          "commands": [
-            [
-              ".edit.insert"
-            ],
-            [
-              ".modes.set.normal"
-            ]
-          ]
-        }
-      },
-      {
-        "key": "Alt+D",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "command": "dance.run",
-        "args": {
-          "commands": [
-            [
-              ".edit.delete"
-            ],
-            [
-              ".modes.set.normal"
-            ]
-          ]
-        }
-      },
-      {
-        "key": "D",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "command": "dance.run",
-        "args": {
-          "commands": [
-            [
-              ".edit.yank-delete"
-            ],
-            [
-              ".modes.set.normal"
-            ]
-          ]
-        }
-      },
-      {
-        "key": "Shift+P",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "command": "dance.run",
-        "args": {
-          "commands": [
-            [
-              ".edit.paste.before"
-            ],
-            [
-              ".modes.set.normal"
-            ]
-          ]
-        }
-      },
-      {
-        "key": "P",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "command": "dance.run",
-        "args": {
-          "commands": [
-            [
-              ".edit.paste.after"
-            ],
-            [
-              ".modes.set.normal"
-            ]
-          ]
-        }
       },
       {
         "key": "Shift+.",
@@ -3341,6 +3272,16 @@
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
       },
       {
+        "key": "D",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
+      },
+      {
+        "key": "P",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
+      },
+      {
         "key": "Q",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/select'"
@@ -3376,7 +3317,17 @@
         "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
+        "key": "Shift+P",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
+      },
+      {
         "key": "Shift+Q",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
+      },
+      {
+        "key": "Shift+R",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
