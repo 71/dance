@@ -4,6 +4,7 @@ import type { Argument, InputOr, RegisterOr } from ".";
 import { insert as apiInsert, Context, deindentLines, Direction, edit, indentLines, insertByIndex, insertByIndexWithFullLines, insertFlagsAtEdge, joinLines, keypress, Positions, replace, replaceByIndex, Selections, Shift } from "../api";
 import type { Register } from "../state/registers";
 import { ArgumentError, LengthMismatchError } from "../utils/errors";
+import { horizontally } from "./select";
 
 /**
  * Perform changes on the text content of the document.
@@ -133,18 +134,31 @@ export async function insert(
  *
  * #### Additional commands
  *
- * | Title                             | Identifier           | Keybinding                        | Commands                                                                                                         |
- * | --------------------------------- | -------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
- * | Delete                            | `delete`             | `a-d` (core: normal)              |                                                                                     `[".edit.deleteSelections"]` |
- * | Delete and switch to Insert       | `delete-insert`      | `a-c` (kakoune: normal)           | `[".modes.set", { mode: "insert", +mode }],                                          [".edit.deleteSelections"]` |
- * | Copy and delete                   | `yank-delete`        | `d` (core: normal)                | `[".selections.saveText", { +register }],                                            [".edit.deleteSelections"]` |
- * | Copy, delete and switch to Insert | `yank-delete-insert` | `c` (core: normal; helix: select) | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections"]` |
+ * | Title                                              | Identifier                            | Keybinding                         | Commands                                                                                                                                             |
+ * | -------------------------------------------------- | ------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+ * | Delete                                             | `delete`                              | `a-d` (core: normal)               | `[".edit.deleteSelections", { register: "_", ... }]`                                                                                                 |
+ * | Delete and switch to Insert                        | `delete-insert`                       | `a-c` (kakoune: normal)            | `[".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections"]`                                                                              |
+ * | Delete and switch to Insert preserving lines       | `delete-insert-preserving-lines`      | `a-c` (helix: normal)              | `[".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections", { preserveEntireLines: true, ... }]`                                               |
+ * | Copy and delete                                    | `yank-delete`                         | `d` (core: normal)                 | `[".selections.saveText", { +register }],                                            [".edit.deleteSelections"]`                                     |
+ * | Copy, delete and switch to Insert                  | `yank-delete-insert`                  | `c` (kakoune: normal               | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections"]`                                     |
+ * | Copy, delete and switch to Insert preserving lines | `yank-delete-insert-preserving-lines` | `c` (helix: normal; helix: select) | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections", { preserveEntireLines: true, ... }]` |
  */
 export async function deleteSelections(
   _: Context,
   selections: readonly vscode.Selection[],
+  preserveEntireLines: Argument<boolean> = false,
 ) {
   Selections.set(await replace((_) => "", selections));
+
+  if (preserveEntireLines) {
+    const onlyEntireLines = selections.every((selection, _i) =>
+      Selections.isEntireLines(selection),
+    );
+    if (onlyEntireLines) {
+      newLine_above(_, 1);
+      horizontally(_, false, 0, Direction.Backward, Shift.Jump);
+    }
+  }
 }
 
 /**

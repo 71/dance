@@ -1498,18 +1498,6 @@
         "command": "dance.edit.deindent.withIncomplete"
       },
       {
-        "key": "Alt+D",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Delete",
-        "command": "dance.edit.delete"
-      },
-      {
-        "key": "D",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Delete contents of selection",
-        "command": "dance.edit.deleteSelections"
-      },
-      {
         "key": "Shift+.",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Indent selected lines",
@@ -1586,24 +1574,6 @@
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Replace characters",
         "command": "dance.edit.replaceCharacters"
-      },
-      {
-        "key": "D",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Copy and delete",
-        "command": "dance.edit.yank-delete"
-      },
-      {
-        "key": "C",
-        "when": "editorTextFocus && dance.mode == 'helix/normal'",
-        "title": "Copy, delete and switch to Insert",
-        "command": "dance.edit.yank-delete-insert"
-      },
-      {
-        "key": "C",
-        "when": "editorTextFocus && dance.mode == 'helix/select'",
-        "title": "Copy, delete and switch to Insert",
-        "command": "dance.edit.yank-delete-insert"
       },
       {
         "key": "Shift+.",
@@ -3152,6 +3122,16 @@
         }
       },
       {
+        "key": "C",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "D",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'helix/normal'"
+      },
+      {
         "key": "Q",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
@@ -3270,6 +3250,11 @@
         "key": "Shift+NumPad_Subtract",
         "command": "dance.ignore",
         "when": "editorTextFocus && dance.mode == 'helix/normal'"
+      },
+      {
+        "key": "C",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'helix/select'"
       },
       {
         "key": "D",

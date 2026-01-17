@@ -337,7 +337,7 @@ export const commands: Commands = function () {
     ),
     "dance.edit.deleteSelections": new CommandDescriptor(
       "dance.edit.deleteSelections",
-      (_) => _.runAsync(async (_) => await edit_deleteSelections(_, _.selections)),
+      (_, argument) => _.runAsync(async (_) => await edit_deleteSelections(_, _.selections, argument["preserveEntireLines"])),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.edit.indent": new CommandDescriptor(
@@ -792,13 +792,19 @@ export const commands: Commands = function () {
     commands,
     "dance.edit.delete",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".edit.deleteSelections"]],
+    [[".edit.deleteSelections", { register: "_", $exclude: [] }]],
   );
   describeAdditionalCommand(
     commands,
     "dance.edit.delete-insert",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".modes.set", { mode: "insert", $include: ["mode"] }], [".edit.deleteSelections"]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.edit.delete-insert-preserving-lines",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".modes.set", { mode: "insert", $include: ["mode"] }], [".edit.deleteSelections", { preserveEntireLines: true, $exclude: ["mode"] }]],
   );
   describeAdditionalCommand(
     commands,
@@ -811,6 +817,12 @@ export const commands: Commands = function () {
     "dance.edit.yank-delete-insert",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
     [[".selections.saveText", { $include: ["register"] }], [".modes.set", { mode: "insert", $include: ["mode"] }], [".edit.deleteSelections"]],
+  );
+  describeAdditionalCommand(
+    commands,
+    "dance.edit.yank-delete-insert-preserving-lines",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".selections.saveText", { $include: ["register"] }], [".modes.set", { mode: "insert", $include: ["mode"] }], [".edit.deleteSelections", { preserveEntireLines: true, $exclude: ["register","mode"] }]],
   );
   describeAdditionalCommand(
     commands,
