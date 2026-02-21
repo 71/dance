@@ -1026,6 +1026,11 @@
         "category": "Dance"
       },
       {
+        "command": "dance.edit.deleteSelections",
+        "title": "Delete contents of selection",
+        "category": "Dance"
+      },
+      {
         "command": "dance.edit.indent",
         "title": "Indent selected lines",
         "category": "Dance"
@@ -2045,6 +2050,12 @@
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Delete and switch to Insert",
         "command": "dance.edit.delete-insert"
+      },
+      {
+        "key": "D",
+        "when": "editorTextFocus && dance.mode == 'normal'",
+        "title": "Delete contents of selection",
+        "command": "dance.edit.deleteSelections"
       },
       {
         "key": "Shift+.",
