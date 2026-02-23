@@ -11,11 +11,11 @@ declare module "./modes";
  *
  * #### Variants
  *
- * | Title              | Identifier   | Keybinding                                                  | Command                                                     |
- * | ------------------ | ------------ | ----------------------------------------------------------- | ----------------------------------------------------------- |
- * | Set mode to Normal | `set.normal` | `escape` (core: insert; helix: select), `v` (helix: select) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
- * | Set mode to Insert | `set.insert` |                                                             | `[".modes.set", { mode: "insert" }]`                        |
- * | Set mode to Select | `set.select` | `v` (helix: normal)                                         | `[".modes.set", { mode: "select" }]`                        |
+ * | Title              | Identifier   | Keybinding                                                                        | Command                                                     |
+ * | ------------------ | ------------ | --------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+ * | Set mode to Normal | `set.normal` | `escape` (core: insert; helix: select), `v` (helix: select), `c-[` (core: insert) | `[".modes.set", { mode: "normal" }], ["hideSuggestWidget"]` |
+ * | Set mode to Insert | `set.insert` |                                                                                   | `[".modes.set", { mode: "insert" }]`                        |
+ * | Set mode to Select | `set.select` | `v` (helix: normal)                                                               | `[".modes.set", { mode: "select" }]`                        |
  *
  * Other variants are provided to switch to insert mode:
  *

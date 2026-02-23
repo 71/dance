@@ -2479,6 +2479,12 @@
         "command": "dance.modes.set.normal"
       },
       {
+        "key": "Ctrl+[",
+        "when": "editorTextFocus && dance.mode == 'insert'",
+        "title": "Set mode to Normal",
+        "command": "dance.modes.set.normal"
+      },
+      {
         "key": "Ctrl+V",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Temporary Insert mode",
