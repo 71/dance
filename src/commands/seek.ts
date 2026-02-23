@@ -480,16 +480,19 @@ export async function object(
       newSelections = Selections.mapByIndex((_i, selection, document) => {
         const activePosition = Selections.activePosition(selection, _.document);
         let shiftTo = f.start(activePosition, inner, document);
+        let skipCharacter = false;
 
         if (shiftTo.isEqual(activePosition)) {
           const activePositionBefore = Positions.previous(activePosition, document);
+
+          skipCharacter = _.selectionBehavior === SelectionBehavior.Character && !inner && shift === Shift.Select;
 
           if (activePositionBefore !== undefined) {
             shiftTo = f.start(activePositionBefore, inner, document);
           }
         }
 
-        return Selections.shift(selection, shiftTo, shift, _);
+        return Selections.shift(selection, shiftTo, shift, _, skipCharacter);
       });
     } else if (where === "end") {
       newSelections = Selections.mapByIndex((_i, selection, document) =>

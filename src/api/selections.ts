@@ -1401,6 +1401,7 @@ export function shift(
   position: vscode.Position,
   shift: Shift,
   context = Context.current,
+  skipCharacter: boolean = false,
 ) {
   let anchor = shift === Shift.Jump
     ? position
@@ -1408,9 +1409,17 @@ export function shift(
       ? selection.active
       : selection.anchor;
 
-  if (context.selectionBehavior === SelectionBehavior.Character && shift !== Shift.Jump) {
-    const direction = anchor.isAfter(position) ? Direction.Backward : Direction.Forward;
+  const direction = anchor.isAfter(position) ? Direction.Backward : Direction.Forward;
 
+  if (skipCharacter) {
+    if (direction === Direction.Forward) {
+      anchor = Positions.next(anchor) ?? anchor;
+    } else {
+      anchor = Positions.previous(anchor) ?? anchor;
+    }
+  }
+
+  if (context.selectionBehavior === SelectionBehavior.Character && shift !== Shift.Jump) {
     anchor = seekFrom(selection, direction, anchor, context);
   }
 
