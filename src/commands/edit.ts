@@ -4,6 +4,7 @@ import type { Argument, InputOr, RegisterOr } from ".";
 import { insert as apiInsert, Context, deindentLines, Direction, edit, indentLines, insertByIndex, insertByIndexWithFullLines, insertFlagsAtEdge, joinLines, keypress, Positions, replace, replaceByIndex, Selections, Shift } from "../api";
 import type { Register } from "../state/registers";
 import { ArgumentError, LengthMismatchError } from "../utils/errors";
+import { horizontally } from "./select";
 
 /**
  * Perform changes on the text content of the document.
@@ -29,27 +30,18 @@ declare module "./edit";
  *
  * #### Additional commands
  *
- * | Title                              | Identifier               | Keybinding                                       | Commands                                                                                                                       |
- * | ---------------------------------- | ------------------------ | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
- * | Pick register and replace          | `selectRegister-insert`  | `c-r` (kakoune: normal), `c-r` (kakoune: insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                                |
- * | Paste before                       | `paste.before`           |                                                  | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                               |
- * | Paste after                        | `paste.after`            |                                                  | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                               |
- * | Paste before and select            | `paste.before.select`    | `s-p` (core: normal)                             | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                              |
- * | Paste after and select             | `paste.after.select`     | `p` (core: normal)                               | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                              |
- * | Paste all before                   | `pasteAll.before`        |                                                  | `[".edit.insert", { handleNewLine: true, where: "start", all: true, ... }]`                                                    |
- * | Paste all after                    | `pasteAll.after`         |                                                  | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, ... }]`                                                    |
- * | Paste all before and select        | `pasteAll.before.select` | `s-a-p` (kakoune: normal)                        | `[".edit.insert", { handleNewLine: true, where: "start", all: true, shift: "select", ... }]`                                   |
- * | Paste all after and select         | `pasteAll.after.select`  | `a-p` (kakoune: normal)                          | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, shift: "select", ... }]`                                   |
- * | Delete                             | `delete`                 | `a-d` (core: normal)                             | `[".edit.insert", { register: "_", ... }]`                                                                                     |
- * | Delete and switch to Insert        | `delete-insert`          | `a-c` (kakoune: normal)                          | `[".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]`                                          |
- * | Copy and delete                    | `yank-delete`            | `d` (core: normal)                               | `[".selections.saveText", { +register }],                                            [".edit.insert", { register: "_", ... }]` |
- * | Copy, delete and switch to Insert  | `yank-delete-insert`     | `c` (core: normal; helix: select)                | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.insert", { register: "_", ... }]` |
- * | Copy and replace                   | `yank-replace`           | `s-r` (kakoune: normal)                          | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]`               |
- * |                                    |                          | `s-r` (helix: select)                            | `[".edit.insert"], [".modes.set.normal"]`                                                                                        |
- * |                                    |                          | `a-d` (helix: select)                            | `[".edit.delete"], [".modes.set.normal"]`                                                                                        |
- * |                                    |                          | `d` (helix: select)                              | `[".edit.yank-delete"], [".modes.set.normal"]`                                                                                  |
- * |                                    |                          | `s-p` (helix: select)                            | `[".edit.paste.before"], [".modes.set.normal"]`                                                                                 |
- * |                                    |                          | `p` (helix: select)                              | `[".edit.paste.after"], [".modes.set.normal"]`                                                                                  |
+ * | Title                              | Identifier               | Keybinding                                       | Commands                                                                                                         |
+ * | ---------------------------------- | ------------------------ | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+ * | Pick register and replace          | `selectRegister-insert`  | `c-r` (kakoune: normal), `c-r` (kakoune: insert) | `[".selectRegister", { +register }], [".edit.insert", { ... }]`                                                  |
+ * | Paste before                       | `paste.before`           |                                                  | `[".edit.insert", { handleNewLine: true, where: "start", ... }]`                                                 |
+ * | Paste after                        | `paste.after`            |                                                  | `[".edit.insert", { handleNewLine: true, where: "end"  , ... }]`                                                 |
+ * | Paste before and select            | `paste.before.select`    | `s-p` (core: normal)                             | `[".edit.insert", { handleNewLine: true, where: "start", shift: "select", ... }]`                                |
+ * | Paste after and select             | `paste.after.select`     | `p` (core: normal)                               | `[".edit.insert", { handleNewLine: true, where: "end"  , shift: "select", ... }]`                                |
+ * | Paste all before                   | `pasteAll.before`        |                                                  | `[".edit.insert", { handleNewLine: true, where: "start", all: true, ... }]`                                      |
+ * | Paste all after                    | `pasteAll.after`         |                                                  | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, ... }]`                                      |
+ * | Paste all before and select        | `pasteAll.before.select` | `s-a-p` (kakoune: normal)                        | `[".edit.insert", { handleNewLine: true, where: "start", all: true, shift: "select", ... }]`                     |
+ * | Paste all after and select         | `pasteAll.after.select`  | `a-p` (kakoune: normal)                          | `[".edit.insert", { handleNewLine: true, where: "end"  , all: true, shift: "select", ... }]`                     |
+ * | Copy and replace                   | `yank-replace`           | `s-r` (kakoune: normal)                          | `[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", ... }]` |
  */
 export async function insert(
   _: Context,
@@ -60,9 +52,9 @@ export async function insert(
   all: Argument<boolean> = false,
   handleNewLine: Argument<boolean> = false,
   repetitions: number,
-  shift?: Argument<Shift>,
-  text?: Argument<string>,
+  text: Argument<string>,
   where?: Argument<"active" | "anchor" | "start" | "end" | undefined>,
+  shift?: Argument<Shift>,
 ) {
   let contents = text?.length
     ? (shift === Shift.Select ? [text] : selections.map(() => text))
@@ -133,6 +125,40 @@ export async function insert(
       ? await insertByIndexWithFullLines(flags, (i) => contents![i], selections)
       : await insertByIndex(flags, (i) => contents![i], selections),
   );
+}
+
+/**
+ * Delete contents of selection.
+ *
+ * @keys `d` (core: normal)
+ *
+ * #### Additional commands
+ *
+ * | Title                                              | Identifier                            | Keybinding                         | Commands                                                                                                                                             |
+ * | -------------------------------------------------- | ------------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+ * | Delete                                             | `delete`                              | `a-d` (core: normal)               | `[".edit.deleteSelections", { register: "_", ... }]`                                                                                                 |
+ * | Delete and switch to Insert                        | `delete-insert`                       | `a-c` (kakoune: normal)            | `[".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections"]`                                                                              |
+ * | Delete and switch to Insert preserving lines       | `delete-insert-preserving-lines`      | `a-c` (helix: normal)              | `[".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections", { preserveEntireLines: true, ... }]`                                               |
+ * | Copy and delete                                    | `yank-delete`                         | `d` (core: normal)                 | `[".selections.saveText", { +register }],                                            [".edit.deleteSelections"]`                                     |
+ * | Copy, delete and switch to Insert                  | `yank-delete-insert`                  | `c` (kakoune: normal               | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections"]`                                     |
+ * | Copy, delete and switch to Insert preserving lines | `yank-delete-insert-preserving-lines` | `c` (helix: normal; helix: select) | `[".selections.saveText", { +register }], [".modes.set", { mode: "insert", +mode }], [".edit.deleteSelections", { preserveEntireLines: true, ... }]` |
+ */
+export async function deleteSelections(
+  _: Context,
+  selections: readonly vscode.Selection[],
+  preserveEntireLines: Argument<boolean> = false,
+) {
+  Selections.set(await replace((_) => "", selections));
+
+  if (preserveEntireLines) {
+    const onlyEntireLines = selections.every((selection, _i) =>
+      Selections.isEntireLines(selection),
+    );
+    if (onlyEntireLines) {
+      newLine_above(_, 1);
+      horizontally(_, false, 0, Direction.Backward, Shift.Jump);
+    }
+  }
 }
 
 /**

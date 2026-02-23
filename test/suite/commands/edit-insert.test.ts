@@ -75,5 +75,43 @@ suite("./test/suite/commands/edit-insert.md", function () {
     `);
   });
 
+  test("2 > delete-line", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo 
+         ^ 0
+      bar
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.select.line.below.extend");
+    await executeCommand("dance.edit.delete");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-insert.md:48:1", 6, String.raw`
+      bar
+      | 0
+    `);
+  });
+
+  test("2 > delete-line-preserving-lines", async function () {
+    // Set-up document to be in expected initial state.
+    await ExpectedDocument.apply(editor, 6, String.raw`
+      foo 
+         ^ 0
+      bar
+    `);
+
+    // Perform all operations.
+    await executeCommand("dance.select.line.below.extend");
+
+    // Ensure document is as expected.
+    ExpectedDocument.assertEquals(editor, "./test/suite/commands/edit-insert.md:59:1", 6, String.raw`
+
+      | 0
+      bar
+    `);
+  });
+
   groupTestsByParentName(this);
 });
