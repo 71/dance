@@ -438,6 +438,20 @@
           },
           "description": "Controls the different modes available in Dance."
         },
+        "dance.activeModeDisplayTextTransform": {
+          "enum": [
+            "as-is",
+            "uppercase",
+            "lowercase"
+          ],
+          "default": "as-is",
+          "description": "Controls how the active mode is formatted in the status bar.",
+          "enumDescriptions": [
+            "Display the name with its original formatting.",
+            "Convert the name to uppercase.",
+            "Convert the name to lowercase."
+          ]
+        },
         "dance.menus": {
           "type": "object",
           "scope": "language-overridable",
