@@ -612,7 +612,6 @@ export class Editors implements vscode.Disposable {
 
     // Now `hiddenEditors` only contains editors that are no longer visible, and
     // `addedEditors` only contains editors that were not visible previously.
-    const defaultMode = this._extension.modes.defaultMode;
 
     for (const addedEditor of addedEditors) {
       const fallback = this._fallbacks.get(addedEditor.document);
@@ -622,6 +621,7 @@ export class Editors implements vscode.Disposable {
         this._editors.set(addedEditor, fallback);
         this._fallbacks.delete(addedEditor.document);
       } else {
+        const defaultMode = this._getDefaultModeForEditor(addedEditor);
         this._editors.set(
           addedEditor, new PerEditorState(this._extension, addedEditor, defaultMode));
       }
@@ -654,6 +654,25 @@ export class Editors implements vscode.Disposable {
     for (const addedFallback of addedFallbacks) {
       this._fallbacks.get(addedFallback)!.notifyDidBecomeHidden();
     }
+  }
+
+  /**
+   * Returns the default mode for a new editor, respecting language-specific
+   * overrides of `dance.defaultMode`.
+   */
+  private _getDefaultModeForEditor(editor: vscode.TextEditor): Mode {
+    const config = vscode.workspace.getConfiguration(extensionName, editor.document);
+    const defaultModeName = config.get<string>("defaultMode");
+
+    if (defaultModeName !== undefined) {
+      const mode = this._extension.modes.get(defaultModeName);
+
+      if (mode !== undefined) {
+        return mode;
+      }
+    }
+
+    return this._extension.modes.defaultMode;
   }
 
   private _handleDidOpenTextDocument(document: vscode.TextDocument) {
