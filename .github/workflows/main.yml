@@ -12,8 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      - name: Set up Yarn
+        uses: actions/setup-node@v6
+        with:
+          cache: yarn
+
       - name: Install dependencies
-        run: yarn
+        run: yarn --prefer-offline
 
       - name: Check formatting and lints
         run: yarn run check
@@ -35,32 +40,68 @@ jobs:
     permissions:
       contents: write
 
+    strategy:
+      matrix:
+        extension:
+          - path: .
+            tag_prefix: v
+            marketplace_id: gregoire.dance
+            pre_release_vsix: dance
+          - path: extensions/helix
+            tag_prefix: helix/v
+            marketplace_id: gregoire.dance-helix
+            pre_release_vsix: extensions/helix/dance-helix
+
     steps:
       - uses: actions/checkout@v5
-
-      - name: Install dependencies
-        run: yarn
 
       - name: Create tag based on package.json
         uses: butlerlogic/action-autotag@ade8d2e19bfcd1e6a91272e2849b4bf4c37a67f1
         id: autotag
         with:
-          tag_prefix: v
+          tag_prefix: ${{ matrix.extension.tag_prefix }}
+          package_root: ${{ matrix.extension.path }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up Yarn
+        uses: actions/setup-node@v6
+        with:
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn --prefer-offline
+        working-directory: ${{ matrix.extension.path }}
+
+      - name: Compute pre-release versions
+        id: pre-release-versions
+        working-directory: ${{ matrix.extension.path }}
+        shell: bash
+        run: |
+          echo MARKETPLACE=$(yarn run --silent vsce show ${{ matrix.extension.marketplace_id }} --json | jq '.versions[0].version' --raw-output) >> "$GITHUB_OUTPUT"
+          echo LOCAL=$(cat package.json | jq '.scripts["package:pre"]' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+') >> "$GITHUB_OUTPUT"
+
+      - name: Compute needed changes
+        id: needs
+        shell: bash
+        run: |
+          echo release=${{ steps.autotag.outputs.tagcreated == 'yes' }} >> "$GITHUB_OUTPUT"
+          echo prerelease=${{ steps.pre-release-versions.outputs.MARKETPLACE != steps.pre-release-versions.outputs.LOCAL }} >> "$GITHUB_OUTPUT"
+
       - name: Publish to Open VSX Registry
         uses: HaaLeo/publish-vscode-extension@65512ae7dcf96159b51fdd7ed73eb17d5cacad33
-        if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
+        if: ${{ steps.needs.outputs.release }}
         id: publishToOpenVSX
         with:
           pat: ${{ secrets.OPEN_VSX_TOKEN }}
+          packagePath: ${{ matrix.extension.path }}
           yarn: true
           skipDuplicate: true
+          dependencies: false
 
       - name: Publish to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@65512ae7dcf96159b51fdd7ed73eb17d5cacad33
-        if: ${{ steps.autotag.outputs.tagcreated == 'yes' }}
+        if: ${{ steps.needs.outputs.release }}
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
@@ -68,27 +109,22 @@ jobs:
           packagePath: ''  # Default is `./` and conflicts with `extensionFile`.
           yarn: true
           skipDuplicate: true
-
-      - name: Compute pre-release versions
-        id: pre-release-versions
-        shell: bash
-        run: |
-          yarn
-          echo MARKETPLACE=$(yarn run --silent vsce show gregoire.dance --json | jq '.versions[0].version' --raw-output) >> "$GITHUB_OUTPUT"
-          echo LOCAL=$(cat package.json | jq '.scripts["package:pre"]' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+') >> "$GITHUB_OUTPUT"
+          dependencies: false
 
       - name: Build pre-release .vsix
+        if: ${{ steps.needs.outputs.prerelease }}
+        working-directory: ${{ matrix.extension.path }}
         run: yarn run package:pre
-        if: ${{ steps.pre-release-versions.outputs.MARKETPLACE != steps.pre-release-versions.outputs.LOCAL }}
 
       - name: Publish pre-release to Visual Studio Marketplace
         uses: HaaLeo/publish-vscode-extension@65512ae7dcf96159b51fdd7ed73eb17d5cacad33
-        if: ${{ steps.pre-release-versions.outputs.MARKETPLACE != steps.pre-release-versions.outputs.LOCAL }}
+        if: ${{ steps.needs.outputs.prerelease }}
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
-          extensionFile: dance-${{ steps.pre-release-versions.outputs.LOCAL }}.vsix
+          extensionFile: ${{ matrix.extension.pre_release_vsix }}-${{ steps.pre-release-versions.outputs.LOCAL }}.vsix
           packagePath: ''  # Default is `./` and conflicts with `extensionFile`.
           yarn: true
           preRelease: true
           skipDuplicate: true
+          dependencies: false
