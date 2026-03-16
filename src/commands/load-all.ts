@@ -162,6 +162,7 @@ import {
   copyIndentation as edit_copyIndentation,
   deindent as edit_deindent,
   deindent_withIncomplete as edit_deindent_withIncomplete,
+  deleteSelections as edit_deleteSelections,
   indent as edit_indent,
   indent_withEmpty as edit_indent_withEmpty,
   insert as edit_insert,
@@ -334,6 +335,11 @@ export const commands: Commands = function () {
       (_, argument) => _.runAsync(async (_) => await edit_deindent_withIncomplete(_, getRepetitions(_, argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
+    "dance.edit.deleteSelections": new CommandDescriptor(
+      "dance.edit.deleteSelections",
+      (_) => _.runAsync(async (_) => await edit_deleteSelections(_, _.selections)),
+      CommandDescriptor.Flags.RequiresActiveEditor,
+    ),
     "dance.edit.indent": new CommandDescriptor(
       "dance.edit.indent",
       (_, argument) => _.runAsync(async (_) => await edit_indent(_, getRepetitions(_, argument))),
@@ -346,7 +352,7 @@ export const commands: Commands = function () {
     ),
     "dance.edit.insert": new CommandDescriptor(
       "dance.edit.insert",
-      (_, argument) => _.runAsync(async (_) => await edit_insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument["adjust"], argument["all"], argument["handleNewLine"], getRepetitions(_, argument), getShift(argument), argument["text"], argument["where"])),
+      (_, argument) => _.runAsync(async (_) => await edit_insert(_, _.selections, getRegister(_, argument, "dquote", Register.Flags.CanRead), argument["adjust"], argument["all"], argument["handleNewLine"], getRepetitions(_, argument), argument["text"], argument["where"], getShift(argument))),
       CommandDescriptor.Flags.RequiresActiveEditor,
     ),
     "dance.edit.join": new CommandDescriptor(
@@ -778,33 +784,33 @@ export const commands: Commands = function () {
   );
   describeAdditionalCommand(
     commands,
+    "dance.edit.yank-replace",
+    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
+    [[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", $exclude: [] }]],
+  );
+  describeAdditionalCommand(
+    commands,
     "dance.edit.delete",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".edit.insert", { register: "_", $exclude: [] }]],
+    [[".edit.deleteSelections"]],
   );
   describeAdditionalCommand(
     commands,
     "dance.edit.delete-insert",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".modes.set", { mode: "insert", $include: ["mode"] }], [".edit.insert", { register: "_", $exclude: ["mode"] }]],
+    [[".modes.set", { mode: "insert", $include: ["mode"] }], [".edit.deleteSelections"]],
   );
   describeAdditionalCommand(
     commands,
     "dance.edit.yank-delete",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.saveText", { $include: ["register"] }], [".edit.insert", { register: "_", $exclude: ["register"] }]],
+    [[".selections.saveText", { $include: ["register"] }], [".edit.deleteSelections"]],
   );
   describeAdditionalCommand(
     commands,
     "dance.edit.yank-delete-insert",
     CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.saveText", { $include: ["register"] }], [".modes.set", { mode: "insert", $include: ["mode"] }], [".edit.insert", { register: "_", $exclude: ["register","mode"] }]],
-  );
-  describeAdditionalCommand(
-    commands,
-    "dance.edit.yank-replace",
-    CommandDescriptor.Flags.RequiresActiveEditor | CommandDescriptor.Flags.DoNotReplay,
-    [[".selections.saveText", { register: "tmp" }], [".edit.insert"], [".updateRegister", { copyFrom: "tmp", $exclude: [] }]],
+    [[".selections.saveText", { $include: ["register"] }], [".modes.set", { mode: "insert", $include: ["mode"] }], [".edit.deleteSelections"]],
   );
   describeAdditionalCommand(
     commands,
