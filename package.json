@@ -1016,16 +1016,6 @@
         "category": "Dance"
       },
       {
-        "command": "dance.edit.delete",
-        "title": "Delete",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.edit.delete-insert",
-        "title": "Delete and switch to Insert",
-        "category": "Dance"
-      },
-      {
         "command": "dance.edit.indent",
         "title": "Indent selected lines",
         "category": "Dance"
@@ -1118,16 +1108,6 @@
       {
         "command": "dance.edit.selectRegister-insert",
         "title": "Pick register and replace",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.edit.yank-delete",
-        "title": "Copy and delete",
-        "category": "Dance"
-      },
-      {
-        "command": "dance.edit.yank-delete-insert",
-        "title": "Copy, delete and switch to Insert",
         "category": "Dance"
       },
       {
@@ -2035,18 +2015,6 @@
         "command": "dance.edit.deindent.withIncomplete"
       },
       {
-        "key": "Alt+D",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Delete",
-        "command": "dance.edit.delete"
-      },
-      {
-        "key": "Alt+C",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Delete and switch to Insert",
-        "command": "dance.edit.delete-insert"
-      },
-      {
         "key": "Shift+.",
         "when": "editorTextFocus && dance.mode == 'normal'",
         "title": "Indent selected lines",
@@ -2141,18 +2109,6 @@
         "when": "editorTextFocus && dance.mode == 'insert'",
         "title": "Pick register and replace",
         "command": "dance.edit.selectRegister-insert"
-      },
-      {
-        "key": "D",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Copy and delete",
-        "command": "dance.edit.yank-delete"
-      },
-      {
-        "key": "C",
-        "when": "editorTextFocus && dance.mode == 'normal'",
-        "title": "Copy, delete and switch to Insert",
-        "command": "dance.edit.yank-delete-insert"
       },
       {
         "key": "Shift+R",
@@ -3241,6 +3197,16 @@
           "locked": true,
           "$exclude": []
         }
+      },
+      {
+        "key": "C",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'normal'"
+      },
+      {
+        "key": "D",
+        "command": "dance.ignore",
+        "when": "editorTextFocus && dance.mode == 'normal'"
       },
       {
         "key": "Shift+D",
