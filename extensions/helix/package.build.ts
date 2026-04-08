@@ -261,6 +261,7 @@ export const pkg = (modules: Builder.ParsedModule[]) => ({
             "l": { text: "to line end", command: "dance.select.lineEnd" },
             "s": { text: "to first non-blank in line", command: "dance.select.lineStart", args: [{ skipBlank: true }] },
             "d": { text: "to definition", command: "editor.action.revealDefinition" },
+            "i": { text: "to implementation", command: "editor.action.goToImplementation" },
             "r": { text: "to references", command: "editor.action.goToReferences" },
             "j": { text: "to last line", command: "dance.select.lastLine" },
             "t": { text: "to window top", command: "dance.select.firstVisibleLine" },
