@@ -1145,6 +1145,10 @@
               "text": "to definition",
               "command": "editor.action.revealDefinition"
             },
+            "i": {
+              "text": "to implementation",
+              "command": "editor.action.goToImplementation"
+            },
             "r": {
               "text": "to references",
               "command": "editor.action.goToReferences"
