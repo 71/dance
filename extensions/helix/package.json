@@ -1591,13 +1591,51 @@
         "key": "C",
         "when": "editorTextFocus && dance.mode == 'helix/normal'",
         "title": "Copy, delete and switch to Insert",
-        "command": "dance.edit.yank-delete-insert"
+        "command": "dance.run",
+        "args": {
+          "code": [
+            "const editor = vscode.window.activeTextEditor;",
+            "if (!editor) return;",
+            "const onlyWholeLines = editor.selections.length > 0 && editor.selections.every(sel => {",
+            "  if (sel.isEmpty) return false;",
+            "  let start = sel.start;",
+            "  let end = sel.end;",
+            "  if (start.character !== 0) return false;",
+            "  const endLineLength = editor.document.lineAt(end.line).text.length;",
+            "  return end.character === (sel.isReversed ? 0:endLineLength) && end.line >= start.line;",
+            "});",
+            "if (onlyWholeLines) {",
+            "  await vscode.commands.executeCommand('dance.run', { commands: [['.edit.yank-delete'],['.edit.newLine.above', { shift: 'select' }], ['.modes.insert.before']] });",
+            "} else {",
+            "  await vscode.commands.executeCommand('dance.run', { commands: [['.edit.yank-delete-insert']] });",
+            "}"
+          ]
+        }
       },
       {
         "key": "C",
         "when": "editorTextFocus && dance.mode == 'helix/select'",
         "title": "Copy, delete and switch to Insert",
-        "command": "dance.edit.yank-delete-insert"
+        "command": "dance.run",
+        "args": {
+          "code": [
+            "const editor = vscode.window.activeTextEditor;",
+            "if (!editor) return;",
+            "const onlyWholeLines = editor.selections.length > 0 && editor.selections.every(sel => {",
+            "  if (sel.isEmpty) return false;",
+            "  let start = sel.start;",
+            "  let end = sel.end;",
+            "  if (start.character !== 0) return false;",
+            "  const endLineLength = editor.document.lineAt(end.line).text.length;",
+            "  return end.character === (sel.isReversed ? 0:endLineLength) && end.line >= start.line;",
+            "});",
+            "if (onlyWholeLines) {",
+            "  await vscode.commands.executeCommand('dance.run', { commands: [['.edit.yank-delete'],['.edit.newLine.above', { shift: 'select' }], ['.modes.insert.before']] });",
+            "} else {",
+            "  await vscode.commands.executeCommand('dance.run', { commands: [['.edit.yank-delete-insert']] });",
+            "}"
+          ]
+        }
       },
       {
         "key": "Shift+R",
